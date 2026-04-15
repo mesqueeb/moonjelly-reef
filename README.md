@@ -14,7 +14,7 @@ npx skills@latest add mesqueeb/skills/close-the-loop
 
 ## Tooling & Setup
 
-- **git-guardrails-claude-code** — Set up Claude Code hooks to block dangerous git commands (force push, reset --hard, clean, force-delete branches, etc.) before they execute, while still allowing safe everyday operations like pushing feature branches from worktrees and cleaning up `[gone]` branches.
+- **git-guardrails-claude-code** — Block dangerous git commands in Claude Code (force push, hard reset, force delete) while allowing safe everyday operations like pushing from worktrees. Based on [`mattpocock/skills/git-guardrails-claude-code`](https://github.com/mattpocock/skills/tree/main/git-guardrails-claude-code).
 
 ```sh
 npx skills@latest add mesqueeb/skills/git-guardrails-claude-code
