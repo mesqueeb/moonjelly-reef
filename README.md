@@ -12,6 +12,14 @@ These skills help you write, refactor, and fix code.
 npx skills@latest add mesqueeb/skills/close-the-loop
 ```
 
+## Tooling & Setup
+
+- **git-guardrails-claude-code** — Set up Claude Code hooks to block dangerous git commands (force push, reset --hard, clean, force-delete branches, etc.) before they execute, while still allowing safe everyday operations like pushing feature branches from worktrees and cleaning up `[gone]` branches.
+
+```sh
+npx skills@latest add mesqueeb/skills/git-guardrails-claude-code
+```
+
 ## Other Skills
 
 Other skills I use:
