@@ -18,7 +18,7 @@ Sets up a PreToolUse hook that intercepts and blocks dangerous git commands befo
 
 **Context-aware:**
 
-- `git push` — blocked from the main checkout, allowed from a worktree (so feature branches can ship). Pushes to `main` / `master` / `develop` stay blocked everywhere.
+- `git push` — if at least one worktree exists, pushing from the main checkout is blocked (agents are kept in their worktree lane). With no worktrees around, push is allowed (force-push is covered separately above).
 - `git branch -D <name>` — only allowed when the named branch's upstream is `[gone]` on the remote. Also recognizes the safe pipe pattern `git branch -v | grep ...gone... | xargs git branch -D` for cleaning up multiple stale branches at once. Force-deleting an active branch by name stays blocked.
 
 When blocked, Claude sees a message telling it that it does not have authority to access these commands.
@@ -88,7 +88,7 @@ If the settings file already exists, merge the hook into existing `hooks.PreTool
 
 ### 4. Ask about customization
 
-Ask if user wants to add or remove any patterns from the blocked list, or change the protected branch names (default `main`/`master`/`develop`). Edit the copied script accordingly.
+Ask if user wants to add or remove any patterns from the blocked list. Edit the copied script accordingly.
 
 ### 5. Verify
 
@@ -96,11 +96,13 @@ Run a few quick tests:
 
 ```bash
 # Should be BLOCKED (exit 2)
-echo '{"tool_input":{"command":"git push origin main"}}' | <path-to-script>
 echo '{"tool_input":{"command":"git reset --hard HEAD~1"}}' | <path-to-script>
+echo '{"tool_input":{"command":"git push --force"}}' | <path-to-script>
 
-# Should be ALLOWED (exit 0) — non-protected branch from a worktree
-# (run inside a worktree)
+# Should be ALLOWED (exit 0) — no worktrees in play
+echo '{"tool_input":{"command":"git push -u origin my-feature"}}' | <path-to-script>
+
+# Should be BLOCKED (exit 2) — run from the main checkout when a worktree exists
 echo '{"tool_input":{"command":"git push -u origin my-feature"}}' | <path-to-script>
 ```
 
