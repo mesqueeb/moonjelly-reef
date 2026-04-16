@@ -11,12 +11,16 @@ The orchestrator is a short-lived session (cron or manual invocation). Each run:
 
 2. Dispatch all 🤖 work as sub-agents (in parallel):
    ├─ to-slice            → sub-agent: break into slices, verify coverage
+   ├─ to-await-slices     → check if deps are done; if yes, re-review plan & tag to-implement
    ├─ to-implement        → sub-agent: TDD per unblocked slice
    ├─ to-rework           → sub-agent: read review feedback, fix
    ├─ to-review           → sub-agent: review the PR
    ├─ to-merge            → sub-agent: merge PR, check for newly unblocked slices
    ├─ to-verify           → sub-agent: holistic review on feature branch
    └─ to-missing-slices   → sub-agent: analyze gaps, create new slices
+
+   Parallel slices within the same parent may be dispatched as an agent team
+   (shared task list, self-claim, direct messaging) when beneficial.
 
    Each sub-agent tags its own work when done (next phase tag).
 
@@ -73,13 +77,16 @@ stateDiagram-v2
 
     state "SLICE LIFECYCLE (per slice)" as slice_lifecycle {
 
+        state "to-await-slices (🤖)" as to_await
         state "to-implement (🤖)" as to_implement
         state "to-review (🤖)" as to_review
         state "to-rework (🤖)" as needs_rework
         state "to-merge (🤖)" as to_merge
         state "done" as slice_done
 
-        [*] --> to_implement
+        [*] --> to_implement : no deps
+        [*] --> to_await : has deps
+        to_await --> to_implement : deps resolved · plans re-reviewed
         to_implement --> to_review : sub-agent: TDD + full suite green
         to_review --> to_merge : reviewer: ACs met, PR clean
         to_review --> needs_rework : reviewer: gaps flagged
@@ -89,7 +96,7 @@ stateDiagram-v2
     }
 
     class to_grill,to_scope,to_sign_off human
-    class to_slice,to_verify,gaps_to_new_slices,to_implement,to_review,needs_rework,to_merge agent
+    class to_slice,to_verify,gaps_to_new_slices,to_await,to_implement,to_review,needs_rework,to_merge agent
 ```
 
 ## Phase details
@@ -131,12 +138,41 @@ The scoping phase is responsible for:
 
 Orchestrator breaks the plan into slices automatically. Every success criterion must be covered by ≥1 slice AC. If gaps: revise slices until covered. No 👨🏽‍🦳 needed.
 
+This phase also creates the **feature branch** (branched from main or the configured base). All slice PRs will target this feature branch. The feature branch is what eventually gets merged into main at sign-off.
+
 For small bugs (scope = quick fix): produces a single slice. No coverage matrix needed — the triage issue's ACs are the slice's ACs.
 
-| Produces      |                                                                                                                              |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Issue tracker | Sub-issues with ACs + dependency graph + **coverage matrix** (criterion → issue → AC). Each sub-issue tagged `to-implement`. |
-| Local files   | `feature-x/slices/001-slice-name.md`, `feature-x/coverage-matrix.md`.                                                        |
+Slices with no dependencies are tagged `to-implement`. Slices that depend on other slices are tagged `to-await-slices`.
+
+| Produces      |                                                                                                                                                                  |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Issue tracker | Sub-issues with ACs + dependency graph + **coverage matrix** (criterion → issue → AC). Feature branch created. Each sub-issue tagged `to-implement` or `to-await-slices`. |
+| Local files   | `feature-x/slices/001-slice-name.md`, `feature-x/coverage-matrix.md`. Feature branch created.                                                                    |
+
+</details>
+
+<details>
+<summary><code>to-await-slices</code> · 🤖</summary>
+
+Orchestrator checks whether this slice's dependencies have all been merged.
+
+```
+1. Fetch latest remote.
+2. Check: are all dependency slices tagged "done" with PRs merged?
+   - If no → exit. This slice stays to-await-slices until next loop.
+   - If yes → continue.
+3. Re-review this slice's plan against the current state of the feature branch.
+   Earlier slices may have changed the codebase in ways that affect this slice's
+   approach (new interfaces, renamed modules, shifted boundaries).
+4. If the plan still holds → tag to-implement.
+5. If adjustments needed → update the slice's ACs/description to reflect
+   the current reality, then tag to-implement.
+```
+
+| Produces      |                                                                                                 |
+| ------------- | ----------------------------------------------------------------------------------------------- |
+| Issue tracker | Slice tagged `to-implement` (possibly with updated ACs). Or no change if deps aren't done yet.  |
+| Local files   | Slice md file updated if needed. Or no change.                                                  |
 
 </details>
 
@@ -230,8 +266,9 @@ Orchestrator merges the PR to feature branch.
 1. Verify feature branch is up to date with remote.
 2. Merge PR (squash or regular per project convention).
 3. Verify full suite still green after merge.
-4. Close the slice issue.
-5. Check: did this unblock any sibling slices? (Their blockers are now resolved.)
+4. Close the slice issue. Tag slice "done".
+5. Check: did this unblock any sibling slices?
+   If yes → tag those siblings to-await-slices (so next loop re-reviews and promotes them).
 6. If all slices are now done → tag parent work item as to-verify.
 ```
 
@@ -279,10 +316,12 @@ Orchestrator analyzes gaps, creates new slices for remaining work. No 👨🏽�
 
 If the gap is "the agent chose to skip something" (pain point C1), the new slice's ACs explicitly call out what was skipped and why it matters.
 
-| Produces      |                                                                                                                                                    |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Issue tracker | New sub-issues linked to parent with ACs for remaining work. Closes partial originals with reference to new issues. Tag new slices `to-implement`. |
-| Local files   | New slice files in `feature-x/slices/`.                                                                                                            |
+Updates the **coverage matrix** to include the new slices — every gap that triggered this phase must now map to an AC on a new slice.
+
+| Produces      |                                                                                                                                                                             |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Issue tracker | New sub-issues linked to parent with ACs for remaining work. Closes partial originals with reference to new issues. Tag new slices `to-implement` or `to-await-slices`. Updated coverage matrix. |
+| Local files   | New slice files in `feature-x/slices/`. Updated `feature-x/coverage-matrix.md`.                                                                                              |
 
 </details>
 
