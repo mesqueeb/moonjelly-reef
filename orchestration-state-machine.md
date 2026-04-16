@@ -1,11 +1,13 @@
 # Orchestration State Machine
 
+**Issue tracker** = GitHub Issues, Jira, ClickUp, Linear, or any kanban board. The doc says "issue tracker" everywhere — substitute yours.
+
 ## The orchestrator loop
 
 The orchestrator is a short-lived session (cron or manual invocation). Each run:
 
 ```
-1. Scan all items by tag (GitHub issues or local md files).
+1. Scan all items by tag (issue tracker or local md files).
 
 2. Dispatch all 🤖 work as sub-agents (in parallel):
    ├─ to-slice            → sub-agent: break into slices, verify coverage
@@ -29,7 +31,7 @@ The orchestrator is a short-lived session (cron or manual invocation). Each run:
 When running as a cron: wake → run loop → sleep.
 When running manually: human invokes → loop dispatches 🤖 and presents 👨🏽‍🦳 items → repeat until nothing actionable.
 
-State lives in tags (GitHub labels or filename prefixes), not in session memory. Sub-agents read tags, do their work, and set the next tag. The orchestrator itself holds no state — it just scans and dispatches.
+State lives in tags (issue tracker labels or filename prefixes), not in session memory. Sub-agents read tags, do their work, and set the next tag. The orchestrator itself holds no state — it just scans and dispatches.
 
 Design principles (via DevOps):
 
@@ -99,7 +101,7 @@ Orchestrator presents item to human. Human runs grill-me session.
 
 | Produces      |                                                                               |
 | ------------- | ----------------------------------------------------------------------------- |
-| GitHub Issues | Grill-me session appended to issue body. Tag with `to-scope`.                 |
+| Issue tracker | Grill-me session appended to issue body. Tag with `to-scope`.                 |
 | Local files   | `feature-x/grill-me-session.md` (includes original idea text + full session). |
 
 </details>
@@ -119,7 +121,7 @@ The scoping phase is responsible for:
 
 | Produces      |                                                                                                                 |
 | ------------- | --------------------------------------------------------------------------------------------------------------- |
-| GitHub Issues | Plan with **success criteria** section, appended or as new linked issue. Tag with `to-slice`. |
+| Issue tracker | Plan with **success criteria** section, appended or as new linked issue. Tag with `to-slice`. |
 | Local files   | `feature-x/plan.md` — with success criteria.                                                  |
 
 </details>
@@ -133,7 +135,7 @@ For small bugs (scope = quick fix): produces a single slice. No coverage matrix 
 
 | Produces      |                                                                                                                              |
 | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| GitHub Issues | Sub-issues with ACs + dependency graph + **coverage matrix** (criterion → issue → AC). Each sub-issue tagged `to-implement`. |
+| Issue tracker | Sub-issues with ACs + dependency graph + **coverage matrix** (criterion → issue → AC). Each sub-issue tagged `to-implement`. |
 | Local files   | `feature-x/slices/001-slice-name.md`, `feature-x/coverage-matrix.md`.                                                        |
 
 </details>
@@ -173,7 +175,7 @@ Sub-agent checklist (non-negotiable contract):
 
 | Produces      |                                                                                                   |
 | ------------- | ------------------------------------------------------------------------------------------------- |
-| GitHub Issues | PR targeting feature branch. PR description follows report template above. Tag slice `to-review`. |
+| Issue tracker | PR targeting feature branch. PR description follows report template above. Tag slice `to-review`. |
 | Local files   | same (PR is always git-based).                                                                    |
 
 </details>
@@ -214,7 +216,7 @@ Orchestrator dispatches a new sub-agent to the same worktree/PR.
 
 | Produces      |                                               |
 | ------------- | --------------------------------------------- |
-| GitHub Issues | Updated PR with fixes. Tag slice `to-review`. |
+| Issue tracker | Updated PR with fixes. Tag slice `to-review`. |
 | Local files   | same.                                         |
 
 </details>
@@ -235,7 +237,7 @@ Orchestrator merges the PR to feature branch.
 
 | Produces      |                                                                          |
 | ------------- | ------------------------------------------------------------------------ |
-| GitHub Issues | Merged PR. Slice tagged `done`. Parent → `to-verify` if all slices done. |
+| Issue tracker | Merged PR. Slice tagged `done`. Parent → `to-verify` if all slices done. |
 | Local files   | same.                                                                    |
 
 </details>
@@ -263,8 +265,8 @@ The aggregate report contains:
 
 | Produces             |                                                                        |
 | -------------------- | ---------------------------------------------------------------------- |
-| GitHub Issues (pass) | Aggregate report as comment on parent issue. Tag parent `to-sign-off`. |
-| GitHub Issues (gaps) | Tag parent `to-missing-slices`.                                        |
+| Issue tracker (pass) | Aggregate report as comment on parent issue. Tag parent `to-sign-off`. |
+| Issue tracker (gaps) | Tag parent `to-missing-slices`.                                        |
 | Local files (pass)   | `feature-x/report.md`. Tag parent `to-sign-off`.                       |
 | Local files (gaps)   | Tag parent `to-missing-slices`.                                        |
 
@@ -279,7 +281,7 @@ If the gap is "the agent chose to skip something" (pain point C1), the new slice
 
 | Produces      |                                                                                                                                                    |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GitHub Issues | New sub-issues linked to parent with ACs for remaining work. Closes partial originals with reference to new issues. Tag new slices `to-implement`. |
+| Issue tracker | New sub-issues linked to parent with ACs for remaining work. Closes partial originals with reference to new issues. Tag new slices `to-implement`. |
 | Local files   | New slice files in `feature-x/slices/`.                                                                                                            |
 
 </details>
