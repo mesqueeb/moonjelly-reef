@@ -43,11 +43,7 @@ gh issue list --label "to-rescan" --json number,title --limit 100
 gh issue list --label "to-finalise" --json number,title --limit 100
 ```
 
-Or more efficiently:
-
-```sh
-gh issue list --label "to-probe,to-scope,to-slice,to-await-waves,to-implement,to-inspect,to-rework,to-merge,to-ratify,to-rescan,to-finalise" --json number,title,labels --limit 200
-```
+Run these queries in parallel where possible for performance.
 
 ### Local tracker
 
@@ -57,6 +53,8 @@ Read the local path from config. Scan all work item folders for tagged files:
 - Slice files: look for `[to-*] *.md` in `slices/` subfolders
 
 ### Step 2. Dispatch automated (🌊) work
+
+**Do NOT ask the user for confirmation. Dispatch immediately.** The tags are the authorization — if an item is tagged for automated work, dispatch it without hesitation.
 
 For each item found, dispatch the corresponding skill as a sub-agent. Use the Agent tool. Items that share no dependencies can be dispatched **in parallel**.
 
