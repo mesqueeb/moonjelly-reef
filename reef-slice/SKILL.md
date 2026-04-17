@@ -18,7 +18,7 @@ This skill accepts:
 - A specific work item: `/reef-slice #42` or `/reef-slice my-feature`
 - Nothing: look for items tagged `to-slice`. If multiple, ask the user to pick. If none, explain that items need to be scoped first and suggest `/reef-scope`.
 
-Read the work item. It must contain a plan with success criteria (from reef-scope). The plan metadata block tells you the work type, base branch, and feature branch name.
+Read the work item. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The plan metadata block tells you the work type, base branch, and feature branch name.
 
 ## 1. Create the feature branch
 

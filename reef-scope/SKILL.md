@@ -43,7 +43,7 @@ This gets documented in the plan so every downstream skill knows where to branch
 
 ## 3. Write the plan
 
-Based on the work type, produce a plan. The plan structure varies by type, but **success criteria** are mandatory for all types.
+Based on the work type, produce a plan. The plan structure varies by type, but **success criteria** are mandatory for all types. Success criteria are plan-level — they define when the whole work item is done. Later, reef-slice breaks these into **acceptance criteria** per slice.
 
 Follow the type-specific guidance. Each guide includes a "Collaborating with the user" section — use it. Iterate with the user until they approve the plan before moving to success criteria.
 

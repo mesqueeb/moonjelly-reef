@@ -98,6 +98,8 @@ stateDiagram-v2
     class to_slice,to_ratify,gaps_to_rescan,to_await,to_implement,to_inspect,needs_rework,to_merge agent
 ```
 
+> While slices are being worked, the parent ticket sits in `in-progress`. reef-merge promotes it to `to-ratify` once all slices are done.
+
 ## Phase details
 
 <details>
