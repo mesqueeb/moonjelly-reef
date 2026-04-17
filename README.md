@@ -28,12 +28,12 @@ stateDiagram-v2
 
     state "TICKET LIFECYCLE" as work {
 
-        state "🤿 to-probe" as to_probe
-        state "🤿 to-scope" as to_scope
-        state "🌊 to-slice" as to_slice
-        state "🌊 to-ratify" as to_ratify
-        state "🌊 to-rescan" as gaps_to_rescan
-        state "🤿 to-finalise" as to_finalise
+        state "🤿　to-probe" as to_probe
+        state "🤿　to-scope" as to_scope
+        state "🌊　to-slice" as to_slice
+        state "🌊　to-ratify" as to_ratify
+        state "🌊　to-rescan" as gaps_to_rescan
+        state "🤿　to-finalise" as to_finalise
 
         [*] --> to_probe
         to_probe --> to_scope : /reef-probe<br />probe session to align on a feature, bug, or refactor
@@ -48,11 +48,11 @@ stateDiagram-v2
 
     state "SLICE LIFECYCLE (per slice)" as slice_lifecycle {
 
-        state "🌊 to-await-waves" as to_await
-        state "🌊 to-implement" as to_implement
-        state "🌊 to-inspect" as to_inspect
-        state "🌊 to-rework" as needs_rework
-        state "🌊 to-merge" as to_merge
+        state "🌊　to-await-waves" as to_await
+        state "🌊　to-implement" as to_implement
+        state "🌊　to-inspect" as to_inspect
+        state "🌊　to-rework" as needs_rework
+        state "🌊　to-merge" as to_merge
         state "done" as slice_done
 
         [*] --> to_implement : no deps
