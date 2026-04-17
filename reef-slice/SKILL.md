@@ -36,7 +36,7 @@ If the plan says to work on the current branch (no new feature branch), skip thi
 
 Break the plan into slices. Each slice is a thin vertical cut through ALL integration layers end-to-end — not a horizontal slice of one layer.
 
-Reference disciplines from: prd-to-issues (vertical slice rules, HITL/AFK classification, blocked-by graph), prd-to-plan (phased approach, durable decisions).
+Slicing rules:
 
 Rules:
 
@@ -66,24 +66,15 @@ For each success criterion in the plan, map it to which slice(s) and which accep
 
 **Verify completeness**: every success criterion must appear in at least one row. If any criterion is uncovered, either add it to an existing slice's acceptance criteria or create a new slice. Do not proceed with gaps. (Prevents painpoint A3.)
 
-## 4. Present to user and iterate
+## 4. Verify the breakdown
 
-Present the proposed breakdown. For each slice, show:
+Before creating slices, verify internally:
 
-- **Number + title**: e.g. `001 — Auth endpoint`
-- **Acceptance criteria**: the specific testable conditions
-- **Blocked by**: which slices must complete first (or "none")
-- **Success criteria covered**: which SCs from the plan this addresses
+- Is the granularity reasonable? (prefer many thin slices over few thick ones)
+- Are the dependency relationships correct? Are there implicit deps not captured?
+- Does every success criterion appear in the coverage matrix?
 
-Then show the coverage matrix.
-
-Ask:
-
-- Does the granularity feel right? (too coarse / too fine)
-- Are the dependency relationships correct? Any implicit deps I missed?
-- Should any slices be merged or split?
-
-Iterate until the user approves.
+If anything looks off, adjust the breakdown. Document any judgment calls on the parent issue or plan file. Do not ask the user — reef-scope already iterated with the user on the plan. Your job is to slice it mechanically.
 
 ## 5. Create slices
 
@@ -141,13 +132,13 @@ Each slice file follows the same body template as the GitHub issue above, but wi
 
 ### GitHub tracker
 
-Append the coverage matrix to the parent issue body. Update the label from `to-slice` to reflect that slicing is done (remove `to-slice` — the parent's next transition happens when all slices are `done`, at which point reef-merge tags it `to-ratify`).
+Append the coverage matrix to the parent issue body. Change label from `to-slice` to `in-progress`. reef-merge will change it to `to-ratify` when all slices are done.
 
 Add a comment listing all created sub-issues with their tags.
 
 ### Local tracker
 
-Append the coverage matrix to `[to-slice] plan.md`. Rename the tag — the parent file stays as-is until reef-merge promotes it to `[to-ratify]` when all slices are done.
+Append the coverage matrix to the parent plan file. Rename from `[to-slice] plan.md` to `[in-progress] plan.md`. reef-merge will rename it to `[to-ratify] plan.md` when all slices are done.
 
 ## Handoff
 

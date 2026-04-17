@@ -40,7 +40,8 @@ Check if the blocking slice file has the `[done]` prefix.
 Earlier slices may have changed the codebase. Check out the feature branch and look at what's changed:
 
 ```sh
-git checkout origin/{feature-branch}
+git checkout {feature-branch}
+git pull origin {feature-branch}
 ```
 
 Read this slice's acceptance criteria and compare against the current state of the code:

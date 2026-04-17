@@ -1,6 +1,6 @@
 # Scoping a refactor
 
-Disciplines absorbed from: request-refactor-plan.
+How to scope a refactor into a plan.
 
 ## Before writing
 

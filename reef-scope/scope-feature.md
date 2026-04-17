@@ -1,6 +1,6 @@
 # Scoping a feature
 
-Disciplines absorbed from: write-a-prd, prd-to-plan.
+How to scope a feature into a plan.
 
 ## Before writing
 

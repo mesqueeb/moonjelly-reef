@@ -31,10 +31,11 @@ Think like a CTO doing a final walkthrough before shipping.
 
 ```sh
 git fetch origin
-git checkout origin/{feature-branch}
+git checkout {feature-branch}
+git pull origin {feature-branch}
 ```
 
-Verify you have the latest — all slice PRs should be merged.
+Verify you have the latest — all slice PRs should be merged into this branch.
 
 ### 2. Run the full test suite
 

@@ -1,6 +1,6 @@
 # Scoping a bug
 
-Disciplines absorbed from: triage-issue.
+How to scope a bug fix into a plan.
 
 ## Investigation (before writing the plan)
 

@@ -96,12 +96,12 @@ Are ALL slices for the parent work item now tagged `done`?
 ### GitHub tracker
 
 Check all sub-issues of the parent. If all are closed with `done` label:
-- Add label `to-ratify` to the parent issue.
+- Change label from `in-progress` to `to-ratify`.
 
 ### Local tracker
 
 Check all files in the `slices/` folder. If all have `[done]` prefix:
-- Rename the parent plan from its current tag to `[to-ratify] plan.md`.
+- Rename the parent plan from `[in-progress] plan.md` to `[to-ratify] plan.md`.
 
 If not all done, do nothing — more slices are still in progress.
 

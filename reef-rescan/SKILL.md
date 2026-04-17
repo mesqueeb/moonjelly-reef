@@ -97,7 +97,7 @@ If a gap relates to a slice that was marked `done` but is now revealed as incomp
 
 ### 6. Tag
 
-Remove `to-rescan` from the parent. The parent's next transition will happen when all slices (including new ones) are `done` — at which point reef-merge promotes it to `to-ratify` again for another holistic review.
+Change parent from `to-rescan` to `in-progress`. reef-merge will change it to `to-ratify` when all slices (including new ones) are `done`.
 
 ## Handoff
 

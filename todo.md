@@ -10,7 +10,7 @@ An orchestration framework where state lives in tags (GitHub labels or local fil
 
 **One evolving file per work item.** Locally: `plan.md` in a work item folder. On GitHub: the issue body. The file grows through phases — probe session first, then plan + success criteria prepended on top, then coverage matrix appended. Most important content at the top.
 
-**PRs are the universal handoff artifact.** Even for local-tracker projects, implementation work happens in git worktrees and is submitted as PRs toward the feature branch. The PR description carries the report (AC checklist, ambiguous choices, test results). The slice file/issue is the task card; the PR is the work artifact.
+**PRs are the universal handoff artifact.** Even for local-tracker projects, implementation work happens in git worktrees and is submitted as PRs toward the feature branch. The PR description carries the report (acceptance criteria checklist, ambiguous choices, test results). The slice file/issue is the task card; the PR is the work artifact.
 
 **tdd is the only external skill invoked.** reef-implement wraps `/tdd` with git prep and reef context. All planning skills (write-a-prd, prd-to-plan, prd-to-issues, request-refactor-plan, triage-issue) are absorbed natively into reef-scope and reef-slice. Their templates and disciplines become reference material, not dependencies.
 
@@ -42,7 +42,7 @@ reef-scope:
 
 reef-slice:
   reads  → evolving file with plan + success criteria
-  writes → slice files/issues with ACs + dep graph
+  writes → slice files/issues with acceptance criteria + dep graph
            coverage matrix appended to the evolving file
            feature branch created
   tags   → parent stays at to-slice until slicing done
@@ -50,22 +50,22 @@ reef-slice:
 
 reef-await-waves:
   reads  → slice file/issue (blocked-by list)
-  writes → possibly updated ACs if plan shifted
+  writes → possibly updated acceptance criteria if plan shifted
   tags   → to-implement (or no change if deps not done)
 
 reef-implement:
-  reads  → slice file/issue (ACs, parent plan link, feature branch)
+  reads  → slice file/issue (acceptance criteria, parent plan link, feature branch)
   writes → code in worktree, PR toward feature branch with report
            may include screenshots/video if app is launchable (project-dependent)
   tags   → to-inspect
 
 reef-inspect:
-  reads  → slice's PR (code, report, ACs)
+  reads  → slice's PR (code, report, acceptance criteria)
   writes → review comments, trivial cleanups committed
   tags   → to-merge or to-rework
 
 reef-rework:
-  reads  → PR review comments, original ACs
+  reads  → PR review comments, original acceptance criteria
   writes → fixes on PR, updated report
   tags   → to-inspect
 
@@ -141,7 +141,7 @@ Each skill is written, then reviewed against its painpoints before moving on.
 
 - [x] **reef-implement** — git prep contract, invokes `/tdd`, opens PR with report. Must be crystal clear on worktree setup, branch targets, what "done" means.
 - [x] **reef-await-waves** — dep checker. Pulls remote, checks siblings, re-reviews plan. Simple but critical for F3 prevention.
-- [x] **reef-inspect** — independent PR reviewer. CTO mindset from close-the-loop. Verifies ACs against code, not against PR description.
+- [x] **reef-inspect** — independent PR reviewer. CTO mindset from close-the-loop. Verifies acceptance criteria against code, not against PR description.
 - [x] **reef-rework** — reads feedback, fixes, re-submits. Short skill.
 - [x] **reef-merge** — merge + unblock siblings + check parent status. Git hygiene critical here.
 
@@ -160,11 +160,31 @@ Each skill is written, then reviewed against its painpoints before moving on.
 - [x] Remove matt planning skills (write-a-prd, prd-to-plan, prd-to-issues, request-refactor-plan, triage-issue, grill-me, improve-codebase-architecture, ubiquitous-language) from repo
 - [x] Remove tdd (reef-setup prompts to install from matt)
 - [x] Remove close-the-loop (absorbed into reef-inspect + reef-ratify)
-- [ ] Update README to reflect current state
-- [ ] Edit this todo.md to reflect remaining work
+- [x] Update README to reflect current state (install section, companion skill, one-evolving-file artifact paths)
+- [x] Edit this todo.md to reflect remaining work
 
 ### Phase 7: Distribution
 
-- [ ] Define install command for moonjelly reef (what does `npx skills@latest add mesqueeb/skills/moonjelly-reef` install?)
-- [ ] Should installing reef also install tdd from matt? Or bundle it?
-- [ ] reef-setup already prompts to install tdd + ubiquitous-language if not present
+- [ ] Investigate: can `npx skills@latest add` install a bundle (all 13 reef skills + reef-setup at once)?
+- [ ] If yes, define a single install command. If no, the README already lists individual commands.
+- [x] reef-setup already prompts to install tdd + ubiquitous-language if not present
+
+### Phase 8: Test the framework
+
+- [ ] Dry run: create a `to-probe` item, walk through every skill manually on a real (small) project
+- [ ] Verify: each skill produces the right artifacts, on the right branch, with the right tags
+- [ ] Verify: the one-evolving-file pattern works end-to-end (probe → scope → slice → ... → finalise)
+- [ ] Verify: reef-pulse scans and dispatches correctly
+- [ ] Catch any skill instructions that are ambiguous or that an LLM misinterprets
+- [ ] Identify skills that need supporting files (templates, examples) like reef-scope has
+
+### Known gaps to revisit
+
+- [x] reef-implement: tdd fallback — inline TDD discipline written for when tdd skill is not installed
+- [x] reef-pulse: `--hitl` / `--afk` — detected from skill invocation args
+- [x] reef-pulse: agent team dispatch — concrete instructions added (when to use teams vs sub-agents, team lead prompt template)
+- [x] reef-scope: iteration loop reference — main SKILL.md now points to "Collaborating with the user" sections in sub-files
+- [x] Local tracker: `[tag]` convention — documented as lowercase, hyphens only, no spaces in bracket
+- [x] Cron setup: `cron.sh` + `launchd.plist` written, with PID-based lock file to prevent overlapping runs
+- [x] orchestration.md and painpoints.md archived to `.github/`
+- [x] All "AC" abbreviations expanded to "acceptance criteria" across all skills
