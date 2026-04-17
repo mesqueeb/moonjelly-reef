@@ -14,10 +14,10 @@ If no slice is given, look for slices tagged `to-implement`. If multiple, pick t
 
 Read the slice (issue or file). It must contain:
 - Acceptance criteria
-- Feature branch name (in "Plan context" section)
+- Work branch name (in "Plan context" section)
 - Parent plan reference
 
-If any of these are missing, check the parent plan for the feature branch. If you truly can't find the feature branch name, default to `main` and note this in your report.
+If any of these are missing, check the parent plan for the work branch. If you truly can't find the work branch name, default to `main` and note this in your report.
 
 ## 1. Git prep
 
@@ -27,14 +27,14 @@ This is non-negotiable. Every step must pass before writing any code.
 # Fetch latest and prune stale tracking branches
 git fetch origin --prune
 
-# Create a worktree from the feature branch
-git worktree add ../worktree-{slice-name} -b {slice-branch} origin/{feature-branch}
+# Create a worktree from the work branch
+git worktree add ../worktree-{slice-name} -b {slice-branch} origin/{work-branch}
 cd ../worktree-{slice-name}
 ```
 
 Verify:
-- [ ] Worktree is based on the latest `origin/{feature-branch}`
-- [ ] No unrelated commits are present (`git log --oneline -5` — should see only feature branch history)
+- [ ] Worktree is based on the latest `origin/{work-branch}`
+- [ ] No unrelated commits are present (`git log --oneline -5` — should see only work branch history)
 - [ ] The project builds / compiles cleanly before you touch anything
 - [ ] The full test suite passes before you touch anything (this is your baseline)
 
@@ -120,10 +120,10 @@ Decisions made during implementation that weren't covered by the acceptance crit
 
 ```sh
 git push -u origin {slice-branch}
-gh pr create --base {feature-branch} --title "{slice-name}" --body "{report}"
+gh pr create --base {work-branch} --title "{slice-name}" --body "{report}"
 ```
 
-The PR targets the **feature branch**, not `main`.
+The PR targets the **work branch**, not `main`.
 
 ## 6. Tag the slice
 

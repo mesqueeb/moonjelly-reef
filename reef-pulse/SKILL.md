@@ -63,12 +63,12 @@ Dispatch by telling sub-agents to read and follow a specific file:
 
 | Tag | File | Notes |
 | --- | --- | --- |
-| `to-slice` | [slice.md](slice.md) | One at a time per parent (creates feature branch + sub-issues) |
+| `to-slice` | [slice.md](slice.md) | One at a time per parent (creates work branch + sub-issues) |
 | `to-await-waves` | [await-waves.md](await-waves.md) | Parallel OK — each is independent |
 | `to-implement` | [implement.md](implement.md) | Parallel OK for unrelated slices. Slices within the same parent may be dispatched as an **agent team** if multiple are ready |
 | `to-inspect` | [inspect.md](inspect.md) | Parallel OK |
 | `to-rework` | [rework.md](rework.md) | Parallel OK |
-| `to-merge` | [merge.md](merge.md) | One at a time per parent (modifies feature branch) |
+| `to-merge` | [merge.md](merge.md) | One at a time per parent (modifies work branch) |
 | `to-ratify` | [ratify.md](ratify.md) | One at a time per parent |
 | `to-rescan` | [rescan.md](rescan.md) | One at a time per parent |
 
@@ -129,6 +129,6 @@ These are reminders for the LLM executing this skill, not documentation:
 
 - **You are stateless.** You scan tags, dispatch skills, and exit. You do not track what you dispatched last time. Tags are the state.
 - **Don't do the work yourself.** You dispatch skills. You never implement, review, or merge directly.
-- **Respect one-at-a-time constraints.** Slicing, merging, ratifying, and rescanning modify shared state (feature branch, parent issue). Only one sub-agent per parent for these.
+- **Respect one-at-a-time constraints.** Slicing, merging, ratifying, and rescanning modify shared state (work branch, parent issue). Only one sub-agent per parent for these.
 - **Parallel is the default for implementation.** Unrelated slices tagged `to-implement` should be dispatched simultaneously.
 - **If a dispatch fails, don't retry.** Report the failure in the summary and move on. The next pulse will pick it up if the tag is still set.

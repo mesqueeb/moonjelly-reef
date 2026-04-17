@@ -44,9 +44,10 @@ stateDiagram-v2
 
         [*] --> to_scope
         to_scope --> to_slice : /reef-scope<br />scope the work, define success criteria
-        to_slice --> slice_lifecycle : slice.md<br />break into slices, create dependency and coverage matrix
+        to_slice --> slice_lifecycle : slice.md (multi-slice)<br />create work branch, sub-issues, coverage matrix
+        to_slice --> to_implement : slice.md (single-slice)<br />parent becomes the slice, no work branch
         slice_lifecycle --> to_ratify : all slices done
-        to_ratify --> to_land : ratify.md<br />holistic review on feature branch
+        to_ratify --> to_land : ratify.md<br />holistic review on work branch
         to_ratify --> gaps_to_rescan : ratify.md<br />gaps found
         gaps_to_rescan --> slice_lifecycle : rescan.md<br />analyze gaps, create new slices
         to_land --> [*] : /reef-land<br />human reviews report, merges into main
@@ -68,7 +69,8 @@ stateDiagram-v2
         to_inspect --> to_merge : inspect.md<br />acceptance criteria met, PR clean
         to_inspect --> needs_rework : inspect.md<br />gaps flagged
         needs_rework --> to_inspect : rework.md<br />read feedback, fix, re-verify
-        to_merge --> slice_done : merge.md<br />merge PR, check for newly unblocked slices
+        to_merge --> slice_done : merge.md (multi-slice)<br />merge PR, check for newly unblocked slices
+        to_merge --> to_land : merge.md (single-slice)<br />PR stays open for human review
         slice_done --> [*]
     }
 
@@ -100,7 +102,7 @@ Each pulse:
    ├─ to-rework           → read feedback, fix, re-verify
    ├─ to-inspect          → inspect the PR
    ├─ to-merge            → merge PR, check for newly unblocked slices
-   ├─ to-ratify           → holistic review on feature branch
+   ├─ to-ratify           → holistic review on work branch
    └─ to-rescan           → analyze gaps, create new slices
 
    Parallel slices within the same parent may be dispatched as an agent team
@@ -170,23 +172,22 @@ When the scope is complete:
 
 **Input**: a work item tagged `to-slice` with a plan and success criteria.
 
-Break the plan into vertical slices. Each slice is a thin end-to-end cut through all layers, not a horizontal slice of one layer. Every success criterion must be covered by ≥1 slice acceptance criterion. If gaps remain after drafting, revise slices until covered.
+Draft vertical slices — each a thin end-to-end cut through all layers. Then check the count:
 
-1. Read the plan and success criteria.
-2. Create a **feature branch** (branched from main or the configured base). All slice PRs will target this branch.
-3. Draft slices as sub-issues, each with:
-   - Acceptance criteria
-   - `blocked-by` references (explicit dependency graph)
-4. Build a **coverage matrix**: each success criterion → which slice(s) → which acceptance criterion/criteria.
-5. Verify: every criterion is covered. If not, add slices until covered.
-6. Tag unblocked slices `to-implement`. Tag blocked slices `to-await-waves`.
+**Single slice → fast path.** No work branch, no sub-issues, no coverage matrix. The parent issue becomes the slice: acceptance criteria are written directly on it, and it's tagged `to-implement`. The PR will target the base branch directly.
 
-For small bugs (scope = quick fix): produce a single slice. The triage acceptance criteria are the slice's acceptance criteria. No coverage matrix needed.
+**Multiple slices:**
 
-| Output        |                                                                                                                                                                                              |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Issue tracker | Sub-issues with acceptance criteria + dependency graph. **Coverage matrix** appended to parent issue body. Feature branch created. Each sub-issue tagged `to-implement` or `to-await-waves`. |
-| Local files   | `{title}/slices/[to-implement] 001-slice-name.md`. Coverage matrix appended to `{title}/[...] plan.md`. Feature branch created.                                                              |
+1. Create a **work branch** (branched from main or the configured base). All slice PRs will target this branch.
+2. Create sub-issues with acceptance criteria and `blocked-by` references.
+3. Build a **coverage matrix**: each success criterion → which slice(s) → which acceptance criterion/criteria.
+4. Verify: every criterion is covered. If not, add slices until covered.
+5. Tag unblocked slices `to-implement`. Tag blocked slices `to-await-waves`.
+
+| Output | Single-slice | Multi-slice |
+| --- | --- | --- |
+| Issue tracker | Acceptance criteria on parent. Tag `to-implement`. | Sub-issues + coverage matrix. Work branch created. |
+| Local files | Acceptance criteria in plan file. Tag `[to-implement]`. | Slice files + coverage matrix. Work branch created. |
 
 </details>
 
@@ -203,7 +204,7 @@ Check whether this slice's dependencies have all been merged. If not, exit — y
 2. Check: are all dependency slices tagged `done` with PRs merged?
    - If no → exit. Do nothing. This slice stays `to-await-waves`.
    - If yes → continue.
-3. Re-review this slice's plan against the current state of the feature branch. Earlier slices may have changed the codebase in ways that affect this slice's approach (new interfaces, renamed modules, shifted boundaries).
+3. Re-review this slice's plan against the current state of the work branch. Earlier slices may have changed the codebase.
 4. If the plan still holds → tag `to-implement`.
 5. If adjustments needed → update the slice's acceptance criteria/description to reflect the current reality, then tag `to-implement`.
 
@@ -249,11 +250,11 @@ Implement this slice using TDD. This is your non-negotiable contract:
    □ Any drift from success criteria
 ```
 
-When done, open a PR targeting the feature branch. Tag slice `to-inspect`.
+When done, open a PR targeting the work branch (or base branch for single-slice). Tag slice `to-inspect`.
 
-| Output        |                                                                                                    |
-| ------------- | -------------------------------------------------------------------------------------------------- |
-| Issue tracker | PR targeting feature branch. PR description follows report template above. Tag slice `to-inspect`. |
+| Output        |                                                                                                             |
+| ------------- | ----------------------------------------------------------------------------------------------------------- |
+| Issue tracker | PR targeting work branch (or base branch). PR description follows report template. Tag slice `to-inspect`. |
 | Local files   | same (PR is always git-based).                                                                     |
 
 </details>
@@ -314,19 +315,20 @@ Fix the issues flagged by the inspector.
 
 **Input**: a slice tagged `to-merge` with an approved PR.
 
-Merge this PR into the feature branch and update the board.
+**Single-slice:** Do NOT merge — leave the PR open for the human. Tag parent `to-land` and exit.
 
-1. Verify feature branch is up to date with remote.
+**Multi-slice:** Merge the PR into the work branch and update the board:
+
+1. Verify work branch is up to date with remote.
 2. Merge PR (squash or regular per project convention).
 3. Verify full suite still green after merge.
 4. Close the slice issue. Tag slice `done`.
-5. Check: did this merge unblock any sibling slices? If yes → tag those siblings `to-await-waves` (so next pulse re-reviews and promotes them).
-6. Check: are ALL slices for the parent work item now `done`? If yes → tag parent `to-ratify`.
+5. Check: did this merge unblock any sibling slices? If yes → tag those siblings `to-await-waves`.
+6. Check: are ALL slices now `done`? If yes → tag parent `to-ratify`.
 
-| Output        |                                                                          |
-| ------------- | ------------------------------------------------------------------------ |
-| Issue tracker | Merged PR. Slice tagged `done`. Parent → `to-ratify` if all slices done. |
-| Local files   | same.                                                                    |
+| Output | Single-slice | Multi-slice |
+| --- | --- | --- |
+| Issue tracker | PR stays open. Tag parent `to-land`. | Merged PR. Slice `done`. Parent → `to-ratify` if all done. |
 
 </details>
 
@@ -335,11 +337,11 @@ Merge this PR into the feature branch and update the board.
 
 > _The walrus hauls itself onto the ice floe, surveys the entire colony with slow, deliberate eyes, and counts every last pup — nothing is declared safe until the old bull has seen it all._
 
-**Input**: a work item tagged `to-ratify` with all slices merged to the feature branch.
+**Input**: a work item tagged `to-ratify` with all slices merged to the work branch.
 
-Run a holistic review of the entire feature branch. You are checking the whole, not the parts.
+Run a holistic review of the entire work branch. You are checking the whole, not the parts.
 
-1. Pull latest remote. Checkout the feature branch.
+1. Pull latest remote. Checkout the work branch.
 2. Check every success criterion against the actual code holistically (not per-slice — the whole must hold together).
 3. Run the full project test suite.
 4. If all criteria met → generate the **aggregate report** → tag parent `to-land`.
@@ -355,9 +357,9 @@ The aggregate report contains:
 
 | Output               |                                                                   |
 | -------------------- | ----------------------------------------------------------------- |
-| Issue tracker (pass) | Final report on feature branch → main PR. Tag parent `to-land`.   |
+| Issue tracker (pass) | Final report on work branch → main PR. Tag parent `to-land`.   |
 | Issue tracker (gaps) | Tag parent `to-rescan`.                                           |
-| Local files (pass)   | Final report on feature branch → main PR. Tag parent `[to-land]`. |
+| Local files (pass)   | Final report on work branch → main PR. Tag parent `[to-land]`. |
 | Local files (gaps)   | Tag parent `[to-rescan]`.                                         |
 
 </details>
@@ -391,13 +393,13 @@ Analyze the gaps and create new slices for the remaining work. Do not ask a huma
 
 > _Moonjelly drifts to the diver one last time, the reef's work cradled in its bell. The diver returns to shore with what the reef has made._
 
-**Input**: a work item tagged `to-land` with an aggregate report.
+**Input**: a work item tagged `to-land` with an open PR.
 
-Present the aggregate report to the human. The report contains: success criteria status, coverage matrix, all LLM decisions/ambiguities, any drift from the decision record.
+Find the open PR associated with this work item and present it to the human — the diff, success/acceptance criteria status, any agent decisions worth reviewing.
 
 The human reviews and either:
 
-- **Approves** → merge the feature branch into main. Close the work item. Done.
+- **Approves** → merge the PR into the base branch. Close the work item. Done.
 - **Requests changes (needs new decisions)** → tag `to-scope` for a new scoping session.
 - **Requests changes (acceptance criteria are clear)** → tag `to-rescan` to create slices for remaining work.
 
@@ -405,7 +407,7 @@ The human reviews and either:
 
 ## Git hygiene
 
-Every agent works in its own git worktree — the main checkout is never touched. A feature branch is created from the base branch; all slice PRs target it. Implementation worktrees persist until their PR is merged; temporary worktrees (review, inspection) are torn down immediately. Only the merge phase removes worktrees and branches. Every git operation begins with `git fetch origin --prune`. No `--force` flags, ever. Before merging a slice, the branch is verified current with the feature branch; after merging, the feature branch suite must be green.
+Every agent works in its own git worktree — the main checkout is never touched. For multi-slice work, a work branch is created from the base branch; slice PRs target it. For single-slice work, the PR targets the base branch directly — no work branch needed. Implementation worktrees persist until their PR is merged; temporary worktrees (review, inspection) are torn down immediately. Only the merge phase removes worktrees and branches. Every git operation begins with `git fetch origin --prune`. No `--force` flags, ever.
 
 ## Skill index
 

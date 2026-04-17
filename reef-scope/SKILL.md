@@ -32,13 +32,13 @@ Discuss with the user:
 
 > "What branch should we work off of? Some options:"
 >
-> - "Create a new feature branch from `main` (e.g. `reef/my-feature`)"
+> - "Create a new work branch from `main` (e.g. `reef/my-feature`)"
 > - "Work off the current branch (`branch-name`)"
 > - "Something else?"
 
-Also ask what the feature branch should be called if creating one. Don't enforce naming — just capture the decision.
+Also ask what the work branch should be called if creating one. Don't enforce naming — just capture the decision.
 
-This gets documented in the plan so every downstream skill knows where to branch from and where PRs target.
+This gets documented in the plan so every downstream phase knows where to branch from and where PRs target.
 
 ## 3. Persist the plan
 
@@ -65,7 +65,7 @@ At the top of the plan, include a metadata block that downstream skills will rea
 | -------------- | ------------------------ |
 | Type           | feature / refactor / bug |
 | Base branch    | main                     |
-| Feature branch | reef/my-feature          |
+| Work branch    | reef/my-feature          |
 ```
 
 ## Handoff

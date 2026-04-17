@@ -11,21 +11,21 @@ description: Present the final report to the human for review. Human approves (m
 
 This skill requires a specific work item: `/reef-land #42` or `/reef-land my-feature`.
 
-Read the parent plan to find the feature branch PR (created during the ratify phase). Read the final report on that PR.
+Read the parent plan. Find the open PR associated with this work item — either a single-slice PR targeting the base branch, or a work branch PR targeting the base branch (created during the ratify phase).
 
 ## Present the report
 
 Show the human:
 
-1. **The final report** from the feature branch PR — success criteria status, agent decisions to review, integration notes, test results, screenshots if any.
-2. **A summary**: "The reef processed {N} slices across {M} rounds. {X} ambiguous decisions were made by agents. Here's what you need to know before merging."
-3. **The PR link**: so the human can read the full diff if they want.
+1. **The PR link**: so the human can read the full diff.
+2. **A summary**: what happened — how many slices, any ambiguous agent decisions, test results.
+3. **The success/acceptance criteria** from the parent issue, with their status.
 
 ## Human decides
 
 Present three options:
 
-> **1. Approve** — merge the feature branch into {base-branch} and close the work item.
+> **1. Approve** — merge the work branch into {base-branch} and close the work item.
 >
 > **2. Request changes (needs new decisions)** — something fundamental is off and we need to rethink. → Tags `to-scope` for a new scoping session.
 >
@@ -35,11 +35,11 @@ Wait for the human's choice.
 
 ### If approved
 
-```sh
-gh pr merge {feature-pr-number} --merge --delete-branch
-```
+Merge the PR:
 
-Use a regular merge (not squash) for the feature branch so the slice history is preserved.
+```sh
+gh pr merge {pr-number} --merge --delete-branch
+```
 
 ### GitHub tracker
 
