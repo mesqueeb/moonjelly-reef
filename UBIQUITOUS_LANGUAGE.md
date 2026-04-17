@@ -4,9 +4,9 @@
 
 | Term | Definition | Aliases to avoid |
 | --- | --- | --- |
-| **diver** | The human operating the reef — scopes work, reviews results | user, developer, human |
-| **moonjelly** | The orchestrator that scans tags and dispatches work | jellyfish, pulse (when referring to the actor, not the action) |
-| **reef** | The collection of automated phases that do the work | pipeline, system, framework |
+| 🤿 **diver** | The human operating the reef — scopes work, reviews results | user, developer, human |
+| 🪼 **moonjelly** | The orchestrator that scans tags and dispatches work | jellyfish, pulse (when referring to the actor, not the action) |
+| 🌊 **reef** | The collection of automated phases that do the work | pipeline, system, framework |
 
 ## Work hierarchy
 
@@ -14,8 +14,8 @@
 | --- | --- | --- |
 | **work item** | A scoped unit of work tracked by the issue tracker — a bug, feature, or refactor | ticket, issue, task, epic |
 | **slice** | A thin vertical cut through all layers, implementing part of a work item end-to-end | sub-task, sub-issue, child issue, chunk |
-| **single-slice** | A work item small enough that the work item itself IS the slice — no sub-items, no work branch | quick fix, small, fast path |
-| **multi-slice** | A work item broken into 2+ slices with a work branch composing them | standard, normal, full |
+| 🔶 **single-slice** | A work item small enough that the work item itself IS the slice — no sub-items, no work branch | quick fix, small, fast path |
+| 🔷 **multi-slice** | A work item broken into 2+ slices with a work branch composing them | standard, normal, full |
 
 ## Branches
 

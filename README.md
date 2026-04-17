@@ -33,6 +33,7 @@ stateDiagram-v2
 
     classDef human fill:#ffeaa7,stroke:#fdcb6e,color:#2d3436
     classDef agent fill:#81ecec,stroke:#00cec9,color:#2d3436
+    classDef arrow fill:#ececec,stroke:#ffffff00,color:#2d3436
 
     state "TICKET LIFECYCLE" as work {
 
@@ -44,9 +45,10 @@ stateDiagram-v2
 
         [*] --> to_scope
         to_scope --> to_slice : /reef-scope<br />scope the work, define success criteria
-        to_slice --> slice_lifecycle : slice.md (multi-slice)<br />create work branch, sub-issues, coverage matrix
-        to_slice --> to_implement : slice.md (single-slice)<br />parent becomes the slice, no work branch
-        slice_lifecycle --> to_ratify : all slices done
+        to_slice --> slice_lifecycle : slice.md<br />🔷　multi-slice:<br />create work branch, sub-issues, coverage matrix
+        to_slice --> slice_lifecycle : slice.md<br />🔶　single-slice:<br />parent becomes the slice, tags to-implement
+        slice_lifecycle --> to_ratify
+        slice_lifecycle --> to_land
         to_ratify --> to_land : ratify.md<br />holistic review on work branch
         to_ratify --> gaps_to_rescan : ratify.md<br />gaps found
         gaps_to_rescan --> slice_lifecycle : rescan.md<br />analyze gaps, create new slices
@@ -60,8 +62,8 @@ stateDiagram-v2
         state "🌊　to-inspect" as to_inspect
         state "🌊　to-rework" as needs_rework
         state "🌊　to-merge" as to_merge
-        state "done" as slice_done
-
+        state "merge.md<br />🔷　multi-slice:<br />merge PR, when all done → to-ratify" as merge_multi
+        state "merge.md<br />🔶　single-slice:<br />PR stays open → to-land" as merge_single
         [*] --> to_implement : no deps
         [*] --> to_await : has deps
         to_await --> to_implement : await-waves.md<br />check if deps are done, re-review plan
@@ -69,16 +71,16 @@ stateDiagram-v2
         to_inspect --> to_merge : inspect.md<br />acceptance criteria met, PR clean
         to_inspect --> needs_rework : inspect.md<br />gaps flagged
         needs_rework --> to_inspect : rework.md<br />read feedback, fix, re-verify
-        to_merge --> slice_done : merge.md (multi-slice)<br />merge PR, check for newly unblocked slices
-        to_merge --> to_land : merge.md (single-slice)<br />PR stays open for human review
-        slice_done --> [*]
+        to_merge --> merge_multi
+        to_merge --> merge_single
     }
 
     class to_scope,to_land human
     class to_slice,to_ratify,gaps_to_rescan,to_await,to_implement,to_inspect,needs_rework,to_merge agent
+    class merge_multi,merge_single arrow
 ```
 
-> While slices are being worked, the parent ticket sits in `in-progress`. It is promoted to `to-ratify` once all slices are done.
+> While slices are being worked, the parent ticket sits in `in-progress`. It is promoted to `to-ratify` by `merge.md` once all slices are done.
 
 ## Phase details
 
@@ -184,10 +186,10 @@ Draft vertical slices — each a thin end-to-end cut through all layers. Then ch
 4. Verify: every criterion is covered. If not, add slices until covered.
 5. Tag unblocked slices `to-implement`. Tag blocked slices `to-await-waves`.
 
-| Output | Single-slice | Multi-slice |
-| --- | --- | --- |
-| Issue tracker | Acceptance criteria on parent. Tag `to-implement`. | Sub-issues + coverage matrix. Work branch created. |
-| Local files | Acceptance criteria in plan file. Tag `[to-implement]`. | Slice files + coverage matrix. Work branch created. |
+| Output        | Single-slice                                            | Multi-slice                                         |
+| ------------- | ------------------------------------------------------- | --------------------------------------------------- |
+| Issue tracker | Acceptance criteria on parent. Tag `to-implement`.      | Sub-issues + coverage matrix. Work branch created.  |
+| Local files   | Acceptance criteria in plan file. Tag `[to-implement]`. | Slice files + coverage matrix. Work branch created. |
 
 </details>
 
@@ -252,10 +254,10 @@ Implement this slice using TDD. This is your non-negotiable contract:
 
 When done, open a PR targeting the work branch (or base branch for single-slice). Tag slice `to-inspect`.
 
-| Output        |                                                                                                             |
-| ------------- | ----------------------------------------------------------------------------------------------------------- |
+| Output        |                                                                                                            |
+| ------------- | ---------------------------------------------------------------------------------------------------------- |
 | Issue tracker | PR targeting work branch (or base branch). PR description follows report template. Tag slice `to-inspect`. |
-| Local files   | same (PR is always git-based).                                                                     |
+| Local files   | same (PR is always git-based).                                                                             |
 
 </details>
 
@@ -326,8 +328,8 @@ Fix the issues flagged by the inspector.
 5. Check: did this merge unblock any sibling slices? If yes → tag those siblings `to-await-waves`.
 6. Check: are ALL slices now `done`? If yes → tag parent `to-ratify`.
 
-| Output | Single-slice | Multi-slice |
-| --- | --- | --- |
+| Output        | Single-slice                         | Multi-slice                                                |
+| ------------- | ------------------------------------ | ---------------------------------------------------------- |
 | Issue tracker | PR stays open. Tag parent `to-land`. | Merged PR. Slice `done`. Parent → `to-ratify` if all done. |
 
 </details>
@@ -355,12 +357,12 @@ The aggregate report contains:
 - Any drift from the original decision record
 - Ticket lifecycle: all closed cleanly?
 
-| Output               |                                                                   |
-| -------------------- | ----------------------------------------------------------------- |
+| Output               |                                                                |
+| -------------------- | -------------------------------------------------------------- |
 | Issue tracker (pass) | Final report on work branch → main PR. Tag parent `to-land`.   |
-| Issue tracker (gaps) | Tag parent `to-rescan`.                                           |
+| Issue tracker (gaps) | Tag parent `to-rescan`.                                        |
 | Local files (pass)   | Final report on work branch → main PR. Tag parent `[to-land]`. |
-| Local files (gaps)   | Tag parent `[to-rescan]`.                                         |
+| Local files (gaps)   | Tag parent `[to-rescan]`.                                      |
 
 </details>
 
