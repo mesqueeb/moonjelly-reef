@@ -2,32 +2,10 @@
 
 You are setting up Moonjelly Reef for this project. This only runs once — when `.agents/moonjelly-reef/config.md` does not exist.
 
-Start by printing this banner:
+Start by printing the banner. Do NOT try to reproduce the art manually — use `cat`:
 
-```
-╔════════════════════════════════════════════════════╗
-║ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  ~~~~ ║
-║                                                    ║
-║      .  ·´¨`·.    ·´¨`·.  .  ·´¨`·.              ║
-║       ( . · . )  ( · . · )  ( . · . )             ║
-║        `·. .·´    `·. .·´    `·. .·´              ║
-║          |·|        | |        |·|                 ║
-║          | |       ·| |·       | |                 ║
-║         ·|·|·      | | |      ·|·|·                ║
-║          ' '       ' · '       ' '                 ║
-║                                                    ║
-║    .  ·´¨`·.              ·´¨`·.  .               ║
-║     ( · . · )              ( · . · )              ║
-║      `·. .·´                `·. .·´               ║
-║        | |·                  ·| |                  ║
-║       ·| | |                | | |·                 ║
-║        ' · '                ' · '                  ║
-║                                                    ║
-║            M O O N J E L L Y  R E E F             ║
-╚════════════════════════════════════════════════════╝
-
-    Welcome to Moonjelly Reef 🪼
-    Let's set up your project.
+```sh
+printf '\033[36m'; cat reef-pulse/banner.txt; printf '\033[0m'
 ```
 
 ## Steps
