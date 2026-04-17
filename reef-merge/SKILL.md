@@ -135,7 +135,7 @@ Are ALL slices for the parent work item now tagged `done`?
 ### GitHub tracker
 
 Check all sub-issues of the parent. If all are closed with `done` label:
-- Change label from `in-progress` to `to-ratify`.
+- Change the parent issue label from `in-progress` to `to-ratify`.
 
 ### Local tracker
 

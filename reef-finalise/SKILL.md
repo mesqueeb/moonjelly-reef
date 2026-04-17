@@ -53,7 +53,7 @@ Rename parent to `[done] plan.md`. Optionally move the folder to an `archive/` o
 
 ### GitHub tracker
 
-Change label to `to-probe`. Remove `to-finalise`.
+Change the parent issue label to `to-probe`. Remove `to-finalise`.
 
 ### Local tracker
 
@@ -63,7 +63,7 @@ Rename parent to `[to-probe] plan.md`.
 
 ### GitHub tracker
 
-Change label to `to-rescan`. Remove `to-finalise`.
+Change the parent issue label to `to-rescan`. Remove `to-finalise`.
 
 ### Local tracker
 

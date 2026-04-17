@@ -87,7 +87,7 @@ The plan gets **prepended** to the evolving file (pushing the probe session down
 
 1. Read the current issue body (which contains the probe session).
 2. Prepend the plan above the probe session. Use `gh issue edit <number> --body "..."`.
-3. Change label from `to-scope` to `to-slice`.
+3. Change the parent issue label from `to-scope` to `to-slice`.
 
 ### Local tracker
 

@@ -84,7 +84,7 @@ Addressed feedback from inspection round {N}:
 
 ### GitHub tracker
 
-Change label from `to-rework` to `to-inspect`. Remove `to-rework`.
+Change the slice issue label from `to-rework` to `to-inspect`.
 
 ### Local tracker
 

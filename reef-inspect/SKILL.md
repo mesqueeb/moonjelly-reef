@@ -93,8 +93,7 @@ git push origin HEAD:$PR_BRANCH
 
 ### GitHub tracker
 
-Add label `to-merge`. Remove `to-inspect`.
-Leave an approving review comment summarizing what you verified.
+Add label `to-merge` to the slice issue. Remove `to-inspect`.
 
 ### Local tracker
 
@@ -104,7 +103,7 @@ Rename from `[to-inspect] ...` to `[to-merge] ...`.
 
 ### GitHub tracker
 
-Add label `to-rework`. Remove `to-inspect`.
+Add label `to-rework` to the slice issue. Remove `to-inspect`.
 Leave specific review comments on the PR for each gap. Be precise — tell the implementer exactly what's wrong and what "fixed" looks like.
 
 ### Local tracker

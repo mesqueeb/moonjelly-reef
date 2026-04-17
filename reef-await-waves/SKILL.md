@@ -66,7 +66,7 @@ If acceptance criteria were updated, rewrite the slice file with the updated con
 
 ### GitHub tracker
 
-Change label from `to-await-waves` to `to-implement`.
+Change the slice issue label from `to-await-waves` to `to-implement`.
 
 ### Local tracker
 
