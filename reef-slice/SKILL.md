@@ -26,9 +26,11 @@ Read the base branch and feature branch name from the plan metadata.
 
 ```sh
 git fetch origin --prune
-git checkout -b {feature-branch} origin/{base-branch}
+git branch {feature-branch} origin/{base-branch}
 git push -u origin {feature-branch}
 ```
+
+Do NOT use `git checkout` — the main checkout should stay on whatever branch the user is on. Implementation happens in worktrees.
 
 If the plan says to work on the current branch (no new feature branch), skip this step. Note that slice PRs will target whatever branch is documented in the plan metadata.
 
