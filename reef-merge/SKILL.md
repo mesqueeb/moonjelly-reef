@@ -7,6 +7,8 @@ description: Merge an approved slice PR into the feature branch. Update sibling 
 
 > **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
 
+> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
+
 ## Input
 
 This skill requires a specific slice: `/reef-merge #55` or `/reef-merge my-feature/001-auth-endpoint`.

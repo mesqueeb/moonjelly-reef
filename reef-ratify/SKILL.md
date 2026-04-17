@@ -7,6 +7,8 @@ description: Holistic review of the entire feature branch against all success cr
 
 > **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
 
+> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
+
 ## Input
 
 This skill requires a specific work item: `/reef-ratify #42` or `/reef-ratify my-feature`.
@@ -132,6 +134,15 @@ Add a comment on the parent listing the specific gaps.
 ### Local tracker
 
 Rename parent from `[to-ratify] ...` to `[to-rescan] ...`.
+
+## Documentation
+
+When you find non-obvious behavior worth documenting during your holistic review:
+
+1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and commit to the feature branch.
+2. **Outside-of-code docs if warranted.** If the behavior is significant enough to document beyond a code comment, check the repo's `AGENTS.md`/`CLAUDE.md` for a documentation locations section. If it exists, follow it. If it doesn't, create a brief entry.
+
+Don't document what's obvious from reading the code.
 
 ## Handoff
 

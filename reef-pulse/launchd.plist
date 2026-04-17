@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<!--
+  Moonjelly Reef — macOS launchd agent
+  Runs reef-pulse --afk every 30 minutes.
+
+  Install:
+    1. Edit ProgramArguments to point to your cron.sh and project path
+    2. cp launchd.plist ~/Library/LaunchAgents/com.moonjelly-reef.pulse.plist
+    3. launchctl load ~/Library/LaunchAgents/com.moonjelly-reef.pulse.plist
+
+  Uninstall:
+    launchctl unload ~/Library/LaunchAgents/com.moonjelly-reef.pulse.plist
+    rm ~/Library/LaunchAgents/com.moonjelly-reef.pulse.plist
+-->
+<dict>
+  <key>Label</key>
+  <string>com.moonjelly-reef.pulse</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/path/to/reef-pulse/cron.sh</string>
+    <string>/path/to/your/project</string>
+  </array>
+
+  <key>StartInterval</key>
+  <integer>1800</integer>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/reef-pulse.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/tmp/reef-pulse.log</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin</string>
+  </dict>
+</dict>
+</plist>

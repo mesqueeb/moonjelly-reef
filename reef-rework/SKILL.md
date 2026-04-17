@@ -7,6 +7,8 @@ description: Fix issues flagged by the inspector on a slice PR. Address every re
 
 > **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
 
+> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
+
 ## Input
 
 This skill requires a specific slice: `/reef-rework #55` or `/reef-rework my-feature/001-auth-endpoint`.
@@ -20,7 +22,7 @@ Read the slice to find the PR reference.
 Read every review comment on the PR. Read the full conversation — don't just skim.
 
 Also re-read:
-- The slice's acceptance criteria (including any new ACs the inspector added)
+- The slice's acceptance criteria (including any new acceptance criteria the inspector added)
 - The parent plan's success criteria (for broader context)
 
 ### 2. Fix

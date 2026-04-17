@@ -7,6 +7,8 @@ description: Independently verify a slice PR against its acceptance criteria and
 
 > **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
 
+> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
+
 ## Input
 
 This skill requires a specific slice: `/reef-inspect #55` or `/reef-inspect my-feature/001-auth-endpoint`.
@@ -23,11 +25,11 @@ You are a CTO independently verifying this work. You do not trust the implemente
 
 A few things you naturally do:
 
-- **Check the implementation against each AC.** Read the code. Does it actually do what the AC says? Don't just read the PR description — it may be optimistic.
+- **Check the implementation against each acceptance criterion.** Read the code. Does it actually do what the criterion says? Don't just read the PR description — it may be optimistic.
 - **Spot drift.** The implementation may differ from the plan. That might be fine (the implementer found a better way) or it might be a gap. Surface it either way.
 - **Run the full test suite yourself.** Don't trust "all tests pass" in the report.
 - **Do trivial cleanups.** Stale TODOs, leftover debug prints, dead code from debugging, formatting — fix these yourself and commit. Don't ask permission.
-- **Flag substantive gaps.** Missing tests, incomplete behavior, skipped ACs — these go in review comments, not silent fixes.
+- **Flag substantive gaps.** Missing tests, incomplete behavior, skipped acceptance criteria — these go in review comments, not silent fixes.
 - **Read the ambiguous choices.** The implementer documented decisions they made. Flag anything that drifted too far from the success criteria or that the human should know about.
 
 ## Process
@@ -43,11 +45,11 @@ Run the full project test suite. Record the result.
 
 ### 2. Check each acceptance criterion
 
-For each AC on the slice:
+For each acceptance criterion on the slice:
 
 - Read the actual code that implements it. Trace the code path.
 - Confirm the behavior is correct by reading the test that covers it.
-- If there's no test for an AC, that's a gap — flag it.
+- If there's no test for an acceptance criterion, that's a gap — flag it.
 - If the test exists but uses mocks where integration tests are expected, flag it. (Prevents painpoint C3.)
 
 ### 3. Review the report
@@ -69,7 +71,7 @@ Do these yourself — commit directly to the PR branch:
 
 ### 5. Verdict
 
-**If all ACs are met and the suite is green:**
+**If all acceptance criteria are met and the suite is green:**
 
 ### GitHub tracker
 

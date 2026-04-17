@@ -31,7 +31,7 @@ The tracker type is defined in `.agents/moonjelly-reef/config.md`.
 | Tracker | How |
 | --- | --- |
 | GitHub | Remove old label, add new label: `gh issue edit <number> --remove-label "to-probe" --add-label "to-scope"` |
-| Local | Rename the file: `[to-probe] plan.md` → `[to-scope] plan.md` |
+| Local | Rename the file: `[to-probe] plan.md` → `[to-scope] plan.md`. Use lowercase tags, hyphens only, no spaces in the tag bracket. |
 | Jira | Change the issue status or update a label field |
 | Linear | Change the issue status or update labels |
 | Other | Equivalent "change status/label" operation |

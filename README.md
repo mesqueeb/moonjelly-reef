@@ -8,6 +8,34 @@ An orchestration framework for AI agent workflows. A short-lived pulse scans for
 
 This framework is **Issue tracker agnostic**. GitHub Issues, Jira, ClickUp, Linear, any kanban board or simply local MD files. Use yours.
 
+## Install
+
+```sh
+npx skills@latest add mesqueeb/skills/reef-pulse
+npx skills@latest add mesqueeb/skills/reef-probe
+npx skills@latest add mesqueeb/skills/reef-scope
+npx skills@latest add mesqueeb/skills/reef-slice
+npx skills@latest add mesqueeb/skills/reef-await-waves
+npx skills@latest add mesqueeb/skills/reef-implement
+npx skills@latest add mesqueeb/skills/reef-inspect
+npx skills@latest add mesqueeb/skills/reef-rework
+npx skills@latest add mesqueeb/skills/reef-merge
+npx skills@latest add mesqueeb/skills/reef-ratify
+npx skills@latest add mesqueeb/skills/reef-rescan
+npx skills@latest add mesqueeb/skills/reef-finalise
+npx skills@latest add mesqueeb/skills/reef-setup
+```
+
+On first run, `/reef-setup` will prompt you to configure your issue tracker and install optional dependencies (`tdd`, `ubiquitous-language`).
+
+### Companion skill
+
+```sh
+npx skills@latest add mesqueeb/skills/git-guardrails-claude-code
+```
+
+Blocks dangerous git commands (force push, hard reset, force delete) while allowing safe everyday operations. Recommended for any project using reef.
+
 ## 🪼 The moonjelly pulse
 
 > _A moon jellyfish pulses rhythmically with no brain — it just keeps moving. Each pulse scans the reef, sets creatures in motion, and recedes._
@@ -140,10 +168,10 @@ When the session is complete:
 2. Double-check with the user: "Does this capture the original idea and every decision we made?"
 3. Tag the item `to-scope`.
 
-| Output        |                                                                          |
-| ------------- | ------------------------------------------------------------------------ |
-| Issue tracker | Probe session appended to issue body. Tag `to-scope`.                    |
-| Local files   | `{title}/probe-session.md` (includes original idea text + full session). |
+| Output        |                                                                                    |
+| ------------- | ---------------------------------------------------------------------------------- |
+| Issue tracker | Probe session appended to issue body. Title updated. Tag `to-scope`.               |
+| Local files   | `{title}/[to-scope] plan.md` (includes original idea text + full probe session).   |
 
 </details>
 
@@ -170,10 +198,10 @@ When the scope is complete:
 2. Every decision from the probe session must map to ≥1 success criterion. If any are missing, add them.
 3. Tag the item `to-slice`.
 
-| Output        |                                                                                          |
-| ------------- | ---------------------------------------------------------------------------------------- |
-| Issue tracker | Plan with **success criteria** section, appended or as new linked issue. Tag `to-slice`. |
-| Local files   | `{title}/plan.md` — with success criteria.                                               |
+| Output        |                                                                                                       |
+| ------------- | ----------------------------------------------------------------------------------------------------- |
+| Issue tracker | Plan + success criteria **prepended** to issue body (probe session stays below). Tag `to-slice`.      |
+| Local files   | Plan + success criteria prepended in `{title}/[to-slice] plan.md` (probe session stays below).        |
 
 </details>
 
@@ -197,10 +225,10 @@ Break the plan into vertical slices. Each slice is a thin end-to-end cut through
 
 For small bugs (scope = quick fix): produce a single slice. The triage acceptance criteria are the slice's acceptance criteria. No coverage matrix needed.
 
-| Output        |                                                                                                                                                                                                           |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Issue tracker | Sub-issues with acceptance criteria + dependency graph + **coverage matrix** (criterion → issue → acceptance criteria). Feature branch created. Each sub-issue tagged `to-implement` or `to-await-waves`. |
-| Local files   | `{title}/slices/001-slice-name.md`, `{title}/coverage-matrix.md`. Feature branch created.                                                                                                                 |
+| Output        |                                                                                                                                                                                                                              |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Issue tracker | Sub-issues with acceptance criteria + dependency graph. **Coverage matrix** appended to parent issue body. Feature branch created. Each sub-issue tagged `to-implement` or `to-await-waves`.                                  |
+| Local files   | `{title}/slices/[to-implement] 001-slice-name.md`. Coverage matrix appended to `{title}/[...] plan.md`. Feature branch created.                                                                                              |
 
 </details>
 
@@ -367,12 +395,12 @@ The aggregate report contains:
 - Any drift from the original probe session
 - Ticket lifecycle: all closed cleanly?
 
-| Output               |                                                                        |
-| -------------------- | ---------------------------------------------------------------------- |
-| Issue tracker (pass) | Aggregate report as comment on parent issue. Tag parent `to-finalise`. |
-| Issue tracker (gaps) | Tag parent `to-rescan`.                                                |
-| Local files (pass)   | `{title}/report.md`. Tag parent `to-finalise`.                         |
-| Local files (gaps)   | Tag parent `to-rescan`.                                                |
+| Output               |                                                                                          |
+| -------------------- | ---------------------------------------------------------------------------------------- |
+| Issue tracker (pass) | Final report on feature branch → main PR. Tag parent `to-finalise`.                      |
+| Issue tracker (gaps) | Tag parent `to-rescan`.                                                                  |
+| Local files (pass)   | Final report on feature branch → main PR. Tag parent `[to-finalise]`.                    |
+| Local files (gaps)   | Tag parent `[to-rescan]`.                                                                |
 
 </details>
 
@@ -393,10 +421,10 @@ Analyze the gaps and create new slices for the remaining work. Do not ask a huma
 5. Close partial original slices with a reference to the new slices.
 6. Tag new slices `to-implement` or `to-await-waves` depending on dependencies.
 
-| Output        |                                                                                                                                                                                                                 |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Issue tracker | New sub-issues linked to parent with acceptance criteria for remaining work. Closes partial originals with reference to new issues. Tag new slices `to-implement` or `to-await-waves`. Updated coverage matrix. |
-| Local files   | New slice files in `{title}/slices/`. Updated `{title}/coverage-matrix.md`.                                                                                                                                     |
+| Output        |                                                                                                                                                                                                                                 |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Issue tracker | New sub-issues linked to parent. Closes partial originals with reference to new issues. Tag new slices `to-implement` or `to-await-waves`. Coverage matrix updated on parent issue. Plan sections updated if needed. |
+| Local files   | New slice files in `{title}/slices/`. Coverage matrix and plan updated in `{title}/[...] plan.md`.                                                                                                                                              |
 
 </details>
 

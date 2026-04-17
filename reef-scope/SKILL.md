@@ -45,7 +45,7 @@ This gets documented in the plan so every downstream skill knows where to branch
 
 Based on the work type, produce a plan. The plan structure varies by type, but **success criteria** are mandatory for all types.
 
-Follow the type-specific guidance:
+Follow the type-specific guidance. Each guide includes a "Collaborating with the user" section — use it. Iterate with the user until they approve the plan before moving to success criteria.
 
 - **Feature**: see [scope-feature.md](scope-feature.md)
 - **Refactor**: see [scope-refactor.md](scope-refactor.md)

@@ -9,6 +9,8 @@ Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, run `
 
 > **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
 
+> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
+
 ## Input
 
 This skill requires a specific slice: `/reef-implement #55` or `/reef-implement my-feature/001-auth-endpoint`.
@@ -49,7 +51,7 @@ If the baseline is already broken, **stop and report this**. Do not try to fix p
 
 Before writing any code, read and understand:
 
-- **This slice's acceptance criteria** — this is your checklist. Every AC must be addressed.
+- **This slice's acceptance criteria** — this is your checklist. Every criterion must be addressed.
 - **The parent plan + success criteria** — understand the "why" behind this slice.
 - **Sibling slices** — awareness of what others are doing or have done. Don't duplicate, don't conflict.
 - **The probe session** — the original decisions that led here.
@@ -61,7 +63,7 @@ Invoke `/tdd` to do the implementation work. Before invoking, brief it with the 
 > "Implement the following acceptance criteria using TDD (red-green-refactor). The full project test suite must be green after each cycle — not just a subset.
 >
 > **Acceptance criteria:**
-> {paste the ACs from the slice}
+> {paste the acceptance criteria from the slice}
 >
 > **Context from parent plan:**
 > {relevant section of the plan that explains the "why"}
@@ -71,10 +73,19 @@ Invoke `/tdd` to do the implementation work. Before invoking, brief it with the 
 >
 > **Non-negotiable rules:**
 > - Run the FULL project test suite after each red-green cycle, not just the tests you wrote
-> - If you get stuck on an AC, do NOT skip it. Make your best judgment, document what you decided and why, then continue
+> - If you get stuck on an acceptance criterion, do NOT skip it. Make your best judgment, document what you decided and why, then continue
 > - Never silently skip an acceptance criterion"
 
-If the `tdd` skill is not installed (check config), do the TDD work directly following the same discipline: vertical slices, one test at a time, full suite green after each cycle.
+If the `tdd` skill is not installed (check config), do the TDD work directly using this discipline:
+
+1. For each acceptance criterion, work in vertical slices — one at a time, not all tests first.
+2. **RED**: write a single test that captures the expected behavior for this acceptance criterion. Run it. It must fail.
+3. **GREEN**: write the minimal code to make that test pass. No more.
+4. Run the **full project test suite** (not just your new test). It must be green.
+5. Repeat for the next acceptance criterion.
+6. After all acceptance criteria pass: look for refactor opportunities (extract duplication, simplify interfaces). Run full suite after each refactor step. Never refactor while red.
+
+Tests should verify behavior through public interfaces, not implementation details. A good test reads like a specification — it survives internal refactors because it doesn't care about structure.
 
 ## 4. Write the report
 

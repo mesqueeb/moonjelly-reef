@@ -7,6 +7,8 @@ description: Check if a blocked slice's dependencies are done. If ready, re-revi
 
 > **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
 
+> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
+
 ## Input
 
 This skill requires a specific slice: `/reef-await-waves #55` or `/reef-await-waves my-feature/002-token-storage`.
@@ -45,7 +47,7 @@ Read this slice's acceptance criteria and compare against the current state of t
 
 - Did earlier slices introduce interfaces, modules, or conventions this slice should use?
 - Did earlier slices rename or restructure anything that affects this slice's approach?
-- Are any of this slice's ACs already partially satisfied by earlier work?
+- Are any of this slice's acceptance criteria already partially satisfied by earlier work?
 
 **If the plan still holds**: no changes needed.
 
@@ -53,11 +55,11 @@ Read this slice's acceptance criteria and compare against the current state of t
 
 ### GitHub tracker
 
-If ACs were updated, edit the slice issue body with `gh issue edit`. Add a comment explaining what changed and why.
+If acceptance criteria were updated, edit the slice issue body with `gh issue edit`. Add a comment explaining what changed and why.
 
 ### Local tracker
 
-If ACs were updated, rewrite the slice file with the updated content.
+If acceptance criteria were updated, rewrite the slice file with the updated content.
 
 ## 3. Promote
 

@@ -13,8 +13,12 @@ You are the orchestrator. You scan, dispatch, and exit. You hold no state — ta
 
 ## Mode
 
-- **Default (--hitl)**: dispatch automated work + present human items.
-- **--afk**: dispatch automated work only. Skip human items. Designed for cron.
+Detect the mode from how this skill was invoked:
+
+- `/reef-pulse` or `/reef-pulse --hitl` → **HITL mode**: dispatch automated work + present human items.
+- `/reef-pulse --afk` → **AFK mode**: dispatch automated work only. Skip human items. Designed for cron.
+
+If the argument contains `--afk`, run in AFK mode. Otherwise, default to HITL.
 
 ## The pulse
 
@@ -69,7 +73,10 @@ For each item found, dispatch the corresponding skill as a sub-agent. Use the Ag
 
 When dispatching, pass the item reference as a parameter: e.g. dispatch `/reef-implement #55`.
 
-For `to-implement` slices within the same parent: consider using an **agent team** with a shared task list. The team lead coordinates, teammates self-claim slices. This is beneficial when 3+ slices are ready simultaneously. For 1-2 slices, regular sub-agents are fine.
+**When to use agent teams vs sub-agents for `to-implement`:**
+
+- **1-2 slices ready**: use regular sub-agents (Agent tool). Dispatch `/reef-implement {slice-ref}` for each.
+- **3+ slices ready from the same parent**: use an agent team. Each teammate claims a slice and runs `/reef-implement {slice-ref}`. The skill handles worktree setup, PR creation, and reporting — just pass the slice reference.
 
 ### Step 3. Present human (🤿) items (--hitl only)
 

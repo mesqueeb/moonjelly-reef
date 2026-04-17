@@ -9,6 +9,8 @@ Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, run `
 
 > **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
 
+> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
+
 ## Input
 
 This skill accepts:
@@ -62,7 +64,7 @@ For each success criterion in the plan, map it to which slice(s) and which accep
 | SC3: Legacy UI renders identically | 001 Auth endpoint, 003 Legacy compat | AC3: response format matches legacy schema |
 ```
 
-**Verify completeness**: every success criterion must appear in at least one row. If any criterion is uncovered, either add it to an existing slice's ACs or create a new slice. Do not proceed with gaps. (Prevents painpoint A3.)
+**Verify completeness**: every success criterion must appear in at least one row. If any criterion is uncovered, either add it to an existing slice's acceptance criteria or create a new slice. Do not proceed with gaps. (Prevents painpoint A3.)
 
 ## 4. Present to user and iterate
 

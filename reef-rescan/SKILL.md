@@ -7,6 +7,8 @@ description: Analyze gaps found by reef-ratify, re-review the entire parent plan
 
 > **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
 
+> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
+
 ## Input
 
 This skill requires a specific work item: `/reef-rescan #42` or `/reef-rescan my-feature`.
@@ -18,7 +20,7 @@ Read the parent plan fully — the plan, success criteria, coverage matrix, agen
 You are not just patching holes. You are re-reviewing the entire parent plan through the lens of what the holistic review revealed. The gaps might be:
 
 - Missing slices (a success criterion wasn't covered)
-- Slices that were implemented but didn't actually satisfy their ACs when composed
+- Slices that were implemented but didn't actually satisfy their acceptance criteria when composed
 - Planning-level issues (the plan itself was ambiguous or missed something)
 - Agent decisions that drifted too far
 
@@ -31,7 +33,7 @@ Do NOT ask a human. If the gaps need decisions that aren't in the success criter
 Read the ratify report's gaps. For each gap, classify it:
 
 - **Missing coverage**: a success criterion has no slice addressing it → need a new slice
-- **Incomplete implementation**: a slice was done but didn't fully satisfy an AC → need a rework or new slice
+- **Incomplete implementation**: a slice was done but didn't fully satisfy an acceptance criterion → need a rework or new slice
 - **Integration gap**: slices work individually but not together → need a new integration slice
 - **Planning gap**: the plan or success criteria were ambiguous → update the plan first, then create slices
 
@@ -57,7 +59,7 @@ If the plan needs updates, edit the parent plan file directly.
 
 For each gap, create a new slice with acceptance criteria that explicitly address it.
 
-Key discipline: if the gap was caused by an agent skipping something (painpoint C1), the new slice's ACs must call out what was skipped and why it matters. Don't let the same failure mode repeat.
+Key discipline: if the gap was caused by an agent skipping something (painpoint C1), the new slice's acceptance criteria must call out what was skipped and why it matters. Don't let the same failure mode repeat.
 
 Follow the same format as reef-slice:
 

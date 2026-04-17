@@ -29,7 +29,7 @@ Present three options:
 >
 > **2. Request changes (needs new decisions)** — something fundamental is off and we need to rethink. → Tags `to-probe` for a new probe session.
 >
-> **3. Request changes (ACs are clear)** — specific gaps remain but we know what to fix. → Tags `to-rescan` for new slices.
+> **3. Request changes (acceptance criteria are clear)** — specific gaps remain but we know what to fix. → Tags `to-rescan` for new slices.
 
 Wait for the human's choice.
 

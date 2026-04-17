@@ -157,13 +157,14 @@ Each skill is written, then reviewed against its painpoints before moving on.
 
 ### Phase 6: Cleanup
 
-- [ ] Remove matt planning skills (write-a-prd, prd-to-plan, prd-to-issues, request-refactor-plan, triage-issue, grill-me) from repo
-- [ ] Keep tdd (invoked by reef-implement)
-- [ ] Update README if needed
+- [x] Remove matt planning skills (write-a-prd, prd-to-plan, prd-to-issues, request-refactor-plan, triage-issue, grill-me, improve-codebase-architecture, ubiquitous-language) from repo
+- [x] Remove tdd (reef-setup prompts to install from matt)
+- [x] Remove close-the-loop (absorbed into reef-inspect + reef-ratify)
+- [ ] Update README to reflect current state
 - [ ] Edit this todo.md to reflect remaining work
 
 ### Phase 7: Distribution
 
 - [ ] Define install command for moonjelly reef (what does `npx skills@latest add mesqueeb/skills/moonjelly-reef` install?)
 - [ ] Should installing reef also install tdd from matt? Or bundle it?
-- [ ] reef-setup could prompt to install tdd if not present
+- [ ] reef-setup already prompts to install tdd + ubiquitous-language if not present
