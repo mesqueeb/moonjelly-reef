@@ -55,33 +55,33 @@ The user may also name a tracker not listed (ClickUp, Notion, etc.) — that's f
 - **Jira / Linear / ClickUp / other**: suggest the user install the relevant MCP server so reef skills can interact with it. Check if one is already configured. See [tracker-reference.md](tracker-reference.md) for common MCP servers.
 - **Local**: ask where they'd like work items stored (suggest `.agents/moonjelly-reef/issue-tracker/` as default).
 
-### 2. Check for tdd skill
+### 2. Check for optional skills
 
-Check if the `tdd` skill is installed (look for `tdd/SKILL.md` in the skills directories — `~/.claude/skills/`, `.claude/skills/`, or sibling directories to the reef skills).
+Check which skills are installed:
 
-If not found:
+```sh
+npx skills@latest list
+```
 
-> "Moonjelly Reef uses the `tdd` skill for implementation. Want me to install it?"
+Look for `tdd` and `ubiquitous-language` in the output.
+
+For each skill not found, tell the user it's optional and reef has a fallback:
+
+> "Two optional skills can enhance the reef. Both have built-in fallbacks, so they're not required:"
+>
+> **tdd** — used by the implement phase for test-driven development. Without it, `implement.md` uses its own lightweight TDD instructions.
 >
 > ```sh
 > npx skills@latest add mattpocock/skills/tdd
 > ```
-
-If the user declines, that's fine — note it in config. The implement phase (`implement.md`) has built-in TDD instructions it uses when the skill isn't available.
-
-### 3. Check for ubiquitous-language skill
-
-Check if the `ubiquitous-language` skill is installed (same locations as tdd).
-
-If not found:
-
-> "Moonjelly Reef can optionally use the `ubiquitous-language` skill to harden domain terminology during scoping and review. Want me to install it?"
+>
+> **ubiquitous-language** — used by scope and ratify to harden domain terminology. Without it, those phases skip the terminology steps.
 >
 > ```sh
 > npx skills@latest add mattpocock/skills/ubiquitous-language
 > ```
-
-If the user declines, that's fine — note it in config. The scope and ratify phases will skip the terminology steps.
+>
+> "Run the install commands above if you want them, or skip — the reef works fine without them."
 
 ### 4. Write config
 
