@@ -17,5 +17,5 @@
 ║           ' '              ' '           ║
 ╚══════════════════════════════════════════╝
 
-   Welcome to Moonjelly Reef 🪼
-   Let's set up your project.
+        Welcome to Moonjelly Reef 🪼
+        Let's set up your project.
