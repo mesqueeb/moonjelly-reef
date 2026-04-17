@@ -192,10 +192,10 @@ Break the plan into vertical slices. Each slice is a thin end-to-end cut through
 
 For small bugs (scope = quick fix): produce a single slice. The triage acceptance criteria are the slice's acceptance criteria. No coverage matrix needed.
 
-| Output        |                                                                                                                                                                                                            |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Output        |                                                                                                                                                                                                           |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Issue tracker | Sub-issues with acceptance criteria + dependency graph + **coverage matrix** (criterion → issue → acceptance criteria). Feature branch created. Each sub-issue tagged `to-implement` or `to-await-waves`. |
-| Local files   | `{title}/slices/001-slice-name.md`, `{title}/coverage-matrix.md`. Feature branch created.                                                                                                                  |
+| Local files   | `{title}/slices/001-slice-name.md`, `{title}/coverage-matrix.md`. Feature branch created.                                                                                                                 |
 
 </details>
 
@@ -362,12 +362,12 @@ The aggregate report contains:
 - Any drift from the original probe session
 - Ticket lifecycle: all closed cleanly?
 
-| Output               |                                                                       |
-| -------------------- | --------------------------------------------------------------------- |
+| Output               |                                                                        |
+| -------------------- | ---------------------------------------------------------------------- |
 | Issue tracker (pass) | Aggregate report as comment on parent issue. Tag parent `to-finalise`. |
-| Issue tracker (gaps) | Tag parent `to-rescan`.                                               |
+| Issue tracker (gaps) | Tag parent `to-rescan`.                                                |
 | Local files (pass)   | `{title}/report.md`. Tag parent `to-finalise`.                         |
-| Local files (gaps)   | Tag parent `to-rescan`.                                               |
+| Local files (gaps)   | Tag parent `to-rescan`.                                                |
 
 </details>
 
@@ -388,10 +388,10 @@ Analyze the gaps and create new slices for the remaining work. Do not ask a huma
 5. Close partial original slices with a reference to the new slices.
 6. Tag new slices `to-implement` or `to-await-waves` depending on dependencies.
 
-| Output        |                                                                                                                                                                                                                  |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Output        |                                                                                                                                                                                                                 |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Issue tracker | New sub-issues linked to parent with acceptance criteria for remaining work. Closes partial originals with reference to new issues. Tag new slices `to-implement` or `to-await-waves`. Updated coverage matrix. |
-| Local files   | New slice files in `{title}/slices/`. Updated `{title}/coverage-matrix.md`.                                                                                                                                      |
+| Local files   | New slice files in `{title}/slices/`. Updated `{title}/coverage-matrix.md`.                                                                                                                                     |
 
 </details>
 
@@ -414,17 +414,17 @@ The human reviews and either:
 
 ## Skill index
 
-| 🏷️ Tag            | Skill             | Actor | Lore |
-| ----------------- | ----------------- | ----- | ---- |
-| —                 | `/reef-pulse`     | 👨🏽‍🦳/🤖 | 🪼 A moonjelly pulses, scans the reef, sets creatures in motion, and recedes. |
-| `to-probe`        | `/reef-probe`     | 👨🏽‍🦳 | 🦄 The narwhal drives its spiral tusk deep into the ice, boring through frozen vagueness. |
-| `to-scope`        | `/reef-scope`     | 👨🏽‍🦳 | 🐢 A sea turtle reads the stars and currents, then sets her bearing before she dives. |
-| `to-slice`        | `/reef-slice`     | 🤖 | 🦐 A mantis shrimp shatters the shell into clean, separate pieces with a single strike. |
-| `to-await-waves` | `/reef-await-waves`     | 🤖 | 🏄 A surfer sits beyond the break, watching the horizon — when the waves come, they're ready. |
-| `to-implement`    | `/reef-implement` | 🤖 | 🐙 Eight arms in silent concert, the octopus reshapes the reef floor chamber by chamber. |
-| `to-inspect`      | `/reef-inspect`   | 🤖 | 👁 A barreleye rotates its tubular eyes through its transparent skull, scrutinizing every shadow. |
-| `to-rework`       | `/reef-rework`    | 🤖 | 🐚 A hermit crab squeezes out of an ill-fitting shell and into a better one. |
-| `to-merge`        | `/reef-merge`     | 🤖 | 🦈 A manta ray glides in wide, gathers the loose piece, and folds it into the current. |
-| `to-ratify`       | `/reef-ratify`    | 🤖 | 🦭 The walrus hauls onto the ice floe and counts every last pup — nothing is safe until he's seen it all. |
-| `to-rescan`       | `/reef-rescan`    | 🤖 | 🐡 An anglerfish casts its lure into absolute darkness, illuminating creatures no one knew were there. |
-| `to-finalise`     | `/reef-finalise`  | 👨🏽‍🦳 | 🪼 The moonjelly rises with a pearl cradled in its bell and drifts to the waiting diver — here is what the reef made. |
+| 🏷️ Tag           | Skill               | Actor | Lore                                                                                                                  |
+| ---------------- | ------------------- | ----- | --------------------------------------------------------------------------------------------------------------------- |
+| —                | `/reef-pulse`       | 👨🏽‍🦳/🤖 | 🪼 A moonjelly pulses, scans the reef, sets creatures in motion, and recedes.                                         |
+| `to-probe`       | `/reef-probe`       | 👨🏽‍🦳    | 🦄 The narwhal drives its spiral tusk deep into the ice, boring through frozen vagueness.                             |
+| `to-scope`       | `/reef-scope`       | 👨🏽‍🦳    | 🐢 A sea turtle reads the stars and currents, then sets her bearing before she dives.                                 |
+| `to-slice`       | `/reef-slice`       | 🤖    | 🦐 A mantis shrimp shatters the shell into clean, separate pieces with a single strike.                               |
+| `to-await-waves` | `/reef-await-waves` | 🤖    | 🏄 A surfer sits beyond the break, watching the horizon — when the waves come, they're ready.                         |
+| `to-implement`   | `/reef-implement`   | 🤖    | 🐙 Eight arms in silent concert, the octopus reshapes the reef floor chamber by chamber.                              |
+| `to-inspect`     | `/reef-inspect`     | 🤖    | 👁 A barreleye rotates its tubular eyes through its transparent skull, scrutinizing every shadow.                     |
+| `to-rework`      | `/reef-rework`      | 🤖    | 🐚 A hermit crab squeezes out of an ill-fitting shell and into a better one.                                          |
+| `to-merge`       | `/reef-merge`       | 🤖    | 🦈 A manta ray glides in wide, gathers the loose piece, and folds it into the current.                                |
+| `to-ratify`      | `/reef-ratify`      | 🤖    | 🦭 The walrus hauls onto the ice floe and counts every last pup — nothing is safe until he's seen it all.             |
+| `to-rescan`      | `/reef-rescan`      | 🤖    | 🐡 An anglerfish casts its lure into absolute darkness, illuminating creatures no one knew were there.                |
+| `to-finalise`    | `/reef-finalise`    | 👨🏽‍🦳    | 🪼 The moonjelly rises with a pearl cradled in its bell and drifts to the waiting diver — here is what the reef made. |
