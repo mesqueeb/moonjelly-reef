@@ -221,6 +221,22 @@ Analyze gaps found by ratify, re-review the entire plan, create new slices to ad
 
 Every agent works in its own git worktree — the main checkout is never touched. For multi-slice work, a work branch is created from the base branch; slice PRs target it. For single-slice work, the PR targets the base branch directly — no work branch needed. Implementation worktrees persist until their PR is merged; temporary worktrees (review, inspection) are torn down immediately. Only the merge phase removes worktrees and branches. Every git operation begins with `git fetch origin --prune`. No `--force` flags, ever.
 
+## Autopilot
+
+Run the reef on autopilot so it pulses while you're away. In any Claude Code session:
+
+```
+/reef-pulse --afk
+```
+
+This runs a single AFK pulse (automated work only, no human prompts). To make it recurring, create a durable cron:
+
+```
+CronCreate cron="7 * * * *" prompt="/reef-pulse --afk" durable=true
+```
+
+This persists to `.claude/scheduled_tasks.json` and survives session restarts. It runs locally, so your git and GitHub credentials just work. Adjust the cron expression to your preferred interval (e.g. `"*/30 * * * *"` for every 30 minutes).
+
 ## Index
 
 Three user-facing skills, everything else lives under `reef-pulse/`:

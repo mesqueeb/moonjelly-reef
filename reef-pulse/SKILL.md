@@ -121,6 +121,15 @@ If nothing was actionable:
   Run /reef-scope to start something new.
 ```
 
+**Autopilot hint** (show only when pulse was triggered manually, not from a cron):
+
+Check if a durable cron for `/reef-pulse --afk` already exists by calling `CronList`. If none exists, append to the summary:
+
+```
+  💡 Run this on autopilot:
+     CronCreate cron="7 * * * *" prompt="/reef-pulse --afk" durable=true
+```
+
 Exit.
 
 ## Design principles

@@ -78,7 +78,24 @@ Create `.agents/moonjelly-reef/config.md`:
 
 For local tracker, `Local path` would be the chosen directory (e.g. `.agents/moonjelly-reef/issue-tracker/`).
 
-### 4. Confirm
+### 5. Offer autopilot
+
+> "Want the reef to pulse on its own while you're away? I can set up a recurring cron that runs `/reef-pulse --afk` every hour (or any interval you prefer)."
+
+If the user says yes, create a durable cron:
+
+```
+CronCreate cron="7 * * * *" prompt="/reef-pulse --afk" durable=true
+```
+
+Let the user pick the interval. Common choices:
+- `"7 * * * *"` — hourly
+- `"*/30 * * * *"` — every 30 minutes
+- `"3 9 * * 1-5"` — weekday mornings
+
+If the user declines, skip — they can always set it up later.
+
+### 6. Confirm
 
 > "You're all set. The reef is alive. 🪼"
 >
