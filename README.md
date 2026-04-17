@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="logo" src="./.github/assets/moonjelly.png" width="200" />
+  <img alt="logo" src="./.github/assets/moonjelly.png" width="400" />
 </p>
 
 # Moonjelly Reef
