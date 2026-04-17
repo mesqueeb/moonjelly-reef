@@ -1,49 +1,16 @@
-# Orchestration State Machine
+<p align="center">
+  <img alt="logo" src="./.github/assets/moonjelly.png" width="200" />
+</p>
 
-**Issue tracker** = GitHub Issues, Jira, ClickUp, Linear, or any kanban board. The doc says "issue tracker" everywhere — substitute yours.
+An orchestration framework for AI agent workflows. A short-lived pulse scans for work, dispatches skills, and goes back to sleep. State lives in tags. The reef does the rest.
 
-## The orchestrator loop
+This framework is **Issue tracker agnostic**. GitHub Issues, Jira, ClickUp, Linear, any kanban board or simply local MD files. Use yours.
 
-The orchestrator is a short-lived session (cron or manual invocation). Each run:
+## 🪼 The moonjelly pulse
 
-```
-1. Scan all items by tag (issue tracker or local md files).
+> _A moon jellyfish pulses rhythmically with no brain — it just keeps moving. Each pulse scans the reef, sets creatures in motion, and recedes._
 
-2. Dispatch all 🤖 work as sub-agents (in parallel):
-   ├─ to-slice            → sub-agent: break into slices, verify coverage
-   ├─ to-await-slices     → check if deps are done; if yes, re-review plan & tag to-implement
-   ├─ to-implement        → sub-agent: TDD per unblocked slice
-   ├─ to-rework           → sub-agent: read review feedback, fix
-   ├─ to-review           → sub-agent: review the PR
-   ├─ to-merge            → sub-agent: merge PR, check for newly unblocked slices
-   ├─ to-verify           → sub-agent: holistic review on feature branch
-   └─ to-missing-slices   → sub-agent: analyze gaps, create new slices
-
-   Parallel slices within the same parent may be dispatched as an agent team
-   (shared task list, self-claim, direct messaging) when beneficial.
-
-   Each sub-agent tags its own work when done (next phase tag).
-
-3. While sub-agents run, present 👨🏽‍🦳 items to the human (if manual invocation):
-   ├─ to-sign-off  → "This item has a report ready. Review?"
-   ├─ to-scope     → "This item is ready to scope. Start?"
-   └─ to-grill     → "This item needs grilling. Start?"
-
-4. Exit when nothing is actionable.
-```
-
-When running as a cron: wake → run loop → sleep.
-When running manually: human invokes → loop dispatches 🤖 and presents 👨🏽‍🦳 items → repeat until nothing actionable.
-
-State lives in tags (issue tracker labels or filename prefixes), not in session memory. Sub-agents read tags, do their work, and set the next tag. The orchestrator itself holds no state — it just scans and dispatches.
-
-Design principles (via DevOps):
-
-- **Testing at source**: each transition includes verification before tagging. No separate "testing" states.
-- **Small batches**: slices flow through the pipeline independently and concurrently. The loop doesn't wait for all slices to reach the same state.
-- **Human = bottleneck**: minimize 👨🏽‍🦳 states. Only three: grill, scope, sign-off.
-- **No heroics**: agents that are stuck flag + move on, never spiral.
-- **Make work visible**: the tags ARE the visibility. Scan tags = see the whole board.
+The moonjelly is the orchestrator. A short-lived session (cron or manual) that scans tags, dispatches skills, and exits. It holds no state — tags are the state. Each pulse: scan → dispatch → exit.
 
 ## State machine
 
@@ -54,134 +21,216 @@ stateDiagram-v2
     classDef human fill:#ffeaa7,stroke:#fdcb6e,color:#2d3436
     classDef agent fill:#81ecec,stroke:#00cec9,color:#2d3436
 
-    state "WORK ITEM LIFECYCLE" as work {
+    state "TICKET LIFECYCLE" as work {
 
         state "to-grill (👨🏽‍🦳)" as to_grill
         state "to-scope (👨🏽‍🦳)" as to_scope
         state "to-slice (🤖)" as to_slice
         state "to-verify (🤖)" as to_verify
         state "to-missing-slices (🤖)" as gaps_to_new_slices
-        state "to-sign-off (👨🏽‍🦳)" as to_sign_off
+        state "to-approve (👨🏽‍🦳)" as to_approve
 
         [*] --> to_grill
-        to_grill --> to_scope : grill-me session
-        to_scope --> to_slice : scope (triage if bug, plan if feature) + success criteria
-        to_verify --> to_sign_off : all criteria met · aggregate report generated
-        to_verify --> gaps_to_new_slices : gaps found
-        gaps_to_new_slices --> slice_lifecycle : new slices created
-        to_sign_off --> [*] : human merges into main
-
-        to_slice --> slice_lifecycle : break into slices + coverage matrix
+        to_grill --> to_scope : /reef-grill<br />grill session to align on a feature, bug, or refactor
+        to_scope --> to_slice : /reef-scope<br />scope the work, define success criteria
+        to_slice --> slice_lifecycle : /reef-slice<br />break into slices, create dependency and coverage matrix
         slice_lifecycle --> to_verify : all slices done
+        to_verify --> to_approve : /reef-verify<br />holistic review on feature branch
+        to_verify --> gaps_to_new_slices : /reef-verify<br />gaps found
+        gaps_to_new_slices --> slice_lifecycle : /reef-reslice<br />analyze gaps, create new slices
+        to_approve --> [*] : /reef-approve<br />human reviews report, merges into main
     }
 
     state "SLICE LIFECYCLE (per slice)" as slice_lifecycle {
 
         state "to-await-slices (🤖)" as to_await
         state "to-implement (🤖)" as to_implement
-        state "to-review (🤖)" as to_review
+        state "to-inspect (🤖)" as to_inspect
         state "to-rework (🤖)" as needs_rework
         state "to-merge (🤖)" as to_merge
         state "done" as slice_done
 
         [*] --> to_implement : no deps
         [*] --> to_await : has deps
-        to_await --> to_implement : deps resolved · plans re-reviewed
-        to_implement --> to_review : sub-agent: TDD + full suite green
-        to_review --> to_merge : reviewer: ACs met, PR clean
-        to_review --> needs_rework : reviewer: gaps flagged
-        needs_rework --> to_review : sub-agent: read feedback, fix, re-verify
-        to_merge --> slice_done : PR merged & if all slices done, parent → to-verify
+        to_await --> to_implement : /reef-await<br />check if deps are done, re-review plan
+        to_implement --> to_inspect : /reef-implement<br />TDD per slice, full suite green
+        to_inspect --> to_merge : /reef-inspect<br />acceptance criteria met, PR clean
+        to_inspect --> needs_rework : /reef-inspect<br />gaps flagged
+        needs_rework --> to_inspect : /reef-rework<br />read feedback, fix, re-verify
+        to_merge --> slice_done : /reef-merge<br />merge PR, check for newly unblocked slices
         slice_done --> [*]
     }
 
-    class to_grill,to_scope,to_sign_off human
-    class to_slice,to_verify,gaps_to_new_slices,to_await,to_implement,to_review,needs_rework,to_merge agent
+    class to_grill,to_scope,to_approve human
+    class to_slice,to_verify,gaps_to_new_slices,to_await,to_implement,to_inspect,needs_rework,to_merge agent
 ```
 
 ## Phase details
 
 <details>
-<summary><code>to-grill</code> · 👨🏽‍🦳</summary>
+<summary>🪼 orchestrator · <code>/reef-pulse</code>
+· 👨🏽‍🦳/🤖</summary>
 
-Orchestrator presents item to human. Human runs grill-me session.
+> _A moon jellyfish pulses rhythmically with no brain — it just keeps moving. Each pulse scans the reef, sets creatures in motion, and recedes._
 
-| Produces      |                                                                               |
-| ------------- | ----------------------------------------------------------------------------- |
-| Issue tracker | Grill-me session appended to issue body. Tag with `to-scope`.                 |
-| Local files   | `feature-x/grill-me-session.md` (includes original idea text + full session). |
+**Input**: none. You are the orchestrator. Run with `--hitl` (manual, includes human phases) or `--afk` (cron, bot phases only).
+
+Each pulse:
+
+```
+1. Scan all items by tag (issue tracker or local md files).
+
+2. Dispatch all 🤖 work as sub-agents (in parallel):
+   ├─ to-slice            → break into slices, create dependency and coverage matrix
+   ├─ to-await-slices     → check if deps are done, re-review plan
+   ├─ to-implement        → TDD per slice, full suite green
+   ├─ to-rework           → read feedback, fix, re-verify
+   ├─ to-inspect          → inspect the PR
+   ├─ to-merge            → merge PR, check for newly unblocked slices
+   ├─ to-verify           → holistic review on feature branch
+   └─ to-missing-slices   → analyze gaps, create new slices
+
+   Parallel slices within the same parent may be dispatched as an agent team
+   (shared task list, self-claim, direct messaging) when beneficial.
+
+   Each skill tags its own work when done (next phase tag).
+
+3. If running with --hitl, present 👨🏽‍🦳 items to the human:
+   ├─ to-grill    → grill session to align on a feature, bug, or refactor
+   ├─ to-scope    → scope the work, define success criteria
+   └─ to-approve  → human reviews report, merges into main
+
+   If running with --afk, skip step 3 entirely (bot phases only).
+
+4. Exit when nothing is actionable.
+```
+
+When running as a cron (`--afk`): wake → dispatch bot work → sleep.
+When running manually (`--hitl`): dispatch bot work + present human items → repeat until nothing actionable.
+
+State lives in tags (issue tracker tags or filename prefixes), not in session memory. Skills read tags, do their work, and set the next tag. The pulse itself holds no state — it just scans and dispatches.
+
+Design principles:
+
+- **Testing at source**: each transition includes verification before tagging. No separate "testing" states.
+- **Small batches**: slices flow through the pipeline independently and concurrently. The pulse doesn't wait for all slices to reach the same state.
+- **Human = bottleneck**: minimize 👨🏽‍🦳 states. Only three: grill, scope, approve.
+- **No heroics**: agents that are stuck flag + move on, never spiral.
+- **Make work visible**: the tags ARE the visibility. Scan tags = see the whole board.
 
 </details>
 
 <details>
-<summary><code>to-scope</code> · 👨🏽‍🦳</summary>
+<summary>🏷️ <code>to-grill</code> · <code>/reef-grill</code> · 👨🏽‍🦳</summary>
 
-Orchestrator presents item to human. Human scopes the work — determines whether this is a feature, refactor, or bug, and picks the appropriate approach.
+> _The narwhal drives its spiral tusk deep into the ice, boring through frozen vagueness to reach the water beneath._
 
-The scoping phase is responsible for:
+**Input**: a work item (issue tracker ticket or local md file) tagged `to-grill`.
 
-- Consuming the grill-me session
-- Grilling on success criteria if not already covered
-- Producing testable success criteria (what does "done" look like from the consumer's perspective?)
+You will interview the user relentlessly about every aspect of this idea until you reach a shared understanding. Walk down each branch of the decision tree, resolving dependencies between decisions one by one. For each question, provide your recommended answer. Ask questions one at a time. If a question can be answered by exploring the codebase, explore the codebase instead of asking.
+
+When the session is complete:
+
+1. Write the full grill session (original idea text + all Q&A + all decisions) to a persistent artifact.
+2. Double-check with the user: "Does this capture the original idea and every decision we made?"
+3. Tag the item `to-scope`.
+
+| Output        |                                                                             |
+| ------------- | --------------------------------------------------------------------------- |
+| Issue tracker | Grill session appended to issue body. Tag `to-scope`.                       |
+| Local files   | `{title}/grill-me-session.md` (includes original idea text + full session). |
+
+</details>
+
+<details>
+<summary>🏷️ <code>to-scope</code> · <code>/reef-scope</code> · 👨🏽‍🦳</summary>
+
+> _An ancient sea turtle surfaces at dawn, reads the stars and currents, then sets her bearing — slow, deliberate, she knows exactly where she is going before she dives._
+
+**Input**: a work item tagged `to-scope` with a completed grill session.
+
+You will scope the work with the user. Determine whether this is a feature, refactor, or bug, and pick the appropriate approach.
+
+You are responsible for:
+
+- Consuming the grill session
+- Grilling on **success criteria** if not already covered: what does "done" look like from the consumer's perspective? Each criterion must be mechanically verifiable.
+- For features: producing a plan with phased vertical slices and durable architectural decisions
 - For refactors: enforcing always-compiles, always-green, tiny-commit discipline in the plan
 - For bugs: assessing scope (quick fix → single slice, elaborate → full plan)
 
-| Produces      |                                                                                                                 |
-| ------------- | --------------------------------------------------------------------------------------------------------------- |
-| Issue tracker | Plan with **success criteria** section, appended or as new linked issue. Tag with `to-slice`. |
-| Local files   | `feature-x/plan.md` — with success criteria.                                                  |
+When the scope is complete:
+
+1. Write the plan with a **Success Criteria** section.
+2. Every decision from the grill session must map to ≥1 success criterion. If any are missing, add them.
+3. Tag the item `to-slice`.
+
+| Output        |                                                                                          |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| Issue tracker | Plan with **success criteria** section, appended or as new linked issue. Tag `to-slice`. |
+| Local files   | `{title}/plan.md` — with success criteria.                                               |
 
 </details>
 
 <details>
-<summary><code>to-slice</code> · 🤖</summary>
+<summary>🏷️ <code>to-slice</code> · <code>/reef-slice</code> · 🤖</summary>
 
-Orchestrator breaks the plan into slices automatically. Every success criterion must be covered by ≥1 slice AC. If gaps: revise slices until covered. No 👨🏽‍🦳 needed.
+> _A mantis shrimp shatters a crab shell into clean, separate pieces with a single devastating strike — each fragment deliberate, each piece ready to carry off._
 
-This phase also creates the **feature branch** (branched from main or the configured base). All slice PRs will target this feature branch. The feature branch is what eventually gets merged into main at sign-off.
+**Input**: a work item tagged `to-slice` with a plan and success criteria.
 
-For small bugs (scope = quick fix): produces a single slice. No coverage matrix needed — the triage issue's ACs are the slice's ACs.
+Break the plan into vertical slices. Each slice is a thin end-to-end cut through all layers, not a horizontal slice of one layer. Every success criterion must be covered by ≥1 slice acceptance criterion. If gaps remain after drafting, revise slices until covered.
 
-Slices with no dependencies are tagged `to-implement`. Slices that depend on other slices are tagged `to-await-slices`.
+1. Read the plan and success criteria.
+2. Create a **feature branch** (branched from main or the configured base). All slice PRs will target this branch.
+3. Draft slices as sub-issues, each with:
+   - Acceptance criteria
+   - `blocked-by` references (explicit dependency graph)
+4. Build a **coverage matrix**: each success criterion → which slice(s) → which acceptance criterion/criteria.
+5. Verify: every criterion is covered. If not, add slices until covered.
+6. Tag unblocked slices `to-implement`. Tag blocked slices `to-await-slices`.
 
-| Produces      |                                                                                                                                                                  |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Issue tracker | Sub-issues with ACs + dependency graph + **coverage matrix** (criterion → issue → AC). Feature branch created. Each sub-issue tagged `to-implement` or `to-await-slices`. |
-| Local files   | `feature-x/slices/001-slice-name.md`, `feature-x/coverage-matrix.md`. Feature branch created.                                                                    |
+For small bugs (scope = quick fix): produce a single slice. The triage acceptance criteria are the slice's acceptance criteria. No coverage matrix needed.
+
+| Output        |                                                                                                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Issue tracker | Sub-issues with acceptance criteria + dependency graph + **coverage matrix** (criterion → issue → acceptance criteria). Feature branch created. Each sub-issue tagged `to-implement` or `to-await-slices`. |
+| Local files   | `{title}/slices/001-slice-name.md`, `{title}/coverage-matrix.md`. Feature branch created.                                                                                 |
 
 </details>
 
 <details>
-<summary><code>to-await-slices</code> · 🤖</summary>
+<summary>🏷️ <code>to-await-slices</code> · <code>/reef-await</code> · 🤖</summary>
 
-Orchestrator checks whether this slice's dependencies have all been merged.
+> _A barnacle seals its shell and waits, feathery legs folded, patient as stone, for the tide that will bring everything it needs._
 
-```
+**Input**: a slice tagged `to-await-slices` with a `blocked-by` list.
+
+Check whether this slice's dependencies have all been merged. If not, exit — you'll be called again next pulse.
+
 1. Fetch latest remote.
-2. Check: are all dependency slices tagged "done" with PRs merged?
-   - If no → exit. This slice stays to-await-slices until next loop.
+2. Check: are all dependency slices tagged `done` with PRs merged?
+   - If no → exit. Do nothing. This slice stays `to-await-slices`.
    - If yes → continue.
-3. Re-review this slice's plan against the current state of the feature branch.
-   Earlier slices may have changed the codebase in ways that affect this slice's
-   approach (new interfaces, renamed modules, shifted boundaries).
-4. If the plan still holds → tag to-implement.
-5. If adjustments needed → update the slice's ACs/description to reflect
-   the current reality, then tag to-implement.
-```
+3. Re-review this slice's plan against the current state of the feature branch. Earlier slices may have changed the codebase in ways that affect this slice's approach (new interfaces, renamed modules, shifted boundaries).
+4. If the plan still holds → tag `to-implement`.
+5. If adjustments needed → update the slice's acceptance criteria/description to reflect the current reality, then tag `to-implement`.
 
-| Produces      |                                                                                                 |
-| ------------- | ----------------------------------------------------------------------------------------------- |
-| Issue tracker | Slice tagged `to-implement` (possibly with updated ACs). Or no change if deps aren't done yet.  |
-| Local files   | Slice md file updated if needed. Or no change.                                                  |
+| Output        |                                                                                                |
+| ------------- | ---------------------------------------------------------------------------------------------- |
+| Issue tracker | Slice tagged `to-implement` (possibly with updated acceptance criteria). Or no change if deps aren't done yet. |
+| Local files   | Slice md file updated if needed. Or no change.                                                 |
 
 </details>
 
 <details>
-<summary><code>to-implement</code> · 🤖</summary>
+<summary>🏷️ <code>to-implement</code> · <code>/reef-implement</code> · 🤖</summary>
 
-Orchestrator dispatches a sub-agent (in a worktree).
+> _Eight arms working in fierce, silent concert, the octopus reshapes the reef floor — architecting, testing, sealing every chamber with cold intelligence._
 
-Sub-agent checklist (non-negotiable contract):
+**Input**: a slice tagged `to-implement` with acceptance criteria and a parent work item.
+
+Implement this slice using TDD. This is your non-negotiable contract:
 
 ```
 1. GIT PREP
@@ -191,88 +240,99 @@ Sub-agent checklist (non-negotiable contract):
    □ Verify no unrelated commits present
 
 2. READ CONTEXT
-   □ This slice's ACs (the checklist to satisfy)
-   □ Parent PRD + success criteria (the "why")
+   □ This slice's acceptance criteria (the checklist to satisfy)
+   □ Parent plan + success criteria (the "why")
    □ Sibling slices (awareness of what others are doing / have done)
    □ grill-me-session.md (the original decisions)
 
 3. TDD LOOP
-   □ For each AC: write test → implement → verify
+   □ For each acceptance criterion: write test → implement → verify
    □ Full project test suite must be green (not a subset)
    □ If stuck: make best judgment, document the choice, continue
-   □ Never silently skip an AC
+   □ Never silently skip an acceptance criterion
 
 4. REPORT (in PR description)
-   □ ACs checklist: each one done ✓ or not ✗ with explanation
-   □ Ambiguous choices: what was decided, why, how it differs from ACs
+   □ acceptance criteria checklist: each one done ✓ or not ✗ with explanation
+   □ Ambiguous choices: what was decided, why, how it differs from acceptance criteria
    □ Test results: full suite output
    □ Any drift from success criteria
 ```
 
-| Produces      |                                                                                                   |
-| ------------- | ------------------------------------------------------------------------------------------------- |
-| Issue tracker | PR targeting feature branch. PR description follows report template above. Tag slice `to-review`. |
-| Local files   | same (PR is always git-based).                                                                    |
+When done, open a PR targeting the feature branch. Tag slice `to-inspect`.
+
+| Output        |                                                                                                    |
+| ------------- | -------------------------------------------------------------------------------------------------- |
+| Issue tracker | PR targeting feature branch. PR description follows report template above. Tag slice `to-inspect`. |
+| Local files   | same (PR is always git-based).                                                                     |
 
 </details>
 
 <details>
-<summary><code>to-review</code> · 🤖</summary>
+<summary>🏷️ <code>to-inspect</code> · <code>/reef-inspect</code> · 🤖</summary>
 
-Orchestrator dispatches a reviewer sub-agent.
+> _A barreleye fish rotates its tubular eyes upward through its transparent skull, scrutinizing every shadow above for anything that doesn't belong._
 
-```
-1. Pull latest remote. Checkout PR branch.
-2. Run full test suite.
-3. Check each AC against the code (not trusting the sub-agent's self-report).
-4. Read the "ambiguous choices" section — flag anything that drifted too far.
-5. Trivial cleanups: do them (dead code, stale comments, formatting).
-6. Substantive gaps: document in review.
-```
+**Input**: a slice tagged `to-inspect` with an open PR.
 
-| Produces    |                                                                     |
+You are independently verifying this PR. Do not trust the implementer's self-report — verify everything yourself.
+
+1. Pull latest remote. Checkout the PR branch.
+2. Run the full project test suite.
+3. Check each acceptance criterion against the actual code. For every acceptance criterion, confirm it is met by reading the implementation, not by reading the PR description.
+4. Read the "ambiguous choices" section — flag anything that drifted too far from the success criteria.
+5. Trivial cleanups (dead code, stale comments, formatting): do them yourself and commit.
+6. Substantive gaps: document clearly in PR review comments.
+
+If all acceptance criteria are met and the suite is green → tag slice `to-merge`.
+If gaps are found → tag slice `to-rework` with specific feedback in PR review comments.
+
+| Output      |                                                                     |
 | ----------- | ------------------------------------------------------------------- |
-| All ACs met | Tag slice `to-merge`.                                               |
+| All acceptance criteria met | Tag slice `to-merge`.                                               |
 | Gaps found  | Tag slice `to-rework` with specific feedback in PR review comments. |
 
 </details>
 
 <details>
-<summary><code>to-rework</code> · 🤖</summary>
+<summary>🏷️ <code>to-rework</code> · <code>/reef-rework</code> · 🤖</summary>
 
-Orchestrator dispatches a new sub-agent to the same worktree/PR.
+> _A hermit crab drags its soft abdomen out of an ill-fitting shell and squeezes into a better one — uncomfortable work, exposed and vulnerable, but necessary._
 
-```
-1. Read the review feedback (PR comments).
-2. Read the original ACs + any new ACs from reviewer.
-3. Fix the flagged items.
-4. Run full suite.
-5. Update PR description with revised report.
-```
+**Input**: a slice tagged `to-rework` with review feedback on the PR.
 
-| Produces      |                                               |
-| ------------- | --------------------------------------------- |
-| Issue tracker | Updated PR with fixes. Tag slice `to-review`. |
-| Local files   | same.                                         |
+Fix the issues flagged by the inspector.
+
+1. Read all review feedback (PR comments).
+2. Read the original acceptance criteria + any new acceptance criteria the inspector added.
+3. Fix the flagged items. Address every comment — don't skip any.
+4. Run the full project test suite.
+5. Update the PR description with a revised report (same template as `reef-implement`).
+6. Tag slice `to-inspect`.
+
+| Output        |                                                |
+| ------------- | ---------------------------------------------- |
+| Issue tracker | Updated PR with fixes. Tag slice `to-inspect`. |
+| Local files   | same.                                          |
 
 </details>
 
 <details>
-<summary><code>to-merge</code> · 🤖</summary>
+<summary>🏷️ <code>to-merge</code> · <code>/reef-merge</code> · 🤖</summary>
 
-Orchestrator merges the PR to feature branch.
+> _The great manta ray glides in wide and smooth, gathers the loose piece in a gentle sweep of its wings, and folds it seamlessly into the whole flowing current._
 
-```
+**Input**: a slice tagged `to-merge` with an approved PR.
+
+Merge this PR into the feature branch and update the board.
+
 1. Verify feature branch is up to date with remote.
 2. Merge PR (squash or regular per project convention).
 3. Verify full suite still green after merge.
-4. Close the slice issue. Tag slice "done".
-5. Check: did this unblock any sibling slices?
-   If yes → tag those siblings to-await-slices (so next loop re-reviews and promotes them).
-6. If all slices are now done → tag parent work item as to-verify.
-```
+4. Close the slice issue. Tag slice `done`.
+5. Check: did this merge unblock any sibling slices? If yes → tag those siblings `to-await-slices` (so next pulse re-reviews and promotes them).
+6. Check: are ALL slices for the parent work item now `done`? If yes → tag parent `to-verify`.
 
-| Produces      |                                                                          |
+| Output        |                                                                          |
 | ------------- | ------------------------------------------------------------------------ |
 | Issue tracker | Merged PR. Slice tagged `done`. Parent → `to-verify` if all slices done. |
 | Local files   | same.                                                                    |
@@ -280,56 +340,91 @@ Orchestrator merges the PR to feature branch.
 </details>
 
 <details>
-<summary><code>to-verify</code> · 🤖</summary>
+<summary>🏷️ <code>to-verify</code> · <code>/reef-verify</code> · 🤖</summary>
 
-Orchestrator runs holistic review after all slices merged to feature branch.
+> _The walrus hauls itself onto the ice floe, surveys the entire colony with slow, deliberate eyes, and counts every last pup — nothing is declared safe until the old bull has seen it all._
 
-```
-1. Pull latest remote.
-2. Check every success criterion against the actual code holistically (not per-slice).
-3. Run full test suite.
-4. If all criteria met → generate aggregate report → tag parent to-sign-off.
-5. If gaps → tag parent to-missing-slices.
-```
+**Input**: a work item tagged `to-verify` with all slices merged to the feature branch.
+
+Run a holistic review of the entire feature branch. You are checking the whole, not the parts.
+
+1. Pull latest remote. Checkout the feature branch.
+2. Check every success criterion against the actual code holistically (not per-slice — the whole must hold together).
+3. Run the full project test suite.
+4. If all criteria met → generate the **aggregate report** → tag parent `to-approve`.
+5. If gaps found → tag parent `to-missing-slices`.
 
 The aggregate report contains:
 
 - Success criteria: all met ✓/✗
 - Coverage matrix: final status
-- All ambiguous LLM decisions (aggregated from every sub-agent's PR)
-- Any drift from original grill-me session
+- All ambiguous LLM decisions (aggregated from every sub-agent's PR descriptions)
+- Any drift from the original grill session
 - Ticket lifecycle: all closed cleanly?
 
-| Produces             |                                                                        |
-| -------------------- | ---------------------------------------------------------------------- |
-| Issue tracker (pass) | Aggregate report as comment on parent issue. Tag parent `to-sign-off`. |
-| Issue tracker (gaps) | Tag parent `to-missing-slices`.                                        |
-| Local files (pass)   | `feature-x/report.md`. Tag parent `to-sign-off`.                       |
-| Local files (gaps)   | Tag parent `to-missing-slices`.                                        |
+| Output               |                                                                       |
+| -------------------- | --------------------------------------------------------------------- |
+| Issue tracker (pass) | Aggregate report as comment on parent issue. Tag parent `to-approve`. |
+| Issue tracker (gaps) | Tag parent `to-missing-slices`.                                       |
+| Local files (pass)   | `{title}/report.md`. Tag parent `to-approve`.                         |
+| Local files (gaps)   | Tag parent `to-missing-slices`.                                       |
 
 </details>
 
 <details>
-<summary><code>to-missing-slices</code> · 🤖</summary>
+<summary>🏷️ <code>to-missing-slices</code> · <code>/reef-reslice</code> · 🤖</summary>
 
-Orchestrator analyzes gaps, creates new slices for remaining work. No 👨🏽‍🦳 — if the gaps need decisions that aren't in the success criteria, that's a failure of the planning phase (the whole point is that success criteria are complete enough to be self-service).
+> _An anglerfish drifts through absolute darkness, its lure casting light on creatures no one knew were lurking in the deep._
 
-If the gap is "the agent chose to skip something" (pain point C1), the new slice's ACs explicitly call out what was skipped and why it matters.
+**Input**: a work item tagged `to-missing-slices` after `reef-verify` found gaps.
 
-Updates the **coverage matrix** to include the new slices — every gap that triggered this phase must now map to an AC on a new slice.
+Analyze the gaps and create new slices for the remaining work. Do not ask a human — if the gaps need decisions that aren't in the success criteria, that's a failure of the planning phase. The whole point is that success criteria are complete enough to be self-service.
 
-| Produces      |                                                                                                                                                                             |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Issue tracker | New sub-issues linked to parent with ACs for remaining work. Closes partial originals with reference to new issues. Tag new slices `to-implement` or `to-await-slices`. Updated coverage matrix. |
-| Local files   | New slice files in `feature-x/slices/`. Updated `feature-x/coverage-matrix.md`.                                                                                              |
+1. Read the verify report to understand what gaps were found.
+2. Read the success criteria and coverage matrix.
+3. For each gap: create a new slice with acceptance criteria that explicitly address the gap.
+   - If the gap is "an agent chose to skip something" (pain point C1), the new slice's acceptance criteria must call out what was skipped and why it matters.
+4. Update the **coverage matrix** — every gap must now map to an acceptance criterion on a new slice.
+5. Close partial original slices with a reference to the new slices.
+6. Tag new slices `to-implement` or `to-await-slices` depending on dependencies.
+
+| Output        |                                                                                                                                                                                                  |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Issue tracker | New sub-issues linked to parent with acceptance criteria for remaining work. Closes partial originals with reference to new issues. Tag new slices `to-implement` or `to-await-slices`. Updated coverage matrix. |
+| Local files   | New slice files in `{title}/slices/`. Updated `{title}/coverage-matrix.md`.                                                                                                                      |
 
 </details>
 
 <details>
-<summary><code>to-sign-off</code> · 👨🏽‍🦳</summary>
+<summary>🏷️ <code>to-approve</code> · <code>/reef-approve</code> · 👨🏽‍🦳</summary>
 
-Human reviews the aggregate report. Merges feature branch into main or requests changes.
+> _The narwhal surfaces one final time, tusk raised — the same instrument that probed the depths now signals that the work is worthy._
 
-If changes needed → back to `to-grill` (new decisions needed) or `to-missing-slices` (ACs are clear, just not done).
+**Input**: a work item tagged `to-approve` with an aggregate report.
+
+Present the aggregate report to the human. The report contains: success criteria status, coverage matrix, all LLM decisions/ambiguities, any drift from the grill session.
+
+The human reviews and either:
+
+- **Approves** → merge the feature branch into main. Close the work item. Done.
+- **Requests changes (needs new decisions)** → tag `to-grill` for a new grill session.
+- **Requests changes (acceptance criteria are clear)** → tag `to-missing-slices` to create slices for remaining work.
 
 </details>
+
+## Skill index
+
+| 🏷️ Tag              | Skill             | Initiator         | Lore                     |
+| ------------------- | ----------------- | ----------------- | ------------------------ |
+| —                   | `/reef-pulse`     | 👨🏽‍🦳 human / 🤖 bot | 🪼 moonjelly-pulse       |
+| `to-grill`          | `/reef-grill`     | 👨🏽‍🦳 human          | 🦄 narwhal-grill         |
+| `to-scope`          | `/reef-scope`     | 👨🏽‍🦳 human          | 🐢 turtle-scope          |
+| `to-slice`          | `/reef-slice`     | 🤖 bot            | 🦐 mantis-shrimp-slice   |
+| `to-await-slices`   | `/reef-await`     | 🤖 bot            | 🦪 barnacle-await        |
+| `to-implement`      | `/reef-implement` | 🤖 bot            | 🐙 octopus-implement     |
+| `to-inspect`        | `/reef-inspect`   | 🤖 bot            | 👁 barreleye-inspect     |
+| `to-rework`         | `/reef-rework`    | 🤖 bot            | 🐚 hermit-crab-rework    |
+| `to-merge`          | `/reef-merge`     | 🤖 bot            | 🦈 manta-ray-merge       |
+| `to-verify`         | `/reef-verify`    | 🤖 bot            | 🦭 walrus-verify         |
+| `to-missing-slices` | `/reef-reslice`   | 🤖 bot            | 🐡 anglerfish-illuminate |
+| `to-approve`        | `/reef-approve`   | 👨🏽‍🦳 human          | 🦄 narwhal-approve       |
