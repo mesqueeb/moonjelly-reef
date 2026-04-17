@@ -109,4 +109,4 @@ For local tracker, `Local path` would be the chosen directory (e.g. `.agents/moo
 
 > "You're all set. The reef is alive. 🪼"
 >
-> Run `/reef-probe` to start working on something, or `/reef-pulse` to scan for existing work.
+> Run `/reef-scope` to start working on something, or `/reef-pulse` to scan for existing work.

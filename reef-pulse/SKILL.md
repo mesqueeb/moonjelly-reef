@@ -30,7 +30,6 @@ Read the config to determine the tracker type, then scan for all tagged items.
 
 ```sh
 # Scan all reef-tagged issues
-gh issue list --label "to-probe" --json number,title --limit 100
 gh issue list --label "to-scope" --json number,title --limit 100
 gh issue list --label "to-slice" --json number,title --limit 100
 gh issue list --label "to-await-waves" --json number,title --limit 100
@@ -82,8 +81,7 @@ If running in `--hitl` mode, present human-required items:
 
 | Tag | Skill | Presentation |
 | --- | --- | --- |
-| `to-probe` | `/reef-probe` | "**{title}** needs a probe session. Run `/reef-probe #{number}` to start." |
-| `to-scope` | `/reef-scope` | "**{title}** has been probed and needs scoping. Run `/reef-scope #{number}`." |
+| `to-scope` | `/reef-scope` | "**{title}** needs scoping. Run `/reef-scope #{number}`." |
 | `to-finalise` | `/reef-finalise` | "**{title}** is ready for your final review. Run `/reef-finalise #{number}`." |
 
 If running in `--afk` mode, skip this step entirely.
@@ -102,7 +100,7 @@ Print a summary of what was dispatched:
     🌊 reef-merge #51 (schema-setup)
 
   Awaiting human:
-    🤿 to-probe: #60 (new-dashboard-idea)
+    🤿 to-scope: #60 (new-dashboard-idea)
     🤿 to-finalise: #42 (token-auth-migration)
 
   Idle:
@@ -114,7 +112,7 @@ If nothing was actionable:
 ```
 🪼 Pulse complete. Nothing to dispatch.
 
-  Run /reef-probe to start something new.
+  Run /reef-scope to start something new.
 ```
 
 Exit.

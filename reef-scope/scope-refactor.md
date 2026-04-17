@@ -1,50 +1,90 @@
 # Scoping a refactor
 
-How to scope a refactor into a plan.
+## Process
 
-## Before writing
+### 1. Capture the problem
 
-### Explore alternatives
+Ask the user for a long, detailed description of the problem they want to solve and any potential ideas for solutions.
 
-Before committing to a plan, ask the user:
-- "Have you considered other approaches?"
-- Present at least one alternative you can think of
+### 2. Explore the repo
 
-This prevents tunnel vision. The first idea isn't always the best, and the probe session may have locked in on one approach too early.
+Explore the repo to verify their assertions and understand the current state of the codebase.
 
-### Assess current test coverage
+### 3. Consider alternatives
 
-Look in the codebase for test coverage of the area being refactored. If there is insufficient test coverage, discuss with the user: the plan must include adding coverage BEFORE refactoring. Never refactor untested code — add tests first so you have a safety net.
+Ask whether they have considered other options, and present other options to them.
 
-## Plan structure
+### 4. Interview the implementation
 
-The plan covers everything in [scope-feature.md](scope-feature.md) (problem statement, solution, user stories, implementation decisions, testing decisions, out of scope), plus these refactor-specific sections:
+Interview the user about the implementation. Be extremely detailed and thorough.
 
-- **What won't change**: explicit scope of what remains untouched. Hammer out the exact boundary — what you plan to change and what you plan NOT to change. This is as important as what changes.
-- **Commit plan**: break the implementation into tiny commits. Remember Martin Fowler's advice: "make each refactoring step as small as possible, so that you can always see the program working." Each commit should:
-  - Leave the codebase in a working state
-  - Pass all tests
-  - Be independently understandable
-  - Write the plan in plain English, describing each commit step
-- **Current test coverage**: document what tests exist for this area. If insufficient, the first commits in the plan add coverage for existing behavior before changing anything.
+### 5. Hammer out scope
 
-## Collaborating with the user
+Hammer out the exact scope of the implementation. Work out what you plan to change and what you plan NOT to change.
 
-After drafting:
+### 6. Assess test coverage
 
-- Present the commit plan and ask: "Does the order make sense? Any steps that should be split or merged?"
-- Specifically discuss the scope boundary: "I plan to change X, Y, Z and NOT touch A, B, C. Does that match your expectations?"
-- For any area with duplicated code: agree on which copy is canonical and in what order duplicates get removed (painpoint G1)
+Look in the codebase to check for test coverage of this area. If there is insufficient test coverage, ask the user what their plans for testing are.
 
-Iterate until the user approves the plan and the commit order.
+### 7. Design the commit plan
 
-## What makes a good refactor plan
+Break the implementation into a plan of tiny commits. Remember Martin Fowler's advice to "make each refactoring step as small as possible, so that you can always see the program working."
 
-A good refactor plan is paranoid about breaking things. It assumes every step could go wrong and builds in checkpoints.
+### 8. Write the plan
 
-- Every commit compiles and passes tests. No "it'll be green at the end" — it must be green at every step
-- The plan considers alternative approaches and documents why this one was chosen
-- Scope is explicit in both directions: what changes AND what stays the same
-- The order of operations matters — doing step A before step B might be trivial, but reversing them could cause a 100-file cascade (painpoint D1)
-- If the refactor touches duplicated code, the plan specifies which copy is canonical and in what order duplicates get removed (painpoint G1)
-- The plan accounts for the "blast radius" of each step — if a rename touches 50 files, that's one atomic commit, not 50 separate changes
+Write the plan using this template:
+
+<plan-template>
+
+## Problem Statement
+
+The problem that the developer is facing, from the developer's perspective.
+
+## Solution
+
+The solution to the problem, from the developer's perspective.
+
+## What Won't Change
+
+Explicit scope of what remains untouched. This is as important as what changes.
+
+## Commits
+
+A LONG, detailed implementation plan. Write the plan in plain English, breaking down the implementation into the tiniest commits possible. Each commit should leave the codebase in a working state.
+
+## Decision Document
+
+A list of implementation decisions that were made. This can include:
+
+- The modules that will be built/modified
+- The interfaces of those modules that will be modified
+- Technical clarifications from the developer
+- Architectural decisions
+- Schema changes
+- API contracts
+- Specific interactions
+
+Do NOT include specific file paths or code snippets. They may end up being outdated very quickly.
+
+## Testing Decisions
+
+A list of testing decisions that were made. Include:
+
+- A description of what makes a good test (only test external behavior, not implementation details)
+- Which modules will be tested
+- Prior art for the tests (i.e. similar types of tests in the codebase)
+
+## Success Criteria
+
+Testable conditions that must ALL be true for this work to be considered done. Each criterion must be mechanically verifiable.
+
+- [ ] {criterion 1}
+- [ ] {criterion 2}
+- [ ] All existing tests still pass
+- [ ] ...
+
+## Out of Scope
+
+A description of the things that are out of scope for this refactor.
+
+</plan-template>

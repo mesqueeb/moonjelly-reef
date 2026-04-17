@@ -27,7 +27,7 @@ Present three options:
 
 > **1. Approve** — merge the feature branch into {base-branch} and close the work item.
 >
-> **2. Request changes (needs new decisions)** — something fundamental is off and we need to rethink. → Tags `to-probe` for a new probe session.
+> **2. Request changes (needs new decisions)** — something fundamental is off and we need to rethink. → Tags `to-scope` for a new scoping session.
 >
 > **3. Request changes (acceptance criteria are clear)** — specific gaps remain but we know what to fix. → Tags `to-rescan` for new slices.
 
@@ -49,15 +49,15 @@ Close the parent issue with `gh issue close`. Add a final comment: "Merged to {b
 
 Rename parent to `[done] plan.md`. Optionally move the folder to an `archive/` or `done/` directory if the user prefers.
 
-### If re-probe
+### If re-scope
 
 ### GitHub tracker
 
-Change the parent issue label to `to-probe`. Remove `to-finalise`.
+Change the parent issue label to `to-scope`. Remove `to-finalise`.
 
 ### Local tracker
 
-Rename parent to `[to-probe] plan.md`.
+Rename parent to `[to-scope] plan.md`.
 
 ### If re-scan
 

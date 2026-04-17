@@ -24,7 +24,7 @@ You are not just patching holes. You are re-reviewing the entire parent plan thr
 - Planning-level issues (the plan itself was ambiguous or missed something)
 - Agent decisions that drifted too far
 
-Do NOT ask a human. If the gaps need decisions that aren't in the success criteria, that means the planning phase (reef-scope) left ambiguity. The success criteria should be complete enough to be self-service. If they truly aren't, tag `to-probe` for a new probe session — but try to resolve it yourself first.
+Do NOT ask a human. If the gaps need decisions that aren't in the success criteria, that means the planning phase (reef-scope) left ambiguity. The success criteria should be complete enough to be self-service. If they truly aren't, tag `to-scope` for a new scoping session — but try to resolve it yourself first.
 
 ## Process
 

@@ -36,15 +36,13 @@ stateDiagram-v2
 
     state "TICKET LIFECYCLE" as work {
 
-        state "🤿　to-probe" as to_probe
         state "🤿　to-scope" as to_scope
         state "🌊　to-slice" as to_slice
         state "🌊　to-ratify" as to_ratify
         state "🌊　to-rescan" as gaps_to_rescan
         state "🤿　to-finalise" as to_finalise
 
-        [*] --> to_probe
-        to_probe --> to_scope : /reef-probe<br />probe session to align on a feature, bug, or refactor
+        [*] --> to_scope
         to_scope --> to_slice : /reef-scope<br />scope the work, define success criteria
         to_slice --> slice_lifecycle : /reef-slice<br />break into slices, create dependency and coverage matrix
         slice_lifecycle --> to_ratify : all slices done
@@ -74,7 +72,7 @@ stateDiagram-v2
         slice_done --> [*]
     }
 
-    class to_probe,to_scope,to_finalise human
+    class to_scope,to_finalise human
     class to_slice,to_ratify,gaps_to_rescan,to_await,to_implement,to_inspect,needs_rework,to_merge agent
 ```
 
@@ -111,7 +109,6 @@ Each pulse:
    Each skill tags its own work when done (next phase tag).
 
 3. If running with --hitl, present 🤿 items to the human:
-   ├─ to-probe    → probe session to align on a feature, bug, or refactor
    ├─ to-scope    → scope the work, define success criteria
    └─ to-finalise  → human reviews report, merges into main
 
@@ -129,31 +126,9 @@ Design principles:
 
 - **Testing at source**: each transition includes verification before tagging. No separate "testing" states.
 - **Small batches**: slices flow through the pipeline independently and concurrently. The pulse doesn't wait for all slices to reach the same state.
-- **Human = bottleneck**: minimize 🤿 states. Only three: probe, scope, finalise.
+- **Human = bottleneck**: minimize 🤿 states. Only two: scope, finalise.
 - **No heroics**: agents that are stuck flag + move on, never spiral.
 - **Make work visible**: the tags ARE the visibility. Scan tags = see the whole board.
-
-</details>
-
-<details>
-<summary>🏷️ <code>to-probe</code> · <code>/reef-probe</code> · 🤿</summary>
-
-> _The narwhal drives its spiral tusk deep into the ice, boring through frozen vagueness to reach the water beneath._
-
-**Input**: a work item (issue tracker ticket or local md file) tagged `to-probe`.
-
-You will interview the user relentlessly about every aspect of this idea until you reach a shared understanding. Walk down each branch of the decision tree, resolving dependencies between decisions one by one. For each question, provide your recommended answer. Ask questions one at a time. If a question can be answered by exploring the codebase, explore the codebase instead of asking.
-
-When the session is complete:
-
-1. Write the full probe session (original idea text + all Q&A + all decisions) to a persistent artifact.
-2. Double-check with the user: "Does this capture the original idea and every decision we made?"
-3. Tag the item `to-scope`.
-
-| Output        |                                                                                  |
-| ------------- | -------------------------------------------------------------------------------- |
-| Issue tracker | Probe session appended to issue body. Title updated. Tag `to-scope`.             |
-| Local files   | `{title}/[to-scope] plan.md` (includes original idea text + full probe session). |
 
 </details>
 
@@ -162,13 +137,14 @@ When the session is complete:
 
 > _An ancient sea turtle surfaces at dawn, reads the stars and currents, then sets her bearing — slow, deliberate, she knows exactly where she is going before she dives._
 
-**Input**: a work item tagged `to-scope` with a completed probe session.
+**Input**: a work item tagged `to-scope`.
 
 You will scope the work with the user. Determine whether this is a feature, refactor, or bug, and pick the appropriate approach.
 
 You are responsible for:
 
-- Consuming the probe session
+- For features without a decision record: running the interview inline to reach shared understanding
+- For features with a decision record: consuming the existing decisions
 - Grilling on **success criteria** if not already covered: what does "done" look like from the consumer's perspective? Each criterion must be mechanically verifiable.
 - For features: producing a plan with phased vertical slices and durable architectural decisions
 - For refactors: enforcing always-compiles, always-green, tiny-commit discipline in the plan
@@ -177,13 +153,13 @@ You are responsible for:
 When the scope is complete:
 
 1. Write the plan with a **Success Criteria** section.
-2. Every decision from the probe session must map to ≥1 success criterion. If any are missing, add them.
+2. Every decision from the decision record must map to ≥1 success criterion. If any are missing, add them.
 3. Tag the item `to-slice`.
 
 | Output        |                                                                                                  |
 | ------------- | ------------------------------------------------------------------------------------------------ |
-| Issue tracker | Plan + success criteria **prepended** to issue body (probe session stays below). Tag `to-slice`. |
-| Local files   | Plan + success criteria prepended in `{title}/[to-slice] plan.md` (probe session stays below).   |
+| Issue tracker | Plan + success criteria **prepended** to issue body (decision record stays below). Tag `to-slice`. |
+| Local files   | Plan + success criteria prepended in `{title}/[to-slice] plan.md` (decision record stays below).   |
 
 </details>
 
@@ -258,7 +234,7 @@ Implement this slice using TDD. This is your non-negotiable contract:
    □ This slice's acceptance criteria (the checklist to satisfy)
    □ Parent plan + success criteria (the "why")
    □ Sibling slices (awareness of what others are doing / have done)
-   □ probe-session.md (the original decisions)
+   □ The decision record (the original decisions)
 
 3. TDD LOOP
    □ For each acceptance criterion: write test → implement → verify
@@ -374,7 +350,7 @@ The aggregate report contains:
 - Success criteria: all met ✓/✗
 - Coverage matrix: final status
 - All ambiguous LLM decisions (aggregated from every sub-agent's PR descriptions)
-- Any drift from the original probe session
+- Any drift from the original decision record
 - Ticket lifecycle: all closed cleanly?
 
 | Output               |                                                                       |
@@ -417,12 +393,12 @@ Analyze the gaps and create new slices for the remaining work. Do not ask a huma
 
 **Input**: a work item tagged `to-finalise` with an aggregate report.
 
-Present the aggregate report to the human. The report contains: success criteria status, coverage matrix, all LLM decisions/ambiguities, any drift from the probe session.
+Present the aggregate report to the human. The report contains: success criteria status, coverage matrix, all LLM decisions/ambiguities, any drift from the decision record.
 
 The human reviews and either:
 
 - **Approves** → merge the feature branch into main. Close the work item. Done.
-- **Requests changes (needs new decisions)** → tag `to-probe` for a new probe session.
+- **Requests changes (needs new decisions)** → tag `to-scope` for a new scoping session.
 - **Requests changes (acceptance criteria are clear)** → tag `to-rescan` to create slices for remaining work.
 
 </details>
@@ -436,7 +412,6 @@ Every agent works in its own git worktree — the main checkout is never touched
 | 🏷️ Tag           | Skill               | Actor | Lore                                                                                                                  |
 | ---------------- | ------------------- | ----- | --------------------------------------------------------------------------------------------------------------------- |
 | —                | `/reef-pulse`       | 🤿/🌊 | 🪼 A moonjelly pulses, scans the reef, sets creatures in motion, and recedes.                                         |
-| `to-probe`       | `/reef-probe`       | 🤿    | 🦄 The narwhal drives its spiral tusk deep into the ice, boring through frozen vagueness.                             |
 | `to-scope`       | `/reef-scope`       | 🤿    | 🐢 A sea turtle reads the stars and currents, then sets her bearing before she dives.                                 |
 | `to-slice`       | `/reef-slice`       | 🌊    | 🦐 A mantis shrimp shatters the shell into clean, separate pieces with a single strike.                               |
 | `to-await-waves` | `/reef-await-waves` | 🌊    | 🏄 A surfer sits beyond the break, watching the horizon — when the waves come, they're ready.                         |

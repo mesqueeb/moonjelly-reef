@@ -65,7 +65,7 @@ Mark each criterion: ✓ met, ✗ not met (with explanation).
 Read the "Agent decisions" section on the parent (aggregated by reef-merge from each slice's PR). For each decision:
 
 - Does it make sense?
-- Did it introduce drift from the original success criteria or probe session?
+- Did it introduce drift from the original success criteria or decision record?
 - Would the human want to know about this?
 
 ### 5. Check for integration issues

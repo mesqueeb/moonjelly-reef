@@ -52,7 +52,7 @@ Before writing any code, read and understand:
 - **This slice's acceptance criteria** — this is your checklist. Every criterion must be addressed.
 - **The parent plan + success criteria** — understand the "why" behind this slice.
 - **Sibling slices** — awareness of what others are doing or have done. Don't duplicate, don't conflict.
-- **The probe session** — the original decisions that led here.
+- **The decision record** — the original decisions that led here.
 
 ## 3. Implement with TDD
 
