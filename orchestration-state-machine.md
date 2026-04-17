@@ -14,6 +14,9 @@ The moonjelly is the orchestrator. A short-lived session (cron or manual) that s
 
 ## State machine
 
+> 🤿 = human (the diver)
+> 🌊 = automated (the reef)
+
 ```mermaid
 stateDiagram-v2
     direction TB
@@ -23,12 +26,12 @@ stateDiagram-v2
 
     state "TICKET LIFECYCLE" as work {
 
-        state "to-probe (👨🏽‍🦳)" as to_probe
-        state "to-scope (👨🏽‍🦳)" as to_scope
-        state "to-slice (🤖)" as to_slice
-        state "to-ratify (🤖)" as to_ratify
-        state "to-rescan (🤖)" as gaps_to_rescan
-        state "to-finalise (👨🏽‍🦳)" as to_finalise
+        state "🤿 to-probe" as to_probe
+        state "🤿 to-scope" as to_scope
+        state "🌊 to-slice" as to_slice
+        state "🌊 to-ratify" as to_ratify
+        state "🌊 to-rescan" as gaps_to_rescan
+        state "🤿 to-finalise" as to_finalise
 
         [*] --> to_probe
         to_probe --> to_scope : /reef-probe<br />probe session to align on a feature, bug, or refactor
@@ -43,11 +46,11 @@ stateDiagram-v2
 
     state "SLICE LIFECYCLE (per slice)" as slice_lifecycle {
 
-        state "to-await-waves (🤖)" as to_await
-        state "to-implement (🤖)" as to_implement
-        state "to-inspect (🤖)" as to_inspect
-        state "to-rework (🤖)" as needs_rework
-        state "to-merge (🤖)" as to_merge
+        state "🌊 to-await-waves" as to_await
+        state "🌊 to-implement" as to_implement
+        state "🌊 to-inspect" as to_inspect
+        state "🌊 to-rework" as needs_rework
+        state "🌊 to-merge" as to_merge
         state "done" as slice_done
 
         [*] --> to_implement : no deps
@@ -69,7 +72,7 @@ stateDiagram-v2
 
 <details>
 <summary>🪼 orchestrator · <code>/reef-pulse</code>
-· 👨🏽‍🦳/🤖</summary>
+· 🤿/🌊</summary>
 
 > _A moon jellyfish pulses rhythmically with no brain — it just keeps moving. Each pulse scans the reef, sets creatures in motion, and recedes._
 
@@ -80,7 +83,7 @@ Each pulse:
 ```
 1. Scan all items by tag (issue tracker or local md files).
 
-2. Dispatch all 🤖 work as sub-agents (in parallel):
+2. Dispatch all 🌊 work as sub-agents (in parallel):
    ├─ to-slice            → break into slices, create dependency and coverage matrix
    ├─ to-await-waves     → check if deps are done, re-review plan
    ├─ to-implement        → TDD per slice, full suite green
@@ -95,7 +98,7 @@ Each pulse:
 
    Each skill tags its own work when done (next phase tag).
 
-3. If running with --hitl, present 👨🏽‍🦳 items to the human:
+3. If running with --hitl, present 🤿 items to the human:
    ├─ to-probe    → probe session to align on a feature, bug, or refactor
    ├─ to-scope    → scope the work, define success criteria
    └─ to-finalise  → human reviews report, merges into main
@@ -114,14 +117,14 @@ Design principles:
 
 - **Testing at source**: each transition includes verification before tagging. No separate "testing" states.
 - **Small batches**: slices flow through the pipeline independently and concurrently. The pulse doesn't wait for all slices to reach the same state.
-- **Human = bottleneck**: minimize 👨🏽‍🦳 states. Only three: probe, scope, finalise.
+- **Human = bottleneck**: minimize 🤿 states. Only three: probe, scope, finalise.
 - **No heroics**: agents that are stuck flag + move on, never spiral.
 - **Make work visible**: the tags ARE the visibility. Scan tags = see the whole board.
 
 </details>
 
 <details>
-<summary>🏷️ <code>to-probe</code> · <code>/reef-probe</code> · 👨🏽‍🦳</summary>
+<summary>🏷️ <code>to-probe</code> · <code>/reef-probe</code> · 🤿</summary>
 
 > _The narwhal drives its spiral tusk deep into the ice, boring through frozen vagueness to reach the water beneath._
 
@@ -143,7 +146,7 @@ When the session is complete:
 </details>
 
 <details>
-<summary>🏷️ <code>to-scope</code> · <code>/reef-scope</code> · 👨🏽‍🦳</summary>
+<summary>🏷️ <code>to-scope</code> · <code>/reef-scope</code> · 🤿</summary>
 
 > _An ancient sea turtle surfaces at dawn, reads the stars and currents, then sets her bearing — slow, deliberate, she knows exactly where she is going before she dives._
 
@@ -173,7 +176,7 @@ When the scope is complete:
 </details>
 
 <details>
-<summary>🏷️ <code>to-slice</code> · <code>/reef-slice</code> · 🤖</summary>
+<summary>🏷️ <code>to-slice</code> · <code>/reef-slice</code> · 🌊</summary>
 
 > _A mantis shrimp shatters a crab shell into clean, separate pieces with a single devastating strike — each fragment deliberate, each piece ready to carry off._
 
@@ -200,7 +203,7 @@ For small bugs (scope = quick fix): produce a single slice. The triage acceptanc
 </details>
 
 <details>
-<summary>🏷️ <code>to-await-waves</code> · <code>/reef-await-waves</code> · 🤖</summary>
+<summary>🏷️ <code>to-await-waves</code> · <code>/reef-await-waves</code> · 🌊</summary>
 
 > _A surfer sits on the board beyond the break, watching the horizon, patient and still — when the waves come, they're ready._
 
@@ -224,7 +227,7 @@ Check whether this slice's dependencies have all been merged. If not, exit — y
 </details>
 
 <details>
-<summary>🏷️ <code>to-implement</code> · <code>/reef-implement</code> · 🤖</summary>
+<summary>🏷️ <code>to-implement</code> · <code>/reef-implement</code> · 🌊</summary>
 
 > _Eight arms working in fierce, silent concert, the octopus reshapes the reef floor — architecting, testing, sealing every chamber with cold intelligence._
 
@@ -268,7 +271,7 @@ When done, open a PR targeting the feature branch. Tag slice `to-inspect`.
 </details>
 
 <details>
-<summary>🏷️ <code>to-inspect</code> · <code>/reef-inspect</code> · 🤖</summary>
+<summary>🏷️ <code>to-inspect</code> · <code>/reef-inspect</code> · 🌊</summary>
 
 > _A barreleye fish rotates its tubular eyes upward through its transparent skull, scrutinizing every shadow above for anything that doesn't belong._
 
@@ -294,7 +297,7 @@ If gaps are found → tag slice `to-rework` with specific feedback in PR review 
 </details>
 
 <details>
-<summary>🏷️ <code>to-rework</code> · <code>/reef-rework</code> · 🤖</summary>
+<summary>🏷️ <code>to-rework</code> · <code>/reef-rework</code> · 🌊</summary>
 
 > _A hermit crab drags its soft abdomen out of an ill-fitting shell and squeezes into a better one — uncomfortable work, exposed and vulnerable, but necessary._
 
@@ -317,7 +320,7 @@ Fix the issues flagged by the inspector.
 </details>
 
 <details>
-<summary>🏷️ <code>to-merge</code> · <code>/reef-merge</code> · 🤖</summary>
+<summary>🏷️ <code>to-merge</code> · <code>/reef-merge</code> · 🌊</summary>
 
 > _The great manta ray glides in wide and smooth, gathers the loose piece in a gentle sweep of its wings, and folds it seamlessly into the whole flowing current._
 
@@ -340,7 +343,7 @@ Merge this PR into the feature branch and update the board.
 </details>
 
 <details>
-<summary>🏷️ <code>to-ratify</code> · <code>/reef-ratify</code> · 🤖</summary>
+<summary>🏷️ <code>to-ratify</code> · <code>/reef-ratify</code> · 🌊</summary>
 
 > _The walrus hauls itself onto the ice floe, surveys the entire colony with slow, deliberate eyes, and counts every last pup — nothing is declared safe until the old bull has seen it all._
 
@@ -372,7 +375,7 @@ The aggregate report contains:
 </details>
 
 <details>
-<summary>🏷️ <code>to-rescan</code> · <code>/reef-rescan</code> · 🤖</summary>
+<summary>🏷️ <code>to-rescan</code> · <code>/reef-rescan</code> · 🌊</summary>
 
 > _An anglerfish drifts through absolute darkness, its lure casting light on creatures no one knew were lurking in the deep._
 
@@ -396,7 +399,7 @@ Analyze the gaps and create new slices for the remaining work. Do not ask a huma
 </details>
 
 <details>
-<summary>🏷️ <code>to-finalise</code> · <code>/reef-finalise</code> · 👨🏽‍🦳</summary>
+<summary>🏷️ <code>to-finalise</code> · <code>/reef-finalise</code> · 🤿</summary>
 
 > _The moonjelly rises from the deep, a pearl cradled in its bell, and drifts to the surface where the diver waits — here is what the reef made._
 
@@ -416,15 +419,15 @@ The human reviews and either:
 
 | 🏷️ Tag           | Skill               | Actor | Lore                                                                                                                  |
 | ---------------- | ------------------- | ----- | --------------------------------------------------------------------------------------------------------------------- |
-| —                | `/reef-pulse`       | 👨🏽‍🦳/🤖 | 🪼 A moonjelly pulses, scans the reef, sets creatures in motion, and recedes.                                         |
-| `to-probe`       | `/reef-probe`       | 👨🏽‍🦳    | 🦄 The narwhal drives its spiral tusk deep into the ice, boring through frozen vagueness.                             |
-| `to-scope`       | `/reef-scope`       | 👨🏽‍🦳    | 🐢 A sea turtle reads the stars and currents, then sets her bearing before she dives.                                 |
-| `to-slice`       | `/reef-slice`       | 🤖    | 🦐 A mantis shrimp shatters the shell into clean, separate pieces with a single strike.                               |
-| `to-await-waves` | `/reef-await-waves` | 🤖    | 🏄 A surfer sits beyond the break, watching the horizon — when the waves come, they're ready.                         |
-| `to-implement`   | `/reef-implement`   | 🤖    | 🐙 Eight arms in silent concert, the octopus reshapes the reef floor chamber by chamber.                              |
-| `to-inspect`     | `/reef-inspect`     | 🤖    | 👁 A barreleye rotates its tubular eyes through its transparent skull, scrutinizing every shadow.                     |
-| `to-rework`      | `/reef-rework`      | 🤖    | 🐚 A hermit crab squeezes out of an ill-fitting shell and into a better one.                                          |
-| `to-merge`       | `/reef-merge`       | 🤖    | 🦈 A manta ray glides in wide, gathers the loose piece, and folds it into the current.                                |
-| `to-ratify`      | `/reef-ratify`      | 🤖    | 🦭 The walrus hauls onto the ice floe and counts every last pup — nothing is safe until he's seen it all.             |
-| `to-rescan`      | `/reef-rescan`      | 🤖    | 🐡 An anglerfish casts its lure into absolute darkness, illuminating creatures no one knew were there.                |
-| `to-finalise`    | `/reef-finalise`    | 👨🏽‍🦳    | 🪼 The moonjelly rises with a pearl cradled in its bell and drifts to the waiting diver — here is what the reef made. |
+| —                | `/reef-pulse`       | 🤿/🌊 | 🪼 A moonjelly pulses, scans the reef, sets creatures in motion, and recedes.                                         |
+| `to-probe`       | `/reef-probe`       | 🤿    | 🦄 The narwhal drives its spiral tusk deep into the ice, boring through frozen vagueness.                             |
+| `to-scope`       | `/reef-scope`       | 🤿    | 🐢 A sea turtle reads the stars and currents, then sets her bearing before she dives.                                 |
+| `to-slice`       | `/reef-slice`       | 🌊    | 🦐 A mantis shrimp shatters the shell into clean, separate pieces with a single strike.                               |
+| `to-await-waves` | `/reef-await-waves` | 🌊    | 🏄 A surfer sits beyond the break, watching the horizon — when the waves come, they're ready.                         |
+| `to-implement`   | `/reef-implement`   | 🌊    | 🐙 Eight arms in silent concert, the octopus reshapes the reef floor chamber by chamber.                              |
+| `to-inspect`     | `/reef-inspect`     | 🌊    | 👁 A barreleye rotates its tubular eyes through its transparent skull, scrutinizing every shadow.                     |
+| `to-rework`      | `/reef-rework`      | 🌊    | 🐚 A hermit crab squeezes out of an ill-fitting shell and into a better one.                                          |
+| `to-merge`       | `/reef-merge`       | 🌊    | 🦈 A manta ray glides in wide, gathers the loose piece, and folds it into the current.                                |
+| `to-ratify`      | `/reef-ratify`      | 🌊    | 🦭 The walrus hauls onto the ice floe and counts every last pup — nothing is safe until he's seen it all.             |
+| `to-rescan`      | `/reef-rescan`      | 🌊    | 🐡 An anglerfish casts its lure into absolute darkness, illuminating creatures no one knew were there.                |
+| `to-finalise`    | `/reef-finalise`    | 🤿    | 🪼 The moonjelly rises with a pearl cradled in its bell and drifts to the waiting diver — here is what the reef made. |
