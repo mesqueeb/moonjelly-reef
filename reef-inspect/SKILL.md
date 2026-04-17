@@ -36,12 +36,25 @@ A few things you naturally do:
 
 ### 1. Pull and verify
 
+Use a worktree so you don't disturb the main checkout or any other agent's work.
+
 ```sh
-git fetch origin
-gh pr checkout {pr-number}
+git fetch origin --prune
+
+# Get the PR's branch name, create worktree on a local tracking branch
+PR_BRANCH=$(gh pr view {pr-number} --json headRefName -q .headRefName)
+git worktree add ../worktree-inspect-{slice-name} -b inspect-$PR_BRANCH origin/$PR_BRANCH
+cd ../worktree-inspect-{slice-name}
 ```
 
 Run the full project test suite. Record the result.
+
+When inspection is complete (after tagging), clean up the worktree:
+
+```sh
+cd ..
+git worktree remove ../worktree-inspect-{slice-name}
+```
 
 ### 2. Check each acceptance criterion
 
@@ -62,12 +75,17 @@ Read the PR description's "Ambiguous choices" section. For each choice:
 
 ### 4. Trivial cleanups
 
-Do these yourself — commit directly to the PR branch:
+Do these yourself — commit and push to the PR branch:
 
 - Remove debug prints, console.logs, commented-out code
 - Fix formatting, remove trailing whitespace
 - Remove stale TODO comments that were addressed
 - Add code comments where non-obvious behavior exists
+
+```sh
+# Only if you made cleanup commits
+git push origin HEAD:$PR_BRANCH
+```
 
 ### 5. Verdict
 

@@ -17,6 +17,27 @@ Read the slice to find the PR reference.
 
 ## Process
 
+### 0. Git prep
+
+The implementation worktree should still exist from reef-implement. Find it and make sure it's current.
+
+```sh
+git fetch origin --prune
+
+# Navigate to the existing worktree
+cd ../worktree-{slice-name}
+
+# Pull latest — the inspector may have pushed trivial cleanup commits
+git pull origin {slice-branch}
+```
+
+If the worktree doesn't exist (e.g. it was cleaned up prematurely), recreate it:
+
+```sh
+git worktree add ../worktree-{slice-name} origin/{slice-branch}
+cd ../worktree-{slice-name}
+```
+
 ### 1. Read all feedback
 
 Read every review comment on the PR. Read the full conversation — don't just skim.
@@ -38,7 +59,13 @@ Do NOT skip any feedback item. If a comment is unclear, make your best interpret
 
 Not a subset. The full project test suite must be green.
 
-### 4. Update the PR description
+### 4. Push fixes
+
+```sh
+git push origin {slice-branch}
+```
+
+### 5. Update the PR description
 
 Rewrite the report section of the PR description using the same template as reef-implement. This is a fresh report, not an append — the current state should be clear without reading history.
 
@@ -53,7 +80,7 @@ Addressed feedback from inspection round {N}:
 - {feedback item 2}: {what was done}
 ```
 
-### 5. Tag
+### 6. Tag
 
 ### GitHub tracker
 

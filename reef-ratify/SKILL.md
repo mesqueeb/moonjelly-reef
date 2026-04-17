@@ -29,13 +29,22 @@ Think like a CTO doing a final walkthrough before shipping.
 
 ### 1. Get on the feature branch
 
+Use a worktree so you don't disturb the main checkout or any other agent's work.
+
 ```sh
-git fetch origin
-git checkout {feature-branch}
-git pull origin {feature-branch}
+git fetch origin --prune
+git worktree add ../worktree-ratify-{title} origin/{feature-branch}
+cd ../worktree-ratify-{title}
 ```
 
 Verify you have the latest — all slice PRs should be merged into this branch.
+
+When ratification is complete (after tagging), clean up the worktree:
+
+```sh
+cd ..
+git worktree remove ../worktree-ratify-{title}
+```
 
 ### 2. Run the full test suite
 

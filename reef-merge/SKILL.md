@@ -20,13 +20,27 @@ Read the slice to find the PR reference and the parent plan reference.
 ### 1. Pre-merge checks
 
 ```sh
-git fetch origin
+git fetch origin --prune
 ```
 
 Verify:
-- [ ] The feature branch is up to date: `git log origin/{feature-branch}..HEAD` shows nothing unexpected
 - [ ] The PR is approved (has `to-merge` tag, inspector's approval)
-- [ ] The PR branch is up to date with the feature branch (rebase or merge if needed)
+- [ ] The slice branch is up to date with the feature branch:
+
+```sh
+# Check if the feature branch has commits not in the slice branch
+gh pr view {pr-number} --json mergeStateStatus -q .mergeStateStatus
+```
+
+If the slice branch is behind the feature branch (merge conflicts or `BEHIND`):
+
+1. Check out the implementation worktree (it should still exist from reef-implement)
+2. Merge the feature branch into the slice branch: `git merge origin/{feature-branch}`
+3. Resolve any conflicts
+4. Run the full test suite — must be green with the merged code
+5. Push the updated slice branch
+
+If the suite fails after merging in the feature branch, tag the slice `to-rework` with a note explaining what broke. Do not proceed to merge.
 
 ### 2. Merge
 
@@ -34,18 +48,43 @@ Verify:
 gh pr merge {pr-number} --squash --delete-branch
 ```
 
-Use squash merge by default unless the project convention differs. Delete the slice branch after merge.
+Use squash merge by default unless the project convention differs. `--delete-branch` deletes the remote slice branch.
 
-### 3. Verify post-merge
+### 3. Clean up worktree
+
+The slice was implemented in a worktree. Remove it now that the PR is merged.
 
 ```sh
-git checkout {feature-branch}
-git pull origin {feature-branch}
+# Remove the worktree (from the main checkout, not from inside the worktree)
+git worktree remove ../worktree-{slice-name}
+
+# Prune stale tracking branches
+git fetch origin --prune
+
+# Delete the local slice branch if it still exists
+git branch -d {slice-branch} 2>/dev/null || true
 ```
 
-Run the full test suite on the feature branch after merge. If it fails, **do not proceed** — tag the slice `to-rework` with a note that the merge broke tests and what failed. (Prevents painpoint C2.)
+### 4. Verify post-merge
 
-### 4. Append agent decisions to parent
+Use a temporary worktree to verify the feature branch after merge.
+
+```sh
+git fetch origin --prune
+git worktree add ../worktree-merge-verify-{slice-name} origin/{feature-branch}
+cd ../worktree-merge-verify-{slice-name}
+```
+
+Run the full test suite on the feature branch. If it fails, **do not proceed** — tag the slice `to-rework` with a note that the merge broke tests and what failed. (Prevents painpoint C2.)
+
+Clean up after verification:
+
+```sh
+cd ..
+git worktree remove ../worktree-merge-verify-{slice-name}
+```
+
+### 5. Append agent decisions to parent
 
 Read the merged PR description. Extract the "Ambiguous choices" section.
 
@@ -75,7 +114,7 @@ Append to the parent plan file, in a section below the coverage matrix:
 
 This aggregates decisions at merge time so reef-ratify doesn't have to hunt through all PRs later.
 
-### 5. Close the slice
+### 6. Close the slice
 
 ### GitHub tracker
 
@@ -85,11 +124,11 @@ Close the slice issue with `gh issue close <number>`. Add label `done`. Remove `
 
 Rename from `[to-merge] ...` to `[done] ...`.
 
-### 6. Check siblings
+### 7. Check siblings
 
 Look at all sibling slices (other slices under the same parent). For any that are tagged `to-await-waves`, check their `blocked-by` list. If this merged slice was the last blocker, they may now be unblockable — but don't promote them directly. Leave them as `to-await-waves`. The next pulse will dispatch `/reef-await-waves` on them, which will re-review their plan against the now-changed feature branch before promoting.
 
-### 7. Check parent completion
+### 8. Check parent completion
 
 Are ALL slices for the parent work item now tagged `done`?
 

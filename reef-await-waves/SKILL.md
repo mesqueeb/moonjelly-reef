@@ -18,7 +18,7 @@ Read the slice. It must have a `blocked-by` list referencing other slices.
 ## 1. Check dependencies
 
 ```sh
-git fetch origin
+git fetch origin --prune
 ```
 
 For each dependency in the `blocked-by` list:
@@ -37,11 +37,11 @@ Check if the blocking slice file has the `[done]` prefix.
 
 ## 2. Re-review the plan
 
-Earlier slices may have changed the codebase. Check out the feature branch and look at what's changed:
+Earlier slices may have changed the codebase. Use a temporary worktree to inspect the feature branch without disturbing the main checkout:
 
 ```sh
-git checkout {feature-branch}
-git pull origin {feature-branch}
+git worktree add ../worktree-await-{slice-name} origin/{feature-branch}
+cd ../worktree-await-{slice-name}
 ```
 
 Read this slice's acceptance criteria and compare against the current state of the code:
@@ -71,6 +71,13 @@ Change label from `to-await-waves` to `to-implement`.
 ### Local tracker
 
 Rename from `[to-await-waves] ...` to `[to-implement] ...`.
+
+## 4. Clean up
+
+```sh
+cd ..
+git worktree remove ../worktree-await-{slice-name}
+```
 
 ## Handoff
 

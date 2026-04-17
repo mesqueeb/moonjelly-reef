@@ -25,7 +25,7 @@ Read the work item. It must contain a plan with success criteria (from reef-scop
 Read the base branch and feature branch name from the plan metadata.
 
 ```sh
-git fetch origin
+git fetch origin --prune
 git checkout -b {feature-branch} origin/{base-branch}
 git push -u origin {feature-branch}
 ```

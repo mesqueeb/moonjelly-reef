@@ -29,14 +29,12 @@ If any of these are missing, check the parent plan for the feature branch. If yo
 This is non-negotiable. Every step must pass before writing any code.
 
 ```sh
-# Fetch latest remote state
-git fetch origin
+# Fetch latest and prune stale tracking branches
+git fetch origin --prune
 
 # Create a worktree from the feature branch
-# Use a descriptive branch name for this slice
-git worktree add ../worktree-{slice-name} origin/{feature-branch}
+git worktree add ../worktree-{slice-name} -b {slice-branch} origin/{feature-branch}
 cd ../worktree-{slice-name}
-git checkout -b {slice-branch}
 ```
 
 Verify:

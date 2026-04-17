@@ -445,6 +445,10 @@ The human reviews and either:
 
 </details>
 
+## Git hygiene
+
+Every agent works in its own git worktree — the main checkout is never touched. A feature branch is created from the base branch; all slice PRs target it. Implementation worktrees persist until their PR is merged; temporary worktrees (review, inspection) are torn down immediately. Only the merge skill removes worktrees and branches. Every git operation begins with `git fetch origin --prune`. No `--force` flags, ever. Before merging a slice, the branch is verified current with the feature branch; after merging, the feature branch suite must be green.
+
 ## Skill index
 
 | 🏷️ Tag           | Skill               | Actor | Lore                                                                                                                  |
