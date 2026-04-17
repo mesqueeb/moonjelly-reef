@@ -1,17 +1,12 @@
----
-name: reef-inspect
-description: Independently verify a slice PR against its acceptance criteria and the full test suite. Do not trust the implementer's self-report. Use when a slice is tagged to-inspect.
----
+# inspect
 
-# reef-inspect
-
-> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
+> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
 
 ## Input
 
-This skill requires a specific slice: `/reef-inspect #55` or `/reef-inspect my-feature/001-auth-endpoint`.
+This skill requires a specific slice: e.g. `#55` or `my-feature/001-auth-endpoint`.
 
 Read the slice to find the PR reference. If the slice doesn't have a PR linked, check for open PRs referencing this slice:
 
@@ -113,4 +108,4 @@ Add the feedback to the slice file body.
 
 ## Handoff
 
-If dispatched by reef-pulse, report the verdict and a one-line summary. Next skill: `/reef-merge` (if approved) or `/reef-rework` (if gaps).
+If dispatched by reef-pulse, report the verdict and a one-line summary.

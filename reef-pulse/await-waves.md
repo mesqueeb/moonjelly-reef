@@ -1,17 +1,12 @@
----
-name: reef-await-waves
-description: Check if a blocked slice's dependencies are done. If ready, re-review the plan against current state and promote to to-implement. Use when a slice is tagged to-await-waves.
----
+# await-waves
 
-# reef-await-waves
-
-> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
+> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
 
 ## Input
 
-This skill requires a specific slice: `/reef-await-waves #55` or `/reef-await-waves my-feature/002-token-storage`.
+This skill requires a specific slice: e.g. `#55` or `my-feature/002-token-storage`.
 
 Read the slice. It must have a `blocked-by` list referencing other slices.
 
@@ -81,4 +76,4 @@ git worktree remove ../worktree-await-{slice-name}
 
 ## Handoff
 
-If dispatched by reef-pulse, report: "Slice {name} is unblocked and ready for implementation." The next skill is `/reef-implement`.
+If dispatched by reef-pulse, report: "Slice {name} is unblocked and ready for implementation."

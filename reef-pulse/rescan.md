@@ -1,17 +1,12 @@
----
-name: reef-rescan
-description: Analyze gaps found by reef-ratify, re-review the entire parent plan, and create new slices for remaining work. Use when a work item is tagged to-rescan.
----
+# rescan
 
-# reef-rescan
-
-> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
+> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
 
 ## Input
 
-This skill requires a specific work item: `/reef-rescan #42` or `/reef-rescan my-feature`.
+This skill requires a specific work item: e.g. `#42` or `my-feature`.
 
 Read the parent plan fully — the plan, success criteria, coverage matrix, agent decisions, and the ratify report that identified the gaps.
 
@@ -39,7 +34,7 @@ Read the ratify report's gaps. For each gap, classify it:
 
 ### 2. Re-review the parent plan
 
-This is the step that makes reef-rescan different from just "create follow-up tickets."
+This is the step that makes rescanning different from just "create follow-up tickets."
 
 Read the entire parent plan top to bottom. With the ratify report's findings in mind:
 
@@ -61,7 +56,7 @@ For each gap, create a new slice with acceptance criteria that explicitly addres
 
 Key discipline: if the gap was caused by an agent skipping something (painpoint C1), the new slice's acceptance criteria must call out what was skipped and why it matters. Don't let the same failure mode repeat.
 
-Follow the same format as reef-slice:
+Follow the same format as the slice phase:
 
 - Acceptance criteria specific to the gap
 - `blocked-by` references if the new slice depends on anything
@@ -97,7 +92,7 @@ If a gap relates to a slice that was marked `done` but is now revealed as incomp
 
 ### 6. Tag
 
-Change parent from `to-rescan` to `in-progress`. reef-merge will change it to `to-ratify` when all slices (including new ones) are `done`.
+Change parent from `to-rescan` to `in-progress`. The merge phase will change it to `to-ratify` when all slices (including new ones) are `done`.
 
 ## Handoff
 

@@ -68,7 +68,7 @@ The tracker type is defined in `.agents/moonjelly-reef/config.md`.
 
 ## MCP setup
 
-For non-GitHub, non-local trackers, the user should have the relevant MCP server configured in their Claude Code settings. reef-setup prompts for this during initial configuration.
+For non-GitHub, non-local trackers, the user should have the relevant MCP server configured in their Claude Code settings. The setup phase (`setup.md`) prompts for this during initial configuration.
 
 Common MCP servers:
 - Jira / Confluence: Atlassian's official remote MCP server at `https://mcp.atlassian.com/v1/sse` (or community `mcp-atlassian` package). CLI alternative: `jira-cli` by ankitpokhrel.

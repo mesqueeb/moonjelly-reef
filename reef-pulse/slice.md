@@ -1,13 +1,8 @@
----
-name: reef-slice
-description: Break a scoped plan into vertical slices with acceptance criteria, dependency graph, and coverage matrix. Creates the feature branch. Use when a work item is tagged to-slice.
----
+# slice
 
-# reef-slice
+Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, read and follow [setup.md](setup.md) first and return here after.
 
-Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, run `/reef-setup` first and return here after.
-
-> **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
+> **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
 
@@ -15,7 +10,7 @@ Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, run `
 
 This skill accepts:
 
-- A specific work item: `/reef-slice #42` or `/reef-slice my-feature`
+- A specific work item: e.g. `#42` or `my-feature`
 - Nothing: look for items tagged `to-slice`. If multiple, ask the user to pick. If none, explain that items need to be scoped first and suggest `/reef-scope`.
 
 Read the work item. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The plan metadata block tells you the work type, base branch, and feature branch name.
@@ -134,16 +129,14 @@ Each slice file follows the same body template as the GitHub issue above, but wi
 
 ### GitHub tracker
 
-Append the coverage matrix to the parent issue body. Change label from `to-slice` to `in-progress`. reef-merge will change it to `to-ratify` when all slices are done.
+Append the coverage matrix to the parent issue body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-ratify` once all slices are done.
 
 Add a comment listing all created sub-issues with their tags.
 
 ### Local tracker
 
-Append the coverage matrix to the parent plan file. Rename from `[to-slice] plan.md` to `[in-progress] plan.md`. reef-merge will rename it to `[to-ratify] plan.md` when all slices are done.
+Append the coverage matrix to the parent plan file. Rename from `[to-slice] plan.md` to `[in-progress] plan.md`. It will be renamed to `[to-ratify] plan.md` once all slices are done.
 
 ## Handoff
 
-Tell the user:
-
-> "Slices created with acceptance criteria, dependency graph, and coverage matrix. Unblocked slices are tagged `to-implement` and ready for `/reef-implement`. Run `/reef-pulse` to kick them all off."
+Report: "Slices created with acceptance criteria, dependency graph, and coverage matrix. Unblocked slices are tagged `to-implement` and ready for implementation. Run `/reef-pulse` to kick them all off."

@@ -1,27 +1,22 @@
----
-name: reef-ratify
-description: Holistic review of the entire feature branch against all success criteria. Produces a final report for human review. Use when a work item is tagged to-ratify with all slices merged.
----
+# ratify
 
-# reef-ratify
-
-> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
+> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
 
 ## Input
 
-This skill requires a specific work item: `/reef-ratify #42` or `/reef-ratify my-feature`.
+This skill requires a specific work item: e.g. `#42` or `my-feature`.
 
 Read the parent plan. It must have:
 - Success criteria
 - Coverage matrix
 - Feature branch name (in metadata)
-- Agent decisions section (appended by reef-merge from each slice)
+- Agent decisions section (appended by the merge phase from each slice)
 
 ## Mindset
 
-You are checking the **whole**, not the parts. Each slice was already verified individually by reef-inspect. Your job is different: does the aggregate work? Does the feature branch, taken as a whole, meet every success criterion from the consumer's perspective?
+You are checking the **whole**, not the parts. Each slice was already verified individually during inspection. Your job is different: does the aggregate work? Does the feature branch, taken as a whole, meet every success criterion from the consumer's perspective?
 
 Think like a CTO doing a final walkthrough before shipping.
 
@@ -62,7 +57,7 @@ Mark each criterion: ✓ met, ✗ not met (with explanation).
 
 ### 4. Review all agent decisions
 
-Read the "Agent decisions" section on the parent (aggregated by reef-merge from each slice's PR). For each decision:
+Read the "Agent decisions" section on the parent (aggregated by the merge phase from each slice's PR). For each decision:
 
 - Does it make sense?
 - Did it introduce drift from the original success criteria or decision record?
@@ -128,11 +123,11 @@ The report should be concise and focused on what the human needs to know. Do NOT
 
 ### GitHub tracker
 
-Add label `to-finalise` to the parent issue. Remove `to-ratify`.
+Add label `to-land` to the parent issue. Remove `to-ratify`.
 
 ### Local tracker
 
-Rename parent from `[to-ratify] ...` to `[to-finalise] ...`.
+Rename parent from `[to-ratify] ...` to `[to-land] ...`.
 
 **If gaps found:**
 
@@ -156,5 +151,5 @@ Don't document what's obvious from reading the code.
 
 ## Handoff
 
-If pass: "Feature branch reviewed and final report written on PR #{number}. Ready for `/reef-finalise` — human review."
-If gaps: "Gaps found during holistic review. Tagged `to-rescan` for `/reef-rescan` to create new slices."
+If pass: "Feature branch reviewed and final report written on PR #{number}. Ready for `/reef-land` — human review."
+If gaps: "Gaps found during holistic review. Tagged `to-rescan` for rescanning to create new slices."

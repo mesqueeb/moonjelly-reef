@@ -1,19 +1,14 @@
----
-name: reef-implement
-description: Implement a slice using TDD in a git worktree. Opens a PR with a structured report. Use when a slice is tagged to-implement.
----
+# implement
 
-# reef-implement
+Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, read and follow [setup.md](setup.md) first and return here after.
 
-Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, run `/reef-setup` first and return here after.
-
-> **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
+> **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
 
 ## Input
 
-This skill requires a specific slice: `/reef-implement #55` or `/reef-implement my-feature/001-auth-endpoint`.
+This skill requires a specific slice: e.g. `#55` or `my-feature/001-auth-endpoint`.
 
 If no slice is given, look for slices tagged `to-implement`. If multiple, pick the first unblocked one (or ask).
 
@@ -144,4 +139,4 @@ Add the PR number/URL to the slice file body.
 
 ## Handoff
 
-If dispatched by reef-pulse or an orchestrator, report completion. The next skill to run on this slice is `/reef-inspect`.
+If dispatched by reef-pulse or an orchestrator, report completion. The next phase for this slice is inspection.

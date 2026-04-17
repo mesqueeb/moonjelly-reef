@@ -5,9 +5,9 @@ description: The Moonjelly Reef orchestrator. A single pulse that scans all work
 
 # reef-pulse
 
-Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, run `/reef-setup` first and return here after.
+Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, read and follow [setup.md](setup.md) first and return here after.
 
-> **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
+> **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
 
 You are the orchestrator. You scan, dispatch, and exit. You hold no state — tags are the state.
 
@@ -39,7 +39,7 @@ gh issue list --label "to-rework" --json number,title --limit 100
 gh issue list --label "to-merge" --json number,title --limit 100
 gh issue list --label "to-ratify" --json number,title --limit 100
 gh issue list --label "to-rescan" --json number,title --limit 100
-gh issue list --label "to-finalise" --json number,title --limit 100
+gh issue list --label "to-land" --json number,title --limit 100
 ```
 
 Run these queries in parallel where possible for performance.
@@ -55,25 +55,29 @@ Read the local path from config. Scan all work item folders for tagged files:
 
 **Do NOT ask the user for confirmation. Dispatch immediately.** The tags are the authorization — if an item is tagged for automated work, dispatch it without hesitation.
 
-For each item found, dispatch the corresponding skill as a sub-agent. Use the Agent tool. Items that share no dependencies can be dispatched **in parallel**.
+For each item found, dispatch the corresponding phase as a sub-agent. Use the Agent tool. Items that share no dependencies can be dispatched **in parallel**.
 
-| Tag | Skill | Notes |
+Dispatch by telling sub-agents to read and follow a specific file:
+
+> "Read and follow the instructions in `reef-pulse/implement.md`. Your target is #55."
+
+| Tag | File | Notes |
 | --- | --- | --- |
-| `to-slice` | `/reef-slice` | One at a time per parent (creates feature branch + sub-issues) |
-| `to-await-waves` | `/reef-await-waves` | Parallel OK — each is independent |
-| `to-implement` | `/reef-implement` | Parallel OK for unrelated slices. Slices within the same parent may be dispatched as an **agent team** if multiple are ready |
-| `to-inspect` | `/reef-inspect` | Parallel OK |
-| `to-rework` | `/reef-rework` | Parallel OK |
-| `to-merge` | `/reef-merge` | One at a time per parent (modifies feature branch) |
-| `to-ratify` | `/reef-ratify` | One at a time per parent |
-| `to-rescan` | `/reef-rescan` | One at a time per parent |
+| `to-slice` | [slice.md](slice.md) | One at a time per parent (creates feature branch + sub-issues) |
+| `to-await-waves` | [await-waves.md](await-waves.md) | Parallel OK — each is independent |
+| `to-implement` | [implement.md](implement.md) | Parallel OK for unrelated slices. Slices within the same parent may be dispatched as an **agent team** if multiple are ready |
+| `to-inspect` | [inspect.md](inspect.md) | Parallel OK |
+| `to-rework` | [rework.md](rework.md) | Parallel OK |
+| `to-merge` | [merge.md](merge.md) | One at a time per parent (modifies feature branch) |
+| `to-ratify` | [ratify.md](ratify.md) | One at a time per parent |
+| `to-rescan` | [rescan.md](rescan.md) | One at a time per parent |
 
-When dispatching, pass the item reference as a parameter: e.g. dispatch `/reef-implement #55`.
+When dispatching, pass the item reference as a parameter: e.g. "Read and follow `reef-pulse/implement.md`. Target: #55."
 
 **When to use agent teams vs sub-agents for `to-implement`:**
 
-- **1-2 slices ready**: use regular sub-agents (Agent tool). Dispatch `/reef-implement {slice-ref}` for each.
-- **3+ slices ready from the same parent**: use an agent team. Each teammate claims a slice and runs `/reef-implement {slice-ref}`. The skill handles worktree setup, PR creation, and reporting — just pass the slice reference.
+- **1-2 slices ready**: use regular sub-agents (Agent tool). Dispatch `reef-pulse/implement.md` for each with the slice reference.
+- **3+ slices ready from the same parent**: use an agent team. Each teammate claims a slice and follows `reef-pulse/implement.md` with its slice reference. The instructions handle worktree setup, PR creation, and reporting — just pass the slice reference.
 
 ### Step 3. Present human (🤿) items (--hitl only)
 
@@ -82,7 +86,9 @@ If running in `--hitl` mode, present human-required items:
 | Tag | Skill | Presentation |
 | --- | --- | --- |
 | `to-scope` | `/reef-scope` | "**{title}** needs scoping. Run `/reef-scope #{number}`." |
-| `to-finalise` | `/reef-finalise` | "**{title}** is ready for your final review. Run `/reef-finalise #{number}`." |
+| `to-land` | `/reef-land` | "**{title}** is ready for your final review. Run `/reef-land #{number}`." |
+
+> Note: reef-scope and reef-land remain user-facing skills invoked via slash commands. Only the automated (🌊) phases are dispatched via file references.
 
 If running in `--afk` mode, skip this step entirely.
 
@@ -94,14 +100,14 @@ Print a summary of what was dispatched:
 🪼 Pulse complete.
 
   Dispatched:
-    🌊 reef-implement #55 (auth-endpoint)
-    🌊 reef-implement #56 (user-profile)
-    🌊 reef-inspect #53 (db-migration)
-    🌊 reef-merge #51 (schema-setup)
+    🌊 implement.md #55 (auth-endpoint)
+    🌊 implement.md #56 (user-profile)
+    🌊 inspect.md #53 (db-migration)
+    🌊 merge.md #51 (schema-setup)
 
   Awaiting human:
     🤿 to-scope: #60 (new-dashboard-idea)
-    🤿 to-finalise: #42 (token-auth-migration)
+    🤿 to-land: #42 (token-auth-migration)
 
   Idle:
     ⏳ to-await-waves: #57 (legacy-compat) — blocked by #55, #56

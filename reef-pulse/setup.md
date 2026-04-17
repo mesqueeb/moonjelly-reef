@@ -1,9 +1,4 @@
----
-name: reef-setup
-description: First-time setup for Moonjelly Reef. Detects or asks for issue tracker type, creates config, checks for required skills. Triggered automatically by any reef skill when config is missing.
----
-
-# reef-setup
+# setup
 
 You are setting up Moonjelly Reef for this project. This only runs once — when `.agents/moonjelly-reef/config.md` does not exist.
 
@@ -72,7 +67,7 @@ If not found:
 > npx skills@latest add mattpocock/skills/tdd
 > ```
 
-If the user declines, that's fine — note it in config. reef-implement has built-in TDD instructions it uses when the skill isn't available.
+If the user declines, that's fine — note it in config. The implement phase (`implement.md`) has built-in TDD instructions it uses when the skill isn't available.
 
 ### 3. Check for ubiquitous-language skill
 
@@ -86,7 +81,7 @@ If not found:
 > npx skills@latest add mattpocock/skills/ubiquitous-language
 > ```
 
-If the user declines, that's fine — note it in config. reef-scope and reef-ratify will skip the terminology steps.
+If the user declines, that's fine — note it in config. The scope and ratify phases will skip the terminology steps.
 
 ### 4. Write config
 
@@ -95,12 +90,12 @@ Create `.agents/moonjelly-reef/config.md`:
 ```markdown
 # Moonjelly Reef Config
 
-| Setting | Value |
-| --- | --- |
-| Tracker | github |
-| Local path | — |
-| tdd installed | yes |
-| ubiquitous-language installed | yes |
+| Setting                       | Value  |
+| ----------------------------- | ------ |
+| Tracker                       | github |
+| Local path                    | —      |
+| tdd installed                 | yes    |
+| ubiquitous-language installed | yes    |
 ```
 
 For local tracker, `Local path` would be the chosen directory (e.g. `.agents/moonjelly-reef/issue-tracker/`).

@@ -1,17 +1,12 @@
----
-name: reef-merge
-description: Merge an approved slice PR into the feature branch. Update sibling and parent status. Append agent decisions to parent. Use when a slice is tagged to-merge.
----
+# merge
 
-# reef-merge
-
-> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
+> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
 
 ## Input
 
-This skill requires a specific slice: `/reef-merge #55` or `/reef-merge my-feature/001-auth-endpoint`.
+This skill requires a specific slice: e.g. `#55` or `my-feature/001-auth-endpoint`.
 
 Read the slice to find the PR reference and the parent plan reference.
 
@@ -34,7 +29,7 @@ gh pr view {pr-number} --json mergeStateStatus -q .mergeStateStatus
 
 If the slice branch is behind the feature branch (merge conflicts or `BEHIND`):
 
-1. Check out the implementation worktree (it should still exist from reef-implement)
+1. Check out the implementation worktree (it should still exist from the implement phase)
 2. Merge the feature branch into the slice branch: `git merge origin/{feature-branch}`
 3. Resolve any conflicts
 4. Run the full test suite — must be green with the merged code
@@ -112,7 +107,7 @@ Append to the parent plan file, in a section below the coverage matrix:
 {paste the ambiguous choices section}
 ```
 
-This aggregates decisions at merge time so reef-ratify doesn't have to hunt through all PRs later.
+This aggregates decisions at merge time so the ratify phase doesn't have to hunt through all PRs later.
 
 ### 6. Close the slice
 
@@ -126,7 +121,7 @@ Rename from `[to-merge] ...` to `[done] ...`.
 
 ### 7. Check siblings
 
-Look at all sibling slices (other slices under the same parent). For any that are tagged `to-await-waves`, check their `blocked-by` list. If this merged slice was the last blocker, they may now be unblockable — but don't promote them directly. Leave them as `to-await-waves`. The next pulse will dispatch `/reef-await-waves` on them, which will re-review their plan against the now-changed feature branch before promoting.
+Look at all sibling slices (other slices under the same parent). For any that are tagged `to-await-waves`, check their `blocked-by` list. If this merged slice was the last blocker, they may now be unblockable — but don't promote them directly. Leave them as `to-await-waves`. The next pulse will dispatch the await-waves phase on them, which will re-review their plan against the now-changed feature branch before promoting.
 
 ### 8. Check parent completion
 
@@ -146,4 +141,4 @@ If not all done, do nothing — more slices are still in progress.
 
 ## Handoff
 
-Report: "Slice {name} merged. {N} of {total} slices complete." If the parent was promoted to `to-ratify`, add: "All slices done — parent is ready for `/reef-ratify`."
+Report: "Slice {name} merged. {N} of {total} slices complete." If the parent was promoted to `to-ratify`, add: "All slices done — parent is ready for ratification."

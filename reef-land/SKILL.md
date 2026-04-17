@@ -1,17 +1,17 @@
 ---
-name: reef-finalise
-description: Present the final report to the human for review. Human approves (merge to main), requests changes, or sends back for re-probing. Use when a work item is tagged to-finalise.
+name: reef-land
+description: Present the final report to the human for review. Human approves (merge to main), requests changes, or sends back for re-probing. Use when a work item is tagged to-land.
 ---
 
-# reef-finalise
+# reef-land
 
-> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
+> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-pulse/tracker-reference.md).
 
 ## Input
 
-This skill requires a specific work item: `/reef-finalise #42` or `/reef-finalise my-feature`.
+This skill requires a specific work item: `/reef-land #42` or `/reef-land my-feature`.
 
-Read the parent plan to find the feature branch PR (created by reef-ratify). Read the final report on that PR.
+Read the parent plan to find the feature branch PR (created during the ratify phase). Read the final report on that PR.
 
 ## Present the report
 
@@ -53,7 +53,7 @@ Rename parent to `[done] plan.md`. Optionally move the folder to an `archive/` o
 
 ### GitHub tracker
 
-Change the parent issue label to `to-scope`. Remove `to-finalise`.
+Change the parent issue label to `to-scope`. Remove `to-land`.
 
 ### Local tracker
 
@@ -63,7 +63,7 @@ Rename parent to `[to-scope] plan.md`.
 
 ### GitHub tracker
 
-Change the parent issue label to `to-rescan`. Remove `to-finalise`.
+Change the parent issue label to `to-rescan`. Remove `to-land`.
 
 ### Local tracker
 

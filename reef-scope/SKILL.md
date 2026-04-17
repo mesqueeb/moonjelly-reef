@@ -5,9 +5,9 @@ description: Scope a work item into a plan with success criteria. Routes between
 
 # reef-scope
 
-Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, run `/reef-setup` first and return here after.
+Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, run `/reef-pulse` and follow `reef-pulse/setup.md` first, then return here after.
 
-> **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-setup/tracker-reference.md).
+> **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-pulse/tracker-reference.md).
 
 ## Input
 
