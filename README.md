@@ -154,7 +154,7 @@ Automatically breaks the plan into vertical slices, or determines a single slice
 
 | source file       | [`reef-pulse/slice.md`](reef-pulse/slice.md)                                                                                                                |
 | :---------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| git ops           | 🔷　multi-slice: create branch {target} from {base}<br />🔶　single-slice: — |
+| git ops           | 🔷　multi-slice: create branch {target} from {base}<br />🔶　single-slice: set {target} = {base}, no new branch |
 | updates code      | no                                                                                                                                                          |
 | persist report at | 🔷　multi-slice: plan + slice<br />🔶　single-slice: plan                                                                                                   |
 | change tag on     | 🔷　multi-slice: plan + slice<br />🔶　single-slice: plan                                                                                                   |
