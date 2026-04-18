@@ -32,8 +32,6 @@ cd "$WORKTREE"
 ```
 
 Verify:
-- [ ] Worktree is based on the latest `origin/{target-branch}`
-- [ ] No unrelated commits are present (`git log --oneline -5` — should see only target branch history)
 - [ ] The project builds / compiles cleanly before you touch anything
 - [ ] The full test suite passes before you touch anything (this is your baseline)
 

@@ -250,7 +250,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 
 | source file       | [`reef-pulse/ratify.md`](reef-pulse/ratify.md)                                                    |
 | :---------------- | :------------------------------------------------------------------------------------------------ |
-| git ops           | enter worktree on {target}<br />pass: open PR {target} → {base}, exit worktree<br />gaps: exit worktree |
+| git ops           | enter worktree on {target}<br />pass: `gh pr create` {target} → {base}, optional doc push, exit worktree<br />gaps: exit worktree |
 | updates code      | may push docs to {target}                                                                         |
 | persist report at | pass: plan PR<br />gaps: plan                                                                     |
 | change tag on     | plan                                                                                              |
