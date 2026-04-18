@@ -57,7 +57,7 @@ Use squash merge by default unless the project convention differs. `--delete-bra
 Use a temporary worktree to verify the target branch after merge.
 
 ```sh
-WORKTREE=$(reef-worktree-enter.sh \
+WORKTREE=$(worktree-enter.sh \
   --base-branch {base-branch} --target-branch {target-branch} \
   --phase merge --slice {slice-name})
 cd "$WORKTREE"
@@ -68,13 +68,13 @@ Run the full test suite. If it fails, **do not proceed** — tag the slice `to-r
 For local tracker: perform the metadata writes (steps 4–7) inside this worktree before exiting, then commit and push:
 
 ```sh
-reef-worktree-commit.sh --target-branch {target-branch} -m "merge: close {slice-name}, update plan"
+commit.sh --target-branch {target-branch} -m "merge: close {slice-name}, update plan"
 ```
 
 Clean up:
 
 ```sh
-reef-worktree-exit.sh --path "$WORKTREE"
+worktree-exit.sh --path "$WORKTREE"
 ```
 
 ### 4. Document judgment calls

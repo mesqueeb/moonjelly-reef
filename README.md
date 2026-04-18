@@ -277,7 +277,7 @@ Analyze gaps found by ratify, re-review the entire plan, create new slices to ad
 
 ## Git hygiene
 
-Every agent works in its own git worktree via `reef-worktree-enter.sh` / `reef-worktree-exit.sh` / `reef-worktree-commit.sh` — the main checkout is never touched. For multi-slice work, a target branch is created from the base branch; slice PRs target it. For single-slice work, the target branch equals the base branch. Every phase creates its own worktree and tears it down before exiting. No inline git worktree commands, no `--force` flags, ever.
+Every agent works in its own git worktree via `worktree-enter.sh` / `worktree-exit.sh` / `commit.sh` — the main checkout is never touched. For multi-slice work, a target branch is created from the base branch; slice PRs target it. For single-slice work, the target branch equals the base branch. Every phase creates its own worktree and tears it down before exiting. No inline git worktree commands, no `--force` flags, ever.
 
 ## Autopilot
 

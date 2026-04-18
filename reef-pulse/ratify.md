@@ -27,7 +27,7 @@ Think like a CTO doing a final walkthrough before shipping.
 Use a worktree so you don't disturb the main checkout or any other agent's work.
 
 ```sh
-WORKTREE=$(reef-worktree-enter.sh \
+WORKTREE=$(worktree-enter.sh \
   --base-branch {base-branch} --target-branch {target-branch} \
   --phase ratify --slice {title})
 cd "$WORKTREE"
@@ -145,7 +145,7 @@ When you find non-obvious behavior worth documenting during your holistic review
 1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and push directly to the target branch:
 
 ```sh
-reef-worktree-commit.sh --target-branch {target-branch} -m "ratify: add documentation"
+commit.sh --target-branch {target-branch} -m "ratify: add documentation"
 ```
 2. **Outside-of-code docs if warranted.** If the behavior is significant enough to document beyond a code comment, check the repo's `AGENTS.md`/`CLAUDE.md` for a documentation locations section. If it exists, follow it. If it doesn't, create a brief entry.
 
@@ -154,7 +154,7 @@ Don't document what's obvious from reading the code.
 ## Clean up
 
 ```sh
-reef-worktree-exit.sh --path "$WORKTREE"
+worktree-exit.sh --path "$WORKTREE"
 ```
 
 ## Handoff

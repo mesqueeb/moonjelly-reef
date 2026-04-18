@@ -73,13 +73,13 @@ There are two kinds of writes in a reef workflow. Each uses a different push str
 **Code changes** (implement, inspect cleanup, rework) need review. They push to a **slice branch** and go through a PR:
 
 ```sh
-reef-worktree-commit.sh --slice-branch {slice-branch} -m "implement: ..."
+commit.sh --slice-branch {slice-branch} -m "implement: ..."
 ```
 
 **Metadata changes** (slice creation, coverage matrix updates, tag renames, rescan slices) are mechanical and need no review. They push **directly to the target branch**:
 
 ```sh
-reef-worktree-commit.sh --target-branch {target-branch} -m "slice: update plan"
+commit.sh --target-branch {target-branch} -m "slice: update plan"
 ```
 
 ### Phase push targets
@@ -97,7 +97,7 @@ reef-worktree-commit.sh --target-branch {target-branch} -m "slice: update plan"
 
 GitHub tracker phases that only update issues (via `gh issue edit`) don't need to push at all — the changes live on GitHub, not in the repo.
 
-Local tracker phases write plan/slice files to disk, so they must commit and push to keep other agents' worktrees in sync. Every local tracker write should be followed by a `reef-worktree-commit.sh` call before exiting.
+Local tracker phases write plan/slice files to disk, so they must commit and push to keep other agents' worktrees in sync. Every local tracker write should be followed by a `commit.sh` call before exiting.
 
 ## MCP setup
 

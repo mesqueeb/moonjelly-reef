@@ -13,6 +13,7 @@ This skill requires a specific slice: e.g. `#55` or `my-feature/001-auth-endpoin
 If no slice is given, look for slices tagged `to-implement`. If multiple, pick the first unblocked one (or ask).
 
 Read the slice (issue or file). It must contain:
+
 - Acceptance criteria
 - Target branch name (in "Plan context" section)
 - Parent plan reference
@@ -24,14 +25,12 @@ If the target branch is missing from the slice, check the plan metadata. The tar
 This is non-negotiable. Every step must pass before writing any code.
 
 ```sh
-WORKTREE=$(reef-worktree-enter.sh \
-  --base-branch {base-branch} --target-branch {target-branch} \
-  --phase implement --slice {slice-name} \
-  --slice-branch {slice-branch} --branch-op create)
+WORKTREE=$(worktree-enter.sh --base-branch {base-branch} --target-branch {target-branch} --phase implement --slice {slice-name} --slice-branch {slice-branch} --branch-op create)
 cd "$WORKTREE"
 ```
 
 Verify:
+
 - [ ] The project builds / compiles cleanly before you touch anything
 - [ ] The full test suite passes before you touch anything (this is your baseline)
 
@@ -93,7 +92,7 @@ Decisions made during implementation that weren't covered by the acceptance crit
 ## 5. Open the PR
 
 ```sh
-reef-worktree-commit.sh --slice-branch {slice-branch} -m "{slice-name}: implementation"
+commit.sh --slice-branch {slice-branch} -m "{slice-name}: implementation"
 gh pr create --base {target-branch} --title "{slice-name}" --body "{report}"
 ```
 
@@ -106,7 +105,7 @@ Document judgment calls made during this phase on the PR. Only document decision
 ## 7. Clean up
 
 ```sh
-reef-worktree-exit.sh --path "$WORKTREE" --slice-branch {slice-branch}
+worktree-exit.sh --path "$WORKTREE" --slice-branch {slice-branch}
 ```
 
 ## 8. Tag the slice

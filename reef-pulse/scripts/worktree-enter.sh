@@ -1,8 +1,8 @@
 #!/bin/sh
-# reef-worktree-enter.sh — create a git worktree for a reef phase
+# worktree-enter.sh — create a git worktree for a reef phase
 #
 # Usage:
-#   reef-worktree-enter.sh --base-branch {branch} --target-branch {branch} --phase {phase} --slice {name} \
+#   worktree-enter.sh --base-branch {branch} --target-branch {branch} --phase {phase} --slice {name} \
 #     [--slice-branch {name} --branch-op create|checkout]
 #
 # --base-branch:   the plan's base branch (required for context/safety, not yet used in logic — see #20)
@@ -53,7 +53,7 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -z "$BASE_BRANCH" ] || [ -z "$TARGET_BRANCH" ] || [ -z "$PHASE" ] || [ -z "$SLICE" ]; then
-  echo "Usage: reef-worktree-enter.sh --base-branch {branch} --target-branch {branch} --phase {phase} --slice {name} [--slice-branch {name} --branch-op create|checkout]" >&2
+  echo "Usage: worktree-enter.sh --base-branch {branch} --target-branch {branch} --phase {phase} --slice {name} [--slice-branch {name} --branch-op create|checkout]" >&2
   exit 1
 fi
 

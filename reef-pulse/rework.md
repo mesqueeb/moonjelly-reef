@@ -15,7 +15,7 @@ Read the slice to find the PR reference.
 ### 0. Git prep
 
 ```sh
-WORKTREE=$(reef-worktree-enter.sh \
+WORKTREE=$(worktree-enter.sh \
   --base-branch {base-branch} --target-branch {target-branch} \
   --phase rework --slice {slice-name} \
   --slice-branch {slice-branch} --branch-op checkout)
@@ -46,7 +46,7 @@ Not a subset. The full project test suite must be green.
 ### 4. Push fixes
 
 ```sh
-reef-worktree-commit.sh --slice-branch {slice-branch} -m "rework: address inspection feedback"
+commit.sh --slice-branch {slice-branch} -m "rework: address inspection feedback"
 ```
 
 ### 5. Update the PR description
@@ -71,7 +71,7 @@ Document judgment calls made during this phase on the PR. Only document decision
 ### 7. Clean up
 
 ```sh
-reef-worktree-exit.sh --path "$WORKTREE"
+worktree-exit.sh --path "$WORKTREE"
 ```
 
 ### 8. Tag

@@ -1,7 +1,7 @@
 #!/bin/sh
-# reef-worktree-exit.sh — remove a git worktree, optionally clean up its branch
+# worktree-exit.sh — remove a git worktree, optionally clean up its branch
 #
-# Usage: reef-worktree-exit.sh --path {worktree-path} [--slice-branch {name}]
+# Usage: worktree-exit.sh --path {worktree-path} [--slice-branch {name}]
 #
 # --path:         absolute path to the worktree to remove
 # --slice-branch: if given, delete this local branch after removing the worktree
@@ -26,7 +26,7 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -z "$WORKTREE_PATH" ]; then
-  echo "Usage: reef-worktree-exit.sh --path {worktree-path} [--slice-branch {name}]" >&2
+  echo "Usage: worktree-exit.sh --path {worktree-path} [--slice-branch {name}]" >&2
   exit 1
 fi
 

@@ -16,9 +16,30 @@ This skill accepts:
 - a specific issue: `/reef-scope #42` or `/reef-scope my-feature`
 - Nothing: look for items tagged `to-scope`. If multiple, ask the user to pick. If none, ask: "Did you want to scope something new?"
 
-Read the issue.
+Set the initial variables:
 
-## 0. Git prep
+```sh
+ISSUE_ID = {issue-id} # pre-existing and passed or generate
+LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md
+```
+
+## 0. Fetch context
+
+### GitHub tracker
+
+```sh
+gh issue view $ISSUE_ID --json body,title,labels
+```
+
+### Local tracker
+
+Read the file at:
+
+```sh
+$LOCAL_PATH/$ISSUE_ID (\w+)/[to-scope] plan.md
+```
+
+## 1. Git prep
 
 ```sh
 git fetch origin --prune
@@ -30,7 +51,7 @@ Check if the current branch is behind its remote counterpart. If it is, notify t
 
 Wait for the user's response before continuing.
 
-## 1. Write the plan
+## 2. Write the plan
 
 Read the issue and any existing decision record. Assess: is this a **feature**, **refactor**, or **bug**? Then follow the type-specific guide.
 
@@ -38,7 +59,7 @@ Read the issue and any existing decision record. Assess: is this a **feature**, 
 - **Refactor**: see [scope-refactor.md](scope-refactor.md)
 - **Bug**: see [triage-issue.md](triage-issue.md)
 
-## 2. Branch strategy
+## 3. Branch strategy
 
 Discuss with the user:
 
@@ -52,32 +73,38 @@ Also ask what the target branch should be called if creating one. Don't enforce 
 
 This gets documented in the plan so every downstream phase knows where to branch from and where PRs target.
 
-## 3. Persist the plan
+## 4. Persist the plan
 
-The plan gets **prepended** to the evolving file (pushing the decision record down). The decision record remains at the bottom for reference.
+The plan gets **prepended** to the evolving file (pushing the decision record down) which becomes our PLAN_CONTENT variable. The decision record remains at the bottom for reference.
+
+At the top of the plan content, include a metadata block that downstream phases will read:
+
+```sh
+BASE_BRANCH=$BASE_BRANCH
+TARGET_BRANCH=$TARGET_BRANCH
+```
+
+Set variables from the discussion:
+
+```sh
+PLAN_ID = $ISSUE_ID
+PLAN_TITLE = {plan-title} # as per discussion context
+BASE_BRANCH = {base-branch} # as per discussion context
+TARGET_BRANCH = {target-branch} # as per discussion context
+PLAN_CONTENT = {plan-content} # as per discussion context
+```
 
 ### GitHub tracker
 
-1. Read the current issue body (which contains the decision record).
-2. Prepend the plan above the decision record. Use `gh issue edit <number> --body "..."`.
-3. Change the plan label from `to-scope` to `to-slice`.
+```sh
+gh issue edit $PLAN_ID --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
+```
 
 ### Local tracker
 
-1. Read the current file (e.g. `{path}/{title}/[to-scope] plan.md`).
-2. Prepend the plan above the decision record content.
-3. Rename to `[to-slice] plan.md`.
-
-### Plan metadata
-
-At the top of the plan, include a metadata block that downstream skills will read:
-
-```markdown
-| Field          | Value                    |
-| -------------- | ------------------------ |
-| Type           | feature / refactor / bug |
-| Base branch    | main                     |
-| Target branch  | reef/my-feature          |
+```sh
+mv "$LOCAL_PATH/$PLAN_ID [to-scope] plan.md" "$LOCAL_PATH/$PLAN_ID [to-slice] $PLAN_TITLE.md"
+printf '%s' "$PLAN_CONTENT" > "$LOCAL_PATH/$PLAN_ID [to-slice] $PLAN_TITLE.md"
 ```
 
 ## Handoff

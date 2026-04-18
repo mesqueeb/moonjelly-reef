@@ -31,7 +31,7 @@ Check if the blocking slice file has the `[done]` prefix.
 Earlier slices may have changed the codebase. Use a temporary worktree to inspect the target branch without disturbing the main checkout:
 
 ```sh
-WORKTREE=$(reef-worktree-enter.sh \
+WORKTREE=$(worktree-enter.sh \
   --base-branch {base-branch} --target-branch {target-branch} \
   --phase await-waves --slice {slice-name})
 cd "$WORKTREE"
@@ -56,7 +56,7 @@ If acceptance criteria were updated, edit the slice issue body with `gh issue ed
 If acceptance criteria were updated, rewrite the slice file with the updated content. Commit and push so other agents see the update:
 
 ```sh
-reef-worktree-commit.sh --target-branch {target-branch} -m "await-waves: update criteria for {slice-name}"
+commit.sh --target-branch {target-branch} -m "await-waves: update criteria for {slice-name}"
 ```
 
 ## 3. Promote
@@ -72,7 +72,7 @@ Rename from `[to-await-waves] ...` to `[to-implement] ...`.
 ## 4. Clean up
 
 ```sh
-reef-worktree-exit.sh --path "$WORKTREE"
+worktree-exit.sh --path "$WORKTREE"
 ```
 
 ## Handoff

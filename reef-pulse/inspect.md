@@ -35,7 +35,7 @@ Use a worktree so you don't disturb the main checkout or any other agent's work.
 
 ```sh
 SLICE_BRANCH=$(gh pr view {pr-number} --json headRefName -q .headRefName)
-WORKTREE=$(reef-worktree-enter.sh \
+WORKTREE=$(worktree-enter.sh \
   --base-branch {base-branch} --target-branch {target-branch} \
   --phase inspect --slice {slice-name} \
   --slice-branch "$SLICE_BRANCH" --branch-op checkout)
@@ -72,7 +72,7 @@ Do these yourself — commit and push to the PR branch:
 
 ```sh
 # Only if you made cleanup commits
-reef-worktree-commit.sh --slice-branch "$SLICE_BRANCH" -m "inspect: cleanup"
+commit.sh --slice-branch "$SLICE_BRANCH" -m "inspect: cleanup"
 ```
 
 ### 5. Document judgment calls
@@ -106,7 +106,7 @@ Add the feedback to the slice file body.
 ## Clean up
 
 ```sh
-reef-worktree-exit.sh --path "$WORKTREE"
+worktree-exit.sh --path "$WORKTREE"
 ```
 
 ## Handoff

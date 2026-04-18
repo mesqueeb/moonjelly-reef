@@ -48,9 +48,9 @@ teardown_repos() {
   rm -rf "$TEST_ROOT"
 }
 
-enter() { "$SCRIPT_DIR/reef-worktree-enter.sh" "$@"; }
-exit_wt() { "$SCRIPT_DIR/reef-worktree-exit.sh" "$@"; }
-commit_wt() { "$SCRIPT_DIR/reef-worktree-commit.sh" "$@"; }
+enter() { "$SCRIPT_DIR/worktree-enter.sh" "$@"; }
+exit_wt() { "$SCRIPT_DIR/worktree-exit.sh" "$@"; }
+commit_wt() { "$SCRIPT_DIR/commit.sh" "$@"; }
 
 # ============================================================
 # ENTER TESTS
@@ -418,7 +418,7 @@ test_commit_fails_on_nothing_to_commit() {
 # Run all tests
 # ============================================================
 
-echo "=== reef-worktree-enter.sh ==="
+echo "=== worktree-enter.sh ==="
 test_enter_plan_level
 test_enter_create_slice_branch
 test_enter_checkout_existing_branch
@@ -429,7 +429,7 @@ test_enter_fails_if_worktree_exists
 test_enter_fails_on_missing_args
 
 echo ""
-echo "=== reef-worktree-exit.sh ==="
+echo "=== worktree-exit.sh ==="
 test_exit_removes_clean_worktree
 test_exit_fails_on_unstaged_changes
 test_exit_fails_on_staged_changes
@@ -437,7 +437,7 @@ test_exit_cleans_up_slice_branch
 test_exit_fails_on_missing_args
 
 echo ""
-echo "=== reef-worktree-commit.sh ==="
+echo "=== commit.sh ==="
 test_commit_with_slice_branch
 test_commit_with_target_branch
 test_commit_fails_with_both

@@ -53,7 +53,7 @@ If you drafted **2+ slices**, continue with the multi-slice flow below.
 Read the base branch and target branch name from the plan metadata.
 
 ```sh
-WORKTREE=$(reef-worktree-enter.sh \
+WORKTREE=$(worktree-enter.sh \
   --base-branch {base-branch} --target-branch {target-branch} \
   --phase slice --slice {title} \
   --slice-branch {target-branch} --branch-op create)
@@ -64,7 +64,7 @@ git push -u origin {target-branch}
 If the plan says to work on the current branch (no new target branch), use this alternative instead — skip the branch creation but still create a worktree to read the codebase:
 
 ```sh
-WORKTREE=$(reef-worktree-enter.sh \
+WORKTREE=$(worktree-enter.sh \
   --base-branch {base-branch} --target-branch {target-branch} \
   --phase slice --slice {title})
 cd "$WORKTREE"
@@ -163,7 +163,7 @@ Append the coverage matrix to the plan file. Rename from `[to-slice] plan.md` to
 Commit and push the plan and slice files so other agents see them:
 
 ```sh
-reef-worktree-commit.sh --target-branch {target-branch} -m "slice: create slices for {title}"
+commit.sh --target-branch {target-branch} -m "slice: create slices for {title}"
 ```
 
 ## 7. Document judgment calls
@@ -173,7 +173,7 @@ Document judgment calls made during this phase as a comment on the plan. Only do
 ## 8. Clean up
 
 ```sh
-reef-worktree-exit.sh --path "$WORKTREE"
+worktree-exit.sh --path "$WORKTREE"
 ```
 
 ## Handoff

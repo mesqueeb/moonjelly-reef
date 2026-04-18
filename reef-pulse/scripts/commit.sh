@@ -1,9 +1,9 @@
 #!/bin/sh
-# reef-worktree-commit.sh — stage, commit, and push changes from a worktree
+# commit.sh — stage, commit, and push changes from a worktree
 #
 # Usage:
-#   reef-worktree-commit.sh --slice-branch {name} -m {message}
-#   reef-worktree-commit.sh --target-branch {name} -m {message}
+#   commit.sh --slice-branch {name} -m {message}
+#   commit.sh --target-branch {name} -m {message}
 #
 # --slice-branch:  push to origin/{slice-branch} (code changes, PR flow)
 # --target-branch: push to origin/{target-branch} (metadata, direct push)
@@ -34,7 +34,7 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -z "$MESSAGE" ]; then
-  echo "Usage: reef-worktree-commit.sh (--slice-branch {name} | --target-branch {name}) -m {message}" >&2
+  echo "Usage: commit.sh (--slice-branch {name} | --target-branch {name}) -m {message}" >&2
   exit 1
 fi
 
@@ -49,7 +49,7 @@ if [ -n "$SLICE_BRANCH" ]; then
 elif [ -n "$TARGET_BRANCH" ]; then
   PUSH_TO="$TARGET_BRANCH"
 else
-  echo "Usage: reef-worktree-commit.sh (--slice-branch {name} | --target-branch {name}) -m {message}" >&2
+  echo "Usage: commit.sh (--slice-branch {name} | --target-branch {name}) -m {message}" >&2
   exit 1
 fi
 
