@@ -51,34 +51,11 @@ Before writing any code, read and understand:
 
 ## 3. Implement with TDD
 
-Invoke `/tdd` to do the implementation work. Before invoking, brief it with the context:
+Use `/tdd` to implement the acceptance criteria. If the `tdd` skill is not installed (check config), read and follow [tdd-lite.md](tdd-lite.md) instead.
 
-> "Implement the following acceptance criteria using TDD (red-green-refactor). The full project test suite must be green after each cycle — not just a subset.
->
-> **Acceptance criteria:**
-> {paste the acceptance criteria from the slice}
->
-> **Context from plan:**
-> {relevant section of the plan that explains the "why"}
->
-> **What to be aware of:**
-> {any relevant info from sibling slices, e.g. "slice 001 added a new `AuthService` interface — use it, don't create a new one"}
->
-> **Non-negotiable rules:**
-> - Run the FULL project test suite after each red-green cycle, not just the tests you wrote
-> - If you get stuck on an acceptance criterion, do NOT skip it. Make your best judgment, document what you decided and why, then continue
-> - Never silently skip an acceptance criterion"
+Run the full project test suite after each red-green cycle — not just the tests you wrote. If you get stuck on an acceptance criterion, make your best judgment, document what you decided and why (see "6. Document judgment calls" below), and continue. Never silently skip an acceptance criterion.
 
-If the `tdd` skill is not installed (check config), do the TDD work directly using this discipline:
-
-1. For each acceptance criterion, work in vertical slices — one at a time, not all tests first.
-2. **RED**: write a single test that captures the expected behavior for this acceptance criterion. Run it. It must fail.
-3. **GREEN**: write the minimal code to make that test pass. No more.
-4. Run the **full project test suite** (not just your new test). It must be green.
-5. Repeat for the next acceptance criterion.
-6. After all acceptance criteria pass: look for refactor opportunities (extract duplication, simplify interfaces). Run full suite after each refactor step. Never refactor while red.
-
-Tests should verify behavior through public interfaces, not implementation details. A good test reads like a specification — it survives internal refactors because it doesn't care about structure.
+Commit your work when implementation is complete.
 
 ## 4. Write the report
 
