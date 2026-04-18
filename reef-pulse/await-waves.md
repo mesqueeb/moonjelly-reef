@@ -12,10 +12,6 @@ Read the slice. It must have a `blocked-by` list referencing other slices.
 
 ## 1. Check dependencies
 
-```sh
-git fetch origin --prune
-```
-
 For each dependency in the `blocked-by` list:
 
 ### GitHub tracker
@@ -35,8 +31,10 @@ Check if the blocking slice file has the `[done]` prefix.
 Earlier slices may have changed the codebase. Use a temporary worktree to inspect the target branch without disturbing the main checkout:
 
 ```sh
-git worktree add ../worktree-await-{slice-name} origin/{target-branch}
-cd ../worktree-await-{slice-name}
+WORKTREE=$(reef-worktree-enter.sh \
+  --base-branch {base-branch} --target-branch {target-branch} \
+  --phase await-waves --slice {slice-name})
+cd "$WORKTREE"
 ```
 
 Read this slice's acceptance criteria and compare against the current state of the code:
@@ -70,8 +68,7 @@ Rename from `[to-await-waves] ...` to `[to-implement] ...`.
 ## 4. Clean up
 
 ```sh
-cd ..
-git worktree remove ../worktree-await-{slice-name}
+reef-worktree-exit.sh --path "$WORKTREE"
 ```
 
 ## Handoff
