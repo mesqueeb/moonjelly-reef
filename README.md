@@ -154,7 +154,7 @@ Automatically breaks the plan into vertical slices, or determines a single slice
 
 | source file       | [`reef-pulse/slice.md`](reef-pulse/slice.md)                                                                                                                |
 | :---------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| git ops           | 🔷　multi-slice: enter worktree, create {target} from {base}, push, exit worktree<br />🔶　single-slice: no git ops |
+| git ops           | 🔷　multi-slice: create branch {target} from {base}<br />🔶　single-slice: — |
 | updates code      | no                                                                                                                                                          |
 | persist report at | 🔷　multi-slice: plan + slice<br />🔶　single-slice: plan                                                                                                   |
 | change tag on     | 🔷　multi-slice: plan + slice<br />🔶　single-slice: plan                                                                                                   |
@@ -170,7 +170,7 @@ Check if a blocked slice's dependencies are all done. If yes, re-review the plan
 
 | source file       | [`reef-pulse/await-waves.md`](reef-pulse/await-waves.md) |
 | :---------------- | :------------------------------------------------------- |
-| git ops           | check deps, enter worktree on {target}, review code, exit worktree |
+| git ops           | — |
 | updates code      | no                                                       |
 | persist report at | slice (if criteria updated)                              |
 | change tag on     | slice                                                    |
@@ -186,7 +186,7 @@ Implement a slice using TDD in a git worktree. Create worktree → read context 
 
 | source file       | [`reef-pulse/implement.md`](reef-pulse/implement.md)                                             |
 | :---------------- | :----------------------------------------------------------------------------------------------- |
-| git ops           | enter worktree, create {slice} from {target}, commit+push, open PR {slice} → {target}, exit worktree |
+| git ops           | create branch {slice} from {target}, open PR {slice} → {target} |
 | updates code      | yes                                                                                              |
 | persist report at | 🔷　multi-slice: slice PR<br />🔶　single-slice: plan PR                                         |
 | change tag on     | 🔷　multi-slice: slice<br />🔶　single-slice: plan                                               |
@@ -202,7 +202,7 @@ Independently verify a slice PR. Run the full test suite, check each acceptance 
 
 | source file       | [`reef-pulse/inspect.md`](reef-pulse/inspect.md)                                                    |
 | :---------------- | :-------------------------------------------------------------------------------------------------- |
-| git ops           | enter worktree (checkout {slice})<br />pass: cleanup commits → push<br />fail: review only<br />exit worktree |
+| git ops           | — |
 | updates code      | cleanup only                                                                                        |
 | persist report at | 🔷　multi-slice: slice PR<br />🔶　single-slice: plan PR                                            |
 | change tag on     | 🔷　multi-slice: slice<br />🔶　single-slice: plan                                                  |
@@ -218,7 +218,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 
 | source file       | [`reef-pulse/rework.md`](reef-pulse/rework.md)             |
 | :---------------- | :--------------------------------------------------------- |
-| git ops           | enter worktree (checkout {slice}), fix commits → push, exit worktree |
+| git ops           | — |
 | updates code      | yes                                                        |
 | persist report at | 🔷　multi-slice: slice PR<br />🔶　single-slice: plan PR   |
 | change tag on     | 🔷　multi-slice: slice<br />🔶　single-slice: plan         |
@@ -234,7 +234,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 
 | source file       | [`reef-pulse/merge.md`](reef-pulse/merge.md)                                                                      |
 | :---------------- | :---------------------------------------------------------------------------------------------------------------- |
-| git ops           | 🔷　multi-slice: squash merge PR into {target}, enter verify worktree, run suite, exit worktree<br />🔶　single-slice: PR stays open |
+| git ops           | 🔷　multi-slice: squash merge PR into {target}, delete {slice} branch<br />🔶　single-slice: — |
 | updates code      | 🔷　multi-slice: squash merge into {target}<br />🔶　single-slice: no                                             |
 | persist report at | 🔷　multi-slice: plan<br />🔶　single-slice: —                                                                    |
 | change tag on     | 🔷　multi-slice: slice (+ plan when all done)<br />🔶　single-slice: plan                                         |
@@ -250,7 +250,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 
 | source file       | [`reef-pulse/ratify.md`](reef-pulse/ratify.md)                                                    |
 | :---------------- | :------------------------------------------------------------------------------------------------ |
-| git ops           | enter worktree on {target}<br />pass: `gh pr create` {target} → {base}, optional doc push, exit worktree<br />gaps: exit worktree |
+| git ops           | pass: open PR {target} → {base}<br />gaps: — |
 | updates code      | may push docs to {target}                                                                         |
 | persist report at | pass: plan PR<br />gaps: plan                                                                     |
 | change tag on     | plan                                                                                              |
@@ -266,7 +266,7 @@ Analyze gaps found by ratify, re-review the entire plan, create new slices to ad
 
 | source file       | [`reef-pulse/rescan.md`](reef-pulse/rescan.md)           |
 | :---------------- | :------------------------------------------------------- |
-| git ops           | enter worktree on {target}, commit+push to {target}, exit worktree |
+| git ops           | — |
 | updates code      | no                                                       |
 | persist report at | plan + slice                                             |
 | change tag on     | plan + slice                                             |
