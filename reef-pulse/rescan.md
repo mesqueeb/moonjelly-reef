@@ -26,9 +26,10 @@ Do NOT ask a human. If the gaps need decisions that aren't in the success criter
 ### 0. Git prep
 
 ```sh
-git fetch origin --prune
-git worktree add ../worktree-rescan-{title} origin/{target-branch}
-cd ../worktree-rescan-{title}
+WORKTREE=$(reef-worktree-enter.sh \
+  --base-branch {base-branch} --target-branch {target-branch} \
+  --phase rescan --slice {title})
+cd "$WORKTREE"
 ```
 
 ### 1. Analyze the gaps
@@ -107,11 +108,8 @@ Document judgment calls made during this phase on the PR. Only document decision
 For local tracker, commit and push the updated plan files and new slice files:
 
 ```sh
-git add .
-git commit -m "rescan: new slices for {title}"
-git push origin {target-branch}
-cd ..
-git worktree remove ../worktree-rescan-{title}
+reef-worktree-commit.sh --target-branch {target-branch} -m "rescan: new slices for {title}"
+reef-worktree-exit.sh --path "$WORKTREE"
 ```
 
 ### 8. Tag
