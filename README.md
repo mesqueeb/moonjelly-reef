@@ -85,20 +85,23 @@ stateDiagram-v2
 ## Skills
 
 <details>
-<summary>🤿 <code>/reef-scope</code> — scope a work item with the diver</summary>
-
-> _Moonjelly bumps the diver's mask and points into the dark. Together they scope what lies ahead — the moonjelly illuminates, the diver makes sense of it._
+<summary>🤿 <b><code>/reef-scope</code></b> — scope a work item</summary>
 
 The single entry point for turning ideas into plans. Determines whether the work is a feature, refactor, or bug, interviews the diver if needed, writes a plan with **success criteria**, and tags `to-slice`.
 
-📄 [`reef-scope/SKILL.md`](reef-scope/SKILL.md)
+| source file       | [`reef-scope/SKILL.md`](reef-scope/SKILL.md) |
+| :---------------- | :------------------------------------------- |
+| git ops           | fetch                                        |
+| updates code      | no                                           |
+| persist report at | issue tracker plan                           |
+| change tag on     | issue tracker plan                           |
 
 </details>
 
-<details>
-<summary>🪼 <code>/reef-pulse</code> — the orchestrator</summary>
+<p align="right">🪼<br /><sub>Moonjelly bumps the diver's mask and points into the dark. Together they scope what lies ahead — the moonjelly illuminates, the diver makes sense of it.</sub></p>
 
-> _Through Moonjelly's pulse, the reef is orchestrated, creatures are set in motion, and Moonjelly recedes._
+<details>
+<summary>🤿 / 🌊 <b><code>/reef-pulse</code></b> — the orchestrator</summary>
 
 Scans all tagged work items, dispatches the appropriate phase for each as a sub-agent, and exits. Holds no state — tags are the state. Run with `--hitl` (manual, includes 🤿 items) or `--afk` (cron, 🌊 only).
 
@@ -110,236 +113,168 @@ Design principles:
 - **No heroics**: agents that are stuck flag + move on, never spiral.
 - **Make work visible**: the tags ARE the visibility.
 
-📄 [`reef-pulse/SKILL.md`](reef-pulse/SKILL.md)
+| source file       | [`reef-pulse/SKILL.md`](reef-pulse/SKILL.md) |
+| :---------------- | :------------------------------------------- |
+| git ops           | —                                            |
+| updates code      | —                                            |
+| persist report at | issue tracker plan (pulse metrics)           |
+| change tag on     | — (sub-agents handle tags)                   |
 
 </details>
 
-<details>
-<summary>🤿 <code>/reef-land</code> — the diver reviews and lands the work</summary>
+<p align="right">🪼<br /><sub>Through Moonjelly's pulse, the reef is orchestrated, creatures are set in motion, and Moonjelly recedes.</sub></p>
 
-> _Moonjelly drifts to the diver one last time, the reef's work cradled in its bell. The diver returns to shore with what the reef has made._
+<details>
+<summary>🤿 <b><code>/reef-land</code></b> — review and land the work</summary>
 
 Finds the open PR for the work item and presents it to the diver. The diver approves (merge + close), requests re-scoping, or sends it back for new slices.
 
-📄 [`reef-land/SKILL.md`](reef-land/SKILL.md)
+| source file       | [`reef-land/SKILL.md`](reef-land/SKILL.md)        |
+| :---------------- | :------------------------------------------------ |
+| git ops           | merge PR into {base}, delete branch, fetch + pull |
+| updates code      | merge into {base}                                 |
+| persist report at | issue tracker plan                                |
+| change tag on     | issue tracker plan                                |
 
 </details>
+
+<p align="right">🪼<br /><sub>Moonjelly drifts to the diver one last time, the reef's work cradled in its bell. The diver returns to shore with what the reef has made.</sub></p>
 
 ## Pulse phase details
 
 These are the 🌊 automated phases dispatched by `/reef-pulse`. Each phase reads its instructions from a file under `reef-pulse/`.
 
 <details>
-<summary>🏷️ <code>to-slice</code> · <code>reef-pulse/slice.md</code></summary>
+<summary>🌊 <b><code>to-slice</code></b> 🏷️</summary>
 
-> _A mantis shrimp shatters a crab shell into clean, separate pieces with a single devastating strike — each fragment deliberate, each piece ready to carry off._
+Break the plan into vertical slices. 🔶　single-slice: parent becomes the slice, tags `to-implement`, no target branch. 🔷　multi-slice: create target branch, sub-issues, coverage matrix, tag slices `to-implement` or `to-await-waves`.
 
-Break the plan into vertical slices. 🔶 **Single-slice**: parent becomes the slice, tags `to-implement`, no target branch. 🔷 **Multi-slice**: create target branch, sub-issues, coverage matrix, tag slices `to-implement` or `to-await-waves`.
-
-📄 [`reef-pulse/slice.md`](reef-pulse/slice.md)
+| source file       | [`reef-pulse/slice.md`](reef-pulse/slice.md)                                                                                                                |
+| :---------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| git ops           | 🔷　multi-slice: fetch, worktree add -b {target} from {base}, push, worktree removed<br />🔶　single-slice: fetch, worktree from {target}, worktree removed |
+| updates code      | no                                                                                                                                                          |
+| persist report at | 🔷　multi-slice: issue tracker plan + slice<br />🔶　single-slice: issue tracker plan                                                                       |
+| change tag on     | 🔷　multi-slice: issue tracker plan + slice<br />🔶　single-slice: issue tracker plan                                                                       |
 
 </details>
 
-<details>
-<summary>🏷️ <code>to-await-waves</code> · <code>reef-pulse/await-waves.md</code></summary>
+<p align="right">𐃆🐋<br /><sub>A narwhal drives its tusk through the ice ceiling in one clean thrust — the fracture lines radiate outward, each shard a perfect, independent piece.</sub></p>
 
-> _A surfer sits on the board beyond the break, watching the horizon, patient and still — when the waves come, they're ready._
+<details>
+<summary>🌊 <b><code>to-await-waves</code></b> 🏷️</summary>
 
 Check if a blocked slice's dependencies are all done. If yes, re-review the plan against current code and tag `to-implement`. If not, exit — next pulse will check again.
 
-📄 [`reef-pulse/await-waves.md`](reef-pulse/await-waves.md)
+| source file       | [`reef-pulse/await-waves.md`](reef-pulse/await-waves.md) |
+| :---------------- | :------------------------------------------------------- |
+| git ops           | fetch, check deps                                        |
+| updates code      | no                                                       |
+| persist report at | issue tracker slice (if criteria updated)                |
+| change tag on     | issue tracker slice                                      |
 
 </details>
 
-<details>
-<summary>🏷️ <code>to-implement</code> · <code>reef-pulse/implement.md</code></summary>
+<p align="right">🪸<br /><sub>A coral polyp sits anchored to the reef, patient and still, filtering the current — when the nutrients arrive, it's already open.</sub></p>
 
-> _Eight arms working in fierce, silent concert, the octopus reshapes the reef floor — architecting, testing, sealing every chamber with cold intelligence._
+<details>
+<summary>🌊 <b><code>to-implement</code></b> 🏷️</summary>
 
 Implement a slice using TDD in a git worktree. Create worktree → read context → red-green-refactor for each acceptance criterion → write report → open PR → tag `to-inspect`.
 
-📄 [`reef-pulse/implement.md`](reef-pulse/implement.md)
+| source file       | [`reef-pulse/implement.md`](reef-pulse/implement.md)                                             |
+| :---------------- | :----------------------------------------------------------------------------------------------- |
+| git ops           | fetch, worktree add -b {slice} from {target}, push, open PR {slice} → {target}, worktree removed |
+| updates code      | yes                                                                                              |
+| persist report at | 🔷　multi-slice: slice PR<br />🔶　single-slice: plan PR                                         |
+| change tag on     | 🔷　multi-slice: issue tracker slice<br />🔶　single-slice: issue tracker plan                   |
 
 </details>
 
-<details>
-<summary>🏷️ <code>to-inspect</code> · <code>reef-pulse/inspect.md</code></summary>
+<p align="right">🐙<br /><sub>Eight arms working in fierce, silent concert, the octopus reshapes the reef floor — architecting, testing, sealing every chamber with cold intelligence.</sub></p>
 
-> _A barreleye fish rotates its tubular eyes upward through its transparent skull, scrutinizing every shadow above for anything that doesn't belong._
+<details>
+<summary>🌊 <b><code>to-inspect</code></b> 🏷️</summary>
 
 Independently verify a slice PR. Run the full test suite, check each acceptance criterion against actual code, do trivial cleanups. Tag `to-merge` if approved, `to-rework` if gaps found.
 
-📄 [`reef-pulse/inspect.md`](reef-pulse/inspect.md)
+| source file       | [`reef-pulse/inspect.md`](reef-pulse/inspect.md)                                                    |
+| :---------------- | :-------------------------------------------------------------------------------------------------- |
+| git ops           | fetch, temp worktree<br />pass: cleanup commits → push<br />fail: review only<br />worktree removed |
+| updates code      | cleanup only                                                                                        |
+| persist report at | 🔷　multi-slice: slice PR<br />🔶　single-slice: plan PR                                            |
+| change tag on     | 🔷　multi-slice: issue tracker slice<br />🔶　single-slice: issue tracker plan                      |
 
 </details>
 
-<details>
-<summary>🏷️ <code>to-rework</code> · <code>reef-pulse/rework.md</code></summary>
+<p align="right">👁<br /><sub>A barreleye fish rotates its tubular eyes upward through its transparent skull, scrutinizing every shadow above for anything that doesn't belong.</sub></p>
 
-> _A hermit crab drags its soft abdomen out of an ill-fitting shell and squeezes into a better one — uncomfortable work, exposed and vulnerable, but necessary._
+<details>
+<summary>🌊 <b><code>to-rework</code></b> 🏷️</summary>
 
 Fix every issue flagged by the inspector. Address all PR comments, run the full suite, update the report, tag `to-inspect` for re-review.
 
-📄 [`reef-pulse/rework.md`](reef-pulse/rework.md)
+| source file       | [`reef-pulse/rework.md`](reef-pulse/rework.md)                                 |
+| :---------------- | :----------------------------------------------------------------------------- |
+| git ops           | fetch, temp worktree, fix commits → push, worktree removed                     |
+| updates code      | yes                                                                            |
+| persist report at | 🔷　multi-slice: slice PR<br />🔶　single-slice: plan PR                       |
+| change tag on     | 🔷　multi-slice: issue tracker slice<br />🔶　single-slice: issue tracker plan |
 
 </details>
 
+<p align="right">🦀<br /><sub>A crab molts its old shell — exposed and soft, it reworks itself from the inside out, emerging harder and better-fitted than before.</sub></p>
+
 <details>
-<summary>🏷️ <code>to-merge</code> · <code>reef-pulse/merge.md</code></summary>
+<summary>🌊 <b><code>to-merge</code></b> 🏷️</summary>
 
-> _The great manta ray glides in wide and smooth, gathers the loose piece in a gentle sweep of its wings, and folds it seamlessly into the whole flowing current._
+🔶　single-slice: leave the PR open for the diver, tag `to-land`. 🔷　multi-slice: merge the PR into the target branch, verify suite, close the slice, check for newly unblocked siblings, tag parent `to-ratify` when all slices are done.
 
-🔶 **Single-slice**: leave the PR open for the diver, tag `to-land`. 🔷 **Multi-slice**: merge the PR into the target branch, verify suite, close the slice, check for newly unblocked siblings, tag parent `to-ratify` when all slices are done.
-
-📄 [`reef-pulse/merge.md`](reef-pulse/merge.md)
+| source file       | [`reef-pulse/merge.md`](reef-pulse/merge.md)                                                                      |
+| :---------------- | :---------------------------------------------------------------------------------------------------------------- |
+| git ops           | 🔷　multi-slice: fetch, squash merge PR into {target}, delete {slice} branch<br />🔶　single-slice: PR stays open |
+| updates code      | 🔷　multi-slice: squash merge into {target}<br />🔶　single-slice: no                                             |
+| persist report at | 🔷　multi-slice: issue tracker plan<br />🔶　single-slice: —                                                      |
+| change tag on     | 🔷　multi-slice: issue tracker slice (+ plan when all done)<br />🔶　single-slice: issue tracker plan             |
 
 </details>
 
+<p align="right">🐢<br /><sub>A sea turtle tucks the last loose piece under its flipper and glides steadily toward shore — unhurried, certain, folding everything into the current behind it.</sub></p>
+
 <details>
-<summary>🏷️ <code>to-ratify</code> · <code>reef-pulse/ratify.md</code></summary>
+<summary>🌊 <b><code>to-ratify</code></b> 🏷️</summary>
 
-> _The walrus hauls itself onto the ice floe, surveys the entire colony with slow, deliberate eyes, and counts every last pup — nothing is declared safe until the old bull has seen it all._
+🔷　multi-slice only. Holistic review of the entire target branch — checking the composed whole, not the parts. Verify every success criterion end-to-end, run the full suite, produce the aggregate report, tag `to-land` or `to-rescan`.
 
-🔷 Multi-slice only. Holistic review of the entire target branch — checking the composed whole, not the parts. Verify every success criterion end-to-end, run the full suite, produce the aggregate report, tag `to-land` or `to-rescan`.
-
-📄 [`reef-pulse/ratify.md`](reef-pulse/ratify.md)
+| source file       | [`reef-pulse/ratify.md`](reef-pulse/ratify.md)                                                    |
+| :---------------- | :------------------------------------------------------------------------------------------------ |
+| git ops           | fetch, temp worktree on {target}<br />pass: open PR {target} → {base}<br />gaps: worktree removed |
+| updates code      | may push docs to {target}                                                                         |
+| persist report at | pass: plan PR<br />gaps: issue tracker plan                                                       |
+| change tag on     | issue tracker plan                                                                                |
 
 </details>
 
-<details>
-<summary>🏷️ <code>to-rescan</code> · <code>reef-pulse/rescan.md</code></summary>
+<p align="right">🦭<br /><sub>The walrus hauls itself onto the ice floe, surveys the entire colony with slow, deliberate eyes, and counts every last pup — nothing is declared safe until the old bull has seen it all.</sub></p>
 
-> _An anglerfish drifts through absolute darkness, its lure casting light on creatures no one knew were lurking in the deep._
+<details>
+<summary>🌊 <b><code>to-rescan</code></b> 🏷️</summary>
 
 Analyze gaps found by ratify, re-review the entire plan, create new slices to address each gap, update the coverage matrix. The reef picks up the new slices on the next pulse.
 
-📄 [`reef-pulse/rescan.md`](reef-pulse/rescan.md)
+| source file       | [`reef-pulse/rescan.md`](reef-pulse/rescan.md)           |
+| :---------------- | :------------------------------------------------------- |
+| git ops           | fetch, temp worktree on {target}, push, worktree removed |
+| updates code      | no                                                       |
+| persist report at | issue tracker plan + slice                               |
+| change tag on     | issue tracker plan + slice                               |
 
 </details>
+
+<p align="right">💡🐡<br /><sub>An anglerfish drifts through absolute darkness, its lure casting light on creatures no one knew were lurking in the deep.</sub></p>
 
 ## Git hygiene
 
 Every agent works in its own git worktree — the main checkout is never touched. For multi-slice work, a target branch is created from the base branch; slice PRs target it. For single-slice work, the target branch equals the base branch. Every phase creates its own worktree and tears it down before exiting. Every git operation begins with `git fetch origin --prune`. No `--force` flags, ever.
-
-<details>
-<summary>Branch &amp; worktree lifecycle</summary>
-
-```mermaid
-stateDiagram-v2
-    direction TB
-
-    classDef human fill:#ffeaa7,stroke:#fdcb6e,color:#2d3436
-    classDef agent fill:#81ecec,stroke:#00cec9,color:#2d3436
-    classDef arrow fill:#ececec,stroke:#ffffff00,color:#2d3436
-
-    state "GIT TICKET LIFECYCLE" as work {
-
-        state "🤿　to-scope" as to_scope
-        state "🌊　to-slice" as to_slice
-        state "🌊　to-ratify" as to_ratify
-        state "🌊　to-rescan" as gaps_to_rescan
-        state "🤿　to-land" as to_land
-
-        [*] --> to_scope
-        to_scope --> to_slice : /reef-scope<br />fetch, choose {base} branch and {target} branch name
-        to_slice --> slice_lifecycle : slice.md<br />🔷　multi-slice:<br />fetch, worktree add -b {target} from {base},<br />push, worktree removed
-        to_slice --> slice_lifecycle : slice.md<br />🔶　single-slice:<br />fetch, worktree from {target},<br />worktree removed
-        slice_lifecycle --> to_ratify
-        slice_lifecycle --> to_land
-        to_ratify --> to_land : ratify.md<br />fetch, temp worktree on {target},<br />open PR {target} → {base}
-        to_ratify --> gaps_to_rescan : ratify.md<br />fetch, temp worktree on {target},<br />worktree removed
-        gaps_to_rescan --> slice_lifecycle : rescan.md<br />fetch, temp worktree on {target},<br />push, worktree removed
-        to_land --> [*] : /reef-land<br />merge PR into {base},<br />delete {target} branch,<br />fetch + pull if on {base}
-    }
-
-    state "GIT SLICE LIFECYCLE (per slice)" as slice_lifecycle {
-
-        state "🌊　to-await-waves" as to_await
-        state "🌊　to-implement" as to_implement
-        state "🌊　to-inspect" as to_inspect
-        state "🌊　to-rework" as needs_rework
-        state "🌊　to-merge" as to_merge
-        state "merge.md<br />🔷　multi-slice:<br />fetch, squash merge PR into {target},<br />delete {slice} branch" as merge_multi
-        state "merge.md<br />🔶　single-slice:<br />PR stays open" as merge_single
-        [*] --> to_implement : no deps
-        [*] --> to_await : has deps
-        to_await --> to_implement : await-waves.md<br />fetch, check deps
-        to_implement --> to_inspect : implement.md<br />fetch, worktree add -b {slice} from {target},<br />push, open PR {slice} → {target},<br />worktree removed
-        to_inspect --> to_merge : inspect.md<br />fetch, temp worktree, cleanup commits → push,<br />worktree removed
-        to_inspect --> needs_rework : inspect.md<br />fetch, temp worktree, review,<br />worktree removed
-        needs_rework --> to_inspect : rework.md<br />fetch, temp worktree, fix commits → push,<br />worktree removed
-        to_merge --> merge_multi
-        to_merge --> merge_single
-    }
-
-    class to_scope,to_land human
-    class to_slice,to_ratify,gaps_to_rescan,to_await,to_implement,to_inspect,needs_rework,to_merge agent
-    class merge_multi,merge_single arrow
-```
-
-</details>
-
-## Artifact map
-
-What gets written where by each phase. Surfaces: **issue body**, **issue comment**, **PR body**, **PR comment**.
-
-<details>
-<summary>Artifact flow per phase</summary>
-
-```mermaid
-stateDiagram-v2
-    direction TB
-
-    classDef human fill:#ffeaa7,stroke:#fdcb6e,color:#2d3436
-    classDef agent fill:#81ecec,stroke:#00cec9,color:#2d3436
-    classDef arrow fill:#ececec,stroke:#ffffff00,color:#2d3436
-
-    state "ARTIFACT TICKET LIFECYCLE" as work {
-
-        state "🤿　to-scope" as to_scope
-        state "🌊　to-slice" as to_slice
-        state "🌊　to-ratify" as to_ratify
-        state "🌊　to-rescan" as gaps_to_rescan
-        state "🤿　to-land" as to_land
-
-        [*] --> to_scope
-        to_scope --> to_slice : /reef-scope<br />plan + success criteria → issue body
-        to_slice --> slice_lifecycle : slice.md<br />🔷　multi-slice:<br />coverage matrix → issue body,<br />acceptance criteria → sub-issue bodies
-        to_slice --> slice_lifecycle : slice.md<br />🔶　single-slice:<br />acceptance criteria → issue body
-        slice_lifecycle --> to_ratify
-        slice_lifecycle --> to_land
-        to_ratify --> to_land : ratify.md<br />final report → PR body<br />(success criteria + agent decisions + tests + metrics)
-        to_ratify --> gaps_to_rescan : ratify.md<br />gap list → issue comment
-        gaps_to_rescan --> slice_lifecycle : rescan.md<br />new slices → sub-issues,<br />updated matrix → issue body
-        to_land --> [*] : /reef-land<br />human reviews PR report
-    }
-
-    state "ARTIFACT SLICE LIFECYCLE (per slice)" as slice_lifecycle {
-
-        state "🌊　to-await-waves" as to_await
-        state "🌊　to-implement" as to_implement
-        state "🌊　to-inspect" as to_inspect
-        state "🌊　to-rework" as needs_rework
-        state "🌊　to-merge" as to_merge
-        state "merge.md<br />🔷　multi-slice:<br />close slice issue" as merge_multi
-        state "merge.md<br />🔶　single-slice:<br />(nothing written)" as merge_single
-        [*] --> to_implement : no deps
-        [*] --> to_await : has deps
-        to_await --> to_implement : await-waves.md<br />no artifacts
-        to_implement --> to_inspect : implement.md<br />acceptance criteria checklist + ambiguous choices<br />+ test results → PR body
-        to_inspect --> to_merge : inspect.md<br />cleanup commits → PR
-        to_inspect --> needs_rework : inspect.md<br />review comments → PR
-        needs_rework --> to_inspect : rework.md<br />fix commits + updated report → PR
-        to_merge --> merge_multi
-        to_merge --> merge_single
-    }
-
-    class to_scope,to_land human
-    class to_slice,to_ratify,gaps_to_rescan,to_await,to_implement,to_inspect,needs_rework,to_merge agent
-    class merge_multi,merge_single arrow
-```
-
-</details>
 
 ## Autopilot
 
@@ -357,28 +292,10 @@ CronCreate cron="7 * * * *" prompt="/reef-pulse --afk" durable=true
 
 This persists to `.claude/scheduled_tasks.json` and survives session restarts. It runs locally, so your git and GitHub credentials just work. Adjust the cron expression to your preferred interval (e.g. `"*/30 * * * *"` for every 30 minutes).
 
-## Index
-
-Three user-facing skills, everything else lives under `reef-pulse/`:
-
-| 🏷️ Tag           | Skill / File                | Actor   | Lore                                                                                                             |
-| ---------------- | --------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------- |
-| `to-scope`       | `/reef-scope`               | 🤿      | 🪼 Moonjelly bumps the diver's mask and points into the dark. Together they scope what lies ahead.               |
-| —                | `/reef-pulse`               | 🤿 / 🌊 | 🪼 Through Moonjelly's pulse, the reef is orchestrated, creatures are set in motion, and Moonjelly recedes.      |
-| `to-slice`       | `reef-pulse/slice.md`       | 🌊      | 🦐 A mantis shrimp shatters the shell into clean, separate pieces with a single strike.                          |
-| `to-await-waves` | `reef-pulse/await-waves.md` | 🌊      | 🏄 A surfer sits beyond the break, watching the horizon — when the waves come, they're ready.                    |
-| `to-implement`   | `reef-pulse/implement.md`   | 🌊      | 🐙 Eight arms in silent concert, the octopus reshapes the reef floor chamber by chamber.                         |
-| `to-inspect`     | `reef-pulse/inspect.md`     | 🌊      | 👁 A barreleye rotates its tubular eyes through its transparent skull, scrutinizing every shadow.                |
-| `to-rework`      | `reef-pulse/rework.md`      | 🌊      | 🐚 A hermit crab squeezes out of an ill-fitting shell and into a better one.                                     |
-| `to-merge`       | `reef-pulse/merge.md`       | 🌊      | 🦈 A manta ray glides in wide, gathers the loose piece, and folds it into the current.                           |
-| `to-ratify`      | `reef-pulse/ratify.md`      | 🌊      | 🦭 The walrus hauls onto the ice floe and counts every last pup — nothing is safe until he's seen it all.        |
-| `to-rescan`      | `reef-pulse/rescan.md`      | 🌊      | 🐡 An anglerfish casts its lure into absolute darkness, illuminating creatures no one knew were there.           |
-| `to-land`        | `/reef-land`                | 🤿      | 🪼 Moonjelly drifts to the diver one last time, the reef's work cradled in its bell. The diver returns to shore. |
-
 ## Companion skill
 
 <details>
-<summary>🛡️ <code>git-guardrails-claude-code</code></summary>
+<summary>🛡️ <b><code>git-guardrails-claude-code</code></b></summary>
 
 Blocks dangerous git commands (force push, hard reset, force delete) while allowing safe everyday operations like pushing from worktrees and cleaning up merged branches — exactly what reef agents do all day.
 
