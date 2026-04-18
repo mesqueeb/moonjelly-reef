@@ -12,7 +12,7 @@ Read the plan. It must have:
 - Success criteria
 - Coverage matrix
 - Target branch name (in metadata)
-- Agent decisions section (appended by the merge phase from each slice)
+- Slice PRs with "Ambiguous choices" sections
 
 ## Mindset
 
@@ -27,9 +27,10 @@ Think like a CTO doing a final walkthrough before shipping.
 Use a worktree so you don't disturb the main checkout or any other agent's work.
 
 ```sh
-git fetch origin --prune
-git worktree add ../worktree-ratify-{title} origin/{target-branch}
-cd ../worktree-ratify-{title}
+WORKTREE=$(reef-worktree-enter.sh \
+  --base-branch {base-branch} --target-branch {target-branch} \
+  --phase ratify --slice {title})
+cd "$WORKTREE"
 ```
 
 Verify you have the latest — all slice PRs should be merged into this branch.
@@ -37,8 +38,7 @@ Verify you have the latest — all slice PRs should be merged into this branch.
 When ratification is complete (after tagging), clean up the worktree:
 
 ```sh
-cd ..
-git worktree remove ../worktree-ratify-{title}
+reef-worktree-exit.sh --path "$WORKTREE"
 ```
 
 ### 2. Run the full test suite
@@ -57,7 +57,7 @@ Mark each criterion: ✓ met, ✗ not met (with explanation).
 
 ### 4. Review all agent decisions
 
-Read the "Agent decisions" section on the plan (aggregated by the merge phase from each slice's PR). For each decision:
+Read the "Ambiguous choices" section from each slice's merged PR. For each decision:
 
 - Does it make sense?
 - Did it introduce drift from the original success criteria or decision record?
