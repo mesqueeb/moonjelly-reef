@@ -46,7 +46,7 @@ stateDiagram-v2
         [*] --> to_scope
         to_scope --> to_slice : /reef-scope<br />scope the work, define success criteria
         to_slice --> slice_lifecycle : slice.md<br />🔷　multi-slice:<br />create target branch, sub-issues, coverage matrix
-        to_slice --> slice_lifecycle : slice.md<br />🔶　single-slice:<br />parent becomes the slice, tags to-implement
+        to_slice --> slice_lifecycle : slice.md<br />🔶　single-slice:<br />plan becomes the slice, tags to-implement
         slice_lifecycle --> to_ratify
         slice_lifecycle --> to_land
         to_ratify --> to_land : ratify.md<br />holistic review on target branch
@@ -80,21 +80,21 @@ stateDiagram-v2
     class merge_multi,merge_single arrow
 ```
 
-> While slices are being worked, the parent ticket sits in `in-progress`. It is promoted to `to-ratify` by `merge.md` once all slices are done.
+> While slices are being worked, the plan ticket sits in `in-progress`. It is promoted to `to-ratify` by `merge.md` once all slices are done.
 
 ## Skills
 
 <details>
-<summary>🤿 <b><code>/reef-scope</code></b> — scope a work item</summary>
+<summary>🤿 <b><code>/reef-scope</code></b> — scope an issue</summary>
 
 The single entry point for turning ideas into plans. Determines whether the work is a feature, refactor, or bug, interviews the diver if needed, writes a plan with **success criteria**, and tags `to-slice`.
 
 | source file       | [`reef-scope/SKILL.md`](reef-scope/SKILL.md) |
 | :---------------- | :------------------------------------------- |
-| git ops           | fetch                                        |
+| git ops           | fetch, ask to pull                           |
 | updates code      | no                                           |
-| persist report at | issue tracker plan                           |
-| change tag on     | issue tracker plan                           |
+| persist report at | plan                                         |
+| change tag on     | plan                                         |
 
 </details>
 
@@ -103,7 +103,7 @@ The single entry point for turning ideas into plans. Determines whether the work
 <details>
 <summary>🤿 / 🌊 <b><code>/reef-pulse</code></b> — the orchestrator</summary>
 
-Scans all tagged work items, dispatches the appropriate phase for each as a sub-agent, and exits. Holds no state — tags are the state. Run with `--hitl` (manual, includes 🤿 items) or `--afk` (cron, 🌊 only).
+Scans all tagged issues, dispatches the appropriate phase for each as a sub-agent, and exits. Holds no state — tags are the state. Run with `--hitl` (manual, includes 🤿 items) or `--afk` (cron, 🌊 only).
 
 Design principles:
 
@@ -117,7 +117,7 @@ Design principles:
 | :---------------- | :------------------------------------------- |
 | git ops           | —                                            |
 | updates code      | —                                            |
-| persist report at | issue tracker plan (pulse metrics)           |
+| persist report at | PR when possible, otherwise plan             |
 | change tag on     | — (sub-agents handle tags)                   |
 
 </details>
@@ -127,14 +127,14 @@ Design principles:
 <details>
 <summary>🤿 <b><code>/reef-land</code></b> — review and land the work</summary>
 
-Finds the open PR for the work item and presents it to the diver. The diver approves (merge + close), requests re-scoping, or sends it back for new slices.
+Finds the open PR for the issue and presents it to the diver. The diver approves (merge + close), requests re-scoping, or sends it back for new slices.
 
 | source file       | [`reef-land/SKILL.md`](reef-land/SKILL.md)        |
 | :---------------- | :------------------------------------------------ |
 | git ops           | merge PR into {base}, delete branch, fetch + pull |
 | updates code      | merge into {base}                                 |
-| persist report at | issue tracker plan                                |
-| change tag on     | issue tracker plan                                |
+| persist report at | plan                                              |
+| change tag on     | plan                                              |
 
 </details>
 
@@ -147,14 +147,17 @@ These are the 🌊 automated phases dispatched by `/reef-pulse`. Each phase read
 <details>
 <summary>🌊 <b><code>to-slice</code></b> 🏷️</summary>
 
-Break the plan into vertical slices. 🔶　single-slice: parent becomes the slice, tags `to-implement`, no target branch. 🔷　multi-slice: create target branch, sub-issues, coverage matrix, tag slices `to-implement` or `to-await-waves`.
+Automatically breaks the plan into vertical slices, or determines a single slice is enough to tackle the plan.
+
+- 🔶　single-slice: plan becomes the slice, tags `to-implement`, no target branch.
+- 🔷　multi-slice: create target branch, sub-issues, coverage matrix, tag slices `to-implement` or `to-await-waves`.
 
 | source file       | [`reef-pulse/slice.md`](reef-pulse/slice.md)                                                                                                                |
 | :---------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | git ops           | 🔷　multi-slice: fetch, worktree add -b {target} from {base}, push, worktree removed<br />🔶　single-slice: fetch, worktree from {target}, worktree removed |
 | updates code      | no                                                                                                                                                          |
-| persist report at | 🔷　multi-slice: issue tracker plan + slice<br />🔶　single-slice: issue tracker plan                                                                       |
-| change tag on     | 🔷　multi-slice: issue tracker plan + slice<br />🔶　single-slice: issue tracker plan                                                                       |
+| persist report at | 🔷　multi-slice: plan + slice<br />🔶　single-slice: plan                                                                                                   |
+| change tag on     | 🔷　multi-slice: plan + slice<br />🔶　single-slice: plan                                                                                                   |
 
 </details>
 
@@ -169,8 +172,8 @@ Check if a blocked slice's dependencies are all done. If yes, re-review the plan
 | :---------------- | :------------------------------------------------------- |
 | git ops           | fetch, check deps                                        |
 | updates code      | no                                                       |
-| persist report at | issue tracker slice (if criteria updated)                |
-| change tag on     | issue tracker slice                                      |
+| persist report at | slice (if criteria updated)                              |
+| change tag on     | slice                                                    |
 
 </details>
 
@@ -186,7 +189,7 @@ Implement a slice using TDD in a git worktree. Create worktree → read context 
 | git ops           | fetch, worktree add -b {slice} from {target}, push, open PR {slice} → {target}, worktree removed |
 | updates code      | yes                                                                                              |
 | persist report at | 🔷　multi-slice: slice PR<br />🔶　single-slice: plan PR                                         |
-| change tag on     | 🔷　multi-slice: issue tracker slice<br />🔶　single-slice: issue tracker plan                   |
+| change tag on     | 🔷　multi-slice: slice<br />🔶　single-slice: plan                                               |
 
 </details>
 
@@ -202,7 +205,7 @@ Independently verify a slice PR. Run the full test suite, check each acceptance 
 | git ops           | fetch, temp worktree<br />pass: cleanup commits → push<br />fail: review only<br />worktree removed |
 | updates code      | cleanup only                                                                                        |
 | persist report at | 🔷　multi-slice: slice PR<br />🔶　single-slice: plan PR                                            |
-| change tag on     | 🔷　multi-slice: issue tracker slice<br />🔶　single-slice: issue tracker plan                      |
+| change tag on     | 🔷　multi-slice: slice<br />🔶　single-slice: plan                                                  |
 
 </details>
 
@@ -213,12 +216,12 @@ Independently verify a slice PR. Run the full test suite, check each acceptance 
 
 Fix every issue flagged by the inspector. Address all PR comments, run the full suite, update the report, tag `to-inspect` for re-review.
 
-| source file       | [`reef-pulse/rework.md`](reef-pulse/rework.md)                                 |
-| :---------------- | :----------------------------------------------------------------------------- |
-| git ops           | fetch, temp worktree, fix commits → push, worktree removed                     |
-| updates code      | yes                                                                            |
-| persist report at | 🔷　multi-slice: slice PR<br />🔶　single-slice: plan PR                       |
-| change tag on     | 🔷　multi-slice: issue tracker slice<br />🔶　single-slice: issue tracker plan |
+| source file       | [`reef-pulse/rework.md`](reef-pulse/rework.md)             |
+| :---------------- | :--------------------------------------------------------- |
+| git ops           | fetch, temp worktree, fix commits → push, worktree removed |
+| updates code      | yes                                                        |
+| persist report at | 🔷　multi-slice: slice PR<br />🔶　single-slice: plan PR   |
+| change tag on     | 🔷　multi-slice: slice<br />🔶　single-slice: plan         |
 
 </details>
 
@@ -227,14 +230,14 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 <details>
 <summary>🌊 <b><code>to-merge</code></b> 🏷️</summary>
 
-🔶　single-slice: leave the PR open for the diver, tag `to-land`. 🔷　multi-slice: merge the PR into the target branch, verify suite, close the slice, check for newly unblocked siblings, tag parent `to-ratify` when all slices are done.
+🔶　single-slice: leave the PR open for the diver, tag `to-land`. 🔷　multi-slice: merge the PR into the target branch, verify suite, close the slice, check for newly unblocked siblings, tag plan `to-ratify` when all slices are done.
 
 | source file       | [`reef-pulse/merge.md`](reef-pulse/merge.md)                                                                      |
 | :---------------- | :---------------------------------------------------------------------------------------------------------------- |
 | git ops           | 🔷　multi-slice: fetch, squash merge PR into {target}, delete {slice} branch<br />🔶　single-slice: PR stays open |
 | updates code      | 🔷　multi-slice: squash merge into {target}<br />🔶　single-slice: no                                             |
-| persist report at | 🔷　multi-slice: issue tracker plan<br />🔶　single-slice: —                                                      |
-| change tag on     | 🔷　multi-slice: issue tracker slice (+ plan when all done)<br />🔶　single-slice: issue tracker plan             |
+| persist report at | 🔷　multi-slice: plan<br />🔶　single-slice: —                                                                    |
+| change tag on     | 🔷　multi-slice: slice (+ plan when all done)<br />🔶　single-slice: plan                                         |
 
 </details>
 
@@ -249,8 +252,8 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 | :---------------- | :------------------------------------------------------------------------------------------------ |
 | git ops           | fetch, temp worktree on {target}<br />pass: open PR {target} → {base}<br />gaps: worktree removed |
 | updates code      | may push docs to {target}                                                                         |
-| persist report at | pass: plan PR<br />gaps: issue tracker plan                                                       |
-| change tag on     | issue tracker plan                                                                                |
+| persist report at | pass: plan PR<br />gaps: plan                                                                     |
+| change tag on     | plan                                                                                              |
 
 </details>
 
@@ -265,8 +268,8 @@ Analyze gaps found by ratify, re-review the entire plan, create new slices to ad
 | :---------------- | :------------------------------------------------------- |
 | git ops           | fetch, temp worktree on {target}, push, worktree removed |
 | updates code      | no                                                       |
-| persist report at | issue tracker plan + slice                               |
-| change tag on     | issue tracker plan + slice                               |
+| persist report at | plan + slice                                             |
+| change tag on     | plan + slice                                             |
 
 </details>
 

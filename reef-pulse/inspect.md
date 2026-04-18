@@ -2,7 +2,7 @@
 
 > **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
 
-> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
+> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
 ## Input
 
@@ -82,7 +82,11 @@ Do these yourself — commit and push to the PR branch:
 git push origin HEAD:$PR_BRANCH
 ```
 
-### 5. Verdict
+### 5. Document judgment calls
+
+Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
+
+### 6. Verdict
 
 **If all acceptance criteria are met and the suite is green:**
 

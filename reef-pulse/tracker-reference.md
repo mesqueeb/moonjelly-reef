@@ -1,12 +1,12 @@
 # Tracker Reference
 
-This document defines the operations reef skills perform on work items, with examples for each supported tracker type. Every reef skill that reads, writes, or tags items should follow these patterns.
+This document defines the operations reef skills perform on issues, with examples for each supported tracker type. Every reef skill that reads, writes, or tags items should follow these patterns.
 
 The tracker type is defined in `.agents/moonjelly-reef/config.md`.
 
 ## Operations
 
-### Read a work item
+### Read a issue
 
 | Tracker | How |
 | --- | --- |
@@ -16,7 +16,7 @@ The tracker type is defined in `.agents/moonjelly-reef/config.md`.
 | Linear | Use Linear MCP tools: query the issue by identifier |
 | Other | Use the relevant MCP tool or CLI. If none is available, ask the user how to access it. |
 
-### Update a work item body
+### Update a issue body
 
 | Tracker | How |
 | --- | --- |
@@ -40,13 +40,13 @@ The tracker type is defined in `.agents/moonjelly-reef/config.md`.
 
 | Tracker | How |
 | --- | --- |
-| GitHub | `gh issue create --title "..." --body "..." --label "to-implement"` + link to parent |
+| GitHub | `gh issue create --title "..." --body "..." --label "to-implement"` + link to plan |
 | Local | Create a file in `{title}/slices/[to-implement] slice-name.md` |
-| Jira | Create a sub-task or linked issue under the parent |
-| Linear | Create a sub-issue linked to the parent |
+| Jira | Create a sub-task or linked issue under the plan |
+| Linear | Create a sub-issue linked to the plan |
 | Other | Equivalent "create child item" operation |
 
-### Close a work item
+### Close a issue
 
 | Tracker | How |
 | --- | --- |

@@ -1,6 +1,6 @@
 ---
 name: reef-land
-description: Present the final report to the human for review. Human approves (merge to main), requests changes, or sends back for re-probing. Use when a work item is tagged to-land.
+description: Present the final report to the human for review. Human approves (merge to main), requests changes, or sends back for re-probing. Use when a issue is tagged to-land.
 ---
 
 # reef-land
@@ -9,9 +9,9 @@ description: Present the final report to the human for review. Human approves (m
 
 ## Input
 
-This skill requires a specific work item: `/reef-land #42` or `/reef-land my-feature`.
+This skill requires a specific issue: `/reef-land #42` or `/reef-land my-feature`.
 
-Read the parent plan. Find the open PR associated with this work item — either a single-slice PR targeting the base branch, or a target branch PR targeting the base branch (created during the ratify phase).
+Read the plan. Find the open PR associated with this issue — either a single-slice PR targeting the base branch, or a target branch PR targeting the base branch (created during the ratify phase).
 
 ## Present the report
 
@@ -19,13 +19,13 @@ Show the human:
 
 1. **The PR link**: so the human can read the full diff.
 2. **A summary**: what happened — how many slices, any ambiguous agent decisions, test results.
-3. **The success/acceptance criteria** from the parent issue, with their status.
+3. **The success/acceptance criteria** from the plan, with their status.
 
 ## Human decides
 
 Present three options:
 
-> **1. Approve** — merge the PR into {base-branch} and close the work item.
+> **1. Approve** — merge the PR into {base-branch} and close the issue.
 >
 > **2. Request changes (needs new decisions)** — something fundamental is off and we need to rethink. → Tags `to-scope` for a new scoping session.
 >
@@ -53,28 +53,28 @@ fi
 
 ### GitHub tracker
 
-Close the parent issue with `gh issue close`. Add a final comment: "Merged to {base-branch}. All success criteria met."
+Close the plan with `gh issue close`. Add a final comment: "Merged to {base-branch}. All success criteria met."
 
 ### Local tracker
 
-Rename parent to `[done] plan.md`. Optionally move the folder to an `archive/` or `done/` directory if the user prefers.
+Rename plan to `[done] plan.md`. Optionally move the folder to an `archive/` or `done/` directory if the user prefers.
 
 ### If re-scope
 
 ### GitHub tracker
 
-Change the parent issue label to `to-scope`. Remove `to-land`.
+Change the plan label to `to-scope`. Remove `to-land`.
 
 ### Local tracker
 
-Rename parent to `[to-scope] plan.md`.
+Rename plan to `[to-scope] plan.md`.
 
 ### If re-scan
 
 ### GitHub tracker
 
-Change the parent issue label to `to-rescan`. Remove `to-land`.
+Change the plan label to `to-rescan`. Remove `to-land`.
 
 ### Local tracker
 
-Rename parent to `[to-rescan] plan.md`.
+Rename plan to `[to-rescan] plan.md`.

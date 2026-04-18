@@ -1,6 +1,6 @@
 # Scoping a feature
 
-If the work item doesn't have decisions captured yet, run the interview here before writing the plan:
+If the issue doesn't have decisions captured yet, run the interview here before writing the plan:
 
 ## Interview (if decisions aren't captured yet)
 

@@ -31,7 +31,7 @@ The user may also name a tracker not listed (ClickUp, Notion, etc.) — that's f
 
 - **GitHub**: confirm `gh` CLI is available and authenticated (`gh auth status`).
 - **Jira / Linear / ClickUp / other**: suggest the user install the relevant MCP server so reef skills can interact with it. Check if one is already configured. See [tracker-reference.md](tracker-reference.md) for common MCP servers.
-- **Local**: ask where they'd like work items stored (suggest `.agents/moonjelly-reef/issue-tracker/` as default).
+- **Local**: ask where they'd like issues stored (suggest `.agents/moonjelly-reef/issue-tracker/` as default).
 
 ### 2. Check for optional skills
 

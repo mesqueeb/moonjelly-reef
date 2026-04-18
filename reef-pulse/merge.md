@@ -2,11 +2,11 @@
 
 > **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
 
-> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
+> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
 ## Input
 
-A work item tagged `to-merge` with an open PR.
+An issue tagged `to-merge` with an open PR.
 
 Read the item to find the PR reference. Check the Plan context to determine whether this is **single-slice** (target branch = base branch) or **multi-slice** (target branch forks from base branch).
 
@@ -14,7 +14,7 @@ Read the item to find the PR reference. Check the Plan context to determine whet
 
 The PR targets the base branch. The human will merge it during `/reef-land` — do NOT merge it here.
 
-1. Tag the parent `to-land`. Remove `to-merge`.
+1. Tag the plan `to-land`. Remove `to-merge`.
 3. Report: "Single slice verified. PR stays open for human review. Run `/reef-land #{number}`."
 
 ### Handoff
@@ -82,7 +82,7 @@ cd ..
 git worktree remove ../worktree-merge-verify-{slice-name}
 ```
 
-### 5. Append agent decisions to parent
+### 5. Append agent decisions to plan
 
 Read the merged PR description. Extract the "Ambiguous choices" section.
 
@@ -90,7 +90,7 @@ If there are any ambiguous choices:
 
 #### GitHub tracker
 
-Add a comment on the parent issue:
+Add a comment on the plan issue:
 
 ```markdown
 ## Agent decisions from slice {slice-name} (#{slice-number})
@@ -100,7 +100,7 @@ Add a comment on the parent issue:
 
 #### Local tracker
 
-Append to the parent plan file, in a section below the coverage matrix:
+Append to the plan file, in a section below the coverage matrix:
 
 ```markdown
 ## Agent decisions
@@ -112,7 +112,11 @@ Append to the parent plan file, in a section below the coverage matrix:
 
 This aggregates decisions at merge time so the ratify phase doesn't have to hunt through all PRs later.
 
-### 6. Close the slice
+### 6. Document judgment calls
+
+Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
+
+### 7. Close the slice
 
 #### GitHub tracker
 
@@ -122,28 +126,28 @@ Close the slice issue with `gh issue close <number>`. Add label `done`. Remove `
 
 Rename from `[to-merge] ...` to `[done] ...`.
 
-### 7. Check siblings
+### 8. Check siblings
 
-Look at all sibling slices (other slices under the same parent). For any tagged `to-await-waves`, check their `blocked-by` list. If this merged slice was the last blocker, leave them as `to-await-waves` — the next pulse will dispatch the await-waves phase to re-review their plan before promoting.
+Look at all sibling slices (other slices under the same plan). For any tagged `to-await-waves`, check their `blocked-by` list. If this merged slice was the last blocker, leave them as `to-await-waves` — the next pulse will dispatch the await-waves phase to re-review their plan before promoting.
 
-### 8. Check parent completion
+### 9. Check plan completion
 
-Are ALL slices for the parent now tagged `done`?
+Are ALL slices for the plan now tagged `done`?
 
 #### GitHub tracker
 
-Check all sub-issues of the parent. If all are closed with `done` label:
+Check all sub-issues of the plan. If all are closed with `done` label:
 
-- Change the parent issue label from `in-progress` to `to-ratify`.
+- Change the plan issue label from `in-progress` to `to-ratify`.
 
 #### Local tracker
 
 Check all files in the `slices/` folder. If all have `[done]` prefix:
 
-- Rename the parent plan from `[in-progress] plan.md` to `[to-ratify] plan.md`.
+- Rename the plan from `[in-progress] plan.md` to `[to-ratify] plan.md`.
 
 If not all done, do nothing — more slices are still in progress.
 
 ### Handoff
 
-Report: "Slice {name} merged. {N} of {total} slices complete." If promoted to `to-ratify`: "All slices done — parent is ready for ratification."
+Report: "Slice {name} merged. {N} of {total} slices complete." If promoted to `to-ratify`: "All slices done — plan is ready for ratification."

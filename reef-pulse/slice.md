@@ -4,16 +4,16 @@ Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, read 
 
 > **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
 
-> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
+> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
 ## Input
 
 This skill accepts:
 
-- A specific work item: e.g. `#42` or `my-feature`
-- Nothing: look for items tagged `to-slice`. If multiple, ask the user to pick. If none, explain that items need to be scoped first and suggest `/reef-scope`.
+- a specific issue: e.g. `#42` or `my-feature`
+- nothing: look for items tagged `to-slice`. If multiple, ask the user to pick. If none, explain that items need to be scoped first and suggest `/reef-scope`.
 
-Read the work item. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The plan metadata block tells you the work type, base branch, and target branch name.
+Read the issue. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The plan metadata block tells you the work type, base branch, and target branch name.
 
 ## 1. Draft vertical slices
 
@@ -37,14 +37,14 @@ For small bugs (scope = quick fix in the plan): produce a single slice. The plan
 
 After drafting, check: **did you produce exactly 1 slice?**
 
-If yes, take the fast path — skip the target branch, sub-issues, coverage matrix, and ratify. The parent issue becomes the slice:
+If yes, take the fast path — skip the target branch, sub-issues, coverage matrix, and ratify. The plan becomes the slice:
 
 1. **Target branch = base branch.** Do not create a new branch. Set `Target branch` to the same value as `Base branch` in the plan context.
-2. **No sub-issues.** The parent issue IS the slice.
-3. **Write acceptance criteria on the parent.** Append an `## Acceptance criteria` section to the parent issue body with the criteria you drafted for the single slice. Also append a `## Plan context` section with the base branch, target branch (= base branch), and type.
+2. **No sub-issues.** The plan IS the slice.
+3. **Write acceptance criteria on the plan.** Append an `## Acceptance criteria` section to the plan body with the criteria you drafted for the single slice. Also append a `## Plan context` section with the base branch, target branch (= base branch), and type.
 4. **No coverage matrix.** Success criteria and acceptance criteria are 1:1 — the mapping adds no information.
-5. **Tag `to-implement`.** Change the parent label from `to-slice` to `to-implement`. Do NOT use `in-progress`.
-6. **Report and exit.** "Single slice — fast path. Parent issue is the slice. Tagged `to-implement`, targeting {base-branch} directly. Run `/reef-pulse` to kick it off."
+5. **Tag `to-implement`.** Change the plan label from `to-slice` to `to-implement`. Do NOT use `in-progress`.
+6. **Report and exit.** "Single slice — fast path. Plan is the slice. Tagged `to-implement`, targeting {base-branch} directly. Run `/reef-pulse` to kick it off."
 
 If you drafted **2+ slices**, continue with the multi-slice flow below.
 
@@ -68,11 +68,11 @@ For each success criterion in the plan, map it to which slice(s) and which accep
 ```markdown
 ## Coverage Matrix
 
-| Success Criterion | Slice | Acceptance Criteria |
-| --- | --- | --- |
-| SC1: Users can log in with email | 001 Auth endpoint | AC1: POST /login returns token, AC2: invalid creds return 401 |
-| SC2: Session persists across refresh | 002 Token storage | AC1: token stored in httpOnly cookie |
-| SC3: Legacy UI renders identically | 001 Auth endpoint, 003 Legacy compat | AC3: response format matches legacy schema |
+| Success Criterion                    | Slice                                | Acceptance Criteria                                           |
+| ------------------------------------ | ------------------------------------ | ------------------------------------------------------------- |
+| SC1: Users can log in with email     | 001 Auth endpoint                    | AC1: POST /login returns token, AC2: invalid creds return 401 |
+| SC2: Session persists across refresh | 002 Token storage                    | AC1: token stored in httpOnly cookie                          |
+| SC3: Legacy UI renders identically   | 001 Auth endpoint, 003 Legacy compat | AC3: response format matches legacy schema                    |
 ```
 
 **Verify completeness**: every success criterion must appear in at least one row. If any criterion is uncovered, either add it to an existing slice's acceptance criteria or create a new slice. Do not proceed with gaps. (Prevents painpoint A3.)
@@ -85,7 +85,7 @@ Before creating slices, verify internally:
 - Are the dependency relationships correct? Are there implicit deps not captured?
 - Does every success criterion appear in the coverage matrix?
 
-If anything looks off, adjust the breakdown. Document any judgment calls on the parent issue or plan file. Do not ask the user — reef-scope already iterated with the user on the plan. Your job is to slice it mechanically.
+If anything looks off, adjust the breakdown. Do not ask the user — reef-scope already iterated with the user on the plan. Your job is to slice it mechanically.
 
 ## 5. Create slices
 
@@ -98,16 +98,16 @@ Create sub-issues with `gh issue create`. Create them in dependency order (block
 Each sub-issue body:
 
 ```markdown
-## Parent
+## Plan
 
-#{parent-issue-number}
+#{plan-issue-number}
 
 ## Plan context
 
 - **Target branch**: {target-branch}
 - **Base branch**: {base-branch}
 - **Type**: {feature/refactor/bug}
-- **Parent plan**: #{parent-issue-number}
+- **Plan**: #{plan-issue-number}
 
 ## What to build
 
@@ -139,19 +139,23 @@ Create slice files in `{path}/{title}/slices/`:
 
 Each slice file follows the same body template as the GitHub issue above, but with local file references instead of issue numbers (e.g. `Blocked by: 001-auth-endpoint`).
 
-## 6. Update the parent
+## 6. Update the plan
 
 ### GitHub tracker
 
-Append the coverage matrix to the parent issue body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-ratify` once all slices are done.
+Append the coverage matrix to the plan body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-ratify` once all slices are done.
 
 Add a comment listing all created sub-issues with their tags.
 
 ### Local tracker
 
-Append the coverage matrix to the parent plan file. Rename from `[to-slice] plan.md` to `[in-progress] plan.md`. It will be renamed to `[to-ratify] plan.md` once all slices are done.
+Append the coverage matrix to the plan file. Rename from `[to-slice] plan.md` to `[in-progress] plan.md`. It will be renamed to `[to-ratify] plan.md` once all slices are done.
 
-## 7. Clean up
+## 7. Document judgment calls
+
+Document judgment calls made during this phase as a comment on the plan. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
+
+## 8. Clean up
 
 ```sh
 cd ..

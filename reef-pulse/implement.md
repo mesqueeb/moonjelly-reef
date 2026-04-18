@@ -4,7 +4,7 @@ Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, read 
 
 > **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
 
-> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
+> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
 ## Input
 
@@ -17,7 +17,7 @@ Read the slice (issue or file). It must contain:
 - Target branch name (in "Plan context" section)
 - Parent plan reference
 
-If the target branch is missing from the slice, check the parent plan metadata. The target branch is always set — for single-slice it equals the base branch, for multi-slice it's a dedicated branch.
+If the target branch is missing from the slice, check the plan metadata. The target branch is always set — for single-slice it equals the base branch, for multi-slice it's a dedicated branch.
 
 ## 1. Git prep
 
@@ -45,7 +45,7 @@ If the baseline is already broken, **stop and report this**. Do not try to fix p
 Before writing any code, read and understand:
 
 - **This slice's acceptance criteria** — this is your checklist. Every criterion must be addressed.
-- **The parent plan + success criteria** — understand the "why" behind this slice.
+- **The plan + success criteria** — understand the "why" behind this slice.
 - **Sibling slices** — awareness of what others are doing or have done. Don't duplicate, don't conflict.
 - **The decision record** — the original decisions that led here.
 
@@ -58,7 +58,7 @@ Invoke `/tdd` to do the implementation work. Before invoking, brief it with the 
 > **Acceptance criteria:**
 > {paste the acceptance criteria from the slice}
 >
-> **Context from parent plan:**
+> **Context from plan:**
 > {relevant section of the plan that explains the "why"}
 >
 > **What to be aware of:**
@@ -91,7 +91,7 @@ When implementation is complete, compose the PR description using this template:
 
 ## Parent
 
-{link to parent plan issue or file path}
+{link to plan or file path}
 
 ## Acceptance criteria
 
@@ -125,14 +125,18 @@ gh pr create --base {target-branch} --title "{slice-name}" --body "{report}"
 
 The PR targets the **target branch** (which equals `{base-branch}` for single-slice work).
 
-## 6. Clean up
+## 6. Document judgment calls
+
+Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
+
+## 7. Clean up
 
 ```sh
 cd ..
 git worktree remove ../worktree-{slice-name}
 ```
 
-## 7. Tag the slice
+## 8. Tag the slice
 
 ### GitHub tracker
 

@@ -2,17 +2,17 @@
 
 > **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
 
-> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
+> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
 ## Input
 
-This skill requires a specific work item: e.g. `#42` or `my-feature`.
+This skill requires a specific issue: e.g. `#42` or `my-feature`.
 
-Read the parent plan fully — the plan, success criteria, coverage matrix, agent decisions, and the ratify report that identified the gaps.
+Read the plan fully — the plan, success criteria, coverage matrix, agent decisions, and the ratify report that identified the gaps.
 
 ## Mindset
 
-You are not just patching holes. You are re-reviewing the entire parent plan through the lens of what the holistic review revealed. The gaps might be:
+You are not just patching holes. You are re-reviewing the entire plan through the lens of what the holistic review revealed. The gaps might be:
 
 - Missing slices (a success criterion wasn't covered)
 - Slices that were implemented but didn't actually satisfy their acceptance criteria when composed
@@ -40,11 +40,11 @@ Read the ratify report's gaps. For each gap, classify it:
 - **Integration gap**: slices work individually but not together → need a new integration slice
 - **Planning gap**: the plan or success criteria were ambiguous → update the plan first, then create slices
 
-### 2. Re-review the parent plan
+### 2. Re-review the plan
 
 This is the step that makes rescanning different from just "create follow-up tickets."
 
-Read the entire parent plan top to bottom. With the ratify report's findings in mind:
+Read the entire plan top to bottom. With the ratify report's findings in mind:
 
 - Are the success criteria still correct and complete? If the ratify found something that SHOULD have been a criterion but wasn't, add it.
 - Does the coverage matrix need updating beyond just the new slices?
@@ -52,11 +52,11 @@ Read the entire parent plan top to bottom. With the ratify report's findings in 
 
 ### GitHub tracker
 
-If the plan or success criteria need updates, edit the parent issue body with `gh issue edit`.
+If the plan or success criteria need updates, edit the plan body with `gh issue edit`.
 
 ### Local tracker
 
-If the plan needs updates, edit the parent plan file directly.
+If the plan needs updates, edit the plan file directly.
 
 ### 3. Create new slices
 
@@ -72,7 +72,7 @@ Follow the same format as the slice phase:
 
 ### GitHub tracker
 
-Create sub-issues with `gh issue create`, linked to the parent. Label: `to-implement` or `to-await-waves`.
+Create sub-issues with `gh issue create`, linked to the plan. Label: `to-implement` or `to-await-waves`.
 
 ### Local tracker
 
@@ -84,11 +84,11 @@ Add rows for the new slices. Every gap must now map to an acceptance criterion o
 
 ### GitHub tracker
 
-Edit the parent issue body to update the coverage matrix section.
+Edit the plan body to update the coverage matrix section.
 
 ### Local tracker
 
-Update the coverage matrix in the parent plan file.
+Update the coverage matrix in the plan file.
 
 ### 5. Handle original slices
 
@@ -98,7 +98,11 @@ If a gap relates to a slice that was marked `done` but is now revealed as incomp
 - The new slice references the original: "Addresses gap in {original-slice}: {description}."
 - This keeps the history clean. (Prevents painpoint E1.)
 
-### 6. Push and clean up
+### 6. Document judgment calls
+
+Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
+
+### 7. Push and clean up
 
 For local tracker, commit and push the updated plan files and new slice files:
 
@@ -110,9 +114,9 @@ cd ..
 git worktree remove ../worktree-rescan-{title}
 ```
 
-### 7. Tag
+### 8. Tag
 
-Change parent from `to-rescan` to `in-progress`. The merge phase will change it to `to-ratify` when all slices (including new ones) are `done`.
+Change plan from `to-rescan` to `in-progress`. The merge phase will change it to `to-ratify` when all slices (including new ones) are `done`.
 
 ## Handoff
 

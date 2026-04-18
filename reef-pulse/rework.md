@@ -2,7 +2,7 @@
 
 > **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
 
-> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
+> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
 ## Input
 
@@ -28,7 +28,7 @@ Read every review comment on the PR. Read the full conversation — don't just s
 
 Also re-read:
 - The slice's acceptance criteria (including any new acceptance criteria the inspector added)
-- The parent plan's success criteria (for broader context)
+- The plan's success criteria (for broader context)
 
 ### 2. Fix
 
@@ -64,14 +64,18 @@ Addressed feedback from inspection round {N}:
 - {feedback item 2}: {what was done}
 ```
 
-### 6. Clean up
+### 6. Document judgment calls
+
+Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
+
+### 7. Clean up
 
 ```sh
 cd ..
 git worktree remove ../worktree-{slice-name}
 ```
 
-### 7. Tag
+### 8. Tag
 
 ### GitHub tracker
 

@@ -1,6 +1,6 @@
 ---
 name: reef-scope
-description: Scope a work item into a plan with success criteria. Routes between feature, refactor, and bug approaches. The single entry point for turning ideas into plans.
+description: Scope an issue into a plan with success criteria. Routes between feature, refactor, and bug approaches. The single entry point for turning ideas into plans.
 ---
 
 # reef-scope
@@ -13,10 +13,10 @@ Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, run `
 
 This skill accepts:
 
-- A specific work item: `/reef-scope #42` or `/reef-scope my-feature`
+- a specific issue: `/reef-scope #42` or `/reef-scope my-feature`
 - Nothing: look for items tagged `to-scope`. If multiple, ask the user to pick. If none, ask: "Did you want to scope something new?"
 
-Read the work item.
+Read the issue.
 
 ## 0. Git prep
 
@@ -60,7 +60,7 @@ The plan gets **prepended** to the evolving file (pushing the decision record do
 
 1. Read the current issue body (which contains the decision record).
 2. Prepend the plan above the decision record. Use `gh issue edit <number> --body "..."`.
-3. Change the parent issue label from `to-scope` to `to-slice`.
+3. Change the plan label from `to-scope` to `to-slice`.
 
 ### Local tracker
 

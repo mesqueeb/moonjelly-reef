@@ -2,13 +2,13 @@
 
 > **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
 
-> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Document any judgment calls on the relevant PR or as a comment on the parent issue. Never block waiting for human input.
+> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
 ## Input
 
-This skill requires a specific work item: e.g. `#42` or `my-feature`.
+This skill requires a specific issue: e.g. `#42` or `my-feature`.
 
-Read the parent plan. It must have:
+Read the plan. It must have:
 - Success criteria
 - Coverage matrix
 - Target branch name (in metadata)
@@ -57,7 +57,7 @@ Mark each criterion: ✓ met, ✗ not met (with explanation).
 
 ### 4. Review all agent decisions
 
-Read the "Agent decisions" section on the parent (aggregated by the merge phase from each slice's PR). For each decision:
+Read the "Agent decisions" section on the plan (aggregated by the merge phase from each slice's PR). For each decision:
 
 - Does it make sense?
 - Did it introduce drift from the original success criteria or decision record?
@@ -83,7 +83,7 @@ gh pr create --base {base-branch} --head {target-branch} --title "{work-item-tit
 
 If a PR already exists for this target branch, update its description instead.
 
-The report should be concise and focused on what the human needs to know. Do NOT dump the entire plan — the human can read the plan on the parent issue. Focus on:
+The report should be concise and focused on what the human needs to know. Do NOT dump the entire plan — the human can read the plan. Focus on:
 
 ```markdown
 ## Final Report
@@ -114,31 +114,35 @@ The report should be concise and focused on what the human needs to know. Do NOT
 
 ### Parent plan
 
-{link to parent issue or file}
+{link to plan or file}
 ```
 
-### 7. Tag
+### 7. Document judgment calls
+
+Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
+
+### 8. Tag
 
 **If all criteria met (PASS):**
 
 ### GitHub tracker
 
-Add label `to-land` to the parent issue. Remove `to-ratify`.
+Add label `to-land` to the plan. Remove `to-ratify`.
 
 ### Local tracker
 
-Rename parent from `[to-ratify] ...` to `[to-land] ...`.
+Rename plan from `[to-ratify] ...` to `[to-land] ...`.
 
 **If gaps found:**
 
 ### GitHub tracker
 
-Add label `to-rescan` to the parent issue. Remove `to-ratify`.
-Add a comment on the parent listing the specific gaps.
+Add label `to-rescan` to the plan. Remove `to-ratify`.
+Add a comment on the plan listing the specific gaps.
 
 ### Local tracker
 
-Rename parent from `[to-ratify] ...` to `[to-rescan] ...`.
+Rename plan from `[to-ratify] ...` to `[to-rescan] ...`.
 
 ## Documentation
 
