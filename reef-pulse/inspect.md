@@ -34,12 +34,12 @@ A few things you naturally do:
 Use a worktree so you don't disturb the main checkout or any other agent's work.
 
 ```sh
-git fetch origin --prune
-
-# Get the PR's branch name, create worktree on a local tracking branch
-PR_BRANCH=$(gh pr view {pr-number} --json headRefName -q .headRefName)
-git worktree add ../worktree-inspect-{slice-name} -b inspect-$PR_BRANCH origin/$PR_BRANCH
-cd ../worktree-inspect-{slice-name}
+SLICE_BRANCH=$(gh pr view {pr-number} --json headRefName -q .headRefName)
+WORKTREE=$(reef-worktree-enter.sh \
+  --base-branch {base-branch} --target-branch {target-branch} \
+  --phase inspect --slice {slice-name} \
+  --slice-branch "$SLICE_BRANCH" --branch-op checkout)
+cd "$WORKTREE"
 ```
 
 Run the full project test suite. Record the result.
@@ -47,8 +47,7 @@ Run the full project test suite. Record the result.
 When inspection is complete (after tagging), clean up the worktree:
 
 ```sh
-cd ..
-git worktree remove ../worktree-inspect-{slice-name}
+reef-worktree-exit.sh --path "$WORKTREE"
 ```
 
 ### 2. Check each acceptance criterion
@@ -79,7 +78,7 @@ Do these yourself — commit and push to the PR branch:
 
 ```sh
 # Only if you made cleanup commits
-git push origin HEAD:$PR_BRANCH
+reef-worktree-commit.sh --slice-branch "$SLICE_BRANCH" -m "inspect: cleanup"
 ```
 
 ### 5. Document judgment calls
