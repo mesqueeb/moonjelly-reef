@@ -11,7 +11,7 @@ description: Present the final report to the human for review. Human approves (m
 
 This skill requires a specific work item: `/reef-land #42` or `/reef-land my-feature`.
 
-Read the parent plan. Find the open PR associated with this work item — either a single-slice PR targeting the base branch, or a work branch PR targeting the base branch (created during the ratify phase).
+Read the parent plan. Find the open PR associated with this work item — either a single-slice PR targeting the base branch, or a target branch PR targeting the base branch (created during the ratify phase).
 
 ## Present the report
 
@@ -25,7 +25,7 @@ Show the human:
 
 Present three options:
 
-> **1. Approve** — merge the work branch into {base-branch} and close the work item.
+> **1. Approve** — merge the PR into {base-branch} and close the work item.
 >
 > **2. Request changes (needs new decisions)** — something fundamental is off and we need to rethink. → Tags `to-scope` for a new scoping session.
 >

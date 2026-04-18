@@ -13,7 +13,7 @@ This skill accepts:
 - A specific work item: e.g. `#42` or `my-feature`
 - Nothing: look for items tagged `to-slice`. If multiple, ask the user to pick. If none, explain that items need to be scoped first and suggest `/reef-scope`.
 
-Read the work item. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The plan metadata block tells you the work type, base branch, and work branch name.
+Read the work item. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The plan metadata block tells you the work type, base branch, and target branch name.
 
 ## 1. Draft vertical slices
 
@@ -37,30 +37,30 @@ For small bugs (scope = quick fix in the plan): produce a single slice. The plan
 
 After drafting, check: **did you produce exactly 1 slice?**
 
-If yes, take the fast path — skip the work branch, sub-issues, coverage matrix, and ratify. The parent issue becomes the slice:
+If yes, take the fast path — skip the target branch, sub-issues, coverage matrix, and ratify. The parent issue becomes the slice:
 
-1. **No work branch.** Do not create one, even if the plan metadata suggests one. Single-slice work targets the base branch directly.
+1. **Target branch = base branch.** Do not create a new branch. Set `Target branch` to the same value as `Base branch` in the plan context.
 2. **No sub-issues.** The parent issue IS the slice.
-3. **Write acceptance criteria on the parent.** Append an `## Acceptance criteria` section to the parent issue body with the criteria you drafted for the single slice. Also append a `## Plan context` section with the base branch and type (same fields as the sub-issue template, but with `Work branch: —`).
+3. **Write acceptance criteria on the parent.** Append an `## Acceptance criteria` section to the parent issue body with the criteria you drafted for the single slice. Also append a `## Plan context` section with the base branch, target branch (= base branch), and type.
 4. **No coverage matrix.** Success criteria and acceptance criteria are 1:1 — the mapping adds no information.
 5. **Tag `to-implement`.** Change the parent label from `to-slice` to `to-implement`. Do NOT use `in-progress`.
 6. **Report and exit.** "Single slice — fast path. Parent issue is the slice. Tagged `to-implement`, targeting {base-branch} directly. Run `/reef-pulse` to kick it off."
 
 If you drafted **2+ slices**, continue with the multi-slice flow below.
 
-## 2. Create the work branch (multi-slice)
+## 2. Create the target branch (multi-slice)
 
-Read the base branch and work branch name from the plan metadata.
+Read the base branch and target branch name from the plan metadata.
 
 ```sh
 git fetch origin --prune
-git branch {work-branch} origin/{base-branch}
-git push -u origin {work-branch}
+git branch {target-branch} origin/{base-branch}
+git push -u origin {target-branch}
 ```
 
 Do NOT use `git checkout` — the main checkout should stay on whatever branch the user is on. Implementation happens in worktrees.
 
-If the plan says to work on the current branch (no new work branch), skip this step. Note that slice PRs will target whatever branch is documented in the plan metadata.
+If the plan says to work on the current branch (no new target branch), skip this step. Note that slice PRs will target whatever branch is documented in the plan metadata.
 
 ## 3. Build the coverage matrix
 
@@ -105,7 +105,7 @@ Each sub-issue body:
 
 ## Plan context
 
-- **Work branch**: {work-branch}
+- **Target branch**: {target-branch}
 - **Base branch**: {base-branch}
 - **Type**: {feature/refactor/bug}
 - **Parent plan**: #{parent-issue-number}

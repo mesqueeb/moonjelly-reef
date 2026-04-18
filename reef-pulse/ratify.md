@@ -11,24 +11,24 @@ This skill requires a specific work item: e.g. `#42` or `my-feature`.
 Read the parent plan. It must have:
 - Success criteria
 - Coverage matrix
-- Work branch name (in metadata)
+- Target branch name (in metadata)
 - Agent decisions section (appended by the merge phase from each slice)
 
 ## Mindset
 
-You are checking the **whole**, not the parts. Each slice was already verified individually during inspection. Your job is different: does the aggregate work? Does the work branch, taken as a whole, meet every success criterion from the consumer's perspective?
+You are checking the **whole**, not the parts. Each slice was already verified individually during inspection. Your job is different: does the aggregate work? Does the target branch, taken as a whole, meet every success criterion from the consumer's perspective?
 
 Think like a CTO doing a final walkthrough before shipping.
 
 ## Process
 
-### 1. Get on the work branch
+### 1. Get on the target branch
 
 Use a worktree so you don't disturb the main checkout or any other agent's work.
 
 ```sh
 git fetch origin --prune
-git worktree add ../worktree-ratify-{title} origin/{work-branch}
+git worktree add ../worktree-ratify-{title} origin/{target-branch}
 cd ../worktree-ratify-{title}
 ```
 
@@ -49,7 +49,7 @@ Not negotiable. Record the result.
 
 For each success criterion in the plan:
 
-- Read the actual code on the work branch that satisfies it. Trace the full path — don't check module by module, check end-to-end.
+- Read the actual code on the target branch that satisfies it. Trace the full path — don't check module by module, check end-to-end.
 - Verify from the **consumer's perspective**. If the criterion says "the legacy UI must render identically", don't just check that the data is correct — check that it's in the format the legacy UI expects. (Prevents painpoint A4.)
 - Cross-reference the coverage matrix: which slices were supposed to cover this criterion? Did they actually cover it when composed together?
 
@@ -71,17 +71,17 @@ Look for problems that only appear when slices are composed:
 - Inconsistent patterns between slices (one slice does auth one way, another does it differently)
 - Shared resources that multiple slices touch — are they coherent?
 - Are there any test gaps at the integration boundaries? (Prevents painpoint C3 — mocked-away bugs.)
-- **Terminology inconsistencies**: did different slices use different words for the same concept? If terminology drifted across slices, run `/ubiquitous-language` against the work branch to flag ambiguities and include findings in the report.
+- **Terminology inconsistencies**: did different slices use different words for the same concept? If terminology drifted across slices, run `/ubiquitous-language` against the target branch to flag ambiguities and include findings in the report.
 
 ### 6. Produce the report
 
-The report goes on a **PR from the work branch to the base branch** (usually `main`). This PR is what the human will ultimately merge or reject.
+The report goes on a **PR from the target branch to the base branch** (usually `main`). This PR is what the human will ultimately merge or reject.
 
 ```sh
-gh pr create --base {base-branch} --head {work-branch} --title "{work-item-title}" --body "{report}"
+gh pr create --base {base-branch} --head {target-branch} --title "{work-item-title}" --body "{report}"
 ```
 
-If a PR already exists for this work branch, update its description instead.
+If a PR already exists for this target branch, update its description instead.
 
 The report should be concise and focused on what the human needs to know. Do NOT dump the entire plan — the human can read the plan on the parent issue. Focus on:
 
@@ -144,12 +144,12 @@ Rename parent from `[to-ratify] ...` to `[to-rescan] ...`.
 
 When you find non-obvious behavior worth documenting during your holistic review:
 
-1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and commit to the work branch.
+1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and commit to the target branch.
 2. **Outside-of-code docs if warranted.** If the behavior is significant enough to document beyond a code comment, check the repo's `AGENTS.md`/`CLAUDE.md` for a documentation locations section. If it exists, follow it. If it doesn't, create a brief entry.
 
 Don't document what's obvious from reading the code.
 
 ## Handoff
 
-If pass: "Work branch reviewed and final report written on PR #{number}. Ready for `/reef-land` — human review."
+If pass: "Target branch reviewed and final report written on PR #{number}. Ready for `/reef-land` — human review."
 If gaps: "Gaps found during holistic review. Tagged `to-rescan` for rescanning to create new slices."

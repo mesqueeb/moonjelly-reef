@@ -1,11 +1,11 @@
 ---
 name: git-guardrails-claude-code
-description: Set up Claude Code hooks to block dangerous git commands (force push, reset --hard, clean, force-delete branches, etc.) before they execute, while still allowing safe everyday operations like pushing work branches from worktrees and cleaning up branches whose remote was deleted. Use when user wants to prevent destructive git operations, add git safety hooks, or block dangerous git in Claude Code.
+description: Set up Claude Code hooks to block dangerous git commands (force push, reset --hard, clean, force-delete branches, etc.) before they execute, while still allowing safe everyday operations like pushing branches from worktrees and cleaning up branches whose remote was deleted. Use when user wants to prevent destructive git operations, add git safety hooks, or block dangerous git in Claude Code.
 ---
 
 # Setup Git Guardrails
 
-Sets up a PreToolUse hook that intercepts and blocks dangerous git commands before Claude executes them — without getting in the way of normal work-branch workflows.
+Sets up a PreToolUse hook that intercepts and blocks dangerous git commands before Claude executes them — without getting in the way of normal target-branch workflows.
 
 ## What Gets Blocked
 

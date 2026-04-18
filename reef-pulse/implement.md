@@ -14,10 +14,10 @@ If no slice is given, look for slices tagged `to-implement`. If multiple, pick t
 
 Read the slice (issue or file). It must contain:
 - Acceptance criteria
-- Work branch name (in "Plan context" section)
+- Target branch name (in "Plan context" section)
 - Parent plan reference
 
-If any of these are missing, check the parent plan for the work branch. If you truly can't find the work branch name, default to `main` and note this in your report.
+If the target branch is missing from the slice, check the parent plan metadata. The target branch is always set — for single-slice it equals the base branch, for multi-slice it's a dedicated branch.
 
 ## 1. Git prep
 
@@ -27,14 +27,14 @@ This is non-negotiable. Every step must pass before writing any code.
 # Fetch latest and prune stale tracking branches
 git fetch origin --prune
 
-# Create a worktree from the work branch
-git worktree add ../worktree-{slice-name} -b {slice-branch} origin/{work-branch}
+# Create a worktree from the target branch
+git worktree add ../worktree-{slice-name} -b {slice-branch} origin/{target-branch}
 cd ../worktree-{slice-name}
 ```
 
 Verify:
-- [ ] Worktree is based on the latest `origin/{work-branch}`
-- [ ] No unrelated commits are present (`git log --oneline -5` — should see only work branch history)
+- [ ] Worktree is based on the latest `origin/{target-branch}`
+- [ ] No unrelated commits are present (`git log --oneline -5` — should see only target branch history)
 - [ ] The project builds / compiles cleanly before you touch anything
 - [ ] The full test suite passes before you touch anything (this is your baseline)
 
@@ -120,12 +120,19 @@ Decisions made during implementation that weren't covered by the acceptance crit
 
 ```sh
 git push -u origin {slice-branch}
-gh pr create --base {work-branch} --title "{slice-name}" --body "{report}"
+gh pr create --base {target-branch} --title "{slice-name}" --body "{report}"
 ```
 
-The PR targets the **work branch**, not `main`.
+The PR targets the **target branch** (which equals `{base-branch}` for single-slice work).
 
-## 6. Tag the slice
+## 6. Clean up
+
+```sh
+cd ..
+git worktree remove ../worktree-{slice-name}
+```
+
+## 7. Tag the slice
 
 ### GitHub tracker
 

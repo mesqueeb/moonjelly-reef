@@ -8,21 +8,13 @@
 
 A work item tagged `to-merge` with an open PR.
 
-Read the item to find the PR reference. Check the Plan context to determine whether this is **single-slice** (`Work branch: —`) or **multi-slice** (work branch set).
+Read the item to find the PR reference. Check the Plan context to determine whether this is **single-slice** (target branch = base branch) or **multi-slice** (target branch forks from base branch).
 
 ## Single-slice
 
 The PR targets the base branch. The human will merge it during `/reef-land` — do NOT merge it here.
 
-1. Clean up the implementation worktree:
-
-```sh
-git worktree remove ../worktree-{slice-name}
-git fetch origin --prune
-git branch -d {slice-branch} 2>/dev/null || true
-```
-
-2. Tag the parent `to-land`. Remove `to-merge`.
+1. Tag the parent `to-land`. Remove `to-merge`.
 3. Report: "Single slice verified. PR stays open for human review. Run `/reef-land #{number}`."
 
 ### Handoff
@@ -40,16 +32,16 @@ git fetch origin --prune
 Verify:
 
 - [ ] The PR is approved (has `to-merge` tag, inspector's approval)
-- [ ] The slice branch is up to date with the work branch:
+- [ ] The slice branch is up to date with the target branch:
 
 ```sh
 gh pr view {pr-number} --json mergeStateStatus -q .mergeStateStatus
 ```
 
-If the slice branch is behind the work branch (merge conflicts or `BEHIND`):
+If the slice branch is behind the target branch (merge conflicts or `BEHIND`):
 
 1. Check out the implementation worktree (it should still exist from the implement phase)
-2. Merge the work branch into the slice branch: `git merge origin/{work-branch}`
+2. Merge the target branch into the slice branch: `git merge origin/{target-branch}`
 3. Resolve any conflicts
 4. Run the full test suite — must be green with the merged code
 5. Push the updated slice branch
@@ -64,21 +56,20 @@ gh pr merge {pr-number} --squash --delete-branch
 
 Use squash merge by default unless the project convention differs. `--delete-branch` deletes the remote slice branch.
 
-### 3. Clean up worktree
+### 3. Clean up local branch
 
 ```sh
-git worktree remove ../worktree-{slice-name}
 git fetch origin --prune
 git branch -d {slice-branch} 2>/dev/null || true
 ```
 
 ### 4. Verify post-merge
 
-Use a temporary worktree to verify the work branch after merge.
+Use a temporary worktree to verify the target branch after merge.
 
 ```sh
 git fetch origin --prune
-git worktree add ../worktree-merge-verify-{slice-name} origin/{work-branch}
+git worktree add ../worktree-merge-verify-{slice-name} origin/{target-branch}
 cd ../worktree-merge-verify-{slice-name}
 ```
 

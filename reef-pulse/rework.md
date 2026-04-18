@@ -14,21 +14,10 @@ Read the slice to find the PR reference.
 
 ### 0. Git prep
 
-The implementation worktree should still exist from the implement phase. Find it and make sure it's current.
-
 ```sh
 git fetch origin --prune
 
-# Navigate to the existing worktree
-cd ../worktree-{slice-name}
-
-# Pull latest — the inspector may have pushed trivial cleanup commits
-git pull origin {slice-branch}
-```
-
-If the worktree doesn't exist (e.g. it was cleaned up prematurely), recreate it:
-
-```sh
+# Create a worktree on the slice branch
 git worktree add ../worktree-{slice-name} origin/{slice-branch}
 cd ../worktree-{slice-name}
 ```
@@ -75,7 +64,14 @@ Addressed feedback from inspection round {N}:
 - {feedback item 2}: {what was done}
 ```
 
-### 6. Tag
+### 6. Clean up
+
+```sh
+cd ..
+git worktree remove ../worktree-{slice-name}
+```
+
+### 7. Tag
 
 ### GitHub tracker
 

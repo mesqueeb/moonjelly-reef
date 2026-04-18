@@ -45,11 +45,11 @@ stateDiagram-v2
 
         [*] --> to_scope
         to_scope --> to_slice : /reef-scope<br />scope the work, define success criteria
-        to_slice --> slice_lifecycle : slice.md<br />🔷　multi-slice:<br />create work branch, sub-issues, coverage matrix
+        to_slice --> slice_lifecycle : slice.md<br />🔷　multi-slice:<br />create target branch, sub-issues, coverage matrix
         to_slice --> slice_lifecycle : slice.md<br />🔶　single-slice:<br />parent becomes the slice, tags to-implement
         slice_lifecycle --> to_ratify
         slice_lifecycle --> to_land
-        to_ratify --> to_land : ratify.md<br />holistic review on work branch
+        to_ratify --> to_land : ratify.md<br />holistic review on target branch
         to_ratify --> gaps_to_rescan : ratify.md<br />gaps found
         gaps_to_rescan --> slice_lifecycle : rescan.md<br />analyze gaps, create new slices
         to_land --> [*] : /reef-land<br />human reviews report, merges into main
@@ -134,7 +134,7 @@ These are the 🌊 automated phases dispatched by `/reef-pulse`. Each phase read
 
 > _A mantis shrimp shatters a crab shell into clean, separate pieces with a single devastating strike — each fragment deliberate, each piece ready to carry off._
 
-Break the plan into vertical slices. 🔶 **Single-slice**: parent becomes the slice, tags `to-implement`, no work branch. 🔷 **Multi-slice**: create work branch, sub-issues, coverage matrix, tag slices `to-implement` or `to-await-waves`.
+Break the plan into vertical slices. 🔶 **Single-slice**: parent becomes the slice, tags `to-implement`, no target branch. 🔷 **Multi-slice**: create target branch, sub-issues, coverage matrix, tag slices `to-implement` or `to-await-waves`.
 
 📄 [`reef-pulse/slice.md`](reef-pulse/slice.md)
 
@@ -189,7 +189,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 
 > _The great manta ray glides in wide and smooth, gathers the loose piece in a gentle sweep of its wings, and folds it seamlessly into the whole flowing current._
 
-🔶 **Single-slice**: leave the PR open for the diver, tag `to-land`. 🔷 **Multi-slice**: merge the PR into the work branch, verify suite, close the slice, check for newly unblocked siblings, tag parent `to-ratify` when all slices are done.
+🔶 **Single-slice**: leave the PR open for the diver, tag `to-land`. 🔷 **Multi-slice**: merge the PR into the target branch, verify suite, close the slice, check for newly unblocked siblings, tag parent `to-ratify` when all slices are done.
 
 📄 [`reef-pulse/merge.md`](reef-pulse/merge.md)
 
@@ -200,7 +200,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 
 > _The walrus hauls itself onto the ice floe, surveys the entire colony with slow, deliberate eyes, and counts every last pup — nothing is declared safe until the old bull has seen it all._
 
-🔷 Multi-slice only. Holistic review of the entire work branch — checking the composed whole, not the parts. Verify every success criterion end-to-end, run the full suite, produce the aggregate report, tag `to-land` or `to-rescan`.
+🔷 Multi-slice only. Holistic review of the entire target branch — checking the composed whole, not the parts. Verify every success criterion end-to-end, run the full suite, produce the aggregate report, tag `to-land` or `to-rescan`.
 
 📄 [`reef-pulse/ratify.md`](reef-pulse/ratify.md)
 
@@ -219,7 +219,127 @@ Analyze gaps found by ratify, re-review the entire plan, create new slices to ad
 
 ## Git hygiene
 
-Every agent works in its own git worktree — the main checkout is never touched. For multi-slice work, a work branch is created from the base branch; slice PRs target it. For single-slice work, the PR targets the base branch directly — no work branch needed. Implementation worktrees persist until their PR is merged; temporary worktrees (review, inspection) are torn down immediately. Only the merge phase removes worktrees and branches. Every git operation begins with `git fetch origin --prune`. No `--force` flags, ever.
+Every agent works in its own git worktree — the main checkout is never touched. For multi-slice work, a target branch is created from the base branch; slice PRs target it. For single-slice work, the target branch equals the base branch. Every phase creates its own worktree and tears it down before exiting. Every git operation begins with `git fetch origin --prune`. No `--force` flags, ever.
+
+<details>
+<summary>Branch &amp; worktree lifecycle</summary>
+
+```mermaid
+stateDiagram-v2
+    direction TB
+
+    classDef human fill:#ffeaa7,stroke:#fdcb6e,color:#2d3436
+    classDef agent fill:#81ecec,stroke:#00cec9,color:#2d3436
+    classDef arrow fill:#ececec,stroke:#ffffff00,color:#2d3436
+
+    state "GIT TICKET LIFECYCLE" as work {
+
+        state "🤿　to-scope" as to_scope
+        state "🌊　to-slice" as to_slice
+        state "🌊　to-ratify" as to_ratify
+        state "🌊　to-rescan" as gaps_to_rescan
+        state "🤿　to-land" as to_land
+
+        [*] --> to_scope
+        to_scope --> to_slice : /reef-scope<br />choose {base} branch and choose {target} branch name
+        to_slice --> slice_lifecycle : slice.md<br />fetch, 🔷　create branch {target} from {base}
+        to_slice --> slice_lifecycle : slice.md<br />fetch, 🔶　no branch created
+        slice_lifecycle --> to_ratify
+        slice_lifecycle --> to_land
+        to_ratify --> to_land : ratify.md<br />fetch, temp worktree on {target},<br />open PR {target} → {base}
+        to_ratify --> gaps_to_rescan : ratify.md<br />fetch, temp worktree on {target},<br />worktree removed
+        gaps_to_rescan --> slice_lifecycle : rescan.md<br />no git ops
+        to_land --> [*] : /reef-land<br />merge PR into {base},<br />delete {target} branch
+    }
+
+    state "GIT SLICE LIFECYCLE (per slice)" as slice_lifecycle {
+
+        state "🌊　to-await-waves" as to_await
+        state "🌊　to-implement" as to_implement
+        state "🌊　to-inspect" as to_inspect
+        state "🌊　to-rework" as needs_rework
+        state "🌊　to-merge" as to_merge
+        state "merge.md<br />🔷　fetch, squash merge PR into {target},<br />delete {slice} branch" as merge_multi
+        state "merge.md<br />🔶　PR stays open" as merge_single
+        [*] --> to_implement : no deps
+        [*] --> to_await : has deps
+        to_await --> to_implement : await-waves.md<br />fetch, check deps
+        to_implement --> to_inspect : implement.md<br />fetch, worktree add -b {slice} from {target},<br />push, open PR {slice} → {target},<br />worktree removed
+        to_inspect --> to_merge : inspect.md<br />fetch, temp worktree, cleanup commits → push,<br />worktree removed
+        to_inspect --> needs_rework : inspect.md<br />fetch, temp worktree, review,<br />worktree removed
+        needs_rework --> to_inspect : rework.md<br />fetch, temp worktree, fix commits → push,<br />worktree removed
+        to_merge --> merge_multi
+        to_merge --> merge_single
+    }
+
+    class to_scope,to_land human
+    class to_slice,to_ratify,gaps_to_rescan,to_await,to_implement,to_inspect,needs_rework,to_merge agent
+    class merge_multi,merge_single arrow
+```
+
+</details>
+
+## Artifact map
+
+What gets written where by each phase. Surfaces: **issue body**, **issue comment**, **PR body**, **PR comment**.
+
+<details>
+<summary>Artifact flow per phase</summary>
+
+```mermaid
+stateDiagram-v2
+    direction TB
+
+    classDef human fill:#ffeaa7,stroke:#fdcb6e,color:#2d3436
+    classDef agent fill:#81ecec,stroke:#00cec9,color:#2d3436
+    classDef arrow fill:#ececec,stroke:#ffffff00,color:#2d3436
+
+    state "ARTIFACT TICKET LIFECYCLE" as work {
+
+        state "🤿　to-scope" as to_scope
+        state "🌊　to-slice" as to_slice
+        state "🌊　to-ratify" as to_ratify
+        state "🌊　to-rescan" as gaps_to_rescan
+        state "🤿　to-land" as to_land
+
+        [*] --> to_scope
+        to_scope --> to_slice : /reef-scope<br />plan + success criteria → issue body
+        to_slice --> slice_lifecycle : slice.md<br />🔷　coverage matrix → issue body,<br />AC → sub-issue bodies
+        to_slice --> slice_lifecycle : slice.md<br />🔶　AC → issue body
+        slice_lifecycle --> to_ratify
+        slice_lifecycle --> to_land
+        to_ratify --> to_land : ratify.md<br />final report → PR body<br />(SC + agent decisions + tests + metrics)
+        to_ratify --> gaps_to_rescan : ratify.md<br />gap list → issue comment
+        gaps_to_rescan --> slice_lifecycle : rescan.md<br />new slices → sub-issues,<br />updated matrix → issue body
+        to_land --> [*] : /reef-land<br />human reviews PR report
+    }
+
+    state "ARTIFACT SLICE LIFECYCLE (per slice)" as slice_lifecycle {
+
+        state "🌊　to-await-waves" as to_await
+        state "🌊　to-implement" as to_implement
+        state "🌊　to-inspect" as to_inspect
+        state "🌊　to-rework" as needs_rework
+        state "🌊　to-merge" as to_merge
+        state "merge.md<br />🔷　close slice issue" as merge_multi
+        state "merge.md<br />🔶　(nothing written)" as merge_single
+        [*] --> to_implement : no deps
+        [*] --> to_await : has deps
+        to_await --> to_implement : await-waves.md<br />no artifacts
+        to_implement --> to_inspect : implement.md<br />AC checklist + ambiguous choices<br />+ test results → PR body
+        to_inspect --> to_merge : inspect.md<br />cleanup commits → PR
+        to_inspect --> needs_rework : inspect.md<br />review comments → PR
+        needs_rework --> to_inspect : rework.md<br />fix commits + updated report → PR
+        to_merge --> merge_multi
+        to_merge --> merge_single
+    }
+
+    class to_scope,to_land human
+    class to_slice,to_ratify,gaps_to_rescan,to_await,to_implement,to_inspect,needs_rework,to_merge agent
+    class merge_multi,merge_single arrow
+```
+
+</details>
 
 ## Autopilot
 

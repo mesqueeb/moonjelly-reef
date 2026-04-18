@@ -63,12 +63,12 @@ Dispatch by telling sub-agents to read and follow a specific file:
 
 | Tag | File | Notes |
 | --- | --- | --- |
-| `to-slice` | [slice.md](slice.md) | One at a time per parent (creates work branch + sub-issues) |
+| `to-slice` | [slice.md](slice.md) | One at a time per parent (creates target branch + sub-issues) |
 | `to-await-waves` | [await-waves.md](await-waves.md) | Parallel OK — each is independent |
 | `to-implement` | [implement.md](implement.md) | Parallel OK for unrelated slices. Slices within the same parent may be dispatched as an **agent team** if multiple are ready |
 | `to-inspect` | [inspect.md](inspect.md) | Parallel OK |
 | `to-rework` | [rework.md](rework.md) | Parallel OK |
-| `to-merge` | [merge.md](merge.md) | One at a time per parent (modifies work branch) |
+| `to-merge` | [merge.md](merge.md) | One at a time per parent (modifies target branch) |
 | `to-ratify` | [ratify.md](ratify.md) | One at a time per parent |
 | `to-rescan` | [rescan.md](rescan.md) | One at a time per parent |
 
@@ -79,7 +79,34 @@ When dispatching, pass the item reference as a parameter: e.g. "Read and follow 
 - **1-2 slices ready**: use regular sub-agents (Agent tool). Dispatch `reef-pulse/implement.md` for each with the slice reference.
 - **3+ slices ready from the same parent**: use an agent team. Each teammate claims a slice and follows `reef-pulse/implement.md` with its slice reference. The instructions handle worktree setup, PR creation, and reporting — just pass the slice reference.
 
-### Step 3. Present human (🤿) items (--hitl only)
+### Step 3. Log phase metrics to parent issues
+
+After all dispatched agents complete, collect the task notification metadata from each (duration, tokens, tool uses, and outcome). Group the results by parent plan issue:
+
+- **Single-slice plans**: the plan issue itself is the parent.
+- **Multi-slice plans**: the slice issue body links back to its parent (look for the `Parent plan: #N` line).
+
+Post **one comment per parent** using `gh issue comment`. Each pulse appends a new comment — never edit previous comments or the issue body.
+
+Comment format:
+
+```markdown
+### 🪼 Pulse metrics — {YYYY-MM-DD HH:MM UTC}
+
+| Phase | Target | Duration | Tokens | Tool uses | Outcome |
+| --- | --- | --- | --- | --- | --- |
+| implement | #55 | 42s | 12 340 | 18 | ✅ PR created |
+| implement | #56 | 38s | 10 890 | 15 | ✅ PR created |
+| inspect | #53 | 25s | 8 200 | 12 | ✅ passed |
+```
+
+Rules:
+- Only log phases that were dispatched this pulse. If nothing was dispatched, skip this step entirely.
+- If a dispatch failed or the agent returned no metadata, log what you have with `—` for missing fields.
+- Duration should be human-readable (e.g. `42s`, `1m 12s`). Tokens should use space-separated thousands.
+- For local tracker: append the same table to the parent plan file as a new section at the bottom, under a `### 🪼 Pulse metrics — {timestamp}` heading.
+
+### Step 4. Present human (🤿) items (--hitl only)
 
 If running in `--hitl` mode, present human-required items:
 
@@ -92,7 +119,7 @@ If running in `--hitl` mode, present human-required items:
 
 If running in `--afk` mode, skip this step entirely.
 
-### Step 4. Report and exit
+### Step 5. Report and exit
 
 Print a summary of what was dispatched:
 
@@ -138,6 +165,6 @@ These are reminders for the LLM executing this skill, not documentation:
 
 - **You are stateless.** You scan tags, dispatch skills, and exit. You do not track what you dispatched last time. Tags are the state.
 - **Don't do the work yourself.** You dispatch skills. You never implement, review, or merge directly.
-- **Respect one-at-a-time constraints.** Slicing, merging, ratifying, and rescanning modify shared state (work branch, parent issue). Only one sub-agent per parent for these.
+- **Respect one-at-a-time constraints.** Slicing, merging, ratifying, and rescanning modify shared state (target branch, parent issue). Only one sub-agent per parent for these.
 - **Parallel is the default for implementation.** Unrelated slices tagged `to-implement` should be dispatched simultaneously.
 - **If a dispatch fails, don't retry.** Report the failure in the summary and move on. The next pulse will pick it up if the tag is still set.

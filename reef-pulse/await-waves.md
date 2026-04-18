@@ -32,10 +32,10 @@ Check if the blocking slice file has the `[done]` prefix.
 
 ## 2. Re-review the plan
 
-Earlier slices may have changed the codebase. Use a temporary worktree to inspect the work branch without disturbing the main checkout:
+Earlier slices may have changed the codebase. Use a temporary worktree to inspect the target branch without disturbing the main checkout:
 
 ```sh
-git worktree add ../worktree-await-{slice-name} origin/{work-branch}
+git worktree add ../worktree-await-{slice-name} origin/{target-branch}
 cd ../worktree-await-{slice-name}
 ```
 
