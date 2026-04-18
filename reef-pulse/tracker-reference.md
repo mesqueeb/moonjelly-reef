@@ -66,6 +66,39 @@ The tracker type is defined in `.agents/moonjelly-reef/config.md`.
 | Linear | Filter issues by label |
 | Other | Equivalent "search by status/label" query |
 
+## Push convention: metadata vs code
+
+There are two kinds of writes in a reef workflow. Each uses a different push strategy:
+
+**Code changes** (implement, inspect cleanup, rework) need review. They push to a **slice branch** and go through a PR:
+
+```sh
+reef-worktree-commit.sh --slice-branch {slice-branch} -m "implement: ..."
+```
+
+**Metadata changes** (slice creation, coverage matrix updates, tag renames, rescan slices) are mechanical and need no review. They push **directly to the target branch**:
+
+```sh
+reef-worktree-commit.sh --target-branch {target-branch} -m "slice: update plan"
+```
+
+### Phase push targets
+
+| Phase | What it writes | Push target | How |
+| --- | --- | --- | --- |
+| slice | plan updates, new slice files | target (direct) | `--target-branch` |
+| implement | code + tests | slice branch (PR) | `--slice-branch` |
+| inspect | cleanup commits | slice branch (PR) | `--slice-branch` |
+| rework | fix commits | slice branch (PR) | `--slice-branch` |
+| await-waves | slice file updates | target (direct) | `--target-branch` |
+| merge | plan updates, coverage matrix | target (direct) | `--target-branch` |
+| rescan | plan updates, new slice files | target (direct) | `--target-branch` |
+| ratify | doc commits (if any) | target (direct) | `--target-branch` |
+
+GitHub tracker phases that only update issues (via `gh issue edit`) don't need to push at all — the changes live on GitHub, not in the repo.
+
+Local tracker phases write plan/slice files to disk, so they must commit and push to keep other agents' worktrees in sync. Every local tracker write should be followed by a `reef-worktree-commit.sh` call before exiting.
+
 ## MCP setup
 
 For non-GitHub, non-local trackers, the user should have the relevant MCP server configured in their Claude Code settings. The setup phase (`setup.md`) prompts for this during initial configuration.
