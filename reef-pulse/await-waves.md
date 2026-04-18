@@ -53,7 +53,11 @@ If acceptance criteria were updated, edit the slice issue body with `gh issue ed
 
 ### Local tracker
 
-If acceptance criteria were updated, rewrite the slice file with the updated content.
+If acceptance criteria were updated, rewrite the slice file with the updated content. Commit and push so other agents see the update:
+
+```sh
+reef-worktree-commit.sh --target-branch {target-branch} -m "await-waves: update criteria for {slice-name}"
+```
 
 ## 3. Promote
 

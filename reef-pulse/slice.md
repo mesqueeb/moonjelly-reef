@@ -160,6 +160,12 @@ Add a comment listing all created sub-issues with their tags.
 
 Append the coverage matrix to the plan file. Rename from `[to-slice] plan.md` to `[in-progress] plan.md`. It will be renamed to `[to-ratify] plan.md` once all slices are done.
 
+Commit and push the plan and slice files so other agents see them:
+
+```sh
+reef-worktree-commit.sh --target-branch {target-branch} -m "slice: create slices for {title}"
+```
+
 ## 7. Document judgment calls
 
 Document judgment calls made during this phase as a comment on the plan. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.

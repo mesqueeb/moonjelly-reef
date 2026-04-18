@@ -148,7 +148,11 @@ Rename plan from `[to-ratify] ...` to `[to-rescan] ...`.
 
 When you find non-obvious behavior worth documenting during your holistic review:
 
-1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and commit to the target branch.
+1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and push directly to the target branch:
+
+```sh
+reef-worktree-commit.sh --target-branch {target-branch} -m "ratify: add documentation"
+```
 2. **Outside-of-code docs if warranted.** If the behavior is significant enough to document beyond a code comment, check the repo's `AGENTS.md`/`CLAUDE.md` for a documentation locations section. If it exists, follow it. If it doesn't, create a brief entry.
 
 Don't document what's obvious from reading the code.

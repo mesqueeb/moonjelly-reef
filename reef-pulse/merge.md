@@ -65,6 +65,12 @@ cd "$WORKTREE"
 
 Run the full test suite. If it fails, **do not proceed** — tag the slice `to-rework` with a note that the merge broke tests and what failed.
 
+For local tracker: perform the metadata writes (steps 4–7) inside this worktree before exiting, then commit and push:
+
+```sh
+reef-worktree-commit.sh --target-branch {target-branch} -m "merge: close {slice-name}, update plan"
+```
+
 Clean up:
 
 ```sh
