@@ -24,12 +24,11 @@ If the target branch is missing from the slice, check the plan metadata. The tar
 This is non-negotiable. Every step must pass before writing any code.
 
 ```sh
-# Fetch latest and prune stale tracking branches
-git fetch origin --prune
-
-# Create a worktree from the target branch
-git worktree add ../worktree-{slice-name} -b {slice-branch} origin/{target-branch}
-cd ../worktree-{slice-name}
+WORKTREE=$(reef-worktree-enter.sh \
+  --base-branch {base-branch} --target-branch {target-branch} \
+  --phase implement --slice {slice-name} \
+  --slice-branch {slice-branch} --branch-op create)
+cd "$WORKTREE"
 ```
 
 Verify:
@@ -96,7 +95,7 @@ Decisions made during implementation that weren't covered by the acceptance crit
 ## 5. Open the PR
 
 ```sh
-git push -u origin {slice-branch}
+reef-worktree-commit.sh --slice-branch {slice-branch} -m "{slice-name}: implementation"
 gh pr create --base {target-branch} --title "{slice-name}" --body "{report}"
 ```
 
@@ -109,8 +108,7 @@ Document judgment calls made during this phase on the PR. Only document decision
 ## 7. Clean up
 
 ```sh
-cd ..
-git worktree remove ../worktree-{slice-name}
+reef-worktree-exit.sh --path "$WORKTREE" --slice-branch {slice-branch}
 ```
 
 ## 8. Tag the slice
