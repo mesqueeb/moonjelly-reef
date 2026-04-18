@@ -25,10 +25,6 @@ Report: "PR stays open for human review. Run `/reef-land #{number}`."
 
 ### 1. Pre-merge checks
 
-```sh
-git fetch origin --prune
-```
-
 Verify:
 
 - [ ] The PR is approved (has `to-merge` tag, inspector's approval)
@@ -56,21 +52,15 @@ gh pr merge {pr-number} --squash --delete-branch
 
 Use squash merge by default unless the project convention differs. `--delete-branch` deletes the remote slice branch.
 
-### 3. Clean up local branch
-
-```sh
-git fetch origin --prune
-git branch -d {slice-branch} 2>/dev/null || true
-```
-
-### 4. Verify post-merge
+### 3. Verify post-merge
 
 Use a temporary worktree to verify the target branch after merge.
 
 ```sh
-git fetch origin --prune
-git worktree add ../worktree-merge-verify-{slice-name} origin/{target-branch}
-cd ../worktree-merge-verify-{slice-name}
+WORKTREE=$(reef-worktree-enter.sh \
+  --base-branch {base-branch} --target-branch {target-branch} \
+  --phase merge --slice {slice-name})
+cd "$WORKTREE"
 ```
 
 Run the full test suite. If it fails, **do not proceed** — tag the slice `to-rework` with a note that the merge broke tests and what failed.
@@ -78,45 +68,14 @@ Run the full test suite. If it fails, **do not proceed** — tag the slice `to-r
 Clean up:
 
 ```sh
-cd ..
-git worktree remove ../worktree-merge-verify-{slice-name}
+reef-worktree-exit.sh --path "$WORKTREE"
 ```
 
-### 5. Append agent decisions to plan
-
-Read the merged PR description. Extract the "Ambiguous choices" section.
-
-If there are any ambiguous choices:
-
-#### GitHub tracker
-
-Add a comment on the plan issue:
-
-```markdown
-## Agent decisions from slice {slice-name} (#{slice-number})
-
-{paste the ambiguous choices section from the PR}
-```
-
-#### Local tracker
-
-Append to the plan file, in a section below the coverage matrix:
-
-```markdown
-## Agent decisions
-
-### From slice {slice-name}
-
-{paste the ambiguous choices section}
-```
-
-This aggregates decisions at merge time so the ratify phase doesn't have to hunt through all PRs later.
-
-### 6. Document judgment calls
+### 4. Document judgment calls
 
 Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
-### 7. Close the slice
+### 5. Close the slice
 
 #### GitHub tracker
 
@@ -126,11 +85,11 @@ Close the slice issue with `gh issue close <number>`. Add label `done`. Remove `
 
 Rename from `[to-merge] ...` to `[done] ...`.
 
-### 8. Check siblings
+### 6. Check siblings
 
 Look at all sibling slices (other slices under the same plan). For any tagged `to-await-waves`, check their `blocked-by` list. If this merged slice was the last blocker, leave them as `to-await-waves` — the next pulse will dispatch the await-waves phase to re-review their plan before promoting.
 
-### 9. Check plan completion
+### 7. Check plan completion
 
 Are ALL slices for the plan now tagged `done`?
 
