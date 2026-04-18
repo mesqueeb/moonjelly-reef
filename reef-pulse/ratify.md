@@ -35,12 +35,6 @@ cd "$WORKTREE"
 
 Verify you have the latest — all slice PRs should be merged into this branch.
 
-When ratification is complete (after tagging), clean up the worktree:
-
-```sh
-reef-worktree-exit.sh --path "$WORKTREE"
-```
-
 ### 2. Run the full test suite
 
 Not negotiable. Record the result.
@@ -156,6 +150,12 @@ reef-worktree-commit.sh --target-branch {target-branch} -m "ratify: add document
 2. **Outside-of-code docs if warranted.** If the behavior is significant enough to document beyond a code comment, check the repo's `AGENTS.md`/`CLAUDE.md` for a documentation locations section. If it exists, follow it. If it doesn't, create a brief entry.
 
 Don't document what's obvious from reading the code.
+
+## Clean up
+
+```sh
+reef-worktree-exit.sh --path "$WORKTREE"
+```
 
 ## Handoff
 

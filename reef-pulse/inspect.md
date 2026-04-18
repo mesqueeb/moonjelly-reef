@@ -44,12 +44,6 @@ cd "$WORKTREE"
 
 Run the full project test suite. Record the result.
 
-When inspection is complete (after tagging), clean up the worktree:
-
-```sh
-reef-worktree-exit.sh --path "$WORKTREE"
-```
-
 ### 2. Check each acceptance criterion
 
 For each acceptance criterion on the slice:
@@ -108,6 +102,12 @@ Leave specific review comments on the PR for each gap. Be precise — tell the i
 
 Rename from `[to-inspect] ...` to `[to-rework] ...`.
 Add the feedback to the slice file body.
+
+## Clean up
+
+```sh
+reef-worktree-exit.sh --path "$WORKTREE"
+```
 
 ## Handoff
 

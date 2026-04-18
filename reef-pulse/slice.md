@@ -61,7 +61,7 @@ cd "$WORKTREE"
 git push -u origin {target-branch}
 ```
 
-If the plan says to work on the current branch (no new target branch), skip the branch creation but still create a worktree to read the codebase:
+If the plan says to work on the current branch (no new target branch), use this alternative instead — skip the branch creation but still create a worktree to read the codebase:
 
 ```sh
 WORKTREE=$(reef-worktree-enter.sh \
