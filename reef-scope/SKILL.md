@@ -92,6 +92,7 @@ PLAN_TITLE = {plan-title} # as per discussion context
 BASE_BRANCH = {base-branch} # as per discussion context
 TARGET_BRANCH = {target-branch} # as per discussion context
 PLAN_CONTENT = {plan-content} # as per discussion context
+WORKTREE_PATH = ../worktree-$PLAN_ID-scope
 ```
 
 ### GitHub tracker
@@ -103,8 +104,11 @@ gh issue edit $PLAN_ID --body "$PLAN_CONTENT" --remove-label to-scope --add-labe
 ### Local tracker
 
 ```sh
+worktree-enter.sh --fork-from $BASE_BRANCH --path $WORKTREE_PATH
 mv "$LOCAL_PATH/$PLAN_ID [to-scope] plan.md" "$LOCAL_PATH/$PLAN_ID [to-slice] $PLAN_TITLE.md"
 printf '%s' "$PLAN_CONTENT" > "$LOCAL_PATH/$PLAN_ID [to-slice] $PLAN_TITLE.md"
+commit.sh --branch $BASE_BRANCH -m "scope: persist plan for $PLAN_ID $PLAN_TITLE"
+worktree-exit.sh --path $WORKTREE_PATH
 ```
 
 ## Handoff
