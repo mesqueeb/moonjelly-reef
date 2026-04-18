@@ -73,27 +73,27 @@ There are two kinds of writes in a reef workflow. Each uses a different push str
 **Code changes** (implement, inspect cleanup, rework) need review. They push to a **slice branch** and go through a PR:
 
 ```sh
-commit.sh --slice-branch {slice-branch} -m "implement: ..."
+commit.sh --branch $SLICE_BRANCH -m "implement: ..."
 ```
 
 **Metadata changes** (slice creation, coverage matrix updates, tag renames, rescan slices) are mechanical and need no review. They push **directly to the target branch**:
 
 ```sh
-commit.sh --target-branch {target-branch} -m "slice: update plan"
+commit.sh --branch $TARGET_BRANCH -m "slice: update plan"
 ```
 
 ### Phase push targets
 
-| Phase | What it writes | Push target | How |
+| Phase | What it writes | Push target | Branch arg |
 | --- | --- | --- | --- |
-| slice | plan updates, new slice files | target (direct) | `--target-branch` |
-| implement | code + tests | slice branch (PR) | `--slice-branch` |
-| inspect | cleanup commits | slice branch (PR) | `--slice-branch` |
-| rework | fix commits | slice branch (PR) | `--slice-branch` |
-| await-waves | slice file updates | target (direct) | `--target-branch` |
-| merge | plan updates, coverage matrix | target (direct) | `--target-branch` |
-| rescan | plan updates, new slice files | target (direct) | `--target-branch` |
-| ratify | doc commits (if any) | target (direct) | `--target-branch` |
+| slice | plan updates, new slice files | target (direct) | `--branch $TARGET_BRANCH` |
+| implement | code + tests | slice branch (PR) | `--branch $SLICE_BRANCH` |
+| inspect | cleanup commits | slice branch (PR) | `--branch $SLICE_BRANCH` |
+| rework | fix commits | slice branch (PR) | `--branch $SLICE_BRANCH` |
+| await-waves | slice file updates | target (direct) | `--branch $TARGET_BRANCH` |
+| merge | plan updates, coverage matrix | target (direct) | `--branch $TARGET_BRANCH` |
+| rescan | plan updates, new slice files | target (direct) | `--branch $TARGET_BRANCH` |
+| ratify | doc commits (if any) | target (direct) | `--branch $TARGET_BRANCH` |
 
 GitHub tracker phases that only update issues (via `gh issue edit`) don't need to push at all — the changes live on GitHub, not in the repo.
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Integration tests for reef-worktree-*.sh scripts
+# Integration tests for worktree-enter.sh, worktree-exit.sh, commit.sh
 # Runs against real git repos in a temp directory
 set -u
 
@@ -56,116 +56,44 @@ commit_wt() { "$SCRIPT_DIR/commit.sh" "$@"; }
 # ENTER TESTS
 # ============================================================
 
-test_enter_plan_level() {
+test_enter_detached_head() {
   setup_repos
   cd "$REPO"
 
-  if path="$(enter --base-branch main --target-branch main --phase ratify --slice planning 2>/dev/null)"; then
-    expected="$TEST_ROOT/worktree-main-planning-ratify"
-    if [ -d "$path" ]; then
-      resolved_actual="$(cd "$path" && pwd -P)"
-      resolved_expected="$(cd "$expected" && pwd -P)"
-      if [ "$resolved_expected" = "$resolved_actual" ]; then
-        pass "enter plan-level: correct path and detached HEAD"
+  wt_path="$TEST_ROOT/worktree-ratify"
+  if enter --fork-from main --path "$wt_path" >/dev/null 2>&1; then
+    if [ -d "$wt_path" ]; then
+      head_status="$(cd "$wt_path" && git rev-parse --abbrev-ref HEAD)"
+      if [ "$head_status" = "HEAD" ]; then
+        pass "enter: creates detached HEAD worktree"
       else
-        fail "enter plan-level: correct path and detached HEAD" "expected=$resolved_expected actual=$resolved_actual"
+        fail "enter: creates detached HEAD worktree" "expected detached HEAD, got $head_status"
       fi
     else
-      fail "enter plan-level: correct path and detached HEAD" "path not a directory: $path"
+      fail "enter: creates detached HEAD worktree" "path not a directory: $wt_path"
     fi
   else
-    fail "enter plan-level: correct path and detached HEAD" "script failed"
+    fail "enter: creates detached HEAD worktree" "script failed"
   fi
 
   teardown_repos
 }
 
-test_enter_create_slice_branch() {
+test_enter_at_caller_defined_path() {
   setup_repos
   cd "$REPO"
 
-  if path="$(enter --base-branch main --target-branch main --phase implement --slice auth \
-    --slice-branch feat/auth --branch-op create 2>/dev/null)"; then
-    if [ -d "$path" ]; then
-      branch="$(cd "$path" && git rev-parse --abbrev-ref HEAD)"
-      if [ "$branch" = "feat/auth" ]; then
-        pass "enter --branch-op create: creates new slice branch"
-      else
-        fail "enter --branch-op create: creates new slice branch" "expected=feat/auth actual=$branch"
-      fi
+  wt_path="$TEST_ROOT/my-custom-path"
+  if path="$(enter --fork-from main --path "$wt_path" 2>/dev/null)"; then
+    resolved_actual="$(cd "$path" && pwd -P)"
+    resolved_expected="$(cd "$wt_path" && pwd -P)"
+    if [ "$resolved_expected" = "$resolved_actual" ]; then
+      pass "enter: worktree at caller-defined path"
     else
-      fail "enter --branch-op create: creates new slice branch" "worktree dir missing"
+      fail "enter: worktree at caller-defined path" "expected=$resolved_expected actual=$resolved_actual"
     fi
   else
-    fail "enter --branch-op create: creates new slice branch" "script failed"
-  fi
-
-  teardown_repos
-}
-
-test_enter_checkout_existing_branch() {
-  setup_repos
-  cd "$REPO"
-
-  # Create a branch on origin to check out
-  git checkout -b feat/rework-me >/dev/null 2>&1
-  echo "slice work" > slice.txt
-  git add slice.txt
-  git commit -m "slice work" >/dev/null 2>&1
-  git push -u origin feat/rework-me >/dev/null 2>&1
-  git checkout main >/dev/null 2>&1
-
-  if path="$(enter --base-branch main --target-branch main --phase rework --slice auth \
-    --slice-branch feat/rework-me --branch-op checkout 2>/dev/null)"; then
-    if [ -f "$path/slice.txt" ]; then
-      pass "enter --branch-op checkout: checks out existing slice branch"
-    else
-      fail "enter --branch-op checkout: checks out existing slice branch" "slice.txt missing"
-    fi
-  else
-    fail "enter --branch-op checkout: checks out existing slice branch" "script failed"
-  fi
-
-  teardown_repos
-}
-
-test_enter_fails_slice_branch_without_branch_op() {
-  setup_repos
-  cd "$REPO"
-
-  if enter --base-branch main --target-branch main --phase implement --slice auth \
-    --slice-branch feat/auth >/dev/null 2>&1; then
-    fail "enter: fails when --slice-branch given without --branch-op" "succeeded"
-  else
-    pass "enter: fails when --slice-branch given without --branch-op"
-  fi
-
-  teardown_repos
-}
-
-test_enter_fails_branch_op_without_slice_branch() {
-  setup_repos
-  cd "$REPO"
-
-  if enter --base-branch main --target-branch main --phase implement --slice auth \
-    --branch-op create >/dev/null 2>&1; then
-    fail "enter: fails when --branch-op given without --slice-branch" "succeeded"
-  else
-    pass "enter: fails when --branch-op given without --slice-branch"
-  fi
-
-  teardown_repos
-}
-
-test_enter_fails_invalid_branch_op() {
-  setup_repos
-  cd "$REPO"
-
-  if enter --base-branch main --target-branch main --phase implement --slice auth \
-    --slice-branch feat/auth --branch-op nope >/dev/null 2>&1; then
-    fail "enter: fails on invalid --branch-op" "succeeded"
-  else
-    pass "enter: fails on invalid --branch-op"
+    fail "enter: worktree at caller-defined path" "script failed"
   fi
 
   teardown_repos
@@ -175,9 +103,10 @@ test_enter_fails_if_worktree_exists() {
   setup_repos
   cd "$REPO"
 
-  enter --base-branch main --target-branch main --phase inspect --slice auth >/dev/null 2>&1 || true
+  wt_path="$TEST_ROOT/worktree-dup"
+  enter --fork-from main --path "$wt_path" >/dev/null 2>&1 || true
 
-  if enter --base-branch main --target-branch main --phase inspect --slice auth >/dev/null 2>&1; then
+  if enter --fork-from main --path "$wt_path" >/dev/null 2>&1; then
     fail "enter: fails if worktree already exists" "second call succeeded"
   else
     pass "enter: fails if worktree already exists"
@@ -196,10 +125,16 @@ test_enter_fails_on_missing_args() {
     pass "enter: fails with no args"
   fi
 
-  if enter --base-branch main --target-branch main >/dev/null 2>&1; then
-    fail "enter: fails without --phase and --slice" "succeeded"
+  if enter --fork-from main >/dev/null 2>&1; then
+    fail "enter: fails without --path" "succeeded"
   else
-    pass "enter: fails without --phase and --slice"
+    pass "enter: fails without --path"
+  fi
+
+  if enter --path /tmp/some-path >/dev/null 2>&1; then
+    fail "enter: fails without --fork-from" "succeeded"
+  else
+    pass "enter: fails without --fork-from"
   fi
 
   teardown_repos
@@ -213,10 +148,11 @@ test_exit_removes_clean_worktree() {
   setup_repos
   cd "$REPO"
 
-  if path="$(enter --base-branch main --target-branch main --phase inspect --slice auth 2>/dev/null)"; then
+  wt_path="$TEST_ROOT/worktree-clean"
+  if enter --fork-from main --path "$wt_path" >/dev/null 2>&1; then
     cd "$REPO"
-    if exit_wt --path "$path" >/dev/null 2>&1; then
-      if [ -d "$path" ]; then
+    if exit_wt --path "$wt_path" >/dev/null 2>&1; then
+      if [ -d "$wt_path" ]; then
         fail "exit: removes clean worktree" "directory still exists"
       else
         pass "exit: removes clean worktree"
@@ -235,10 +171,11 @@ test_exit_fails_on_unstaged_changes() {
   setup_repos
   cd "$REPO"
 
-  if path="$(enter --base-branch main --target-branch main --phase inspect --slice auth 2>/dev/null)"; then
-    echo "dirty" > "$path/dirty.txt"
+  wt_path="$TEST_ROOT/worktree-dirty"
+  if enter --fork-from main --path "$wt_path" >/dev/null 2>&1; then
+    echo "dirty" > "$wt_path/dirty.txt"
     cd "$REPO"
-    if exit_wt --path "$path" >/dev/null 2>&1; then
+    if exit_wt --path "$wt_path" >/dev/null 2>&1; then
       fail "exit: fails on unstaged changes" "succeeded"
     else
       pass "exit: fails on unstaged changes"
@@ -254,41 +191,18 @@ test_exit_fails_on_staged_changes() {
   setup_repos
   cd "$REPO"
 
-  if path="$(enter --base-branch main --target-branch main --phase implement --slice auth \
-    --slice-branch feat/stage-test --branch-op create 2>/dev/null)"; then
-    echo "staged" > "$path/staged.txt"
-    (cd "$path" && git add staged.txt)
+  wt_path="$TEST_ROOT/worktree-staged"
+  if enter --fork-from main --path "$wt_path" >/dev/null 2>&1; then
+    echo "staged" > "$wt_path/staged.txt"
+    (cd "$wt_path" && git add staged.txt)
     cd "$REPO"
-    if exit_wt --path "$path" >/dev/null 2>&1; then
+    if exit_wt --path "$wt_path" >/dev/null 2>&1; then
       fail "exit: fails on staged changes" "succeeded"
     else
       pass "exit: fails on staged changes"
     fi
   else
     fail "exit: fails on staged changes" "enter failed (test setup)"
-  fi
-
-  teardown_repos
-}
-
-test_exit_cleans_up_slice_branch() {
-  setup_repos
-  cd "$REPO"
-
-  if path="$(enter --base-branch main --target-branch main --phase implement --slice auth \
-    --slice-branch feat/cleanup-test --branch-op create 2>/dev/null)"; then
-    cd "$REPO"
-    if exit_wt --path "$path" --slice-branch feat/cleanup-test >/dev/null 2>&1; then
-      if git rev-parse --verify feat/cleanup-test >/dev/null 2>&1; then
-        fail "exit --slice-branch: local branch deleted" "branch still exists"
-      else
-        pass "exit --slice-branch: local branch deleted"
-      fi
-    else
-      fail "exit --slice-branch: local branch deleted" "exit script failed"
-    fi
-  else
-    fail "exit --slice-branch: local branch deleted" "enter failed (test setup)"
   fi
 
   teardown_repos
@@ -311,66 +225,53 @@ test_exit_fails_on_missing_args() {
 # COMMIT TESTS
 # ============================================================
 
-test_commit_with_slice_branch() {
+test_commit_pushes_to_branch() {
   setup_repos
   cd "$REPO"
 
-  if path="$(enter --base-branch main --target-branch main --phase implement --slice auth \
-    --slice-branch feat/commit-test --branch-op create 2>/dev/null)"; then
-    echo "new feature" > "$path/feature.txt"
-    cd "$path"
-    if commit_wt --slice-branch feat/commit-test -m "add feature" >/dev/null 2>&1; then
+  wt_path="$TEST_ROOT/worktree-commit"
+  if enter --fork-from main --path "$wt_path" >/dev/null 2>&1; then
+    echo "new feature" > "$wt_path/feature.txt"
+    cd "$wt_path"
+    if commit_wt --branch feat/commit-test -m "add feature" >/dev/null 2>&1; then
       cd "$REPO"
       git fetch origin >/dev/null 2>&1
       if git rev-parse --verify origin/feat/commit-test >/dev/null 2>&1; then
-        pass "commit --slice-branch: pushes to slice branch"
+        pass "commit --branch: pushes to named branch"
       else
-        fail "commit --slice-branch: pushes to slice branch" "branch not on origin"
+        fail "commit --branch: pushes to named branch" "branch not on origin"
       fi
     else
-      fail "commit --slice-branch: pushes to slice branch" "commit script failed"
+      fail "commit --branch: pushes to named branch" "commit script failed"
     fi
   else
-    fail "commit --slice-branch: pushes to slice branch" "enter failed (test setup)"
+    fail "commit --branch: pushes to named branch" "enter failed (test setup)"
   fi
 
   teardown_repos
 }
 
-test_commit_with_target_branch() {
+test_commit_pushes_to_existing_branch() {
   setup_repos
   cd "$REPO"
 
-  if path="$(enter --base-branch main --target-branch main --phase slice --slice planning \
-    --slice-branch temp-work --branch-op create 2>/dev/null)"; then
-    echo "metadata" > "$path/plan.md"
-    cd "$path"
-    if commit_wt --target-branch main -m "update plan" >/dev/null 2>&1; then
+  wt_path="$TEST_ROOT/worktree-commit-main"
+  if enter --fork-from main --path "$wt_path" >/dev/null 2>&1; then
+    echo "metadata" > "$wt_path/plan.md"
+    cd "$wt_path"
+    if commit_wt --branch main -m "update plan" >/dev/null 2>&1; then
       cd "$REPO"
       git fetch origin >/dev/null 2>&1
       if git log origin/main --oneline | grep -q "update plan"; then
-        pass "commit --target-branch: pushes directly to target"
+        pass "commit --branch: pushes directly to existing branch"
       else
-        fail "commit --target-branch: pushes directly to target" "commit not on origin/main"
+        fail "commit --branch: pushes directly to existing branch" "commit not on origin/main"
       fi
     else
-      fail "commit --target-branch: pushes directly to target" "commit script failed"
+      fail "commit --branch: pushes directly to existing branch" "commit script failed"
     fi
   else
-    fail "commit --target-branch: pushes directly to target" "enter failed (test setup)"
-  fi
-
-  teardown_repos
-}
-
-test_commit_fails_with_both() {
-  setup_repos
-  cd "$REPO"
-
-  if commit_wt --slice-branch feat/x --target-branch main -m "msg" >/dev/null 2>&1; then
-    fail "commit: fails with both --slice-branch and --target-branch" "succeeded"
-  else
-    pass "commit: fails with both --slice-branch and --target-branch"
+    fail "commit --branch: pushes directly to existing branch" "enter failed (test setup)"
   fi
 
   teardown_repos
@@ -386,7 +287,7 @@ test_commit_fails_on_missing_args() {
     pass "commit: fails with no args"
   fi
 
-  if commit_wt --slice-branch feat/x >/dev/null 2>&1; then
+  if commit_wt --branch feat/x >/dev/null 2>&1; then
     fail "commit: fails without -m" "succeeded"
   else
     pass "commit: fails without -m"
@@ -399,10 +300,10 @@ test_commit_fails_on_nothing_to_commit() {
   setup_repos
   cd "$REPO"
 
-  if path="$(enter --base-branch main --target-branch main --phase implement --slice auth \
-    --slice-branch feat/empty-test --branch-op create 2>/dev/null)"; then
-    cd "$path"
-    if commit_wt --slice-branch feat/empty-test -m "empty" >/dev/null 2>&1; then
+  wt_path="$TEST_ROOT/worktree-empty"
+  if enter --fork-from main --path "$wt_path" >/dev/null 2>&1; then
+    cd "$wt_path"
+    if commit_wt --branch feat/empty-test -m "empty" >/dev/null 2>&1; then
       fail "commit: fails when nothing to commit" "succeeded"
     else
       pass "commit: fails when nothing to commit"
@@ -419,12 +320,8 @@ test_commit_fails_on_nothing_to_commit() {
 # ============================================================
 
 echo "=== worktree-enter.sh ==="
-test_enter_plan_level
-test_enter_create_slice_branch
-test_enter_checkout_existing_branch
-test_enter_fails_slice_branch_without_branch_op
-test_enter_fails_branch_op_without_slice_branch
-test_enter_fails_invalid_branch_op
+test_enter_detached_head
+test_enter_at_caller_defined_path
 test_enter_fails_if_worktree_exists
 test_enter_fails_on_missing_args
 
@@ -433,14 +330,12 @@ echo "=== worktree-exit.sh ==="
 test_exit_removes_clean_worktree
 test_exit_fails_on_unstaged_changes
 test_exit_fails_on_staged_changes
-test_exit_cleans_up_slice_branch
 test_exit_fails_on_missing_args
 
 echo ""
 echo "=== commit.sh ==="
-test_commit_with_slice_branch
-test_commit_with_target_branch
-test_commit_fails_with_both
+test_commit_pushes_to_branch
+test_commit_pushes_to_existing_branch
 test_commit_fails_on_missing_args
 test_commit_fails_on_nothing_to_commit
 

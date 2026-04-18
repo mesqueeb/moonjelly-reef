@@ -13,6 +13,32 @@ This skill accepts:
 - a specific issue: e.g. `#42` or `my-feature`
 - nothing: look for items tagged `to-slice`. If multiple, ask the user to pick. If none, explain that items need to be scoped first and suggest `/reef-scope`.
 
+Set the initial variables:
+
+```sh
+PLAN_ID = {from plan metadata}
+PLAN_TITLE = {from plan metadata}
+BASE_BRANCH = {from plan metadata}
+TARGET_BRANCH = {from plan metadata}
+WORKTREE_PATH = ../worktree-$PLAN_ID-slice
+```
+
+## 0. Fetch context
+
+### GitHub tracker
+
+```sh
+gh issue view $PLAN_ID --json body,title,labels
+```
+
+### Local tracker
+
+Read the file at:
+
+```sh
+$LOCAL_PATH/$PLAN_ID (\w+)/[to-slice] plan.md
+```
+
 Read the issue. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The plan metadata block tells you the work type, base branch, and target branch name.
 
 ## 1. Draft vertical slices
@@ -52,23 +78,24 @@ If you drafted **2+ slices**, continue with the multi-slice flow below.
 
 Read the base branch and target branch name from the plan metadata.
 
-```sh
-WORKTREE=$(worktree-enter.sh \
-  --base-branch {base-branch} --target-branch {target-branch} \
-  --phase slice --slice {title} \
-  --slice-branch {target-branch} --branch-op create)
-cd "$WORKTREE"
-git push -u origin {target-branch}
-```
-
-If the plan says to work on the current branch (no new target branch), use this alternative instead — skip the branch creation but still create a worktree to read the codebase:
+Set per-slice variables as you create each slice:
 
 ```sh
-WORKTREE=$(worktree-enter.sh \
-  --base-branch {base-branch} --target-branch {target-branch} \
-  --phase slice --slice {title})
-cd "$WORKTREE"
+SLICE_NAME = {per slice, e.g. 001-auth-endpoint}
+SLICE_NUMBER = {sub-issue number (github) or file name (local)}
 ```
+
+```sh
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+```
+
+If the target branch does not exist on origin yet, create it:
+
+```sh
+git push -u origin $TARGET_BRANCH
+```
+
+If the plan says to work on the current branch (no new target branch), skip the branch creation but still create a worktree to read the codebase.
 
 ## 3. Build the coverage matrix
 
@@ -156,6 +183,10 @@ Append the coverage matrix to the plan body. Change label from `to-slice` to `in
 
 Add a comment listing all created sub-issues with their tags.
 
+```sh
+gh issue edit $PLAN_ID --remove-label to-slice --add-label in-progress
+```
+
 ### Local tracker
 
 Append the coverage matrix to the plan file. Rename from `[to-slice] plan.md` to `[in-progress] plan.md`. It will be renamed to `[to-ratify] plan.md` once all slices are done.
@@ -163,7 +194,9 @@ Append the coverage matrix to the plan file. Rename from `[to-slice] plan.md` to
 Commit and push the plan and slice files so other agents see them:
 
 ```sh
-commit.sh --target-branch {target-branch} -m "slice: create slices for {title}"
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+commit.sh --branch $TARGET_BRANCH -m "slice: create slices for $PLAN_TITLE"
+worktree-exit.sh --path $WORKTREE_PATH
 ```
 
 ## 7. Document judgment calls
@@ -173,7 +206,7 @@ Document judgment calls made during this phase as a comment on the plan. Only do
 ## 8. Clean up
 
 ```sh
-worktree-exit.sh --path "$WORKTREE"
+worktree-exit.sh --path $WORKTREE_PATH
 ```
 
 ## Handoff

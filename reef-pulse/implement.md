@@ -20,13 +20,39 @@ Read the slice (issue or file). It must contain:
 
 If the target branch is missing from the slice, check the plan metadata. The target branch is always set — for single-slice it equals the base branch, for multi-slice it's a dedicated branch.
 
+Set the initial variables:
+
+```sh
+SLICE_NAME = {from slice metadata}
+SLICE_NUMBER = {from slice metadata}
+BASE_BRANCH = {from slice/plan metadata}
+TARGET_BRANCH = {from slice/plan metadata}
+SLICE_BRANCH = {PR branch, e.g. feat/001-auth-endpoint}
+WORKTREE_PATH = ../worktree-$SLICE_NAME-implement
+```
+
+## 0. Fetch context
+
+### GitHub tracker
+
+```sh
+gh issue view $SLICE_NUMBER --json body,title,labels
+```
+
+### Local tracker
+
+Read the file at:
+
+```sh
+$LOCAL_PATH/$PLAN_ID (\w+)/slices/[to-implement] $SLICE_NAME.md
+```
+
 ## 1. Git prep
 
 This is non-negotiable. Every step must pass before writing any code.
 
 ```sh
-WORKTREE=$(worktree-enter.sh --base-branch {base-branch} --target-branch {target-branch} --phase implement --slice {slice-name} --slice-branch {slice-branch} --branch-op create)
-cd "$WORKTREE"
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
 ```
 
 Verify:
@@ -92,33 +118,47 @@ Decisions made during implementation that weren't covered by the acceptance crit
 ## 5. Open the PR
 
 ```sh
-commit.sh --slice-branch {slice-branch} -m "{slice-name}: implementation"
-gh pr create --base {target-branch} --title "{slice-name}" --body "{report}"
+commit.sh --branch $SLICE_BRANCH -m "$SLICE_NAME: implementation"
+gh pr create --base $TARGET_BRANCH --title "$SLICE_NAME" --body "$REPORT"
 ```
 
 The PR targets the **target branch** (which equals `{base-branch}` for single-slice work).
+
+```sh
+PR_NUMBER = {from gh pr create output}
+```
 
 ## 6. Document judgment calls
 
 Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
-## 7. Clean up
-
-```sh
-worktree-exit.sh --path "$WORKTREE" --slice-branch {slice-branch}
-```
-
-## 8. Tag the slice
+## 7. Tag the slice
 
 ### GitHub tracker
 
-Add label `to-inspect` to the slice issue. Remove `to-implement`.
+```sh
+gh issue edit $SLICE_NUMBER --remove-label to-implement --add-label to-inspect
+```
+
 Add a comment on the slice issue linking to the PR.
 
 ### Local tracker
 
 Rename the slice file from `[to-implement] ...` to `[to-inspect] ...`.
 Add the PR number/URL to the slice file body.
+
+```sh
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+mv "[to-implement]" "[to-inspect]"
+commit.sh --branch $TARGET_BRANCH -m "implement: update tracker for $SLICE_NAME"
+worktree-exit.sh --path $WORKTREE_PATH
+```
+
+## 8. Clean up
+
+```sh
+worktree-exit.sh --path $WORKTREE_PATH
+```
 
 ## Handoff
 

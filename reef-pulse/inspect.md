@@ -14,6 +14,33 @@ Read the slice to find the PR reference. If the slice doesn't have a PR linked, 
 gh pr list --search "slice-name"
 ```
 
+Set the initial variables:
+
+```sh
+SLICE_NAME = {from slice metadata}
+SLICE_NUMBER = {from slice metadata}
+SLICE_BRANCH = {from slice metadata}
+BASE_BRANCH = {from slice/plan metadata}
+TARGET_BRANCH = {from slice/plan metadata}
+WORKTREE_PATH = ../worktree-$SLICE_NAME-inspect
+```
+
+## 0. Fetch context
+
+### GitHub tracker
+
+```sh
+gh issue view $SLICE_NUMBER --json body,title,labels
+```
+
+### Local tracker
+
+Read the file at:
+
+```sh
+$LOCAL_PATH/$PLAN_ID (\w+)/slices/[to-inspect] $SLICE_NAME.md
+```
+
 ## Mindset
 
 You are a CTO independently verifying this work. You do not trust the implementer's self-report. You verify everything yourself by reading code and running tests. You use judgment, not checklists.
@@ -34,12 +61,7 @@ A few things you naturally do:
 Use a worktree so you don't disturb the main checkout or any other agent's work.
 
 ```sh
-SLICE_BRANCH=$(gh pr view {pr-number} --json headRefName -q .headRefName)
-WORKTREE=$(worktree-enter.sh \
-  --base-branch {base-branch} --target-branch {target-branch} \
-  --phase inspect --slice {slice-name} \
-  --slice-branch "$SLICE_BRANCH" --branch-op checkout)
-cd "$WORKTREE"
+worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
 ```
 
 Run the full project test suite. Record the result.
@@ -72,7 +94,7 @@ Do these yourself — commit and push to the PR branch:
 
 ```sh
 # Only if you made cleanup commits
-commit.sh --slice-branch "$SLICE_BRANCH" -m "inspect: cleanup"
+commit.sh --branch $SLICE_BRANCH -m "inspect: cleanup"
 ```
 
 ### 5. Document judgment calls
@@ -85,7 +107,9 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ### GitHub tracker
 
-Add label `to-merge` to the slice issue. Remove `to-inspect`.
+```sh
+gh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-merge
+```
 
 ### Local tracker
 
@@ -95,7 +119,10 @@ Rename from `[to-inspect] ...` to `[to-merge] ...`.
 
 ### GitHub tracker
 
-Add label `to-rework` to the slice issue. Remove `to-inspect`.
+```sh
+gh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-rework
+```
+
 Leave specific review comments on the PR for each gap. Be precise — tell the implementer exactly what's wrong and what "fixed" looks like.
 
 ### Local tracker
@@ -103,10 +130,19 @@ Leave specific review comments on the PR for each gap. Be precise — tell the i
 Rename from `[to-inspect] ...` to `[to-rework] ...`.
 Add the feedback to the slice file body.
 
+For local tracker, commit the tag change:
+
+```sh
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+mv "[to-inspect]" "[to-merge]" or "[to-rework]"
+commit.sh --branch $TARGET_BRANCH -m "inspect: update tracker for $SLICE_NAME"
+worktree-exit.sh --path $WORKTREE_PATH
+```
+
 ## Clean up
 
 ```sh
-worktree-exit.sh --path "$WORKTREE"
+worktree-exit.sh --path $WORKTREE_PATH
 ```
 
 ## Handoff

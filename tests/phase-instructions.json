@@ -8,15 +8,15 @@
     "Operations:",
     "  fetch-context        — read the plan or slice before starting. tracker-github = gh issue view, tracker-local = read file at path",
     "  set-variables        — documents which variables this skill/phase produces for downstream consumers",
-    "  enter                — worktree-enter.sh",
+    "  enter                — worktree-enter.sh --fork-from $BRANCH --path $WORKTREE_PATH",
     "  phase-specific       — represents phase specific sections",
     "  create-remote-branch — git push -u origin ... (slice only)",
-    "  commit-code          — commit.sh --slice-branch (PR flow)",
+    "  commit-code          — commit.sh --branch $SLICE_BRANCH (PR flow)",
     "  pr-create            — gh pr create",
     "  pr-merge             — gh pr merge",
     "  update-pr-body       — rewrite PR description",
-    "  update-tracker       — tracker-github = gh issue edit/close, tracker-local = commit.sh --target-branch (one commit for everything: tag renames, plan updates, doc changes)",
-    "  exit                 — worktree-exit.sh"
+    "  update-tracker       — tracker-github = gh issue edit/close, tracker-local = full worktree cycle (enter, file ops, commit, exit)",
+    "  exit                 — worktree-exit.sh --path $WORKTREE_PATH"
   ],
   "skills": {
     "reef-scope": [
@@ -65,7 +65,8 @@
           "PLAN_ID = {from plan metadata}",
           "PLAN_TITLE = {from plan metadata}",
           "BASE_BRANCH = {from plan metadata}",
-          "TARGET_BRANCH = {from plan metadata}"
+          "TARGET_BRANCH = {from plan metadata}",
+          "WORKTREE_PATH = ../worktree-$PLAN_ID-slice"
         ]
       },
       {
@@ -83,7 +84,7 @@
       },
       {
         "op": "enter",
-        "cmd": "worktree-enter.sh --base-branch $BASE_BRANCH --target-branch $TARGET_BRANCH --phase slice --slice $PLAN_TITLE --slice-branch $TARGET_BRANCH"
+        "cmd": "worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH"
       },
       {
         "op": "create-remote-branch",
@@ -93,11 +94,15 @@
       {
         "op": "update-tracker",
         "tracker-github": "gh issue edit $PLAN_ID --remove-label to-slice --add-label in-progress",
-        "tracker-local": "commit.sh --target-branch $TARGET_BRANCH -m \"slice: create slices for $PLAN_TITLE\""
+        "tracker-local": [
+          "worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH",
+          "commit.sh --branch $TARGET_BRANCH -m \"slice: create slices for $PLAN_TITLE\"",
+          "worktree-exit.sh --path $WORKTREE_PATH"
+        ]
       },
       {
         "op": "exit",
-        "cmd": "worktree-exit.sh --path \"$WORKTREE\""
+        "cmd": "worktree-exit.sh --path $WORKTREE_PATH"
       }
     ],
     "implement.md": [
@@ -107,7 +112,9 @@
           "SLICE_NAME = {from slice metadata}",
           "SLICE_NUMBER = {from slice metadata}",
           "BASE_BRANCH = {from slice/plan metadata}",
-          "TARGET_BRANCH = {from slice/plan metadata}"
+          "TARGET_BRANCH = {from slice/plan metadata}",
+          "SLICE_BRANCH = {PR branch, e.g. feat/001-auth-endpoint}",
+          "WORKTREE_PATH = ../worktree-$SLICE_NAME-implement"
         ]
       },
       {
@@ -116,17 +123,13 @@
         "tracker-local": "$LOCAL_PATH/$PLAN_ID (\\w+)/slices/[to-implement] $SLICE_NAME.md"
       },
       {
-        "op": "set-variables",
-        "sh": ["SLICE_BRANCH = {PR branch, e.g. feat/001-auth-endpoint}"]
-      },
-      {
         "op": "enter",
-        "cmd": "worktree-enter.sh --base-branch $BASE_BRANCH --target-branch $TARGET_BRANCH --phase implement --slice $SLICE_NAME --slice-branch $SLICE_BRANCH"
+        "cmd": "worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH"
       },
       { "op": "phase-specific" },
       {
         "op": "commit-code",
-        "cmd": "commit.sh --slice-branch $SLICE_BRANCH -m \"$SLICE_NAME: implementation\""
+        "cmd": "commit.sh --branch $SLICE_BRANCH -m \"$SLICE_NAME: implementation\""
       },
       {
         "op": "pr-create",
@@ -139,11 +142,16 @@
       {
         "op": "update-tracker",
         "tracker-github": "gh issue edit $SLICE_NUMBER --remove-label to-implement --add-label to-inspect",
-        "tracker-local": "commit.sh --target-branch $TARGET_BRANCH -m \"implement: update tracker for $SLICE_NAME\""
+        "tracker-local": [
+          "worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH",
+          "mv \"[to-implement]\" \"[to-inspect]\"",
+          "commit.sh --branch $TARGET_BRANCH -m \"implement: update tracker for $SLICE_NAME\"",
+          "worktree-exit.sh --path $WORKTREE_PATH"
+        ]
       },
       {
         "op": "exit",
-        "cmd": "worktree-exit.sh --path \"$WORKTREE\" --slice-branch $SLICE_BRANCH"
+        "cmd": "worktree-exit.sh --path $WORKTREE_PATH"
       }
     ],
     "inspect.md": [
@@ -154,7 +162,8 @@
           "SLICE_NUMBER = {from slice metadata}",
           "SLICE_BRANCH = {from slice metadata}",
           "BASE_BRANCH = {from slice/plan metadata}",
-          "TARGET_BRANCH = {from slice/plan metadata}"
+          "TARGET_BRANCH = {from slice/plan metadata}",
+          "WORKTREE_PATH = ../worktree-$SLICE_NAME-inspect"
         ]
       },
       {
@@ -164,23 +173,28 @@
       },
       {
         "op": "enter",
-        "cmd": "worktree-enter.sh --base-branch $BASE_BRANCH --target-branch $TARGET_BRANCH --phase inspect --slice $SLICE_NAME --slice-branch $SLICE_BRANCH"
+        "cmd": "worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH"
       },
       { "op": "phase-specific" },
       {
         "op": "commit-code",
-        "cmd": "commit.sh --slice-branch $SLICE_BRANCH -m \"inspect: cleanup\"",
+        "cmd": "commit.sh --branch $SLICE_BRANCH -m \"inspect: cleanup\"",
         "optional": true
       },
       {
         "op": "update-tracker",
-        "tracker-local": "commit.sh --target-branch $TARGET_BRANCH -m \"inspect: update tracker for $SLICE_NAME\"",
+        "tracker-local": [
+          "worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH",
+          "mv \"[to-inspect]\" \"[to-merge]\" or \"[to-rework]\"",
+          "commit.sh --branch $TARGET_BRANCH -m \"inspect: update tracker for $SLICE_NAME\"",
+          "worktree-exit.sh --path $WORKTREE_PATH"
+        ],
         "tracker-github-pass": "gh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-merge",
         "tracker-github-fail": "gh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-rework"
       },
       {
         "op": "exit",
-        "cmd": "worktree-exit.sh --path \"$WORKTREE\""
+        "cmd": "worktree-exit.sh --path $WORKTREE_PATH"
       }
     ],
     "rework.md": [
@@ -192,7 +206,8 @@
           "SLICE_BRANCH = {from slice metadata}",
           "PR_NUMBER = {from slice metadata}",
           "BASE_BRANCH = {from slice/plan metadata}",
-          "TARGET_BRANCH = {from slice/plan metadata}"
+          "TARGET_BRANCH = {from slice/plan metadata}",
+          "WORKTREE_PATH = ../worktree-$SLICE_NAME-rework"
         ]
       },
       {
@@ -202,12 +217,12 @@
       },
       {
         "op": "enter",
-        "cmd": "worktree-enter.sh --base-branch $BASE_BRANCH --target-branch $TARGET_BRANCH --phase rework --slice $SLICE_NAME --slice-branch $SLICE_BRANCH"
+        "cmd": "worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH"
       },
       { "op": "phase-specific" },
       {
         "op": "commit-code",
-        "cmd": "commit.sh --slice-branch $SLICE_BRANCH -m \"rework: address inspection feedback\""
+        "cmd": "commit.sh --branch $SLICE_BRANCH -m \"rework: address inspection feedback\""
       },
       {
         "op": "update-pr-body",
@@ -216,11 +231,16 @@
       {
         "op": "update-tracker",
         "tracker-github": "gh issue edit $SLICE_NUMBER --remove-label to-rework --add-label to-inspect",
-        "tracker-local": "commit.sh --target-branch $TARGET_BRANCH -m \"rework: update tracker for $SLICE_NAME\""
+        "tracker-local": [
+          "worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH",
+          "mv \"[to-rework]\" \"[to-inspect]\"",
+          "commit.sh --branch $TARGET_BRANCH -m \"rework: update tracker for $SLICE_NAME\"",
+          "worktree-exit.sh --path $WORKTREE_PATH"
+        ]
       },
       {
         "op": "exit",
-        "cmd": "worktree-exit.sh --path \"$WORKTREE\""
+        "cmd": "worktree-exit.sh --path $WORKTREE_PATH"
       }
     ],
     "await-waves.md": [
@@ -230,7 +250,8 @@
           "SLICE_NAME = {from slice metadata}",
           "SLICE_NUMBER = {from slice metadata}",
           "BASE_BRANCH = {from slice/plan metadata}",
-          "TARGET_BRANCH = {from slice/plan metadata}"
+          "TARGET_BRANCH = {from slice/plan metadata}",
+          "WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves"
         ]
       },
       {
@@ -240,17 +261,22 @@
       },
       {
         "op": "enter",
-        "cmd": "worktree-enter.sh --base-branch $BASE_BRANCH --target-branch $TARGET_BRANCH --phase await-waves --slice $SLICE_NAME"
+        "cmd": "worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH"
       },
       { "op": "phase-specific" },
       {
         "op": "update-tracker",
         "tracker-github": "gh issue edit $SLICE_NUMBER --remove-label to-await-waves --add-label to-implement",
-        "tracker-local": "commit.sh --target-branch $TARGET_BRANCH -m \"await-waves: update tracker for $SLICE_NAME\""
+        "tracker-local": [
+          "worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH",
+          "mv \"[to-await-waves]\" \"[to-implement]\"",
+          "commit.sh --branch $TARGET_BRANCH -m \"await-waves: update tracker for $SLICE_NAME\"",
+          "worktree-exit.sh --path $WORKTREE_PATH"
+        ]
       },
       {
         "op": "exit",
-        "cmd": "worktree-exit.sh --path \"$WORKTREE\""
+        "cmd": "worktree-exit.sh --path $WORKTREE_PATH"
       }
     ],
     "merge.md": [
@@ -261,7 +287,8 @@
           "SLICE_NUMBER = {from slice metadata}",
           "PR_NUMBER = {from slice metadata}",
           "BASE_BRANCH = {from slice/plan metadata}",
-          "TARGET_BRANCH = {from slice/plan metadata}"
+          "TARGET_BRANCH = {from slice/plan metadata}",
+          "WORKTREE_PATH = ../worktree-$SLICE_NAME-merge"
         ]
       },
       {
@@ -275,17 +302,22 @@
       },
       {
         "op": "enter",
-        "cmd": "worktree-enter.sh --base-branch $BASE_BRANCH --target-branch $TARGET_BRANCH --phase merge --slice $SLICE_NAME"
+        "cmd": "worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH"
       },
       { "op": "phase-specific" },
       {
         "op": "update-tracker",
         "tracker-github": "gh issue close $SLICE_NUMBER",
-        "tracker-local": "commit.sh --target-branch $TARGET_BRANCH -m \"merge: close $SLICE_NAME, update plan\""
+        "tracker-local": [
+          "worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH",
+          "mv \"[to-merge]\" \"[done]\"",
+          "commit.sh --branch $TARGET_BRANCH -m \"merge: close $SLICE_NAME, update plan\"",
+          "worktree-exit.sh --path $WORKTREE_PATH"
+        ]
       },
       {
         "op": "exit",
-        "cmd": "worktree-exit.sh --path \"$WORKTREE\""
+        "cmd": "worktree-exit.sh --path $WORKTREE_PATH"
       }
     ],
     "ratify.md": [
@@ -295,7 +327,8 @@
           "PLAN_ID = {from plan metadata}",
           "PLAN_TITLE = {from plan metadata}",
           "BASE_BRANCH = {from plan metadata}",
-          "TARGET_BRANCH = {from plan metadata}"
+          "TARGET_BRANCH = {from plan metadata}",
+          "WORKTREE_PATH = ../worktree-$PLAN_ID-ratify"
         ]
       },
       {
@@ -305,22 +338,32 @@
       },
       {
         "op": "enter",
-        "cmd": "worktree-enter.sh --base-branch $BASE_BRANCH --target-branch $TARGET_BRANCH --phase ratify --slice $PLAN_TITLE"
+        "cmd": "worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH"
       },
       { "op": "phase-specific" },
+      {
+        "op": "commit-code",
+        "cmd": "commit.sh --branch $TARGET_BRANCH -m \"ratify: add documentation\"",
+        "optional": true
+      },
       {
         "op": "pr-create",
         "cmd": "gh pr create --base $BASE_BRANCH --head $TARGET_BRANCH --title \"$PLAN_TITLE\" --body \"$REPORT\""
       },
       {
         "op": "update-tracker",
-        "tracker-local": "commit.sh --target-branch $TARGET_BRANCH -m \"ratify: update tracker for $PLAN_TITLE\"",
+        "tracker-local": [
+          "worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH",
+          "mv \"[to-ratify]\" \"[to-land]\" or \"[to-rescan]\"",
+          "commit.sh --branch $TARGET_BRANCH -m \"ratify: update tracker for $PLAN_TITLE\"",
+          "worktree-exit.sh --path $WORKTREE_PATH"
+        ],
         "tracker-github-pass": "gh issue edit $PLAN_ID --remove-label to-ratify --add-label to-land",
         "tracker-github-fail": "gh issue edit $PLAN_ID --remove-label to-ratify --add-label to-rescan"
       },
       {
         "op": "exit",
-        "cmd": "worktree-exit.sh --path \"$WORKTREE\""
+        "cmd": "worktree-exit.sh --path $WORKTREE_PATH"
       }
     ],
     "rescan.md": [
@@ -330,7 +373,8 @@
           "PLAN_ID = {from plan metadata}",
           "PLAN_TITLE = {from plan metadata}",
           "BASE_BRANCH = {from plan metadata}",
-          "TARGET_BRANCH = {from plan metadata}"
+          "TARGET_BRANCH = {from plan metadata}",
+          "WORKTREE_PATH = ../worktree-$PLAN_ID-rescan"
         ]
       },
       {
@@ -340,17 +384,21 @@
       },
       {
         "op": "enter",
-        "cmd": "worktree-enter.sh --base-branch $BASE_BRANCH --target-branch $TARGET_BRANCH --phase rescan --slice $PLAN_TITLE"
+        "cmd": "worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH"
       },
       { "op": "phase-specific" },
       {
         "op": "update-tracker",
         "tracker-github": "gh issue edit $PLAN_ID --remove-label to-rescan --add-label in-progress",
-        "tracker-local": "commit.sh --target-branch $TARGET_BRANCH -m \"rescan: update tracker for $PLAN_TITLE\""
+        "tracker-local": [
+          "worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH",
+          "commit.sh --branch $TARGET_BRANCH -m \"rescan: update tracker for $PLAN_TITLE\"",
+          "worktree-exit.sh --path $WORKTREE_PATH"
+        ]
       },
       {
         "op": "exit",
-        "cmd": "worktree-exit.sh --path \"$WORKTREE\""
+        "cmd": "worktree-exit.sh --path $WORKTREE_PATH"
       }
     ]
   }

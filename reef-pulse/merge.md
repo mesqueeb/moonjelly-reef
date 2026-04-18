@@ -10,6 +10,33 @@ An issue tagged `to-merge` with an open PR.
 
 Read the item to find the PR reference. Check the Plan context to determine whether this is **single-slice** (target branch = base branch) or **multi-slice** (target branch forks from base branch).
 
+Set the initial variables:
+
+```sh
+SLICE_NAME = {from slice metadata}
+SLICE_NUMBER = {from slice metadata}
+PR_NUMBER = {from slice metadata}
+BASE_BRANCH = {from slice/plan metadata}
+TARGET_BRANCH = {from slice/plan metadata}
+WORKTREE_PATH = ../worktree-$SLICE_NAME-merge
+```
+
+## 0. Fetch context
+
+### GitHub tracker
+
+```sh
+gh issue view $SLICE_NUMBER --json body,title,labels
+```
+
+### Local tracker
+
+Read the file at:
+
+```sh
+$LOCAL_PATH/$PLAN_ID (\w+)/slices/[to-merge] $SLICE_NAME.md
+```
+
 ## Single-slice
 
 The PR targets the base branch. The human will merge it during `/reef-land` — do NOT merge it here.
@@ -47,7 +74,7 @@ If the suite fails after merging, tag the slice `to-rework` with a note explaini
 ### 2. Merge
 
 ```sh
-gh pr merge {pr-number} --squash --delete-branch
+gh pr merge $PR_NUMBER --squash --delete-branch
 ```
 
 Use squash merge by default unless the project convention differs. `--delete-branch` deletes the remote slice branch.
@@ -57,25 +84,10 @@ Use squash merge by default unless the project convention differs. `--delete-bra
 Use a temporary worktree to verify the target branch after merge.
 
 ```sh
-WORKTREE=$(worktree-enter.sh \
-  --base-branch {base-branch} --target-branch {target-branch} \
-  --phase merge --slice {slice-name})
-cd "$WORKTREE"
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
 ```
 
 Run the full test suite. If it fails, **do not proceed** — tag the slice `to-rework` with a note that the merge broke tests and what failed.
-
-For local tracker: perform the metadata writes (steps 4–7) inside this worktree before exiting, then commit and push:
-
-```sh
-commit.sh --target-branch {target-branch} -m "merge: close {slice-name}, update plan"
-```
-
-Clean up:
-
-```sh
-worktree-exit.sh --path "$WORKTREE"
-```
 
 ### 4. Document judgment calls
 
@@ -87,9 +99,22 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 Close the slice issue with `gh issue close <number>`. Add label `done`. Remove `to-merge`.
 
+```sh
+gh issue close $SLICE_NUMBER
+```
+
 #### Local tracker
 
 Rename from `[to-merge] ...` to `[done] ...`.
+
+For local tracker, commit the metadata writes:
+
+```sh
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+mv "[to-merge]" "[done]"
+commit.sh --branch $TARGET_BRANCH -m "merge: close $SLICE_NAME, update plan"
+worktree-exit.sh --path $WORKTREE_PATH
+```
 
 ### 6. Check siblings
 
@@ -112,6 +137,12 @@ Check all files in the `slices/` folder. If all have `[done]` prefix:
 - Rename the plan from `[in-progress] plan.md` to `[to-ratify] plan.md`.
 
 If not all done, do nothing — more slices are still in progress.
+
+## Clean up
+
+```sh
+worktree-exit.sh --path $WORKTREE_PATH
+```
 
 ### Handoff
 

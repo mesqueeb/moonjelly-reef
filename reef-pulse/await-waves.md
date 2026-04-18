@@ -10,6 +10,32 @@ This skill requires a specific slice: e.g. `#55` or `my-feature/002-token-storag
 
 Read the slice. It must have a `blocked-by` list referencing other slices.
 
+Set the initial variables:
+
+```sh
+SLICE_NAME = {from slice metadata}
+SLICE_NUMBER = {from slice metadata}
+BASE_BRANCH = {from slice/plan metadata}
+TARGET_BRANCH = {from slice/plan metadata}
+WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves
+```
+
+## 0. Fetch context
+
+### GitHub tracker
+
+```sh
+gh issue view $SLICE_NUMBER --json body,title,labels
+```
+
+### Local tracker
+
+Read the file at:
+
+```sh
+$LOCAL_PATH/$PLAN_ID (\w+)/slices/[to-await-waves] $SLICE_NAME.md
+```
+
 ## 1. Check dependencies
 
 For each dependency in the `blocked-by` list:
@@ -31,10 +57,7 @@ Check if the blocking slice file has the `[done]` prefix.
 Earlier slices may have changed the codebase. Use a temporary worktree to inspect the target branch without disturbing the main checkout:
 
 ```sh
-WORKTREE=$(worktree-enter.sh \
-  --base-branch {base-branch} --target-branch {target-branch} \
-  --phase await-waves --slice {slice-name})
-cd "$WORKTREE"
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
 ```
 
 Read this slice's acceptance criteria and compare against the current state of the code:
@@ -53,26 +76,31 @@ If acceptance criteria were updated, edit the slice issue body with `gh issue ed
 
 ### Local tracker
 
-If acceptance criteria were updated, rewrite the slice file with the updated content. Commit and push so other agents see the update:
-
-```sh
-commit.sh --target-branch {target-branch} -m "await-waves: update criteria for {slice-name}"
-```
+If acceptance criteria were updated, rewrite the slice file with the updated content.
 
 ## 3. Promote
 
 ### GitHub tracker
 
-Change the slice issue label from `to-await-waves` to `to-implement`.
+```sh
+gh issue edit $SLICE_NUMBER --remove-label to-await-waves --add-label to-implement
+```
 
 ### Local tracker
 
 Rename from `[to-await-waves] ...` to `[to-implement] ...`.
 
+```sh
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+mv "[to-await-waves]" "[to-implement]"
+commit.sh --branch $TARGET_BRANCH -m "await-waves: update tracker for $SLICE_NAME"
+worktree-exit.sh --path $WORKTREE_PATH
+```
+
 ## 4. Clean up
 
 ```sh
-worktree-exit.sh --path "$WORKTREE"
+worktree-exit.sh --path $WORKTREE_PATH
 ```
 
 ## Handoff

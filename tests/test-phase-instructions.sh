@@ -42,16 +42,10 @@ make_pattern() {
   cmd="$1"
   case "$cmd" in
     worktree-enter.sh*)
-      echo "worktree-enter.sh"
+      echo "worktree-enter.sh --fork-from"
       ;;
     commit.sh*)
-      if echo "$cmd" | grep -q -- "--slice-branch"; then
-        echo "commit.sh --slice-branch"
-      elif echo "$cmd" | grep -q -- "--target-branch"; then
-        echo "commit.sh --target-branch"
-      else
-        echo "commit.sh"
-      fi
+      echo "commit.sh --branch"
       ;;
     worktree-exit.sh*)
       echo "worktree-exit.sh"
@@ -125,6 +119,8 @@ for section in ['skills', 'phases']:
 
 current_source=""
 prev_line=0
+prev_op=""
+prev_check_type=""
 
 while IFS='|' read -r source_file op_name check_type value; do
   md_path="$REPO_ROOT/$source_file"
@@ -133,12 +129,24 @@ while IFS='|' read -r source_file op_name check_type value; do
   if [ "$source_file" != "$current_source" ]; then
     current_source="$source_file"
     prev_line=0
+    prev_op=""
+    prev_check_type=""
     echo ""
     echo "=== $source_file ==="
     if [ ! -f "$md_path" ]; then
       fail "$source_file: file not found"
       continue
     fi
+  fi
+
+  # Reset ordering when entering a new op or check_type so tracker-local
+  # arrays (which contain enter/commit/exit patterns) don't interfere with
+  # the main flow's ordering, and different tracker types within the same op
+  # don't interfere with each other.
+  if [ "$op_name" != "$prev_op" ] || [ "$check_type" != "$prev_check_type" ]; then
+    prev_line=0
+    prev_op="$op_name"
+    prev_check_type="$check_type"
   fi
 
   # Build label

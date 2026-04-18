@@ -14,6 +14,32 @@ Read the plan. It must have:
 - Target branch name (in metadata)
 - Slice PRs with "Ambiguous choices" sections
 
+Set the initial variables:
+
+```sh
+PLAN_ID = {from plan metadata}
+PLAN_TITLE = {from plan metadata}
+BASE_BRANCH = {from plan metadata}
+TARGET_BRANCH = {from plan metadata}
+WORKTREE_PATH = ../worktree-$PLAN_ID-ratify
+```
+
+## 0. Fetch context
+
+### GitHub tracker
+
+```sh
+gh issue view $PLAN_ID --json body,title,labels
+```
+
+### Local tracker
+
+Read the file at:
+
+```sh
+$LOCAL_PATH/$PLAN_ID (\w+)/[to-ratify] plan.md
+```
+
 ## Mindset
 
 You are checking the **whole**, not the parts. Each slice was already verified individually during inspection. Your job is different: does the aggregate work? Does the target branch, taken as a whole, meet every success criterion from the consumer's perspective?
@@ -27,10 +53,7 @@ Think like a CTO doing a final walkthrough before shipping.
 Use a worktree so you don't disturb the main checkout or any other agent's work.
 
 ```sh
-WORKTREE=$(worktree-enter.sh \
-  --base-branch {base-branch} --target-branch {target-branch} \
-  --phase ratify --slice {title})
-cd "$WORKTREE"
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
 ```
 
 Verify you have the latest — all slice PRs should be merged into this branch.
@@ -72,7 +95,7 @@ Look for problems that only appear when slices are composed:
 The report goes on a **PR from the target branch to the base branch** (usually `main`). This PR is what the human will ultimately merge or reject.
 
 ```sh
-gh pr create --base {base-branch} --head {target-branch} --title "{work-item-title}" --body "{report}"
+gh pr create --base $BASE_BRANCH --head $TARGET_BRANCH --title "$PLAN_TITLE" --body "$REPORT"
 ```
 
 If a PR already exists for this target branch, update its description instead.
@@ -115,13 +138,28 @@ The report should be concise and focused on what the human needs to know. Do NOT
 
 Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
+## Documentation
+
+When you find non-obvious behavior worth documenting during your holistic review:
+
+1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and push directly to the target branch:
+
+```sh
+commit.sh --branch $TARGET_BRANCH -m "ratify: add documentation"
+```
+2. **Outside-of-code docs if warranted.** If the behavior is significant enough to document beyond a code comment, check the repo's `AGENTS.md`/`CLAUDE.md` for a documentation locations section. If it exists, follow it. If it doesn't, create a brief entry.
+
+Don't document what's obvious from reading the code.
+
 ### 8. Tag
 
 **If all criteria met (PASS):**
 
 ### GitHub tracker
 
-Add label `to-land` to the plan. Remove `to-ratify`.
+```sh
+gh issue edit $PLAN_ID --remove-label to-ratify --add-label to-land
+```
 
 ### Local tracker
 
@@ -131,30 +169,29 @@ Rename plan from `[to-ratify] ...` to `[to-land] ...`.
 
 ### GitHub tracker
 
-Add label `to-rescan` to the plan. Remove `to-ratify`.
+```sh
+gh issue edit $PLAN_ID --remove-label to-ratify --add-label to-rescan
+```
+
 Add a comment on the plan listing the specific gaps.
 
 ### Local tracker
 
 Rename plan from `[to-ratify] ...` to `[to-rescan] ...`.
 
-## Documentation
-
-When you find non-obvious behavior worth documenting during your holistic review:
-
-1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and push directly to the target branch:
+For local tracker, commit the tag change:
 
 ```sh
-commit.sh --target-branch {target-branch} -m "ratify: add documentation"
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+mv "[to-ratify]" "[to-land]" or "[to-rescan]"
+commit.sh --branch $TARGET_BRANCH -m "ratify: update tracker for $PLAN_TITLE"
+worktree-exit.sh --path $WORKTREE_PATH
 ```
-2. **Outside-of-code docs if warranted.** If the behavior is significant enough to document beyond a code comment, check the repo's `AGENTS.md`/`CLAUDE.md` for a documentation locations section. If it exists, follow it. If it doesn't, create a brief entry.
-
-Don't document what's obvious from reading the code.
 
 ## Clean up
 
 ```sh
-worktree-exit.sh --path "$WORKTREE"
+worktree-exit.sh --path $WORKTREE_PATH
 ```
 
 ## Handoff
