@@ -41,6 +41,16 @@ Merge the PR:
 gh pr merge {pr-number} --merge --delete-branch
 ```
 
+Pull the merged changes into the current branch if it matches the base branch:
+
+```sh
+git fetch origin --prune
+CURRENT=$(git branch --show-current)
+if [ "$CURRENT" = "{base-branch}" ]; then
+  git pull --ff-only origin {base-branch}
+fi
+```
+
 ### GitHub tracker
 
 Close the parent issue with `gh issue close`. Add a final comment: "Merged to {base-branch}. All success criteria met."

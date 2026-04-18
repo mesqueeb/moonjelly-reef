@@ -23,6 +23,14 @@ Do NOT ask a human. If the gaps need decisions that aren't in the success criter
 
 ## Process
 
+### 0. Git prep
+
+```sh
+git fetch origin --prune
+git worktree add ../worktree-rescan-{title} origin/{target-branch}
+cd ../worktree-rescan-{title}
+```
+
 ### 1. Analyze the gaps
 
 Read the ratify report's gaps. For each gap, classify it:
@@ -90,7 +98,19 @@ If a gap relates to a slice that was marked `done` but is now revealed as incomp
 - The new slice references the original: "Addresses gap in {original-slice}: {description}."
 - This keeps the history clean. (Prevents painpoint E1.)
 
-### 6. Tag
+### 6. Push and clean up
+
+For local tracker, commit and push the updated plan files and new slice files:
+
+```sh
+git add .
+git commit -m "rescan: new slices for {title}"
+git push origin {target-branch}
+cd ..
+git worktree remove ../worktree-rescan-{title}
+```
+
+### 7. Tag
 
 Change parent from `to-rescan` to `in-progress`. The merge phase will change it to `to-ratify` when all slices (including new ones) are `done`.
 

@@ -241,15 +241,15 @@ stateDiagram-v2
         state "🤿　to-land" as to_land
 
         [*] --> to_scope
-        to_scope --> to_slice : /reef-scope<br />choose {base} branch and choose {target} branch name
-        to_slice --> slice_lifecycle : slice.md<br />fetch, 🔷　create branch {target} from {base}
-        to_slice --> slice_lifecycle : slice.md<br />fetch, 🔶　no branch created
+        to_scope --> to_slice : /reef-scope<br />fetch, choose {base} branch and {target} branch name
+        to_slice --> slice_lifecycle : slice.md<br />🔷　multi-slice:<br />fetch, worktree add -b {target} from {base},<br />push, worktree removed
+        to_slice --> slice_lifecycle : slice.md<br />🔶　single-slice:<br />fetch, worktree from {target},<br />worktree removed
         slice_lifecycle --> to_ratify
         slice_lifecycle --> to_land
         to_ratify --> to_land : ratify.md<br />fetch, temp worktree on {target},<br />open PR {target} → {base}
         to_ratify --> gaps_to_rescan : ratify.md<br />fetch, temp worktree on {target},<br />worktree removed
-        gaps_to_rescan --> slice_lifecycle : rescan.md<br />no git ops
-        to_land --> [*] : /reef-land<br />merge PR into {base},<br />delete {target} branch
+        gaps_to_rescan --> slice_lifecycle : rescan.md<br />fetch, temp worktree on {target},<br />push, worktree removed
+        to_land --> [*] : /reef-land<br />merge PR into {base},<br />delete {target} branch,<br />fetch + pull if on {base}
     }
 
     state "GIT SLICE LIFECYCLE (per slice)" as slice_lifecycle {
@@ -259,8 +259,8 @@ stateDiagram-v2
         state "🌊　to-inspect" as to_inspect
         state "🌊　to-rework" as needs_rework
         state "🌊　to-merge" as to_merge
-        state "merge.md<br />🔷　fetch, squash merge PR into {target},<br />delete {slice} branch" as merge_multi
-        state "merge.md<br />🔶　PR stays open" as merge_single
+        state "merge.md<br />🔷　multi-slice:<br />fetch, squash merge PR into {target},<br />delete {slice} branch" as merge_multi
+        state "merge.md<br />🔶　single-slice:<br />PR stays open" as merge_single
         [*] --> to_implement : no deps
         [*] --> to_await : has deps
         to_await --> to_implement : await-waves.md<br />fetch, check deps
@@ -304,11 +304,11 @@ stateDiagram-v2
 
         [*] --> to_scope
         to_scope --> to_slice : /reef-scope<br />plan + success criteria → issue body
-        to_slice --> slice_lifecycle : slice.md<br />🔷　coverage matrix → issue body,<br />AC → sub-issue bodies
-        to_slice --> slice_lifecycle : slice.md<br />🔶　AC → issue body
+        to_slice --> slice_lifecycle : slice.md<br />🔷　multi-slice:<br />coverage matrix → issue body,<br />acceptance criteria → sub-issue bodies
+        to_slice --> slice_lifecycle : slice.md<br />🔶　single-slice:<br />acceptance criteria → issue body
         slice_lifecycle --> to_ratify
         slice_lifecycle --> to_land
-        to_ratify --> to_land : ratify.md<br />final report → PR body<br />(SC + agent decisions + tests + metrics)
+        to_ratify --> to_land : ratify.md<br />final report → PR body<br />(success criteria + agent decisions + tests + metrics)
         to_ratify --> gaps_to_rescan : ratify.md<br />gap list → issue comment
         gaps_to_rescan --> slice_lifecycle : rescan.md<br />new slices → sub-issues,<br />updated matrix → issue body
         to_land --> [*] : /reef-land<br />human reviews PR report
@@ -321,12 +321,12 @@ stateDiagram-v2
         state "🌊　to-inspect" as to_inspect
         state "🌊　to-rework" as needs_rework
         state "🌊　to-merge" as to_merge
-        state "merge.md<br />🔷　close slice issue" as merge_multi
-        state "merge.md<br />🔶　(nothing written)" as merge_single
+        state "merge.md<br />🔷　multi-slice:<br />close slice issue" as merge_multi
+        state "merge.md<br />🔶　single-slice:<br />(nothing written)" as merge_single
         [*] --> to_implement : no deps
         [*] --> to_await : has deps
         to_await --> to_implement : await-waves.md<br />no artifacts
-        to_implement --> to_inspect : implement.md<br />AC checklist + ambiguous choices<br />+ test results → PR body
+        to_implement --> to_inspect : implement.md<br />acceptance criteria checklist + ambiguous choices<br />+ test results → PR body
         to_inspect --> to_merge : inspect.md<br />cleanup commits → PR
         to_inspect --> needs_rework : inspect.md<br />review comments → PR
         needs_rework --> to_inspect : rework.md<br />fix commits + updated report → PR

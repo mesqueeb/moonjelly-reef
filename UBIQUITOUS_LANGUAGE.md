@@ -30,7 +30,7 @@
 | Term | Definition | Aliases to avoid |
 | --- | --- | --- |
 | **success criteria** | Plan-level testable conditions that define when the entire work item is done | requirements, specs, definition of done |
-| **acceptance criteria** | Slice-level testable conditions that define when a single slice is done | checklist, slice criteria, ACs |
+| **acceptance criteria** | Slice-level testable conditions that define when a single slice is done | checklist, slice criteria, ACs (never abbreviate) |
 | **coverage matrix** | A table mapping each success criterion to which slice(s) and acceptance criteria cover it — only used for multi-slice | traceability matrix, mapping |
 | **plan metadata** | The table at the top of a plan with type, base branch, and target branch fields | header, config, frontmatter |
 
@@ -83,3 +83,4 @@
 - **"slice"** is both a noun (a unit of work) and a phase name (the act of breaking a plan into slices). Context usually makes it clear, but when ambiguous, say "the slice phase" for the action and "a slice" for the work unit.
 - **"merge"** is both a phase name and a git operation. The phase may or may not perform a git merge — for single-slice it doesn't. When referring to the git operation specifically, say "merge the PR."
 - **"feature branch"** or **"work branch"** — do not use. The correct term is **target branch**. Not all work items are features, and "work" is ambiguous (agents work in slice branches, not the target).
+- **"AC"** or **"SC"** — do not abbreviate. Always write **acceptance criteria** and **success criteria** in full. Abbreviations create ambiguity across contexts and hurt readability.

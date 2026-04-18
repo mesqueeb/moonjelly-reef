@@ -54,13 +54,12 @@ Read the base branch and target branch name from the plan metadata.
 
 ```sh
 git fetch origin --prune
-git branch {target-branch} origin/{base-branch}
+git worktree add ../worktree-slice-{title} -b {target-branch} origin/{base-branch}
+cd ../worktree-slice-{title}
 git push -u origin {target-branch}
 ```
 
-Do NOT use `git checkout` — the main checkout should stay on whatever branch the user is on. Implementation happens in worktrees.
-
-If the plan says to work on the current branch (no new target branch), skip this step. Note that slice PRs will target whatever branch is documented in the plan metadata.
+If the plan says to work on the current branch (no new target branch), skip the branch creation but still create a worktree from `origin/{target-branch}` to read the codebase.
 
 ## 3. Build the coverage matrix
 
@@ -126,7 +125,7 @@ Each sub-issue body:
 
 ## Success criteria covered
 
-- SC{n}: {criterion text}
+- Success criterion {n}: {criterion text}
 ```
 
 Label each slice: `to-implement` if no blockers, `to-await-waves` if blocked.
@@ -151,6 +150,13 @@ Add a comment listing all created sub-issues with their tags.
 ### Local tracker
 
 Append the coverage matrix to the parent plan file. Rename from `[to-slice] plan.md` to `[in-progress] plan.md`. It will be renamed to `[to-ratify] plan.md` once all slices are done.
+
+## 7. Clean up
+
+```sh
+cd ..
+git worktree remove ../worktree-slice-{title}
+```
 
 ## Handoff
 

@@ -18,6 +18,18 @@ This skill accepts:
 
 Read the work item.
 
+## 0. Git prep
+
+```sh
+git fetch origin --prune
+```
+
+Check if the current branch is behind its remote counterpart. If it is, notify the user:
+
+> "{branch-name} is {N} commits behind origin. Want me to pull first?"
+
+Wait for the user's response before continuing.
+
 ## 1. Write the plan
 
 Read the issue and any existing decision record. Assess: is this a **feature**, **refactor**, or **bug**? Then follow the type-specific guide.
