@@ -53,13 +53,22 @@ If you drafted **2+ slices**, continue with the multi-slice flow below.
 Read the base branch and target branch name from the plan metadata.
 
 ```sh
-git fetch origin --prune
-git worktree add ../worktree-slice-{title} -b {target-branch} origin/{base-branch}
-cd ../worktree-slice-{title}
+WORKTREE=$(reef-worktree-enter.sh \
+  --base-branch {base-branch} --target-branch {target-branch} \
+  --phase slice --slice {title} \
+  --slice-branch {target-branch} --branch-op create)
+cd "$WORKTREE"
 git push -u origin {target-branch}
 ```
 
-If the plan says to work on the current branch (no new target branch), skip the branch creation but still create a worktree from `origin/{target-branch}` to read the codebase.
+If the plan says to work on the current branch (no new target branch), skip the branch creation but still create a worktree to read the codebase:
+
+```sh
+WORKTREE=$(reef-worktree-enter.sh \
+  --base-branch {base-branch} --target-branch {target-branch} \
+  --phase slice --slice {title})
+cd "$WORKTREE"
+```
 
 ## 3. Build the coverage matrix
 
@@ -158,8 +167,7 @@ Document judgment calls made during this phase as a comment on the plan. Only do
 ## 8. Clean up
 
 ```sh
-cd ..
-git worktree remove ../worktree-slice-{title}
+reef-worktree-exit.sh --path "$WORKTREE"
 ```
 
 ## Handoff
