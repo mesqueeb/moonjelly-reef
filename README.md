@@ -154,7 +154,7 @@ Automatically breaks the plan into vertical slices, or determines a single slice
 
 | source file       | [`reef-pulse/slice.md`](reef-pulse/slice.md)                                                                                                                |
 | :---------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| git ops           | 🔷　multi-slice: fetch, worktree add -b {target} from {base}, push, worktree removed<br />🔶　single-slice: fetch, worktree from {target}, worktree removed |
+| git ops           | 🔷　multi-slice: enter worktree, create {target} from {base}, push, exit worktree<br />🔶　single-slice: no git ops |
 | updates code      | no                                                                                                                                                          |
 | persist report at | 🔷　multi-slice: plan + slice<br />🔶　single-slice: plan                                                                                                   |
 | change tag on     | 🔷　multi-slice: plan + slice<br />🔶　single-slice: plan                                                                                                   |
@@ -170,7 +170,7 @@ Check if a blocked slice's dependencies are all done. If yes, re-review the plan
 
 | source file       | [`reef-pulse/await-waves.md`](reef-pulse/await-waves.md) |
 | :---------------- | :------------------------------------------------------- |
-| git ops           | fetch, check deps                                        |
+| git ops           | check deps, enter worktree on {target}, review code, exit worktree |
 | updates code      | no                                                       |
 | persist report at | slice (if criteria updated)                              |
 | change tag on     | slice                                                    |
@@ -186,7 +186,7 @@ Implement a slice using TDD in a git worktree. Create worktree → read context 
 
 | source file       | [`reef-pulse/implement.md`](reef-pulse/implement.md)                                             |
 | :---------------- | :----------------------------------------------------------------------------------------------- |
-| git ops           | fetch, worktree add -b {slice} from {target}, push, open PR {slice} → {target}, worktree removed |
+| git ops           | enter worktree, create {slice} from {target}, commit+push, open PR {slice} → {target}, exit worktree |
 | updates code      | yes                                                                                              |
 | persist report at | 🔷　multi-slice: slice PR<br />🔶　single-slice: plan PR                                         |
 | change tag on     | 🔷　multi-slice: slice<br />🔶　single-slice: plan                                               |
@@ -202,7 +202,7 @@ Independently verify a slice PR. Run the full test suite, check each acceptance 
 
 | source file       | [`reef-pulse/inspect.md`](reef-pulse/inspect.md)                                                    |
 | :---------------- | :-------------------------------------------------------------------------------------------------- |
-| git ops           | fetch, temp worktree<br />pass: cleanup commits → push<br />fail: review only<br />worktree removed |
+| git ops           | enter worktree (checkout {slice})<br />pass: cleanup commits → push<br />fail: review only<br />exit worktree |
 | updates code      | cleanup only                                                                                        |
 | persist report at | 🔷　multi-slice: slice PR<br />🔶　single-slice: plan PR                                            |
 | change tag on     | 🔷　multi-slice: slice<br />🔶　single-slice: plan                                                  |
@@ -218,7 +218,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 
 | source file       | [`reef-pulse/rework.md`](reef-pulse/rework.md)             |
 | :---------------- | :--------------------------------------------------------- |
-| git ops           | fetch, temp worktree, fix commits → push, worktree removed |
+| git ops           | enter worktree (checkout {slice}), fix commits → push, exit worktree |
 | updates code      | yes                                                        |
 | persist report at | 🔷　multi-slice: slice PR<br />🔶　single-slice: plan PR   |
 | change tag on     | 🔷　multi-slice: slice<br />🔶　single-slice: plan         |
@@ -234,7 +234,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 
 | source file       | [`reef-pulse/merge.md`](reef-pulse/merge.md)                                                                      |
 | :---------------- | :---------------------------------------------------------------------------------------------------------------- |
-| git ops           | 🔷　multi-slice: fetch, squash merge PR into {target}, delete {slice} branch<br />🔶　single-slice: PR stays open |
+| git ops           | 🔷　multi-slice: squash merge PR into {target}, enter verify worktree, run suite, exit worktree<br />🔶　single-slice: PR stays open |
 | updates code      | 🔷　multi-slice: squash merge into {target}<br />🔶　single-slice: no                                             |
 | persist report at | 🔷　multi-slice: plan<br />🔶　single-slice: —                                                                    |
 | change tag on     | 🔷　multi-slice: slice (+ plan when all done)<br />🔶　single-slice: plan                                         |
@@ -250,7 +250,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 
 | source file       | [`reef-pulse/ratify.md`](reef-pulse/ratify.md)                                                    |
 | :---------------- | :------------------------------------------------------------------------------------------------ |
-| git ops           | fetch, temp worktree on {target}<br />pass: open PR {target} → {base}<br />gaps: worktree removed |
+| git ops           | enter worktree on {target}<br />pass: open PR {target} → {base}, exit worktree<br />gaps: exit worktree |
 | updates code      | may push docs to {target}                                                                         |
 | persist report at | pass: plan PR<br />gaps: plan                                                                     |
 | change tag on     | plan                                                                                              |
@@ -266,7 +266,7 @@ Analyze gaps found by ratify, re-review the entire plan, create new slices to ad
 
 | source file       | [`reef-pulse/rescan.md`](reef-pulse/rescan.md)           |
 | :---------------- | :------------------------------------------------------- |
-| git ops           | fetch, temp worktree on {target}, push, worktree removed |
+| git ops           | enter worktree on {target}, commit+push to {target}, exit worktree |
 | updates code      | no                                                       |
 | persist report at | plan + slice                                             |
 | change tag on     | plan + slice                                             |
@@ -277,7 +277,7 @@ Analyze gaps found by ratify, re-review the entire plan, create new slices to ad
 
 ## Git hygiene
 
-Every agent works in its own git worktree — the main checkout is never touched. For multi-slice work, a target branch is created from the base branch; slice PRs target it. For single-slice work, the target branch equals the base branch. Every phase creates its own worktree and tears it down before exiting. Every git operation begins with `git fetch origin --prune`. No `--force` flags, ever.
+Every agent works in its own git worktree via `reef-worktree-enter.sh` / `reef-worktree-exit.sh` / `reef-worktree-commit.sh` — the main checkout is never touched. For multi-slice work, a target branch is created from the base branch; slice PRs target it. For single-slice work, the target branch equals the base branch. Every phase creates its own worktree and tears it down before exiting. No inline git worktree commands, no `--force` flags, ever.
 
 ## Autopilot
 
