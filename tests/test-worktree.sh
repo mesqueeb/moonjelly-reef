@@ -3,7 +3,8 @@
 # Runs against real git repos in a temp directory
 set -u
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+TESTS_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$TESTS_DIR/../reef-pulse/scripts"
 PASS=0
 FAIL=0
 TOTAL=0
