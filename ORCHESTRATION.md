@@ -318,7 +318,32 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   PR_NUMBER = {from slice body}
   PLAN_ID = {from slice/plan body}
   TARGET_BRANCH = {from slice/plan body}
+  SLICE_BRANCH = {from slice body}
   WORKTREE_PATH = ../worktree-$SLICE_NAME-merge
+  ```
+- pre-merge-check
+  ```sh
+  gh pr view $PR_NUMBER --json mergeStateStatus -q .mergeStateStatus
+  ```
+- enter-worktree
+  ```sh
+  worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
+  ```
+- merge-target-into-slice
+  ```sh
+  git merge origin/$TARGET_BRANCH
+  ```
+- commit-code — if merge-needed
+  ```sh
+  commit.sh --branch $SLICE_BRANCH -m "merge: resolve conflicts with $TARGET_BRANCH"
+  ```
+- update-tracker — if tests-fail
+  ```sh
+  tracker.sh issue edit $SLICE_NUMBER --remove-label to-merge --add-label to-rework
+  ```
+- exit-worktree
+  ```sh
+  worktree-exit.sh --path $WORKTREE_PATH
   ```
 - update-tracker — if single-slice (PR stays open for reef-land — stop here)
   ```sh
@@ -328,11 +353,14 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   gh pr merge $PR_NUMBER --squash --delete-branch
   ```
-- enter-worktree — if multi-slice
+- check-siblings — if multi-slice
   ```sh
-  worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+  tracker.sh issue list --json number,labels --search "parent:$PLAN_ID"
   ```
-- phase-specific — if multi-slice
+- check-completion — if multi-slice
+  ```sh
+  tracker.sh issue view $PLAN_ID --json body,title,labels
+  ```
 - update-tracker — if multi-slice
   ```sh
   tracker.sh issue close $SLICE_NUMBER
@@ -340,10 +368,6 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - update-tracker — if all-slices-done
   ```sh
   tracker.sh issue edit $PLAN_ID --remove-label in-progress --add-label to-ratify
-  ```
-- exit-worktree — if multi-slice
-  ```sh
-  worktree-exit.sh --path $WORKTREE_PATH
   ```
 
 ### [ratify.md](./reef-pulse/ratify.md)
