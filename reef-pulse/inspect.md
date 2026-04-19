@@ -8,11 +8,7 @@
 
 This skill requires a specific slice: e.g. `#55` or `my-feature/001-auth-endpoint`.
 
-Read the slice to find the PR reference. If the slice doesn't have a PR linked, check for open PRs referencing this slice:
-
-```sh
-gh pr list --search "slice-name"
-```
+Read the slice to find the PR reference.
 
 Set the pre-fetch variables:
 
@@ -95,7 +91,20 @@ commit.sh --branch $SLICE_BRANCH -m "inspect: cleanup"
 
 Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
-### 6. Verdict
+### 6. Update the PR
+
+Set the PR number from the slice body. If not found there, try `gh pr list --search`. If PR_NUMBER is nowhere to be found, tag the issue `pr-missing` and stop.
+
+```sh
+PR_NUMBER = {from slice body} # if not found, try gh pr list --search
+REPORT = {inspection report assembled during phase-specific}
+```
+
+```sh
+gh pr edit $PR_NUMBER --body "$REPORT"
+```
+
+### 7. Verdict
 
 **If all acceptance criteria are met and the suite is green:**
 
