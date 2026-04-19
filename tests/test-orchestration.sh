@@ -64,6 +64,7 @@ make_pattern() {
     "tracker.sh issue list"*)  echo "tracker.sh issue list" ;;
     "git fetch"*)     echo "git fetch" ;;
     "git push"*)      echo "git push" ;;
+    "git merge"*)     echo "git merge" ;;
     "rename "*)       echo "rename" ;;
     *)                echo "$cmd" | cut -c1-30 ;;
   esac

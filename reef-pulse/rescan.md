@@ -68,13 +68,11 @@ Read the entire plan top to bottom. With the ratify report's findings in mind:
 - Does the coverage matrix need updating beyond just the new slices?
 - Are there planning-level statements that turned out to be wrong or ambiguous? Update them.
 
-### GitHub tracker
+If the plan or success criteria need updates:
 
-If the plan or success criteria need updates, edit the plan body with `gh issue edit`.
-
-### Local tracker
-
-If the plan needs updates, edit the plan file directly.
+```sh
+tracker.sh issue edit $PLAN_ID --body "{updated plan body}"
+```
 
 ### 3. Create new slices
 
@@ -88,25 +86,21 @@ Follow the same format as the slice phase:
 - `blocked-by` references if the new slice depends on anything
 - Reference to the success criteria it covers
 
-### GitHub tracker
+Create new slices linked to the plan:
 
-Create sub-issues with `gh issue create`, linked to the plan. Label: `to-implement` or `to-await-waves`.
+```sh
+tracker.sh issue create --title "{slice-title}" --body "{slice-body}" --label to-implement
+```
 
-### Local tracker
-
-Create new slice files in `{path}/{title}/slices/`. Prefix: `[to-implement]` or `[to-await-waves]`.
+Use `to-implement` if no blockers, `to-await-waves` if blocked.
 
 ### 4. Update the coverage matrix
 
 Add rows for the new slices. Every gap must now map to an acceptance criterion on a new slice.
 
-### GitHub tracker
-
-Edit the plan body to update the coverage matrix section.
-
-### Local tracker
-
-Update the coverage matrix in the plan file.
+```sh
+tracker.sh issue edit $PLAN_ID --body "{plan body with updated coverage matrix}"
+```
 
 ### 5. Handle original slices
 
