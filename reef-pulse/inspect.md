@@ -52,6 +52,27 @@ SLICE_BRANCH = {from slice body}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-inspect
 ```
 
+Set the pre-fetch variables:
+
+```sh
+ISSUE_ID = {issue-id} # pre-existing and passed or generate
+```
+
+## 0. Fetch context
+
+```sh
+tracker.sh issue view $ISSUE_ID --json body,title,labels
+```
+
+Set the post-fetch variables (after reading the slice body):
+
+```sh
+SLICE_NAME = {from slice body}
+SLICE_NUMBER = $ISSUE_ID
+SLICE_BRANCH = {from slice body}
+WORKTREE_PATH = ../worktree-$SLICE_NAME-inspect
+```
+
 ## Mindset
 
 You are a CTO independently verifying this work. You do not trust the implementer's self-report. You verify everything yourself by reading code and running tests. You use judgment, not checklists.
