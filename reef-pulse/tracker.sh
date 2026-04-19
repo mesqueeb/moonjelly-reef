@@ -31,14 +31,50 @@ find_config() {
 read_config() {
   find_config
   # Read frontmatter values
-  TRACKER_PATH="$(sed -n 's/^tracker-path: *//p' "$CONFIG" | head -1)"
+  _raw_path="$(sed -n 's/^tracker-path: *//p' "$CONFIG" | head -1)"
   TRACKER_BRANCH="$(sed -n 's/^tracker-branch: *//p' "$CONFIG" | head -1)"
   TRACKER_TYPE="$(sed -n 's/^tracker: *//p' "$CONFIG" | head -1)"
 
-  if [ -z "$TRACKER_PATH" ] || [ "$TRACKER_PATH" = "—" ]; then
+  if [ -z "$_raw_path" ] || [ "$_raw_path" = "—" ]; then
     echo "Error: tracker-path not set in config" >&2
     exit 1
   fi
+
+  # Resolve tracker path relative to repo root
+  case "$_raw_path" in
+    /*) TRACKER_PATH="$_raw_path" ;;
+    *)  TRACKER_PATH="$ROOT/$_raw_path" ;;
+  esac
+
+  IS_COMMITTED=false
+  if [ "$TRACKER_TYPE" = "local-tracker-committed" ] && [ -n "$TRACKER_BRANCH" ] && [ "$TRACKER_BRANCH" != "—" ]; then
+    IS_COMMITTED=true
+  fi
+}
+
+# ============================================================
+# Committed mode worktree wrapper
+# ============================================================
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+committed_enter() {
+  WORKTREE_TMP="$(mktemp -d)"
+  rmdir "$WORKTREE_TMP"
+  "$SCRIPT_DIR/scripts/worktree-enter.sh" --fork-from "$TRACKER_BRANCH" --path "$WORKTREE_TMP" >/dev/null 2>&1
+  # Re-resolve TRACKER_PATH relative to the worktree
+  case "$_raw_path" in
+    /*) ;; # absolute path, no change
+    *)  TRACKER_PATH="$WORKTREE_TMP/$_raw_path" ;;
+  esac
+  cd "$WORKTREE_TMP"
+}
+
+committed_exit() {
+  _msg="$1"
+  "$SCRIPT_DIR/scripts/commit.sh" --branch "$TRACKER_BRANCH" -m "$_msg" >/dev/null 2>&1
+  cd "$ROOT"
+  "$SCRIPT_DIR/scripts/worktree-exit.sh" --path "$WORKTREE_TMP" >/dev/null 2>&1
 }
 
 # ============================================================
@@ -410,16 +446,27 @@ shift 2
 read_config
 
 case "$SUBCMD" in
-  create) cmd_create "$@" ;;
+  create)
+    if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
+    _output="$(cmd_create "$@")"
+    if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: create $_output"; fi
+    echo "$_output"
+    ;;
   view)
     if [ $# -lt 1 ]; then echo "Error: issue view requires an ID" >&2; exit 1; fi
     cmd_view "$@" ;;
   edit)
     if [ $# -lt 1 ]; then echo "Error: issue edit requires an ID" >&2; exit 1; fi
-    cmd_edit "$@" ;;
+    if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
+    cmd_edit "$@"
+    if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: edit $1"; fi
+    ;;
   close)
     if [ $# -lt 1 ]; then echo "Error: issue close requires an ID" >&2; exit 1; fi
-    cmd_close "$@" ;;
+    if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
+    cmd_close "$@"
+    if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: close $1"; fi
+    ;;
   list) cmd_list "$@" ;;
   *) echo "Error: unknown subcommand: $SUBCMD" >&2; exit 1 ;;
 esac

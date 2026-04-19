@@ -498,6 +498,106 @@ test_list_empty() {
 }
 
 # ============================================================
+# COMMITTED MODE — #30
+# ============================================================
+
+setup_committed() {
+  TEST_ROOT="$(mktemp -d)"
+  ORIGIN="$TEST_ROOT/origin.git"
+  REPO="$TEST_ROOT/repo"
+  TRACKER_PATH=".agents/moonjelly-reef/tracker"
+
+  git init --bare "$ORIGIN" >/dev/null 2>&1
+  git clone "$ORIGIN" "$REPO" >/dev/null 2>&1
+  cd "$REPO"
+  git checkout -b main >/dev/null 2>&1
+  echo "init" > README.md
+  mkdir -p "$TRACKER_PATH"
+  mkdir -p ".agents/moonjelly-reef"
+  cat > ".agents/moonjelly-reef/config.md" <<CONF
+---
+tracker: local-tracker-committed
+tracker-path: $TRACKER_PATH
+tracker-branch: main
+---
+CONF
+  git add -A
+  git commit -m "initial commit" >/dev/null 2>&1
+  git push -u origin main >/dev/null 2>&1
+}
+
+test_committed_create_pushes() {
+  setup_committed
+
+  t issue create --title "my-feature" --label to-scope >/dev/null 2>&1
+
+  # The commit should be on origin/main
+  git fetch origin >/dev/null 2>&1
+  if git log origin/main --oneline | grep -q "tracker:"; then
+    pass "committed create: pushes to tracker branch"
+  else
+    fail "committed create: pushes to tracker branch" "no tracker commit on origin/main"
+  fi
+
+  teardown
+}
+
+test_committed_edit_pushes() {
+  setup_committed
+
+  t issue create --title "my-feature" --label to-scope >/dev/null 2>&1
+  t issue edit 1 --remove-label to-scope --add-label to-slice >/dev/null 2>&1
+
+  git fetch origin >/dev/null 2>&1
+  log="$(git log origin/main --oneline)"
+  # Should have at least 2 tracker commits (create + edit)
+  count="$(echo "$log" | grep -c "tracker:" || true)"
+  if [ "$count" -ge 2 ]; then
+    pass "committed edit: pushes label change to tracker branch"
+  else
+    fail "committed edit: pushes label change to tracker branch" "commits: $count, log: $log"
+  fi
+
+  teardown
+}
+
+test_committed_view_no_worktree() {
+  setup_committed
+
+  t issue create --title "my-feature" --body "content" --label to-scope >/dev/null 2>&1
+
+  # Simulate what reef-pulse does before dispatching: pull latest
+  git pull origin main >/dev/null 2>&1
+
+  # View should work without creating a worktree (reads from working dir)
+  output="$(t issue view 1 --json body,title,labels 2>/dev/null)"
+  if echo "$output" | grep -q '"my-feature"'; then
+    pass "committed view: reads after pull"
+  else
+    fail "committed view: reads after pull" "got: $output"
+  fi
+
+  teardown
+}
+
+test_committed_close_pushes() {
+  setup_committed
+
+  t issue create --title "my-feature" --label to-land >/dev/null 2>&1
+  t issue close 1 >/dev/null 2>&1
+
+  git fetch origin >/dev/null 2>&1
+  log="$(git log origin/main --oneline)"
+  if echo "$log" | grep -q "tracker:.*close"; then
+    pass "committed close: pushes to tracker branch"
+  else
+    fail "committed close: pushes to tracker branch" "log: $log"
+  fi
+
+  teardown
+}
+
+# ============================================================
 # Run all tests
 # ============================================================
 
@@ -538,6 +638,13 @@ echo "=== issue list ==="
 test_list_by_label
 test_list_includes_slices
 test_list_empty
+
+echo ""
+echo "=== committed mode ==="
+test_committed_create_pushes
+test_committed_edit_pushes
+test_committed_view_no_worktree
+test_committed_close_pushes
 
 echo ""
 echo "================================"
