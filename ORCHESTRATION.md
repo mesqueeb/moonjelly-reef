@@ -194,7 +194,6 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   SLICE_NAME = {from slice body}
   SLICE_NUMBER = $ISSUE_ID
   SLICE_BRANCH = {from slice body}
-  PR_NUMBER = {from slice body}
   WORKTREE_PATH = ../worktree-$SLICE_NAME-inspect
   ```
 - enter-worktree
@@ -208,6 +207,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - set-variables
   ```sh
+  PR_NUMBER = {from slice body} # if not found, try gh pr list --search
   REPORT = {report-content} # from context
   ```
 - update-pr-body
