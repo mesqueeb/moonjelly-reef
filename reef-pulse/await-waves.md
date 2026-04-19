@@ -39,15 +39,11 @@ worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
 
 ## 1. Check dependencies
 
-For each dependency in the `blocked-by` list:
+For each dependency in the `blocked-by` list, check if the blocking slice is tagged `done`:
 
-### GitHub tracker
-
-Check if the blocking slice issue is tagged `done` (has the `done` label). Use `gh issue view <number>`.
-
-### Local tracker
-
-Check if the blocking slice file has the `[done]` prefix.
+```sh
+tracker.sh issue view <dependency-id> --json labels
+```
 
 **If any dependency is NOT done**: exit silently. Do nothing. This slice stays `to-await-waves`. It will be checked again on the next pulse.
 
@@ -66,7 +62,7 @@ Earlier slices may have changed the codebase. Read this slice's acceptance crite
 **If adjustments needed**: update the slice's acceptance criteria and description to reflect the current reality. Be specific about what changed and why.
 
 ```sh
-SLICE_BODY = {slice body with updated acceptance criteria}
+SLICE_BODY = {slice body, with updated acceptance criteria if changed}
 ```
 
 ```sh

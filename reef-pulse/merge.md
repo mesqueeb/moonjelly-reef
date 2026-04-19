@@ -104,19 +104,12 @@ Look at all sibling slices (other slices under the same plan). For any tagged `t
 
 Are ALL slices for the plan now tagged `done`?
 
-#### GitHub tracker
+```sh
+tracker.sh issue list --label done --parent $PLAN_ID
+tracker.sh issue view $PLAN_ID --json body,labels
+```
 
-Check all sub-issues of the plan. If all are closed with `done` label:
-
-- Change the plan issue label from `in-progress` to `to-ratify`.
-
-#### Local tracker
-
-Check all files in the `slices/` folder. If all have `[done]` prefix:
-
-- Rename the plan from `[in-progress] plan.md` to `[to-ratify] plan.md`.
-
-If not all done, do nothing — more slices are still in progress.
+If all slices are done, change the plan label from `in-progress` to `to-ratify`. If not all done, do nothing — more slices are still in progress.
 
 ## Clean up
 

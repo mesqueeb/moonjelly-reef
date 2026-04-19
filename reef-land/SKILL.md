@@ -5,7 +5,7 @@ description: Present the final report to the human for review. Human approves (m
 
 # reef-land
 
-> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI.
+> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 ## Input
 
@@ -51,30 +51,20 @@ if [ "$CURRENT" = "{base-branch}" ]; then
 fi
 ```
 
-### GitHub tracker
+```sh
+tracker.sh issue close {plan-id}
+```
 
-Close the plan with `gh issue close`. Add a final comment: "Merged to {base-branch}. All success criteria met."
-
-### Local tracker
-
-Rename plan to `[done] plan.md`. Optionally move the folder to an `archive/` or `done/` directory if the user prefers.
+Add a final comment: "Merged to {base-branch}. All success criteria met."
 
 ### If re-scope
 
-### GitHub tracker
-
-Change the plan label to `to-scope`. Remove `to-land`.
-
-### Local tracker
-
-Rename plan to `[to-scope] plan.md`.
+```sh
+tracker.sh issue edit {plan-id} --remove-label to-land --add-label to-scope
+```
 
 ### If re-scan
 
-### GitHub tracker
-
-Change the plan label to `to-rescan`. Remove `to-land`.
-
-### Local tracker
-
-Rename plan to `[to-rescan] plan.md`.
+```sh
+tracker.sh issue edit {plan-id} --remove-label to-land --add-label to-rescan
+```
