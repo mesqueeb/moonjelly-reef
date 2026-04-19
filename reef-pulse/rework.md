@@ -1,6 +1,6 @@
 # rework
 
-> **Tracker note**: Read `.agents/moonjelly-reef/config.md` for the tracker type. Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI.
+> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -14,24 +14,12 @@ Set the pre-fetch variables:
 
 ```sh
 ISSUE_ID = {issue-id} # pre-existing and passed or generate
-TRACKER_PATH = {from config.md} # set only for local tracker
-TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
 ```
 
 ## 0. Fetch context
 
-### GitHub tracker
-
 ```sh
-gh issue view $ISSUE_ID --json body,title,labels
-```
-
-### Local tracker
-
-Read the file at:
-
-```sh
-$TRACKER_PATH/*/slices/[to-rework] $ISSUE_ID*.md
+tracker.sh issue view $ISSUE_ID --json body,title,labels
 ```
 
 Set the post-fetch variables (after reading the slice body):
@@ -41,10 +29,6 @@ SLICE_NAME = {from slice body}
 SLICE_NUMBER = $ISSUE_ID
 SLICE_BRANCH = {from slice body}
 PR_NUMBER = {from slice body}
-PLAN_ID = {from slice/plan body}
-PLAN_TITLE = {from slice/plan body}
-BASE_BRANCH = {from slice/plan body}
-TARGET_BRANCH = {from slice/plan body}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-rework
 ```
 
@@ -108,29 +92,8 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ### 8. Tag
 
-### GitHub tracker
-
 ```sh
-gh issue edit $SLICE_NUMBER --remove-label to-rework --add-label to-inspect
-```
-
-### Local tracker (gitignored)
-
-Rename from `[to-rework] ...` to `[to-inspect] ...`.
-
-```sh
-mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-rework] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md"
-```
-
-### Local tracker (committed)
-
-Rename from `[to-rework] ...` to `[to-inspect] ...`.
-
-```sh
-worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
-mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-rework] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md"
-commit.sh --branch $TRACKER_BRANCH -m "rework: update tracker for $SLICE_NAME"
-worktree-exit.sh --path $WORKTREE_PATH-tracker
+tracker.sh issue edit $SLICE_NUMBER --remove-label to-rework --add-label to-inspect
 ```
 
 ### 9. Clean up

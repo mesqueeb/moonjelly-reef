@@ -7,7 +7,7 @@ description: Scope an issue into a plan with success criteria. Routes between fe
 
 Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, run `/reef-pulse` and follow `reef-pulse/setup.md` first, then return here after.
 
-> **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI.
+> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 ## Input
 
@@ -20,24 +20,12 @@ Set the initial variables:
 
 ```sh
 ISSUE_ID = {issue-id} # pre-existing and passed or generate
-TRACKER_PATH = {from config.md} # set only for local tracker
-TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
 ```
 
 ## 0. Fetch context
 
-### GitHub tracker
-
 ```sh
-gh issue view $ISSUE_ID --json body,title,labels
-```
-
-### Local tracker
-
-Read the file at:
-
-```sh
-$TRACKER_PATH/$ISSUE_ID*/[to-scope] plan.md
+tracker.sh issue view $ISSUE_ID --json body,title,labels
 ```
 
 ## 1. Git prep
@@ -89,34 +77,11 @@ Set variables from the discussion:
 
 ```sh
 PLAN_ID = $ISSUE_ID
-PLAN_TITLE = {plan-title} # as per discussion context
-BASE_BRANCH = {base-branch} # as per discussion context
-TARGET_BRANCH = {target-branch} # as per discussion context
-PLAN_CONTENT = {plan-content} # as per discussion context
-WORKTREE_PATH = ../worktree-$PLAN_ID-scope
+PLAN_CONTENT = {plan-content} # assembled during phase-specific
 ```
 
-### GitHub tracker
-
 ```sh
-gh issue edit $PLAN_ID --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
-```
-
-### Local tracker (gitignored)
-
-```sh
-mkdir -p "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE"
-printf '%s' "$PLAN_CONTENT" > "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-slice] plan.md"
-```
-
-### Local tracker (committed)
-
-```sh
-worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
-mkdir -p "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE"
-printf '%s' "$PLAN_CONTENT" > "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-slice] plan.md"
-commit.sh --branch $TRACKER_BRANCH -m "scope: persist plan for $PLAN_ID $PLAN_TITLE"
-worktree-exit.sh --path $WORKTREE_PATH-tracker
+tracker.sh issue edit $PLAN_ID --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
 ```
 
 ## Handoff

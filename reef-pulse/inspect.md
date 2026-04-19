@@ -1,6 +1,6 @@
 # inspect
 
-> **Tracker note**: Read `.agents/moonjelly-reef/config.md` for the tracker type. Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI.
+> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -18,24 +18,12 @@ Set the pre-fetch variables:
 
 ```sh
 ISSUE_ID = {issue-id} # pre-existing and passed or generate
-TRACKER_PATH = {from config.md} # set only for local tracker
-TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
 ```
 
 ## 0. Fetch context
 
-### GitHub tracker
-
 ```sh
-gh issue view $ISSUE_ID --json body,title,labels
-```
-
-### Local tracker
-
-Read the file at:
-
-```sh
-$TRACKER_PATH/*/slices/[to-inspect] $ISSUE_ID*.md
+tracker.sh issue view $ISSUE_ID --json body,title,labels
 ```
 
 Set the post-fetch variables (after reading the slice body):
@@ -44,10 +32,6 @@ Set the post-fetch variables (after reading the slice body):
 SLICE_NAME = {from slice body}
 SLICE_NUMBER = $ISSUE_ID
 SLICE_BRANCH = {from slice body}
-PLAN_ID = {from slice/plan body}
-PLAN_TITLE = {from slice/plan body}
-BASE_BRANCH = {from slice/plan body}
-TARGET_BRANCH = {from slice/plan body}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-inspect
 ```
 
@@ -115,43 +99,17 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 **If all acceptance criteria are met and the suite is green:**
 
-### GitHub tracker
-
 ```sh
-gh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-merge
+tracker.sh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-merge
 ```
-
-### Local tracker (gitignored)
-
-Rename from `[to-inspect] ...` to `[to-merge] ...`.
 
 **If gaps are found:**
 
-### GitHub tracker
-
 ```sh
-gh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-rework
+tracker.sh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-rework
 ```
 
 Leave specific review comments on the PR for each gap. Be precise — tell the implementer exactly what's wrong and what "fixed" looks like.
-
-### Local tracker (gitignored)
-
-Rename from `[to-inspect] ...` to `[to-rework] ...`.
-Add the feedback to the slice file body.
-
-```sh
-mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-merge] or [to-rework] $SLICE_NAME.md"
-```
-
-### Local tracker (committed)
-
-```sh
-worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
-mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-merge] or [to-rework] $SLICE_NAME.md"
-commit.sh --branch $TRACKER_BRANCH -m "inspect: update tracker for $SLICE_NAME"
-worktree-exit.sh --path $WORKTREE_PATH-tracker
-```
 
 ## Clean up
 

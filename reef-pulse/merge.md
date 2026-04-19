@@ -1,6 +1,6 @@
 # merge
 
-> **Tracker note**: Read `.agents/moonjelly-reef/config.md` for the tracker type. Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI.
+> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -14,24 +14,12 @@ Set the pre-fetch variables:
 
 ```sh
 ISSUE_ID = {issue-id} # pre-existing and passed or generate
-TRACKER_PATH = {from config.md} # set only for local tracker
-TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
 ```
 
 ## 0. Fetch context
 
-### GitHub tracker
-
 ```sh
-gh issue view $ISSUE_ID --json body,title,labels
-```
-
-### Local tracker
-
-Read the file at:
-
-```sh
-$TRACKER_PATH/*/slices/[to-merge] $ISSUE_ID*.md
+tracker.sh issue view $ISSUE_ID --json body,title,labels
 ```
 
 Set the post-fetch variables (after reading the slice body):
@@ -41,8 +29,6 @@ SLICE_NAME = {from slice body}
 SLICE_NUMBER = $ISSUE_ID
 PR_NUMBER = {from slice body}
 PLAN_ID = {from slice/plan body}
-PLAN_TITLE = {from slice/plan body}
-BASE_BRANCH = {from slice/plan body}
 TARGET_BRANCH = {from slice/plan body}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-merge
 ```
@@ -52,11 +38,9 @@ WORKTREE_PATH = ../worktree-$SLICE_NAME-merge
 The PR targets the base branch. The human will merge it during `/reef-land` — do NOT merge it here.
 
 1. Tag the plan `to-land`. Remove `to-merge`.
-3. Report: "Single slice verified. PR stays open for human review. Run `/reef-land #{number}`."
+2. Report: "Single slice verified. PR stays open for human review. Run `/reef-land #{number}`."
 
-### Handoff
-
-Report: "PR stays open for human review. Run `/reef-land #{number}`."
+**Stop here — do not continue to multi-slice steps below.**
 
 ## Multi-slice
 
@@ -64,7 +48,7 @@ Report: "PR stays open for human review. Run `/reef-land #{number}`."
 
 Verify:
 
-- [ ] The PR is approved (has `to-merge` tag, inspector's approval)
+- [ ] The PR is approved (has `to-merge` tag, set by the inspector)
 - [ ] The slice branch is up to date with the target branch:
 
 ```sh
@@ -105,33 +89,11 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ### 5. Close the slice
 
-#### GitHub tracker
-
-Close the slice issue with `gh issue close <number>`. Add label `done`. Remove `to-merge`.
+Close the slice issue and update the plan label. Add label `done`. Remove `to-merge`.
 
 ```sh
-gh issue close $SLICE_NUMBER
-```
-
-#### Local tracker (gitignored)
-
-Rename from `[to-merge] ...` to `[done] ...`. If all slices are done, rename plan from `[in-progress]` to `[to-ratify]`.
-
-```sh
-mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-merge] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[done] $SLICE_NAME.md"
-mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-ratify] plan.md"
-```
-
-#### Local tracker (committed)
-
-Same file operations, then commit and push:
-
-```sh
-worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
-mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-merge] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[done] $SLICE_NAME.md"
-mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-ratify] plan.md"
-commit.sh --branch $TRACKER_BRANCH -m "merge: close $SLICE_NAME, update plan"
-worktree-exit.sh --path $WORKTREE_PATH-tracker
+tracker.sh issue close $SLICE_NUMBER
+tracker.sh issue edit $PLAN_ID --remove-label in-progress --add-label to-ratify
 ```
 
 ### 6. Check siblings

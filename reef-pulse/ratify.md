@@ -1,6 +1,6 @@
 # ratify
 
-> **Tracker note**: Read `.agents/moonjelly-reef/config.md` for the tracker type. Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI.
+> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -18,24 +18,12 @@ Set the pre-fetch variables:
 
 ```sh
 ISSUE_ID = {issue-id} # pre-existing and passed or generate
-TRACKER_PATH = {from config.md} # set only for local tracker
-TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
 ```
 
 ## 0. Fetch context
 
-### GitHub tracker
-
 ```sh
-gh issue view $ISSUE_ID --json body,title,labels
-```
-
-### Local tracker
-
-Read the file at:
-
-```sh
-$TRACKER_PATH/$ISSUE_ID*/[to-ratify] plan.md
+tracker.sh issue view $ISSUE_ID --json body,title,labels
 ```
 
 Set the post-fetch variables (after reading the plan body):
@@ -163,42 +151,17 @@ Don't document what's obvious from reading the code.
 
 **If all criteria met (PASS):**
 
-### GitHub tracker
-
 ```sh
-gh issue edit $PLAN_ID --remove-label to-ratify --add-label to-land
+tracker.sh issue edit $PLAN_ID --remove-label to-ratify --add-label to-land
 ```
-
-### Local tracker (gitignored)
-
-Rename plan from `[to-ratify] ...` to `[to-land] ...`.
 
 **If gaps found:**
 
-### GitHub tracker
-
 ```sh
-gh issue edit $PLAN_ID --remove-label to-ratify --add-label to-rescan
+tracker.sh issue edit $PLAN_ID --remove-label to-ratify --add-label to-rescan
 ```
 
 Add a comment on the plan listing the specific gaps.
-
-### Local tracker (gitignored)
-
-Rename plan from `[to-ratify] ...` to `[to-rescan] ...`.
-
-```sh
-mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-ratify] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-land] or [to-rescan] plan.md"
-```
-
-### Local tracker (committed)
-
-```sh
-worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
-mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-ratify] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-land] or [to-rescan] plan.md"
-commit.sh --branch $TRACKER_BRANCH -m "ratify: update tracker for $PLAN_ID $PLAN_TITLE"
-worktree-exit.sh --path $WORKTREE_PATH-tracker
-```
 
 ## Clean up
 
