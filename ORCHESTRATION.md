@@ -283,6 +283,10 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   TARGET_BRANCH = {from slice/plan body}
   WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves
   ```
+- dep-check
+  ```sh
+  tracker.sh issue view <dependency-id> --json labels
+  ```
 - enter-worktree
   ```sh
   worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH

@@ -31,12 +31,6 @@ TARGET_BRANCH = {from slice/plan body}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves
 ```
 
-## Enter worktree
-
-```sh
-worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
-```
-
 ## 1. Check dependencies
 
 For each dependency in the `blocked-by` list, check if the blocking slice is tagged `done`:
@@ -50,6 +44,12 @@ tracker.sh issue view <dependency-id> --json labels
 **If ALL dependencies are done**: continue to step 2.
 
 ## 2. Re-review the plan
+
+Enter a temporary worktree to inspect the target branch without disturbing the main checkout:
+
+```sh
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+```
 
 Earlier slices may have changed the codebase. Read this slice's acceptance criteria and compare against the current state of the code:
 
