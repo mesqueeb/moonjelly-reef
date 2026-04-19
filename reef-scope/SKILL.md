@@ -5,7 +5,7 @@ description: Scope an issue into a plan with success criteria. Routes between fe
 
 # reef-scope
 
-Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, run `/reef-pulse` and follow `reef-pulse/setup.md` first, then return here after.
+Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, run `/reef-pulse` and follow `reef-pulse/setup.md` first, then return here after.
 
 > **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI.
 

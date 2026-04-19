@@ -5,7 +5,7 @@ description: The Moonjelly Reef orchestrator. A single pulse that scans all issu
 
 # reef-pulse
 
-Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, read and follow [setup.md](setup.md) first and return here after.
+Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, read and follow [setup.md](setup.md) first and return here after.
 
 > **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI.
 
