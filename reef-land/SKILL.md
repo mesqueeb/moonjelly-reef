@@ -5,13 +5,20 @@ description: Present the final report to the human for review. Human approves (m
 
 # reef-land
 
-> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-pulse/tracker-reference.md).
+> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 ## Input
 
 This skill requires a specific issue: `/reef-land #42` or `/reef-land my-feature`.
 
 Read the plan. Find the open PR associated with this issue — either a single-slice PR targeting the base branch, or a target branch PR targeting the base branch (created during the ratify phase).
+
+Set the variables:
+
+```sh
+PLAN_ID = {issue-id} # pre-existing and passed
+PR_NUMBER = {from plan body or gh pr list}
+```
 
 ## Present the report
 
@@ -51,30 +58,22 @@ if [ "$CURRENT" = "{base-branch}" ]; then
 fi
 ```
 
-### GitHub tracker
+Close the plan:
 
-Close the plan with `gh issue close`. Add a final comment: "Merged to {base-branch}. All success criteria met."
+```sh
+tracker.sh issue close $PLAN_ID
+```
 
-### Local tracker
-
-Rename plan to `[done] plan.md`. Optionally move the folder to an `archive/` or `done/` directory if the user prefers.
+Add a final comment: "Merged to {base-branch}. All success criteria met."
 
 ### If re-scope
 
-### GitHub tracker
-
-Change the plan label to `to-scope`. Remove `to-land`.
-
-### Local tracker
-
-Rename plan to `[to-scope] plan.md`.
+```sh
+tracker.sh issue edit $PLAN_ID --remove-label to-land --add-label to-scope
+```
 
 ### If re-scan
 
-### GitHub tracker
-
-Change the plan label to `to-rescan`. Remove `to-land`.
-
-### Local tracker
-
-Rename plan to `[to-rescan] plan.md`.
+```sh
+tracker.sh issue edit $PLAN_ID --remove-label to-land --add-label to-rescan
+```

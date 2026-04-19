@@ -1,8 +1,8 @@
 # slice
 
-Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, read and follow [setup.md](setup.md) first and return here after.
+Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, read and follow [setup.md](setup.md) first and return here after.
 
-> **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
+> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -11,15 +11,33 @@ Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, read 
 This skill accepts:
 
 - a specific issue: e.g. `#42` or `my-feature`
-- nothing: look for items tagged `to-slice`. If multiple, ask the user to pick. If none, explain that items need to be scoped first and suggest `/reef-scope`.
+- nothing: look for items tagged `to-slice`. If multiple, pick the first one. If none, exit silently.
+
+Set the pre-fetch variables:
+
+```sh
+ISSUE_ID = {issue-id} # pre-existing and passed or generate
+```
+
+## 0. Fetch context
+
+```sh
+tracker.sh issue view $ISSUE_ID --json body,title,labels
+```
+
+Set the post-fetch variables (after reading the plan body):
+
+```sh
+PLAN_ID = $ISSUE_ID
+TARGET_BRANCH = {from plan body}
+WORKTREE_PATH = ../worktree-$PLAN_ID-slice
+```
 
 Read the issue. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The plan metadata block tells you the work type, base branch, and target branch name.
 
 ## 1. Draft vertical slices
 
 Break the plan into slices. Each slice is a thin vertical cut through ALL integration layers end-to-end — not a horizontal slice of one layer.
-
-Slicing rules:
 
 Rules:
 
@@ -48,27 +66,23 @@ If yes, take the fast path — skip the target branch, sub-issues, coverage matr
 
 If you drafted **2+ slices**, continue with the multi-slice flow below.
 
+## Enter worktree
+
+```sh
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+```
+
+If the target branch does not exist on origin yet, create it:
+
+```sh
+git push -u origin $TARGET_BRANCH
+```
+
+If the plan says to work on the current branch (no new target branch), skip the branch creation but still create a worktree to read the codebase.
+
 ## 2. Create the target branch (multi-slice)
 
 Read the base branch and target branch name from the plan metadata.
-
-```sh
-WORKTREE=$(reef-worktree-enter.sh \
-  --base-branch {base-branch} --target-branch {target-branch} \
-  --phase slice --slice {title} \
-  --slice-branch {target-branch} --branch-op create)
-cd "$WORKTREE"
-git push -u origin {target-branch}
-```
-
-If the plan says to work on the current branch (no new target branch), use this alternative instead — skip the branch creation but still create a worktree to read the codebase:
-
-```sh
-WORKTREE=$(reef-worktree-enter.sh \
-  --base-branch {base-branch} --target-branch {target-branch} \
-  --phase slice --slice {title})
-cd "$WORKTREE"
-```
 
 ## 3. Build the coverage matrix
 
@@ -98,25 +112,27 @@ If anything looks off, adjust the breakdown. Do not ask the user — reef-scope 
 
 ## 5. Create slices
 
-Read the config to determine tracker type.
+Create slices in dependency order (blockers first) so you can reference real IDs in `blocked-by`.
 
-### GitHub tracker
+```sh
+tracker.sh issue create --title "{slice-title}" --body "{slice-body}" --label to-implement
+```
 
-Create sub-issues with `gh issue create`. Create them in dependency order (blockers first) so you can reference real issue numbers in `blocked-by`.
+Use `to-implement` if no blockers, `to-await-waves` if blocked.
 
-Each sub-issue body:
+Each slice body:
 
 ```markdown
 ## Plan
 
-#{plan-issue-number}
+{plan-reference}
 
 ## Plan context
 
 - **Target branch**: {target-branch}
 - **Base branch**: {base-branch}
 - **Type**: {feature/refactor/bug}
-- **Plan**: #{plan-issue-number}
+- **Plan**: {plan-reference}
 
 ## What to build
 
@@ -130,40 +146,23 @@ Each sub-issue body:
 
 ## Blocked by
 
-- #{issue-number} {title} (or "None — can start immediately")
+- {dependency-reference} {title} (or "None — can start immediately")
 
 ## Success criteria covered
 
 - Success criterion {n}: {criterion text}
 ```
 
-Label each slice: `to-implement` if no blockers, `to-await-waves` if blocked.
-
-### Local tracker
-
-Create slice files in `{path}/{title}/slices/`:
-
-- Unblocked: `[to-implement] 001-auth-endpoint.md`
-- Blocked: `[to-await-waves] 002-token-storage.md`
-
-Each slice file follows the same body template as the GitHub issue above, but with local file references instead of issue numbers (e.g. `Blocked by: 001-auth-endpoint`).
-
 ## 6. Update the plan
 
-### GitHub tracker
-
-Append the coverage matrix to the plan body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-ratify` once all slices are done.
-
-Add a comment listing all created sub-issues with their tags.
-
-### Local tracker
-
-Append the coverage matrix to the plan file. Rename from `[to-slice] plan.md` to `[in-progress] plan.md`. It will be renamed to `[to-ratify] plan.md` once all slices are done.
-
-Commit and push the plan and slice files so other agents see them:
+Append the coverage matrix and a listing of all created sub-issues with their tags to the plan body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-ratify` once all slices are done.
 
 ```sh
-reef-worktree-commit.sh --target-branch {target-branch} -m "slice: create slices for {title}"
+PLAN_BODY = {plan body with coverage matrix appended}
+```
+
+```sh
+tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-slice --add-label in-progress
 ```
 
 ## 7. Document judgment calls
@@ -173,7 +172,7 @@ Document judgment calls made during this phase as a comment on the plan. Only do
 ## 8. Clean up
 
 ```sh
-reef-worktree-exit.sh --path "$WORKTREE"
+worktree-exit.sh --path $WORKTREE_PATH
 ```
 
 ## Handoff
