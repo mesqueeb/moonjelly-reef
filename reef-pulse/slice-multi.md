@@ -1,0 +1,135 @@
+# slice-multi
+
+Multi-slice flow — delegated from [slice.md](slice.md).
+
+> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
+
+> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
+
+## Input (from router)
+
+The router has already fetched context and drafted 2+ slices. You receive:
+
+```sh
+PLAN_ID = {from router}
+TARGET_BRANCH = {from plan body}
+WORKTREE_PATH = ../worktree-$PLAN_ID-slice
+```
+
+## 1. Enter worktree
+
+```sh
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+```
+
+If the target branch does not exist on origin yet, create it:
+
+```sh
+git push -u origin $TARGET_BRANCH
+```
+
+If the plan says to work on the current branch (no new target branch), skip the branch creation but still create a worktree to read the codebase.
+
+## 2. Build the coverage matrix
+
+For each success criterion in the plan, map it to which slice(s) and which acceptance criterion/criteria cover it.
+
+```markdown
+## Coverage Matrix
+
+| Success Criterion                    | Slice                                | Acceptance Criteria                                           |
+| ------------------------------------ | ------------------------------------ | ------------------------------------------------------------- |
+| SC1: Users can log in with email     | 001 Auth endpoint                    | AC1: POST /login returns token, AC2: invalid creds return 401 |
+| SC2: Session persists across refresh | 002 Token storage                    | AC1: token stored in httpOnly cookie                          |
+| SC3: Legacy UI renders identically   | 001 Auth endpoint, 003 Legacy compat | AC3: response format matches legacy schema                    |
+```
+
+**Verify completeness**: every success criterion must appear in at least one row. If any criterion is uncovered, either add it to an existing slice's acceptance criteria or create a new slice. Do not proceed with gaps. (Prevents painpoint A3.)
+
+## 3. Verify the breakdown
+
+Before creating slices, verify internally:
+
+- Is the granularity reasonable? (prefer many thin slices over few thick ones)
+- Are the dependency relationships correct? Are there implicit deps not captured?
+- Does every success criterion appear in the coverage matrix?
+
+If anything looks off, adjust the breakdown. Do not ask the user — reef-scope already iterated with the user on the plan. Your job is to slice it mechanically.
+
+## 4. Create slices
+
+Read the config to determine tracker type.
+
+### GitHub tracker
+
+Create sub-issues with `gh issue create`. Create them in dependency order (blockers first) so you can reference real issue numbers in `blocked-by`.
+
+Each sub-issue body:
+
+```markdown
+## Plan
+
+#{plan-issue-number}
+
+## Plan context
+
+- **Target branch**: {target-branch}
+- **Base branch**: {base-branch}
+- **Type**: {feature/refactor/bug}
+- **Plan**: #{plan-issue-number}
+
+## What to build
+
+{description of this vertical slice — end-to-end behavior, not layer-by-layer}
+
+## Acceptance criteria
+
+- [ ] {criterion 1}
+- [ ] {criterion 2}
+- [ ] {criterion 3}
+
+## Blocked by
+
+- #{issue-number} {title} (or "None — can start immediately")
+
+## Success criteria covered
+
+- Success criterion {n}: {criterion text}
+```
+
+Label each slice: `to-implement` if no blockers, `to-await-waves` if blocked.
+
+### Local tracker
+
+Create slice files in `{path}/{title}/slices/`:
+
+- Unblocked: `[to-implement] 001-auth-endpoint.md`
+- Blocked: `[to-await-waves] 002-token-storage.md`
+
+Each slice file follows the same body template as the GitHub issue above, but with local file references instead of issue numbers (e.g. `Blocked by: 001-auth-endpoint`).
+
+## 5. Update the plan
+
+Append the coverage matrix and a listing of all created sub-issues with their tags to the plan body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-ratify` once all slices are done.
+
+```sh
+PLAN_BODY = {plan body with coverage matrix appended}
+```
+
+```sh
+tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-slice --add-label in-progress
+```
+
+## 6. Document judgment calls
+
+Document judgment calls made during this phase as a comment on the plan. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
+
+## 7. Clean up
+
+```sh
+worktree-exit.sh --path $WORKTREE_PATH
+```
+
+## Handoff
+
+Report: "Slices created with acceptance criteria, dependency graph, and coverage matrix. Unblocked slices are tagged `to-implement` and ready for implementation. Run `/reef-pulse` to kick them all off."
