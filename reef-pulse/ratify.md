@@ -1,6 +1,6 @@
 # ratify
 
-> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
+> **Tracker note**: Read `.agents/moonjelly-reef/config.md` for the tracker type. Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -13,6 +13,40 @@ Read the plan. It must have:
 - Coverage matrix
 - Target branch name (in metadata)
 - Slice PRs with "Ambiguous choices" sections
+
+Set the pre-fetch variables:
+
+```sh
+ISSUE_ID = {issue-id} # pre-existing and passed or generate
+TRACKER_PATH = {from config.md} # set only for local tracker
+TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
+```
+
+## 0. Fetch context
+
+### GitHub tracker
+
+```sh
+gh issue view $ISSUE_ID --json body,title,labels
+```
+
+### Local tracker
+
+Read the file at:
+
+```sh
+$TRACKER_PATH/$ISSUE_ID*/[to-ratify] plan.md
+```
+
+Set the post-fetch variables (after reading the plan body):
+
+```sh
+PLAN_ID = $ISSUE_ID
+PLAN_TITLE = {from plan body}
+BASE_BRANCH = {from plan body}
+TARGET_BRANCH = {from plan body}
+WORKTREE_PATH = ../worktree-$PLAN_ID-ratify
+```
 
 ## Mindset
 
@@ -27,10 +61,7 @@ Think like a CTO doing a final walkthrough before shipping.
 Use a worktree so you don't disturb the main checkout or any other agent's work.
 
 ```sh
-WORKTREE=$(worktree-enter.sh \
-  --base-branch {base-branch} --target-branch {target-branch} \
-  --phase ratify --slice {title})
-cd "$WORKTREE"
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
 ```
 
 Verify you have the latest — all slice PRs should be merged into this branch.
@@ -72,7 +103,7 @@ Look for problems that only appear when slices are composed:
 The report goes on a **PR from the target branch to the base branch** (usually `main`). This PR is what the human will ultimately merge or reject.
 
 ```sh
-gh pr create --base {base-branch} --head {target-branch} --title "{work-item-title}" --body "{report}"
+gh pr create --base $BASE_BRANCH --head $TARGET_BRANCH --title "$PLAN_TITLE" --body "$REPORT"
 ```
 
 If a PR already exists for this target branch, update its description instead.
@@ -115,29 +146,6 @@ The report should be concise and focused on what the human needs to know. Do NOT
 
 Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
-### 8. Tag
-
-**If all criteria met (PASS):**
-
-### GitHub tracker
-
-Add label `to-land` to the plan. Remove `to-ratify`.
-
-### Local tracker
-
-Rename plan from `[to-ratify] ...` to `[to-land] ...`.
-
-**If gaps found:**
-
-### GitHub tracker
-
-Add label `to-rescan` to the plan. Remove `to-ratify`.
-Add a comment on the plan listing the specific gaps.
-
-### Local tracker
-
-Rename plan from `[to-ratify] ...` to `[to-rescan] ...`.
-
 ## Documentation
 
 When you find non-obvious behavior worth documenting during your holistic review:
@@ -145,16 +153,57 @@ When you find non-obvious behavior worth documenting during your holistic review
 1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and push directly to the target branch:
 
 ```sh
-commit.sh --target-branch {target-branch} -m "ratify: add documentation"
+commit.sh --branch $TARGET_BRANCH -m "ratify: add documentation"
 ```
 2. **Outside-of-code docs if warranted.** If the behavior is significant enough to document beyond a code comment, check the repo's `AGENTS.md`/`CLAUDE.md` for a documentation locations section. If it exists, follow it. If it doesn't, create a brief entry.
 
 Don't document what's obvious from reading the code.
 
+### 8. Tag
+
+**If all criteria met (PASS):**
+
+### GitHub tracker
+
+```sh
+gh issue edit $PLAN_ID --remove-label to-ratify --add-label to-land
+```
+
+### Local tracker (gitignored)
+
+Rename plan from `[to-ratify] ...` to `[to-land] ...`.
+
+**If gaps found:**
+
+### GitHub tracker
+
+```sh
+gh issue edit $PLAN_ID --remove-label to-ratify --add-label to-rescan
+```
+
+Add a comment on the plan listing the specific gaps.
+
+### Local tracker (gitignored)
+
+Rename plan from `[to-ratify] ...` to `[to-rescan] ...`.
+
+```sh
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-ratify] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-land] or [to-rescan] plan.md"
+```
+
+### Local tracker (committed)
+
+```sh
+worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-ratify] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-land] or [to-rescan] plan.md"
+commit.sh --branch $TRACKER_BRANCH -m "ratify: update tracker for $PLAN_ID $PLAN_TITLE"
+worktree-exit.sh --path $WORKTREE_PATH-tracker
+```
+
 ## Clean up
 
 ```sh
-worktree-exit.sh --path "$WORKTREE"
+worktree-exit.sh --path $WORKTREE_PATH
 ```
 
 ## Handoff

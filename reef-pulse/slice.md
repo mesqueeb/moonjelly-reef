@@ -1,8 +1,8 @@
 # slice
 
-Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, read and follow [setup.md](setup.md) first and return here after.
+Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, read and follow [setup.md](setup.md) first and return here after.
 
-> **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
+> **Tracker note**: Read `.agents/moonjelly-reef/config.md` for the tracker type. Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -11,7 +11,41 @@ Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, read 
 This skill accepts:
 
 - a specific issue: e.g. `#42` or `my-feature`
-- nothing: look for items tagged `to-slice`. If multiple, ask the user to pick. If none, explain that items need to be scoped first and suggest `/reef-scope`.
+- nothing: look for items tagged `to-slice`. If multiple, pick the first one. If none, exit silently.
+
+Set the pre-fetch variables:
+
+```sh
+ISSUE_ID = {issue-id} # pre-existing and passed or generate
+TRACKER_PATH = {from config.md} # set only for local tracker
+TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
+```
+
+## 0. Fetch context
+
+### GitHub tracker
+
+```sh
+gh issue view $ISSUE_ID --json body,title,labels
+```
+
+### Local tracker
+
+Read the file at:
+
+```sh
+$TRACKER_PATH/$ISSUE_ID*/[to-slice] plan.md
+```
+
+Set the post-fetch variables (after reading the plan body):
+
+```sh
+PLAN_ID = $ISSUE_ID
+PLAN_TITLE = {from plan body}
+BASE_BRANCH = {from plan body}
+TARGET_BRANCH = {from plan body}
+WORKTREE_PATH = ../worktree-$PLAN_ID-slice
+```
 
 Read the issue. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The plan metadata block tells you the work type, base branch, and target branch name.
 
@@ -48,26 +82,29 @@ If yes, take the fast path — skip the target branch, sub-issues, coverage matr
 
 If you drafted **2+ slices**, continue with the multi-slice flow below.
 
+## Enter worktree
+
+```sh
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+```
+
+If the target branch does not exist on origin yet, create it:
+
+```sh
+git push -u origin $TARGET_BRANCH
+```
+
+If the plan says to work on the current branch (no new target branch), skip the branch creation but still create a worktree to read the codebase.
+
 ## 2. Create the target branch (multi-slice)
 
 Read the base branch and target branch name from the plan metadata.
 
-```sh
-WORKTREE=$(worktree-enter.sh \
-  --base-branch {base-branch} --target-branch {target-branch} \
-  --phase slice --slice {title} \
-  --slice-branch {target-branch} --branch-op create)
-cd "$WORKTREE"
-git push -u origin {target-branch}
-```
-
-If the plan says to work on the current branch (no new target branch), use this alternative instead — skip the branch creation but still create a worktree to read the codebase:
+Set per-slice variables as you create each slice:
 
 ```sh
-WORKTREE=$(worktree-enter.sh \
-  --base-branch {base-branch} --target-branch {target-branch} \
-  --phase slice --slice {title})
-cd "$WORKTREE"
+SLICE_NAME = {per slice, e.g. 001-auth-endpoint}
+SLICE_NUMBER = {sub-issue number (github) or file name (local)}
 ```
 
 ## 3. Build the coverage matrix
@@ -156,14 +193,27 @@ Append the coverage matrix to the plan body. Change label from `to-slice` to `in
 
 Add a comment listing all created sub-issues with their tags.
 
-### Local tracker
+```sh
+gh issue edit $PLAN_ID --remove-label to-slice --add-label in-progress
+```
 
-Append the coverage matrix to the plan file. Rename from `[to-slice] plan.md` to `[in-progress] plan.md`. It will be renamed to `[to-ratify] plan.md` once all slices are done.
+### Local tracker (gitignored)
 
-Commit and push the plan and slice files so other agents see them:
+Append the coverage matrix to the plan file. Rename from `[to-slice] plan.md` to `[in-progress] plan.md`.
 
 ```sh
-commit.sh --target-branch {target-branch} -m "slice: create slices for {title}"
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-slice] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md"
+```
+
+### Local tracker (committed)
+
+Same file operations, then commit and push so other agents see them:
+
+```sh
+worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-slice] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md"
+commit.sh --branch $TRACKER_BRANCH -m "slice: create slices for $PLAN_ID $PLAN_TITLE"
+worktree-exit.sh --path $WORKTREE_PATH-tracker
 ```
 
 ## 7. Document judgment calls
@@ -173,7 +223,7 @@ Document judgment calls made during this phase as a comment on the plan. Only do
 ## 8. Clean up
 
 ```sh
-worktree-exit.sh --path "$WORKTREE"
+worktree-exit.sh --path $WORKTREE_PATH
 ```
 
 ## Handoff

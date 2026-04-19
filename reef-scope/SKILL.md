@@ -5,9 +5,9 @@ description: Scope an issue into a plan with success criteria. Routes between fe
 
 # reef-scope
 
-Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, run `/reef-pulse` and follow `reef-pulse/setup.md` first, then return here after.
+Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, run `/reef-pulse` and follow `reef-pulse/setup.md` first, then return here after.
 
-> **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-pulse/tracker-reference.md).
+> **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI.
 
 ## Input
 
@@ -20,7 +20,8 @@ Set the initial variables:
 
 ```sh
 ISSUE_ID = {issue-id} # pre-existing and passed or generate
-LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md
+TRACKER_PATH = {from config.md} # set only for local tracker
+TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
 ```
 
 ## 0. Fetch context
@@ -36,7 +37,7 @@ gh issue view $ISSUE_ID --json body,title,labels
 Read the file at:
 
 ```sh
-$LOCAL_PATH/$ISSUE_ID (\w+)/[to-scope] plan.md
+$TRACKER_PATH/$ISSUE_ID*/[to-scope] plan.md
 ```
 
 ## 1. Git prep
@@ -101,14 +102,21 @@ WORKTREE_PATH = ../worktree-$PLAN_ID-scope
 gh issue edit $PLAN_ID --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
 ```
 
-### Local tracker
+### Local tracker (gitignored)
 
 ```sh
-worktree-enter.sh --fork-from $BASE_BRANCH --path $WORKTREE_PATH
-mv "$LOCAL_PATH/$PLAN_ID [to-scope] plan.md" "$LOCAL_PATH/$PLAN_ID [to-slice] $PLAN_TITLE.md"
-printf '%s' "$PLAN_CONTENT" > "$LOCAL_PATH/$PLAN_ID [to-slice] $PLAN_TITLE.md"
-commit.sh --branch $BASE_BRANCH -m "scope: persist plan for $PLAN_ID $PLAN_TITLE"
-worktree-exit.sh --path $WORKTREE_PATH
+mkdir -p "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE"
+printf '%s' "$PLAN_CONTENT" > "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-slice] plan.md"
+```
+
+### Local tracker (committed)
+
+```sh
+worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
+mkdir -p "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE"
+printf '%s' "$PLAN_CONTENT" > "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-slice] plan.md"
+commit.sh --branch $TRACKER_BRANCH -m "scope: persist plan for $PLAN_ID $PLAN_TITLE"
+worktree-exit.sh --path $WORKTREE_PATH-tracker
 ```
 
 ## Handoff

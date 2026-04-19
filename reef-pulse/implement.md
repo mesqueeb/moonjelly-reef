@@ -1,8 +1,8 @@
 # implement
 
-Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, read and follow [setup.md](setup.md) first and return here after.
+Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, read and follow [setup.md](setup.md) first and return here after.
 
-> **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
+> **Tracker note**: Read `.agents/moonjelly-reef/config.md` for the tracker type. Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -10,7 +10,7 @@ Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, read 
 
 This skill requires a specific slice: e.g. `#55` or `my-feature/001-auth-endpoint`.
 
-If no slice is given, look for slices tagged `to-implement`. If multiple, pick the first unblocked one (or ask).
+If no slice is given, look for slices tagged `to-implement`. If multiple, pick the first unblocked one. If none, exit silently.
 
 Read the slice (issue or file). It must contain:
 
@@ -20,13 +20,49 @@ Read the slice (issue or file). It must contain:
 
 If the target branch is missing from the slice, check the plan metadata. The target branch is always set — for single-slice it equals the base branch, for multi-slice it's a dedicated branch.
 
+Set the pre-fetch variables:
+
+```sh
+ISSUE_ID = {issue-id} # pre-existing and passed or generate
+TRACKER_PATH = {from config.md} # set only for local tracker
+TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
+```
+
+## 0. Fetch context
+
+### GitHub tracker
+
+```sh
+gh issue view $ISSUE_ID --json body,title,labels
+```
+
+### Local tracker
+
+Read the file at:
+
+```sh
+$TRACKER_PATH/*/slices/[to-implement] $ISSUE_ID*.md
+```
+
+Set the post-fetch variables (after reading the slice body):
+
+```sh
+SLICE_NAME = {from slice body}
+SLICE_NUMBER = $ISSUE_ID
+PLAN_ID = {from slice/plan body}
+PLAN_TITLE = {from slice/plan body}
+BASE_BRANCH = {from slice/plan body}
+TARGET_BRANCH = {from slice/plan body}
+SLICE_BRANCH = {PR branch, e.g. feat/001-auth-endpoint}
+WORKTREE_PATH = ../worktree-$SLICE_NAME-implement
+```
+
 ## 1. Git prep
 
 This is non-negotiable. Every step must pass before writing any code.
 
 ```sh
-WORKTREE=$(worktree-enter.sh --base-branch {base-branch} --target-branch {target-branch} --phase implement --slice {slice-name} --slice-branch {slice-branch} --branch-op create)
-cd "$WORKTREE"
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
 ```
 
 Verify:
@@ -92,33 +128,56 @@ Decisions made during implementation that weren't covered by the acceptance crit
 ## 5. Open the PR
 
 ```sh
-commit.sh --slice-branch {slice-branch} -m "{slice-name}: implementation"
-gh pr create --base {target-branch} --title "{slice-name}" --body "{report}"
+commit.sh --branch $SLICE_BRANCH -m "$SLICE_NAME: implementation"
+gh pr create --base $TARGET_BRANCH --title "$SLICE_NAME" --body "$REPORT"
 ```
 
 The PR targets the **target branch** (which equals `{base-branch}` for single-slice work).
+
+```sh
+PR_NUMBER = {from gh pr create output}
+```
 
 ## 6. Document judgment calls
 
 Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
-## 7. Clean up
-
-```sh
-worktree-exit.sh --path "$WORKTREE" --slice-branch {slice-branch}
-```
-
-## 8. Tag the slice
+## 7. Tag the slice
 
 ### GitHub tracker
 
-Add label `to-inspect` to the slice issue. Remove `to-implement`.
+```sh
+gh issue edit $SLICE_NUMBER --remove-label to-implement --add-label to-inspect
+```
+
 Add a comment on the slice issue linking to the PR.
 
-### Local tracker
+### Local tracker (gitignored)
 
 Rename the slice file from `[to-implement] ...` to `[to-inspect] ...`.
 Add the PR number/URL to the slice file body.
+
+```sh
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-implement] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md"
+```
+
+### Local tracker (committed)
+
+Rename the slice file from `[to-implement] ...` to `[to-inspect] ...`.
+Add the PR number/URL to the slice file body.
+
+```sh
+worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-implement] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md"
+commit.sh --branch $TRACKER_BRANCH -m "implement: update tracker for $SLICE_NAME"
+worktree-exit.sh --path $WORKTREE_PATH-tracker
+```
+
+## 8. Clean up
+
+```sh
+worktree-exit.sh --path $WORKTREE_PATH
+```
 
 ## Handoff
 

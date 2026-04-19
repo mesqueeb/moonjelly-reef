@@ -1,6 +1,6 @@
 # inspect
 
-> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
+> **Tracker note**: Read `.agents/moonjelly-reef/config.md` for the tracker type. Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -12,6 +12,43 @@ Read the slice to find the PR reference. If the slice doesn't have a PR linked, 
 
 ```sh
 gh pr list --search "slice-name"
+```
+
+Set the pre-fetch variables:
+
+```sh
+ISSUE_ID = {issue-id} # pre-existing and passed or generate
+TRACKER_PATH = {from config.md} # set only for local tracker
+TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
+```
+
+## 0. Fetch context
+
+### GitHub tracker
+
+```sh
+gh issue view $ISSUE_ID --json body,title,labels
+```
+
+### Local tracker
+
+Read the file at:
+
+```sh
+$TRACKER_PATH/*/slices/[to-inspect] $ISSUE_ID*.md
+```
+
+Set the post-fetch variables (after reading the slice body):
+
+```sh
+SLICE_NAME = {from slice body}
+SLICE_NUMBER = $ISSUE_ID
+SLICE_BRANCH = {from slice body}
+PLAN_ID = {from slice/plan body}
+PLAN_TITLE = {from slice/plan body}
+BASE_BRANCH = {from slice/plan body}
+TARGET_BRANCH = {from slice/plan body}
+WORKTREE_PATH = ../worktree-$SLICE_NAME-inspect
 ```
 
 ## Mindset
@@ -34,12 +71,7 @@ A few things you naturally do:
 Use a worktree so you don't disturb the main checkout or any other agent's work.
 
 ```sh
-SLICE_BRANCH=$(gh pr view {pr-number} --json headRefName -q .headRefName)
-WORKTREE=$(worktree-enter.sh \
-  --base-branch {base-branch} --target-branch {target-branch} \
-  --phase inspect --slice {slice-name} \
-  --slice-branch "$SLICE_BRANCH" --branch-op checkout)
-cd "$WORKTREE"
+worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
 ```
 
 Run the full project test suite. Record the result.
@@ -72,7 +104,7 @@ Do these yourself — commit and push to the PR branch:
 
 ```sh
 # Only if you made cleanup commits
-commit.sh --slice-branch "$SLICE_BRANCH" -m "inspect: cleanup"
+commit.sh --branch $SLICE_BRANCH -m "inspect: cleanup"
 ```
 
 ### 5. Document judgment calls
@@ -85,9 +117,11 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ### GitHub tracker
 
-Add label `to-merge` to the slice issue. Remove `to-inspect`.
+```sh
+gh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-merge
+```
 
-### Local tracker
+### Local tracker (gitignored)
 
 Rename from `[to-inspect] ...` to `[to-merge] ...`.
 
@@ -95,18 +129,34 @@ Rename from `[to-inspect] ...` to `[to-merge] ...`.
 
 ### GitHub tracker
 
-Add label `to-rework` to the slice issue. Remove `to-inspect`.
+```sh
+gh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-rework
+```
+
 Leave specific review comments on the PR for each gap. Be precise — tell the implementer exactly what's wrong and what "fixed" looks like.
 
-### Local tracker
+### Local tracker (gitignored)
 
 Rename from `[to-inspect] ...` to `[to-rework] ...`.
 Add the feedback to the slice file body.
 
+```sh
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-merge] or [to-rework] $SLICE_NAME.md"
+```
+
+### Local tracker (committed)
+
+```sh
+worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-merge] or [to-rework] $SLICE_NAME.md"
+commit.sh --branch $TRACKER_BRANCH -m "inspect: update tracker for $SLICE_NAME"
+worktree-exit.sh --path $WORKTREE_PATH-tracker
+```
+
 ## Clean up
 
 ```sh
-worktree-exit.sh --path "$WORKTREE"
+worktree-exit.sh --path $WORKTREE_PATH
 ```
 
 ## Handoff

@@ -1,6 +1,6 @@
 # rescan
 
-> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
+> **Tracker note**: Read `.agents/moonjelly-reef/config.md` for the tracker type. Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -9,6 +9,40 @@
 This skill requires a specific issue: e.g. `#42` or `my-feature`.
 
 Read the plan fully — the plan, success criteria, coverage matrix, agent decisions, and the ratify report that identified the gaps.
+
+Set the pre-fetch variables:
+
+```sh
+ISSUE_ID = {issue-id} # pre-existing and passed or generate
+TRACKER_PATH = {from config.md} # set only for local tracker
+TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
+```
+
+## 0. Fetch context
+
+### GitHub tracker
+
+```sh
+gh issue view $ISSUE_ID --json body,title,labels
+```
+
+### Local tracker
+
+Read the file at:
+
+```sh
+$TRACKER_PATH/$ISSUE_ID*/[to-rescan] plan.md
+```
+
+Set the post-fetch variables (after reading the plan body):
+
+```sh
+PLAN_ID = $ISSUE_ID
+PLAN_TITLE = {from plan body}
+BASE_BRANCH = {from plan body}
+TARGET_BRANCH = {from plan body}
+WORKTREE_PATH = ../worktree-$PLAN_ID-rescan
+```
 
 ## Mindset
 
@@ -26,10 +60,7 @@ Do NOT ask a human. If the gaps need decisions that aren't in the success criter
 ### 0. Git prep
 
 ```sh
-WORKTREE=$(worktree-enter.sh \
-  --base-branch {base-branch} --target-branch {target-branch} \
-  --phase rescan --slice {title})
-cd "$WORKTREE"
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
 ```
 
 ### 1. Analyze the gaps
@@ -103,18 +134,40 @@ If a gap relates to a slice that was marked `done` but is now revealed as incomp
 
 Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
-### 7. Push and clean up
+### 7. Push and tag
 
-For local tracker, commit and push the updated plan files and new slice files:
-
-```sh
-commit.sh --target-branch {target-branch} -m "rescan: new slices for {title}"
-worktree-exit.sh --path "$WORKTREE"
-```
-
-### 8. Tag
+### GitHub tracker
 
 Change plan from `to-rescan` to `in-progress`. The merge phase will change it to `to-ratify` when all slices (including new ones) are `done`.
+
+```sh
+gh issue edit $PLAN_ID --remove-label to-rescan --add-label in-progress
+```
+
+### Local tracker (gitignored)
+
+Rename from `[to-rescan]` to `[in-progress]`. The new slice files were already written during phase-specific.
+
+```sh
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-rescan] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md"
+```
+
+### Local tracker (committed)
+
+Same file operations, then commit and push:
+
+```sh
+worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-rescan] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md"
+commit.sh --branch $TRACKER_BRANCH -m "rescan: update tracker for $PLAN_ID $PLAN_TITLE"
+worktree-exit.sh --path $WORKTREE_PATH-tracker
+```
+
+## Clean up
+
+```sh
+worktree-exit.sh --path $WORKTREE_PATH
+```
 
 ## Handoff
 
