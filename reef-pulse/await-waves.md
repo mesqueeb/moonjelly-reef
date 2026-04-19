@@ -31,29 +31,30 @@ TARGET_BRANCH = {from slice/plan body}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves
 ```
 
-## Enter worktree
-
-```sh
-worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
-```
-
 ## 1. Check dependencies
 
 For each dependency in the `blocked-by` list:
 
-### GitHub tracker
+```sh
+tracker.sh issue view $DEP_ID --json labels
+```
 
-Check if the blocking slice issue is tagged `done` (has the `done` label). Use `gh issue view <number>`.
+Check if the blocking slice is tagged `done`:
 
-### Local tracker
-
-Check if the blocking slice file has the `[done]` prefix.
+- **GitHub tracker**: the `done` label is present.
+- **Local tracker**: the file has the `[done]` prefix.
 
 **If any dependency is NOT done**: exit silently. Do nothing. This slice stays `to-await-waves`. It will be checked again on the next pulse.
 
 **If ALL dependencies are done**: continue to step 2.
 
 ## 2. Re-review the plan
+
+Enter a temporary worktree to inspect the target branch without disturbing the main checkout:
+
+```sh
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+```
 
 Earlier slices may have changed the codebase. Read this slice's acceptance criteria and compare against the current state of the code:
 
@@ -66,7 +67,7 @@ Earlier slices may have changed the codebase. Read this slice's acceptance crite
 **If adjustments needed**: update the slice's acceptance criteria and description to reflect the current reality. Be specific about what changed and why.
 
 ```sh
-SLICE_BODY = {slice body with updated acceptance criteria}
+SLICE_BODY = {slice body, with updated acceptance criteria if changed}
 ```
 
 ```sh
