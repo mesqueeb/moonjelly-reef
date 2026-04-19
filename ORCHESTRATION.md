@@ -50,7 +50,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - set-variables
   ```sh
   PLAN_ID = $ISSUE_ID
-  PLAN_CONTENT = {plan-content} # assembled during phase-specific
+  PLAN_CONTENT = {plan-content} # from context
   ```
 - update-tracker
   ```sh
@@ -170,7 +170,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - set-variables
   ```sh
-  REPORT = {implementation report assembled during phase-specific}
+  REPORT = {report-content} # from context
   ```
 - pr-create
   ```sh
@@ -219,7 +219,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - set-variables
   ```sh
   PR_NUMBER = {from slice body} # if not found, try gh pr list --search
-  REPORT = {inspection report assembled during phase-specific}
+  REPORT = {report-content} # from context
   ```
 - update-pr-body
   ```sh
@@ -262,7 +262,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - set-variables
   ```sh
-  REPORT = {updated implementation report with rework notes}
+  REPORT = {report-content} # from context
   ```
 - update-pr-body
   ```sh
@@ -414,7 +414,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - set-variables
   ```sh
-  REPORT = {ratify report assembled during phase-specific}
+  REPORT = {report-content} # from context
   ```
 - pr-create — if pass
   ```sh
