@@ -1,8 +1,7 @@
-# Moonjelly Reef Config
-
-| Setting | Value |
-| --- | --- |
-| Tracker | github |
-| Local path | — |
-| tdd installed | yes |
-| ubiquitous-language installed | yes |
+---
+tracker: github
+tracker-path: —
+tracker-branch: —
+tdd-installed: true
+ubiquitous-language-installed: true
+---
