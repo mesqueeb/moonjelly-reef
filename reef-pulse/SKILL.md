@@ -56,31 +56,20 @@ Run these queries in parallel where possible for performance.
 
 ### Step 2. Dispatch automated (🌊) work
 
-**Do NOT ask the user for confirmation. Dispatch immediately.** The tags are the authorization — if an item is tagged for automated work, dispatch it without hesitation.
+**Do NOT ask the user for confirmation. Dispatch immediately.** The tags are the authorization — if an item is tagged for automated work, dispatch it without hesitation. Dispatch all items in parallel via sub-agents. When agent teams are supported in the environment, they can be used to parallelise items linked to the same plan.
 
-For each item found, dispatch the corresponding phase as a sub-agent. Use the Agent tool. Items that share no dependencies can be dispatched **in parallel**.
+For each item, spawn a sub-agent with: `"Read and follow reef-pulse/{file}. Target: #{number}."`
 
-Dispatch by telling sub-agents to read and follow a specific file:
-
-> "Read and follow the instructions in `reef-pulse/implement.md`. Your target is #55."
-
-| Tag              | File                             | Notes                                                                                                                      |
-| ---------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `to-slice`       | [slice.md](slice.md)             | One at a time per plan (creates target branch + sub-issues)                                                                |
-| `to-await-waves` | [await-waves.md](await-waves.md) | Parallel OK — each is independent                                                                                          |
-| `to-implement`   | [implement.md](implement.md)     | Parallel OK for unrelated slices. Slices within the same plan may be dispatched as an **agent team** if multiple are ready |
-| `to-inspect`     | [inspect.md](inspect.md)         | Parallel OK                                                                                                                |
-| `to-rework`      | [rework.md](rework.md)           | Parallel OK                                                                                                                |
-| `to-merge`       | [merge.md](merge.md)             | One at a time per plan (modifies target branch)                                                                            |
-| `to-ratify`      | [ratify.md](ratify.md)           | One at a time per plan                                                                                                     |
-| `to-rescan`      | [rescan.md](rescan.md)           | One at a time per plan                                                                                                     |
-
-When dispatching, pass the item reference as a parameter: e.g. "Read and follow `reef-pulse/implement.md`. Target: #55."
-
-**When to use agent teams vs sub-agents for `to-implement`:**
-
-- **1-2 slices ready**: use regular sub-agents (Agent tool). Dispatch `reef-pulse/implement.md` for each with the slice reference.
-- **3+ slices ready from the same plan**: use an agent team. Each teammate claims a slice and follows `reef-pulse/implement.md` with its slice reference. The instructions handle worktree setup, PR creation, and reporting — just pass the slice reference.
+| Tag              | File                             |
+| ---------------- | -------------------------------- |
+| `to-slice`       | [slice.md](slice.md)             |
+| `to-await-waves` | [await-waves.md](await-waves.md) |
+| `to-implement`   | [implement.md](implement.md)     |
+| `to-inspect`     | [inspect.md](inspect.md)         |
+| `to-rework`      | [rework.md](rework.md)           |
+| `to-merge`       | [merge.md](merge.md)             |
+| `to-ratify`      | [ratify.md](ratify.md)           |
+| `to-rescan`      | [rescan.md](rescan.md)           |
 
 ### Step 3. Log phase metrics to plan issues
 
