@@ -29,8 +29,6 @@ SLICE_NAME = {from slice body}
 SLICE_NUMBER = $ISSUE_ID
 PR_NUMBER = {from slice body}
 PLAN_ID = {from slice/plan body}
-PLAN_TITLE = {from slice/plan body}
-BASE_BRANCH = {from slice/plan body}
 TARGET_BRANCH = {from slice/plan body}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-merge
 ```
@@ -40,11 +38,9 @@ WORKTREE_PATH = ../worktree-$SLICE_NAME-merge
 The PR targets the base branch. The human will merge it during `/reef-land` — do NOT merge it here.
 
 1. Tag the plan `to-land`. Remove `to-merge`.
-3. Report: "Single slice verified. PR stays open for human review. Run `/reef-land #{number}`."
+2. Report: "Single slice verified. PR stays open for human review. Run `/reef-land #{number}`."
 
-### Handoff
-
-Report: "PR stays open for human review. Run `/reef-land #{number}`."
+**Stop here — do not continue to multi-slice steps below.**
 
 ## Multi-slice
 
@@ -52,7 +48,7 @@ Report: "PR stays open for human review. Run `/reef-land #{number}`."
 
 Verify:
 
-- [ ] The PR is approved (has `to-merge` tag, inspector's approval)
+- [ ] The PR is approved (has `to-merge` tag, set by the inspector)
 - [ ] The slice branch is up to date with the target branch:
 
 ```sh

@@ -27,9 +27,6 @@ Set the post-fetch variables (after reading the slice body):
 ```sh
 SLICE_NAME = {from slice body}
 SLICE_NUMBER = $ISSUE_ID
-PLAN_ID = {from slice/plan body}
-PLAN_TITLE = {from slice/plan body}
-BASE_BRANCH = {from slice/plan body}
 TARGET_BRANCH = {from slice/plan body}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves
 ```
@@ -68,13 +65,13 @@ Earlier slices may have changed the codebase. Read this slice's acceptance crite
 
 **If adjustments needed**: update the slice's acceptance criteria and description to reflect the current reality. Be specific about what changed and why.
 
-### GitHub tracker
+```sh
+SLICE_BODY = {slice body with updated acceptance criteria}
+```
 
-If acceptance criteria were updated, edit the slice issue body with `gh issue edit`. Add a comment explaining what changed and why.
-
-### Local tracker
-
-If acceptance criteria were updated, rewrite the slice file with the updated content.
+```sh
+tracker.sh issue edit $SLICE_NUMBER --body "$SLICE_BODY"
+```
 
 ## 3. Promote
 

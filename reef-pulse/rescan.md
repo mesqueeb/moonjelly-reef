@@ -26,8 +26,6 @@ Set the post-fetch variables (after reading the plan body):
 
 ```sh
 PLAN_ID = $ISSUE_ID
-PLAN_TITLE = {from plan body}
-BASE_BRANCH = {from plan body}
 TARGET_BRANCH = {from plan body}
 WORKTREE_PATH = ../worktree-$PLAN_ID-rescan
 ```
@@ -122,12 +120,16 @@ If a gap relates to a slice that was marked `done` but is now revealed as incomp
 
 Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
-### 7. Push and tag
+### 7. Update plan and tag
 
-Change plan from `to-rescan` to `in-progress`. The merge phase will change it to `to-ratify` when all slices (including new ones) are `done`.
+Update the plan body with the revised criteria and coverage matrix. Change label from `to-rescan` to `in-progress`. The merge phase will change it to `to-ratify` when all slices (including new ones) are `done`.
 
 ```sh
-tracker.sh issue edit $PLAN_ID --remove-label to-rescan --add-label in-progress
+PLAN_BODY = {plan body with updated criteria and coverage matrix}
+```
+
+```sh
+tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-rescan --add-label in-progress
 ```
 
 ## Clean up

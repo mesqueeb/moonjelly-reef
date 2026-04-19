@@ -1,7 +1,7 @@
 #!/bin/sh
-# test-phase-instructions.sh — verify phase .md files match phase-instructions.json
+# test-orchestration.sh — verify phase .md files match ORCHESTRATION.md
 #
-# Reads phase-instructions.json as the source of truth.
+# Reads ORCHESTRATION.md as the source of truth.
 # For each phase/skill, checks that every command string exists in the .md file,
 # that commands appear in the declared order, and that ensure-body-contains strings are present.
 #
@@ -11,7 +11,7 @@ set -u
 
 TESTS_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$TESTS_DIR/.." && pwd)"
-JSON="$TESTS_DIR/phase-instructions.json"
+ORCHESTRATION="$REPO_ROOT/ORCHESTRATION.md"
 TMPFILE="$(mktemp)"
 
 PASS=0
@@ -74,49 +74,90 @@ last_line_of() {
 }
 
 # ============================================================
-# Flatten JSON into testable lines
+# Parse ORCHESTRATION.md into testable lines
 # Format: source_file|op_name|check_type|value
 # ============================================================
 
 python3 -c "
-import json
+import re, sys
 
-with open('$JSON') as f:
-    data = json.load(f)
+with open('$ORCHESTRATION') as f:
+    lines = f.readlines()
 
-def resolve_md(name, section):
-    if section == 'skills':
-        return name + '/SKILL.md'
-    else:
-        return 'reef-pulse/' + name
+source_file = None
+op_name = None
+in_code = False
+section_type = None
 
-def emit(md_file, op_name, key, val):
-    print(f'{md_file}|{op_name}|{key}|{val}')
+def check_type_for(op):
+    if op == 'set-variables':
+        return 'sh'
+    if op in ('fetch-context', 'update-tracker'):
+        return 'tracker'
+    return 'cmd'
 
-for section in ['skills', 'phases']:
-    if section not in data:
+for raw in lines:
+    line = raw.rstrip('\\n')
+
+    # Track section
+    if line.startswith('## Skills'):
+        section_type = 'skills'
         continue
-    for name, ops in data[section].items():
-        if not isinstance(ops, list):
-            continue
-        md_file = resolve_md(name, section)
-        for op in ops:
-            op_name = op.get('op', '?')
-            # sh arrays in set-variables: each line is a literal check
-            sh = op.get('sh')
-            if isinstance(sh, list):
-                for line in sh:
-                    emit(md_file, op_name, 'sh', line)
-            # Command keys (string or array)
-            for key in ['cmd', 'tracker', 'tracker-pass', 'tracker-fail']:
-                val = op.get(key)
-                if val is None or val is False or isinstance(val, bool):
-                    continue
-                if isinstance(val, list):
-                    for line in val:
-                        emit(md_file, op_name, key, line)
-                elif isinstance(val, str):
-                    emit(md_file, op_name, key, val)
+    if line.startswith('## Phases'):
+        section_type = 'phases'
+        continue
+
+    # Phase/skill heading — extract path from markdown link
+    m = re.match(r'^### (.+)', line)
+    if m:
+        heading = m.group(1).strip()
+        link = re.match(r'\[[^\]]+\]\(\.\/([^)]+)\)', heading)
+        if link:
+            source_file = link.group(1)
+        elif section_type == 'skills':
+            source_file = heading.lstrip('/') + '/SKILL.md'
+        else:
+            source_file = 'reef-pulse/' + heading
+        op_name = None
+        continue
+
+    if source_file is None:
+        continue
+
+    # Operation bullet (top-level: '- op-name')
+    m = re.match(r'^- (\S+)', line)
+    if m:
+        op_name = m.group(1)
+        continue
+
+    if op_name is None:
+        continue
+
+    # Code block start
+    if re.match(r'^\s+\`\`\`sh', line):
+        in_code = True
+        continue
+
+    # Code block end
+    if in_code and re.match(r'^\s+\`\`\`', line):
+        in_code = False
+        continue
+
+    # Code block content
+    if in_code:
+        code = line.strip()
+        if code:
+            ct = check_type_for(op_name)
+            print(f'{source_file}|{op_name}|{ct}|{code}')
+        continue
+
+    # Sub-items: '  - pass: \`...\`' or '  - fail: \`...\`'
+    m = re.match(r'^\s+- (pass|fail):\s*\`([^\`]+)\`', line)
+    if m:
+        sub = m.group(1)
+        cmd = m.group(2)
+        print(f'{source_file}|{op_name}|tracker-{sub}|{cmd}')
+        continue
 " > "$TMPFILE"
 
 # ============================================================

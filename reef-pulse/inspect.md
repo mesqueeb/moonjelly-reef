@@ -32,10 +32,6 @@ Set the post-fetch variables (after reading the slice body):
 SLICE_NAME = {from slice body}
 SLICE_NUMBER = $ISSUE_ID
 SLICE_BRANCH = {from slice body}
-PLAN_ID = {from slice/plan body}
-PLAN_TITLE = {from slice/plan body}
-BASE_BRANCH = {from slice/plan body}
-TARGET_BRANCH = {from slice/plan body}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-inspect
 ```
 

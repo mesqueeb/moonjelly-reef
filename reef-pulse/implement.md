@@ -37,9 +37,6 @@ Set the post-fetch variables (after reading the slice body):
 ```sh
 SLICE_NAME = {from slice body}
 SLICE_NUMBER = $ISSUE_ID
-PLAN_ID = {from slice/plan body}
-PLAN_TITLE = {from slice/plan body}
-BASE_BRANCH = {from slice/plan body}
 TARGET_BRANCH = {from slice/plan body}
 SLICE_BRANCH = {PR branch, e.g. feat/001-auth-endpoint}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-implement
@@ -124,19 +121,20 @@ The PR targets the **target branch** (which equals `{base-branch}` for single-sl
 
 ```sh
 PR_NUMBER = {from gh pr create output}
+SLICE_BODY = {slice body with PR reference appended}
 ```
 
 ## 6. Document judgment calls
 
 Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
-## 7. Tag the slice
+## 7. Update the slice and tag
+
+Persist the PR reference on the slice body so downstream phases (inspect, rework, merge) can find it.
 
 ```sh
-tracker.sh issue edit $SLICE_NUMBER --remove-label to-implement --add-label to-inspect
+tracker.sh issue edit $SLICE_NUMBER --body "$SLICE_BODY" --remove-label to-implement --add-label to-inspect
 ```
-
-Add a comment on the slice issue linking to the PR.
 
 ## 8. Clean up
 

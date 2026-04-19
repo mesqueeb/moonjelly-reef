@@ -29,8 +29,6 @@ Set the post-fetch variables (after reading the plan body):
 
 ```sh
 PLAN_ID = $ISSUE_ID
-PLAN_TITLE = {from plan body}
-BASE_BRANCH = {from plan body}
 TARGET_BRANCH = {from plan body}
 WORKTREE_PATH = ../worktree-$PLAN_ID-slice
 ```
@@ -40,8 +38,6 @@ Read the issue. It must contain a plan with success criteria (from reef-scope). 
 ## 1. Draft vertical slices
 
 Break the plan into slices. Each slice is a thin vertical cut through ALL integration layers end-to-end — not a horizontal slice of one layer.
-
-Slicing rules:
 
 Rules:
 
@@ -87,13 +83,6 @@ If the plan says to work on the current branch (no new target branch), skip the 
 ## 2. Create the target branch (multi-slice)
 
 Read the base branch and target branch name from the plan metadata.
-
-Set per-slice variables as you create each slice:
-
-```sh
-SLICE_NAME = {per slice, e.g. 001-auth-endpoint}
-SLICE_NUMBER = {sub-issue number (github) or file name (local)}
-```
 
 ## 3. Build the coverage matrix
 
@@ -175,12 +164,14 @@ Each slice file follows the same body template as the GitHub issue above, but wi
 
 ## 6. Update the plan
 
-Append the coverage matrix to the plan body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-ratify` once all slices are done.
-
-Add a comment listing all created sub-issues with their tags.
+Append the coverage matrix and a listing of all created sub-issues with their tags to the plan body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-ratify` once all slices are done.
 
 ```sh
-tracker.sh issue edit $PLAN_ID --remove-label to-slice --add-label in-progress
+PLAN_BODY = {plan body with coverage matrix appended}
+```
+
+```sh
+tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-slice --add-label in-progress
 ```
 
 ## 7. Document judgment calls

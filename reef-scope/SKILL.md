@@ -77,11 +77,7 @@ Set variables from the discussion:
 
 ```sh
 PLAN_ID = $ISSUE_ID
-PLAN_TITLE = {plan-title} # as per discussion context
-BASE_BRANCH = {base-branch} # as per discussion context
-TARGET_BRANCH = {target-branch} # as per discussion context
-PLAN_CONTENT = {plan-content} # as per discussion context
-WORKTREE_PATH = ../worktree-$PLAN_ID-scope
+PLAN_CONTENT = {plan-content} # assembled during phase-specific
 ```
 
 ```sh
