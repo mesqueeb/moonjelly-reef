@@ -1,6 +1,6 @@
 # rescan
 
-> **Tracker note**: Read `.agents/moonjelly-reef/config.md` for the tracker type. Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI.
+> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -14,24 +14,12 @@ Set the pre-fetch variables:
 
 ```sh
 ISSUE_ID = {issue-id} # pre-existing and passed or generate
-TRACKER_PATH = {from config.md} # set only for local tracker
-TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
 ```
 
 ## 0. Fetch context
 
-### GitHub tracker
-
 ```sh
-gh issue view $ISSUE_ID --json body,title,labels
-```
-
-### Local tracker
-
-Read the file at:
-
-```sh
-$TRACKER_PATH/$ISSUE_ID*/[to-rescan] plan.md
+tracker.sh issue view $ISSUE_ID --json body,title,labels
 ```
 
 Set the post-fetch variables (after reading the plan body):
@@ -136,31 +124,10 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ### 7. Push and tag
 
-### GitHub tracker
-
 Change plan from `to-rescan` to `in-progress`. The merge phase will change it to `to-ratify` when all slices (including new ones) are `done`.
 
 ```sh
-gh issue edit $PLAN_ID --remove-label to-rescan --add-label in-progress
-```
-
-### Local tracker (gitignored)
-
-Rename from `[to-rescan]` to `[in-progress]`. The new slice files were already written during phase-specific.
-
-```sh
-mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-rescan] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md"
-```
-
-### Local tracker (committed)
-
-Same file operations, then commit and push:
-
-```sh
-worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
-mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-rescan] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md"
-commit.sh --branch $TRACKER_BRANCH -m "rescan: update tracker for $PLAN_ID $PLAN_TITLE"
-worktree-exit.sh --path $WORKTREE_PATH-tracker
+tracker.sh issue edit $PLAN_ID --remove-label to-rescan --add-label in-progress
 ```
 
 ## Clean up

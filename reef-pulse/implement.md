@@ -2,7 +2,7 @@
 
 Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, read and follow [setup.md](setup.md) first and return here after.
 
-> **Tracker note**: Read `.agents/moonjelly-reef/config.md` for the tracker type. Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI.
+> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -24,24 +24,12 @@ Set the pre-fetch variables:
 
 ```sh
 ISSUE_ID = {issue-id} # pre-existing and passed or generate
-TRACKER_PATH = {from config.md} # set only for local tracker
-TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
 ```
 
 ## 0. Fetch context
 
-### GitHub tracker
-
 ```sh
-gh issue view $ISSUE_ID --json body,title,labels
-```
-
-### Local tracker
-
-Read the file at:
-
-```sh
-$TRACKER_PATH/*/slices/[to-implement] $ISSUE_ID*.md
+tracker.sh issue view $ISSUE_ID --json body,title,labels
 ```
 
 Set the post-fetch variables (after reading the slice body):
@@ -144,34 +132,11 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ## 7. Tag the slice
 
-### GitHub tracker
-
 ```sh
-gh issue edit $SLICE_NUMBER --remove-label to-implement --add-label to-inspect
+tracker.sh issue edit $SLICE_NUMBER --remove-label to-implement --add-label to-inspect
 ```
 
 Add a comment on the slice issue linking to the PR.
-
-### Local tracker (gitignored)
-
-Rename the slice file from `[to-implement] ...` to `[to-inspect] ...`.
-Add the PR number/URL to the slice file body.
-
-```sh
-mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-implement] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md"
-```
-
-### Local tracker (committed)
-
-Rename the slice file from `[to-implement] ...` to `[to-inspect] ...`.
-Add the PR number/URL to the slice file body.
-
-```sh
-worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
-mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-implement] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md"
-commit.sh --branch $TRACKER_BRANCH -m "implement: update tracker for $SLICE_NAME"
-worktree-exit.sh --path $WORKTREE_PATH-tracker
-```
 
 ## 8. Clean up
 

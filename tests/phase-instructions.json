@@ -5,29 +5,24 @@
     "The test runner checks: (1) each command string exists in the .md file, (2) they appear in this order.",
     "",
     "\"if\" field: the operation is conditional — it must exist in the .md but only runs when the condition holds.",
-    "  e.g. \"if\": \"local-tracker-committed\" — only when tracker is local-tracker-committed",
     "  e.g. \"if\": \"multi-slice\" — only for multi-slice plans",
     "",
-    "Local tracker file structure:",
-    "  $TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[tag] plan.md",
-    "  $TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[tag] $SLICE_NAME.md",
-    "  Fetch globs use $ISSUE_ID* (no space) to match both '42/' and '42 my-feature/'",
+    "Tracker commands use `tracker.sh issue ...` syntax.",
+    "For GitHub: replace `tracker.sh` with `gh`.",
+    "For MCP trackers (ClickUp, Jira, Linear): use equivalent MCP tool calls.",
     "",
     "Operations:",
-    "  set-variables              — documents which variables this skill/phase produces",
-    "  fetch-context              — read the plan or slice before starting",
-    "  enter                      — worktree-enter.sh --fork-from $BRANCH --path $WORKTREE_PATH",
-    "  phase-specific             — represents phase specific sections",
-    "  create-remote-branch       — git push -u origin ... (slice only)",
-    "  commit-code                — commit.sh --branch $SLICE_BRANCH (PR flow)",
-    "  pr-create                  — gh pr create",
-    "  pr-merge                   — gh pr merge",
-    "  update-pr-body             — rewrite PR description",
-    "  update-tracker             — per-tracker operations:",
-    "    tracker-github           — gh issue edit/close",
-    "    tracker-local-gitignored — file ops only (mv, printf, etc.)",
-    "    tracker-local-committed  — worktree-enter $TRACKER_BRANCH → file ops → commit → worktree-exit",
-    "  exit                       — worktree-exit.sh --path $WORKTREE_PATH"
+    "  set-variables        — documents which variables this skill/phase produces",
+    "  fetch-context        — tracker.sh issue view / gh issue view",
+    "  enter                — worktree-enter.sh --fork-from $BRANCH --path $WORKTREE_PATH",
+    "  phase-specific       — represents phase specific sections",
+    "  create-remote-branch — git push -u origin ... (slice only)",
+    "  commit-code          — commit.sh --branch $SLICE_BRANCH (PR flow)",
+    "  pr-create            — gh pr create",
+    "  pr-merge             — gh pr merge",
+    "  update-pr-body       — gh pr edit",
+    "  update-tracker       — tracker.sh issue edit/close",
+    "  exit                 — worktree-exit.sh --path $WORKTREE_PATH"
   ],
   "skills": {
     "reef-pulse": [
@@ -48,15 +43,12 @@
       {
         "op": "set-variables",
         "sh": [
-          "ISSUE_ID = {issue-id} # pre-existing and passed or generate",
-          "TRACKER_PATH = {from config.md} # set only for local tracker",
-          "TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed"
+          "ISSUE_ID = {issue-id} # pre-existing and passed or generate"
         ]
       },
       {
         "op": "fetch-context",
-        "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
-        "tracker-local": "$TRACKER_PATH/$ISSUE_ID*/[to-scope] plan.md"
+        "tracker": "tracker.sh issue view $ISSUE_ID --json body,title,labels"
       },
       { "op": "phase-specific" },
       {
@@ -72,18 +64,7 @@
       },
       {
         "op": "update-tracker",
-        "tracker-github": "gh issue edit $PLAN_ID --body \"$PLAN_CONTENT\" --remove-label to-scope --add-label to-slice",
-        "tracker-local-gitignored": [
-          "mkdir -p \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE\"",
-          "printf '%s' \"$PLAN_CONTENT\" > \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-slice] plan.md\""
-        ],
-        "tracker-local-committed": [
-          "worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker",
-          "mkdir -p \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE\"",
-          "printf '%s' \"$PLAN_CONTENT\" > \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-slice] plan.md\"",
-          "commit.sh --branch $TRACKER_BRANCH -m \"scope: persist plan for $PLAN_ID $PLAN_TITLE\"",
-          "worktree-exit.sh --path $WORKTREE_PATH-tracker"
-        ]
+        "tracker": "tracker.sh issue edit $PLAN_ID --body \"$PLAN_CONTENT\" --remove-label to-scope --add-label to-slice"
       }
     ]
   },
@@ -92,15 +73,12 @@
       {
         "op": "set-variables",
         "sh": [
-          "ISSUE_ID = {issue-id} # pre-existing and passed or generate",
-          "TRACKER_PATH = {from config.md} # set only for local tracker",
-          "TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed"
+          "ISSUE_ID = {issue-id} # pre-existing and passed or generate"
         ]
       },
       {
         "op": "fetch-context",
-        "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
-        "tracker-local": "$TRACKER_PATH/$ISSUE_ID*/[to-slice] plan.md"
+        "tracker": "tracker.sh issue view $ISSUE_ID --json body,title,labels"
       },
       {
         "op": "set-variables",
@@ -131,14 +109,7 @@
       },
       {
         "op": "update-tracker",
-        "tracker-github": "gh issue edit $PLAN_ID --remove-label to-slice --add-label in-progress",
-        "tracker-local-gitignored": "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-slice] plan.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md\"",
-        "tracker-local-committed": [
-          "worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker",
-          "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-slice] plan.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md\"",
-          "commit.sh --branch $TRACKER_BRANCH -m \"slice: create slices for $PLAN_ID $PLAN_TITLE\"",
-          "worktree-exit.sh --path $WORKTREE_PATH-tracker"
-        ]
+        "tracker": "tracker.sh issue edit $PLAN_ID --remove-label to-slice --add-label in-progress"
       },
       {
         "op": "exit",
@@ -149,15 +120,12 @@
       {
         "op": "set-variables",
         "sh": [
-          "ISSUE_ID = {issue-id} # pre-existing and passed or generate",
-          "TRACKER_PATH = {from config.md} # set only for local tracker",
-          "TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed"
+          "ISSUE_ID = {issue-id} # pre-existing and passed or generate"
         ]
       },
       {
         "op": "fetch-context",
-        "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
-        "tracker-local": "$TRACKER_PATH/*/slices/[to-implement] $ISSUE_ID*.md"
+        "tracker": "tracker.sh issue view $ISSUE_ID --json body,title,labels"
       },
       {
         "op": "set-variables",
@@ -191,14 +159,7 @@
       },
       {
         "op": "update-tracker",
-        "tracker-github": "gh issue edit $SLICE_NUMBER --remove-label to-implement --add-label to-inspect",
-        "tracker-local-gitignored": "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-implement] $SLICE_NAME.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md\"",
-        "tracker-local-committed": [
-          "worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker",
-          "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-implement] $SLICE_NAME.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md\"",
-          "commit.sh --branch $TRACKER_BRANCH -m \"implement: update tracker for $SLICE_NAME\"",
-          "worktree-exit.sh --path $WORKTREE_PATH-tracker"
-        ]
+        "tracker": "tracker.sh issue edit $SLICE_NUMBER --remove-label to-implement --add-label to-inspect"
       },
       {
         "op": "exit",
@@ -209,15 +170,12 @@
       {
         "op": "set-variables",
         "sh": [
-          "ISSUE_ID = {issue-id} # pre-existing and passed or generate",
-          "TRACKER_PATH = {from config.md} # set only for local tracker",
-          "TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed"
+          "ISSUE_ID = {issue-id} # pre-existing and passed or generate"
         ]
       },
       {
         "op": "fetch-context",
-        "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
-        "tracker-local": "$TRACKER_PATH/*/slices/[to-inspect] $ISSUE_ID*.md"
+        "tracker": "tracker.sh issue view $ISSUE_ID --json body,title,labels"
       },
       {
         "op": "set-variables",
@@ -244,15 +202,8 @@
       },
       {
         "op": "update-tracker",
-        "tracker-local-gitignored": "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-merge] or [to-rework] $SLICE_NAME.md\"",
-        "tracker-local-committed": [
-          "worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker",
-          "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-merge] or [to-rework] $SLICE_NAME.md\"",
-          "commit.sh --branch $TRACKER_BRANCH -m \"inspect: update tracker for $SLICE_NAME\"",
-          "worktree-exit.sh --path $WORKTREE_PATH-tracker"
-        ],
-        "tracker-github-pass": "gh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-merge",
-        "tracker-github-fail": "gh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-rework"
+        "tracker-pass": "tracker.sh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-merge",
+        "tracker-fail": "tracker.sh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-rework"
       },
       {
         "op": "exit",
@@ -263,15 +214,12 @@
       {
         "op": "set-variables",
         "sh": [
-          "ISSUE_ID = {issue-id} # pre-existing and passed or generate",
-          "TRACKER_PATH = {from config.md} # set only for local tracker",
-          "TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed"
+          "ISSUE_ID = {issue-id} # pre-existing and passed or generate"
         ]
       },
       {
         "op": "fetch-context",
-        "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
-        "tracker-local": "$TRACKER_PATH/*/slices/[to-rework] $ISSUE_ID*.md"
+        "tracker": "tracker.sh issue view $ISSUE_ID --json body,title,labels"
       },
       {
         "op": "set-variables",
@@ -302,14 +250,7 @@
       },
       {
         "op": "update-tracker",
-        "tracker-github": "gh issue edit $SLICE_NUMBER --remove-label to-rework --add-label to-inspect",
-        "tracker-local-gitignored": "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-rework] $SLICE_NAME.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md\"",
-        "tracker-local-committed": [
-          "worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker",
-          "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-rework] $SLICE_NAME.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md\"",
-          "commit.sh --branch $TRACKER_BRANCH -m \"rework: update tracker for $SLICE_NAME\"",
-          "worktree-exit.sh --path $WORKTREE_PATH-tracker"
-        ]
+        "tracker": "tracker.sh issue edit $SLICE_NUMBER --remove-label to-rework --add-label to-inspect"
       },
       {
         "op": "exit",
@@ -320,15 +261,12 @@
       {
         "op": "set-variables",
         "sh": [
-          "ISSUE_ID = {issue-id} # pre-existing and passed or generate",
-          "TRACKER_PATH = {from config.md} # set only for local tracker",
-          "TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed"
+          "ISSUE_ID = {issue-id} # pre-existing and passed or generate"
         ]
       },
       {
         "op": "fetch-context",
-        "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
-        "tracker-local": "$TRACKER_PATH/*/slices/[to-await-waves] $ISSUE_ID*.md"
+        "tracker": "tracker.sh issue view $ISSUE_ID --json body,title,labels"
       },
       {
         "op": "set-variables",
@@ -349,14 +287,7 @@
       { "op": "phase-specific" },
       {
         "op": "update-tracker",
-        "tracker-github": "gh issue edit $SLICE_NUMBER --remove-label to-await-waves --add-label to-implement",
-        "tracker-local-gitignored": "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-await-waves] $SLICE_NAME.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-implement] $SLICE_NAME.md\"",
-        "tracker-local-committed": [
-          "worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker",
-          "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-await-waves] $SLICE_NAME.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-implement] $SLICE_NAME.md\"",
-          "commit.sh --branch $TRACKER_BRANCH -m \"await-waves: update tracker for $SLICE_NAME\"",
-          "worktree-exit.sh --path $WORKTREE_PATH-tracker"
-        ]
+        "tracker": "tracker.sh issue edit $SLICE_NUMBER --remove-label to-await-waves --add-label to-implement"
       },
       {
         "op": "exit",
@@ -367,15 +298,12 @@
       {
         "op": "set-variables",
         "sh": [
-          "ISSUE_ID = {issue-id} # pre-existing and passed or generate",
-          "TRACKER_PATH = {from config.md} # set only for local tracker",
-          "TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed"
+          "ISSUE_ID = {issue-id} # pre-existing and passed or generate"
         ]
       },
       {
         "op": "fetch-context",
-        "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
-        "tracker-local": "$TRACKER_PATH/*/slices/[to-merge] $ISSUE_ID*.md"
+        "tracker": "tracker.sh issue view $ISSUE_ID --json body,title,labels"
       },
       {
         "op": "set-variables",
@@ -401,17 +329,9 @@
       { "op": "phase-specific" },
       {
         "op": "update-tracker",
-        "tracker-github": "gh issue close $SLICE_NUMBER",
-        "tracker-local-gitignored": [
-          "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-merge] $SLICE_NAME.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[done] $SLICE_NAME.md\"",
-          "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-ratify] plan.md\""
-        ],
-        "tracker-local-committed": [
-          "worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker",
-          "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-merge] $SLICE_NAME.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[done] $SLICE_NAME.md\"",
-          "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-ratify] plan.md\"",
-          "commit.sh --branch $TRACKER_BRANCH -m \"merge: close $SLICE_NAME, update plan\"",
-          "worktree-exit.sh --path $WORKTREE_PATH-tracker"
+        "tracker": [
+          "tracker.sh issue close $SLICE_NUMBER",
+          "tracker.sh issue edit $PLAN_ID --remove-label in-progress --add-label to-ratify"
         ]
       },
       {
@@ -423,15 +343,12 @@
       {
         "op": "set-variables",
         "sh": [
-          "ISSUE_ID = {issue-id} # pre-existing and passed or generate",
-          "TRACKER_PATH = {from config.md} # set only for local tracker",
-          "TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed"
+          "ISSUE_ID = {issue-id} # pre-existing and passed or generate"
         ]
       },
       {
         "op": "fetch-context",
-        "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
-        "tracker-local": "$TRACKER_PATH/$ISSUE_ID*/[to-ratify] plan.md"
+        "tracker": "tracker.sh issue view $ISSUE_ID --json body,title,labels"
       },
       {
         "op": "set-variables",
@@ -459,15 +376,8 @@
       },
       {
         "op": "update-tracker",
-        "tracker-local-gitignored": "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-ratify] plan.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-land] or [to-rescan] plan.md\"",
-        "tracker-local-committed": [
-          "worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker",
-          "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-ratify] plan.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-land] or [to-rescan] plan.md\"",
-          "commit.sh --branch $TRACKER_BRANCH -m \"ratify: update tracker for $PLAN_ID $PLAN_TITLE\"",
-          "worktree-exit.sh --path $WORKTREE_PATH-tracker"
-        ],
-        "tracker-github-pass": "gh issue edit $PLAN_ID --remove-label to-ratify --add-label to-land",
-        "tracker-github-fail": "gh issue edit $PLAN_ID --remove-label to-ratify --add-label to-rescan"
+        "tracker-pass": "tracker.sh issue edit $PLAN_ID --remove-label to-ratify --add-label to-land",
+        "tracker-fail": "tracker.sh issue edit $PLAN_ID --remove-label to-ratify --add-label to-rescan"
       },
       {
         "op": "exit",
@@ -478,15 +388,12 @@
       {
         "op": "set-variables",
         "sh": [
-          "ISSUE_ID = {issue-id} # pre-existing and passed or generate",
-          "TRACKER_PATH = {from config.md} # set only for local tracker",
-          "TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed"
+          "ISSUE_ID = {issue-id} # pre-existing and passed or generate"
         ]
       },
       {
         "op": "fetch-context",
-        "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
-        "tracker-local": "$TRACKER_PATH/$ISSUE_ID*/[to-rescan] plan.md"
+        "tracker": "tracker.sh issue view $ISSUE_ID --json body,title,labels"
       },
       {
         "op": "set-variables",
@@ -505,14 +412,7 @@
       { "op": "phase-specific" },
       {
         "op": "update-tracker",
-        "tracker-github": "gh issue edit $PLAN_ID --remove-label to-rescan --add-label in-progress",
-        "tracker-local-gitignored": "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-rescan] plan.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md\"",
-        "tracker-local-committed": [
-          "worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker",
-          "mv \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-rescan] plan.md\" \"$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md\"",
-          "commit.sh --branch $TRACKER_BRANCH -m \"rescan: update tracker for $PLAN_ID $PLAN_TITLE\"",
-          "worktree-exit.sh --path $WORKTREE_PATH-tracker"
-        ]
+        "tracker": "tracker.sh issue edit $PLAN_ID --remove-label to-rescan --add-label in-progress"
       },
       {
         "op": "exit",

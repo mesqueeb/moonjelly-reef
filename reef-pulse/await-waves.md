@@ -1,6 +1,6 @@
 # await-waves
 
-> **Tracker note**: Read `.agents/moonjelly-reef/config.md` for the tracker type. Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI.
+> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. No judgment calls expected — if blocked, exit silently. If deps are done, promote. Never block waiting for human input.
 
@@ -14,24 +14,12 @@ Set the pre-fetch variables:
 
 ```sh
 ISSUE_ID = {issue-id} # pre-existing and passed or generate
-TRACKER_PATH = {from config.md} # set only for local tracker
-TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
 ```
 
 ## 0. Fetch context
 
-### GitHub tracker
-
 ```sh
-gh issue view $ISSUE_ID --json body,title,labels
-```
-
-### Local tracker
-
-Read the file at:
-
-```sh
-$TRACKER_PATH/*/slices/[to-await-waves] $ISSUE_ID*.md
+tracker.sh issue view $ISSUE_ID --json body,title,labels
 ```
 
 Set the post-fetch variables (after reading the slice body):
@@ -90,29 +78,8 @@ If acceptance criteria were updated, rewrite the slice file with the updated con
 
 ## 3. Promote
 
-### GitHub tracker
-
 ```sh
-gh issue edit $SLICE_NUMBER --remove-label to-await-waves --add-label to-implement
-```
-
-### Local tracker (gitignored)
-
-Rename from `[to-await-waves] ...` to `[to-implement] ...`.
-
-```sh
-mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-await-waves] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-implement] $SLICE_NAME.md"
-```
-
-### Local tracker (committed)
-
-Rename from `[to-await-waves] ...` to `[to-implement] ...`.
-
-```sh
-worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
-mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-await-waves] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-implement] $SLICE_NAME.md"
-commit.sh --branch $TRACKER_BRANCH -m "await-waves: update tracker for $SLICE_NAME"
-worktree-exit.sh --path $WORKTREE_PATH-tracker
+tracker.sh issue edit $SLICE_NUMBER --remove-label to-await-waves --add-label to-implement
 ```
 
 ## 4. Clean up

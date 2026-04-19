@@ -7,7 +7,7 @@ description: The Moonjelly Reef orchestrator. A single pulse that scans all issu
 
 Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, read and follow [setup.md](setup.md) first and return here after.
 
-> **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI.
+> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 You are the orchestrator. You scan, dispatch, and exit. You hold no state — tags are the state.
 
@@ -40,30 +40,21 @@ If the argument contains `--afk`, run in AFK mode. Otherwise, default to HITL.
 
 Read the config to determine the tracker type, then scan for all tagged issues.
 
-### GitHub tracker
-
 ```sh
 # Scan all reef-tagged issues
-gh issue list --label "to-scope" --json number,title --limit 100
-gh issue list --label "to-slice" --json number,title --limit 100
-gh issue list --label "to-await-waves" --json number,title --limit 100
-gh issue list --label "to-implement" --json number,title --limit 100
-gh issue list --label "to-inspect" --json number,title --limit 100
-gh issue list --label "to-rework" --json number,title --limit 100
-gh issue list --label "to-merge" --json number,title --limit 100
-gh issue list --label "to-ratify" --json number,title --limit 100
-gh issue list --label "to-rescan" --json number,title --limit 100
-gh issue list --label "to-land" --json number,title --limit 100
+tracker.sh issue list --label "to-scope" --json number,title --limit 100
+tracker.sh issue list --label "to-slice" --json number,title --limit 100
+tracker.sh issue list --label "to-await-waves" --json number,title --limit 100
+tracker.sh issue list --label "to-implement" --json number,title --limit 100
+tracker.sh issue list --label "to-inspect" --json number,title --limit 100
+tracker.sh issue list --label "to-rework" --json number,title --limit 100
+tracker.sh issue list --label "to-merge" --json number,title --limit 100
+tracker.sh issue list --label "to-ratify" --json number,title --limit 100
+tracker.sh issue list --label "to-rescan" --json number,title --limit 100
+tracker.sh issue list --label "to-land" --json number,title --limit 100
 ```
 
 Run these queries in parallel where possible for performance.
-
-### Local tracker
-
-Read `tracker-path` from config. Scan all issue folders for tagged files:
-
-- Plan files: look for `[to-*] plan.md` pattern
-- Slice files: look for `[to-*] *.md` in `slices/` subfolders
 
 ### Step 2. Dispatch automated (🌊) work
 
