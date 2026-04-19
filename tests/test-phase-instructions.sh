@@ -57,6 +57,7 @@ make_pattern() {
     "gh issue edit"*) echo "gh issue edit" ;;
     "gh issue close"*) echo "gh issue close" ;;
     "gh issue view"*) echo "gh issue view" ;;
+    "git fetch"*)     echo "git fetch" ;;
     "git push"*)      echo "git push" ;;
     "rename "*)       echo "rename" ;;
     *)                echo "$cmd" | cut -c1-30 ;;
@@ -102,7 +103,7 @@ for section in ['skills', 'phases']:
                 for line in sh:
                     emit(md_file, op_name, 'sh', line)
             # Command keys (string or array)
-            for key in ['cmd', 'tracker-github', 'tracker-local', 'tracker-github-pass', 'tracker-github-fail']:
+            for key in ['cmd', 'tracker-github', 'tracker-local', 'tracker-local-gitignored', 'tracker-local-committed', 'tracker-github-pass', 'tracker-github-fail']:
                 val = op.get(key)
                 if val is None or val is False or isinstance(val, bool):
                     continue

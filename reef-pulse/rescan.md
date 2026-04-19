@@ -14,7 +14,8 @@ Set the pre-fetch variables:
 
 ```sh
 ISSUE_ID = {issue-id} # pre-existing and passed or generate
-LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md
+TRACKER_PATH = {from config.md} # set only for local tracker
+TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
 ```
 
 ## 0. Fetch context
@@ -30,7 +31,7 @@ gh issue view $ISSUE_ID --json body,title,labels
 Read the file at:
 
 ```sh
-$LOCAL_PATH/$ISSUE_ID */[to-rescan] plan.md
+$TRACKER_PATH/$ISSUE_ID*/[to-rescan] plan.md
 ```
 
 Set the post-fetch variables (after reading the plan body):
@@ -143,14 +144,23 @@ Change plan from `to-rescan` to `in-progress`. The merge phase will change it to
 gh issue edit $PLAN_ID --remove-label to-rescan --add-label in-progress
 ```
 
-### Local tracker
+### Local tracker (gitignored)
 
-For local tracker, commit and push the updated plan files and new slice files:
+Rename from `[to-rescan]` to `[in-progress]`. The new slice files were already written during phase-specific.
 
 ```sh
-worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
-commit.sh --branch $TARGET_BRANCH -m "rescan: update tracker for $PLAN_ID $PLAN_TITLE"
-worktree-exit.sh --path $WORKTREE_PATH
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-rescan] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md"
+```
+
+### Local tracker (committed)
+
+Same file operations, then commit and push:
+
+```sh
+worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-rescan] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md"
+commit.sh --branch $TRACKER_BRANCH -m "rescan: update tracker for $PLAN_ID $PLAN_TITLE"
+worktree-exit.sh --path $WORKTREE_PATH-tracker
 ```
 
 ## Clean up

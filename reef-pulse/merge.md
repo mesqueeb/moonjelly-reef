@@ -14,7 +14,8 @@ Set the pre-fetch variables:
 
 ```sh
 ISSUE_ID = {issue-id} # pre-existing and passed or generate
-LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md
+TRACKER_PATH = {from config.md} # set only for local tracker
+TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
 ```
 
 ## 0. Fetch context
@@ -30,7 +31,7 @@ gh issue view $ISSUE_ID --json body,title,labels
 Read the file at:
 
 ```sh
-$LOCAL_PATH/*/slices/[to-merge] $ISSUE_ID.md
+$TRACKER_PATH/*/slices/[to-merge] $ISSUE_ID*.md
 ```
 
 Set the post-fetch variables (after reading the slice body):
@@ -39,6 +40,8 @@ Set the post-fetch variables (after reading the slice body):
 SLICE_NAME = {from slice body}
 SLICE_NUMBER = $ISSUE_ID
 PR_NUMBER = {from slice body}
+PLAN_ID = {from slice/plan body}
+PLAN_TITLE = {from slice/plan body}
 BASE_BRANCH = {from slice/plan body}
 TARGET_BRANCH = {from slice/plan body}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-merge
@@ -110,17 +113,25 @@ Close the slice issue with `gh issue close <number>`. Add label `done`. Remove `
 gh issue close $SLICE_NUMBER
 ```
 
-#### Local tracker
+#### Local tracker (gitignored)
 
-Rename from `[to-merge] ...` to `[done] ...`.
-
-For local tracker, commit the metadata writes:
+Rename from `[to-merge] ...` to `[done] ...`. If all slices are done, rename plan from `[in-progress]` to `[to-ratify]`.
 
 ```sh
-worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
-mv "[to-merge]" "[done]"
-commit.sh --branch $TARGET_BRANCH -m "merge: close $SLICE_NAME, update plan"
-worktree-exit.sh --path $WORKTREE_PATH
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-merge] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[done] $SLICE_NAME.md"
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-ratify] plan.md"
+```
+
+#### Local tracker (committed)
+
+Same file operations, then commit and push:
+
+```sh
+worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-merge] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[done] $SLICE_NAME.md"
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[in-progress] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-ratify] plan.md"
+commit.sh --branch $TRACKER_BRANCH -m "merge: close $SLICE_NAME, update plan"
+worktree-exit.sh --path $WORKTREE_PATH-tracker
 ```
 
 ### 6. Check siblings

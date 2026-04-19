@@ -14,7 +14,8 @@ Set the pre-fetch variables:
 
 ```sh
 ISSUE_ID = {issue-id} # pre-existing and passed or generate
-LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md
+TRACKER_PATH = {from config.md} # set only for local tracker
+TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
 ```
 
 ## 0. Fetch context
@@ -30,7 +31,7 @@ gh issue view $ISSUE_ID --json body,title,labels
 Read the file at:
 
 ```sh
-$LOCAL_PATH/*/slices/[to-await-waves] $ISSUE_ID.md
+$TRACKER_PATH/*/slices/[to-await-waves] $ISSUE_ID*.md
 ```
 
 Set the post-fetch variables (after reading the slice body):
@@ -38,9 +39,17 @@ Set the post-fetch variables (after reading the slice body):
 ```sh
 SLICE_NAME = {from slice body}
 SLICE_NUMBER = $ISSUE_ID
+PLAN_ID = {from slice/plan body}
+PLAN_TITLE = {from slice/plan body}
 BASE_BRANCH = {from slice/plan body}
 TARGET_BRANCH = {from slice/plan body}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves
+```
+
+## Enter worktree
+
+```sh
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
 ```
 
 ## 1. Check dependencies
@@ -61,13 +70,7 @@ Check if the blocking slice file has the `[done]` prefix.
 
 ## 2. Re-review the plan
 
-Earlier slices may have changed the codebase. Use a temporary worktree to inspect the target branch without disturbing the main checkout:
-
-```sh
-worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
-```
-
-Read this slice's acceptance criteria and compare against the current state of the code:
+Earlier slices may have changed the codebase. Read this slice's acceptance criteria and compare against the current state of the code:
 
 - Did earlier slices introduce interfaces, modules, or conventions this slice should use?
 - Did earlier slices rename or restructure anything that affects this slice's approach?
@@ -93,15 +96,23 @@ If acceptance criteria were updated, rewrite the slice file with the updated con
 gh issue edit $SLICE_NUMBER --remove-label to-await-waves --add-label to-implement
 ```
 
-### Local tracker
+### Local tracker (gitignored)
 
 Rename from `[to-await-waves] ...` to `[to-implement] ...`.
 
 ```sh
-worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
-mv "[to-await-waves]" "[to-implement]"
-commit.sh --branch $TARGET_BRANCH -m "await-waves: update tracker for $SLICE_NAME"
-worktree-exit.sh --path $WORKTREE_PATH
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-await-waves] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-implement] $SLICE_NAME.md"
+```
+
+### Local tracker (committed)
+
+Rename from `[to-await-waves] ...` to `[to-implement] ...`.
+
+```sh
+worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-await-waves] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-implement] $SLICE_NAME.md"
+commit.sh --branch $TRACKER_BRANCH -m "await-waves: update tracker for $SLICE_NAME"
+worktree-exit.sh --path $WORKTREE_PATH-tracker
 ```
 
 ## 4. Clean up

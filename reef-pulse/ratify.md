@@ -18,7 +18,8 @@ Set the pre-fetch variables:
 
 ```sh
 ISSUE_ID = {issue-id} # pre-existing and passed or generate
-LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md
+TRACKER_PATH = {from config.md} # set only for local tracker
+TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
 ```
 
 ## 0. Fetch context
@@ -34,7 +35,7 @@ gh issue view $ISSUE_ID --json body,title,labels
 Read the file at:
 
 ```sh
-$LOCAL_PATH/$ISSUE_ID */[to-ratify] plan.md
+$TRACKER_PATH/$ISSUE_ID*/[to-ratify] plan.md
 ```
 
 Set the post-fetch variables (after reading the plan body):
@@ -168,7 +169,7 @@ Don't document what's obvious from reading the code.
 gh issue edit $PLAN_ID --remove-label to-ratify --add-label to-land
 ```
 
-### Local tracker
+### Local tracker (gitignored)
 
 Rename plan from `[to-ratify] ...` to `[to-land] ...`.
 
@@ -182,17 +183,21 @@ gh issue edit $PLAN_ID --remove-label to-ratify --add-label to-rescan
 
 Add a comment on the plan listing the specific gaps.
 
-### Local tracker
+### Local tracker (gitignored)
 
 Rename plan from `[to-ratify] ...` to `[to-rescan] ...`.
 
-For local tracker, commit the tag change:
+```sh
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-ratify] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-land] or [to-rescan] plan.md"
+```
+
+### Local tracker (committed)
 
 ```sh
-worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
-mv "[to-ratify]" "[to-land]" or "[to-rescan]"
-commit.sh --branch $TARGET_BRANCH -m "ratify: update tracker for $PLAN_ID $PLAN_TITLE"
-worktree-exit.sh --path $WORKTREE_PATH
+worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-ratify] plan.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/[to-land] or [to-rescan] plan.md"
+commit.sh --branch $TRACKER_BRANCH -m "ratify: update tracker for $PLAN_ID $PLAN_TITLE"
+worktree-exit.sh --path $WORKTREE_PATH-tracker
 ```
 
 ## Clean up

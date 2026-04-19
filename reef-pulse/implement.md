@@ -24,7 +24,8 @@ Set the pre-fetch variables:
 
 ```sh
 ISSUE_ID = {issue-id} # pre-existing and passed or generate
-LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md
+TRACKER_PATH = {from config.md} # set only for local tracker
+TRACKER_BRANCH = {from config.md} # set only for local-tracker-committed
 ```
 
 ## 0. Fetch context
@@ -40,7 +41,7 @@ gh issue view $ISSUE_ID --json body,title,labels
 Read the file at:
 
 ```sh
-$LOCAL_PATH/*/slices/[to-implement] $ISSUE_ID.md
+$TRACKER_PATH/*/slices/[to-implement] $ISSUE_ID*.md
 ```
 
 Set the post-fetch variables (after reading the slice body):
@@ -48,6 +49,8 @@ Set the post-fetch variables (after reading the slice body):
 ```sh
 SLICE_NAME = {from slice body}
 SLICE_NUMBER = $ISSUE_ID
+PLAN_ID = {from slice/plan body}
+PLAN_TITLE = {from slice/plan body}
 BASE_BRANCH = {from slice/plan body}
 TARGET_BRANCH = {from slice/plan body}
 SLICE_BRANCH = {PR branch, e.g. feat/001-auth-endpoint}
@@ -149,16 +152,25 @@ gh issue edit $SLICE_NUMBER --remove-label to-implement --add-label to-inspect
 
 Add a comment on the slice issue linking to the PR.
 
-### Local tracker
+### Local tracker (gitignored)
 
 Rename the slice file from `[to-implement] ...` to `[to-inspect] ...`.
 Add the PR number/URL to the slice file body.
 
 ```sh
-worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
-mv "[to-implement]" "[to-inspect]"
-commit.sh --branch $TARGET_BRANCH -m "implement: update tracker for $SLICE_NAME"
-worktree-exit.sh --path $WORKTREE_PATH
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-implement] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md"
+```
+
+### Local tracker (committed)
+
+Rename the slice file from `[to-implement] ...` to `[to-inspect] ...`.
+Add the PR number/URL to the slice file body.
+
+```sh
+worktree-enter.sh --fork-from $TRACKER_BRANCH --path $WORKTREE_PATH-tracker
+mv "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-implement] $SLICE_NAME.md" "$TRACKER_PATH/$PLAN_ID $PLAN_TITLE/slices/[to-inspect] $SLICE_NAME.md"
+commit.sh --branch $TRACKER_BRANCH -m "implement: update tracker for $SLICE_NAME"
+worktree-exit.sh --path $WORKTREE_PATH-tracker
 ```
 
 ## 8. Clean up

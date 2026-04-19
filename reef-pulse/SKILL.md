@@ -11,6 +11,20 @@ Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the is
 
 You are the orchestrator. You scan, dispatch, and exit. You hold no state — tags are the state.
 
+## 0. Sync tracker branch (local-tracker-committed only)
+
+If the tracker type in config is `local-tracker-committed`, the tracker files live in a git-tracked directory on a specific branch. Sync it before scanning:
+
+```sh
+TRACKER_BRANCH = {from config.md} # e.g. main
+```
+
+```sh
+git fetch origin $TRACKER_BRANCH && git checkout $TRACKER_BRANCH && git pull
+```
+
+If the tracker is `github`, `local-tracker-gitignored`, or any MCP-based tracker, skip this step.
+
 ## Mode
 
 Detect the mode from how this skill was invoked:
@@ -46,7 +60,7 @@ Run these queries in parallel where possible for performance.
 
 ### Local tracker
 
-Read the local path from config. Scan all issue folders for tagged files:
+Read `tracker-path` from config. Scan all issue folders for tagged files:
 
 - Plan files: look for `[to-*] plan.md` pattern
 - Slice files: look for `[to-*] *.md` in `slices/` subfolders

@@ -23,9 +23,9 @@ Present your best guess to the user:
 
 > "It looks like this project uses **GitHub Issues**. Is that right, or would you prefer a different tracker?"
 >
-> Options: `github` · `jira` · `linear` · `local`
+> Options: `github` · `jira` · `linear` · `clickup` · `local md files` · `other`
 
-The user may also name a tracker not listed (ClickUp, Notion, etc.) — that's fine. Any system that supports creating items, updating descriptions, and tagging/labeling will work.
+The user may also name a tracker not listed (Notion, etc.) — that's fine. Any system that supports creating items, updating descriptions, and tagging/labeling will work.
 
 **For each tracker type, verify the tooling:**
 
@@ -34,7 +34,32 @@ The user may also name a tracker not listed (ClickUp, Notion, etc.) — that's f
   - Jira / Confluence: Atlassian's official remote MCP server at `https://mcp.atlassian.com/v1/sse` (or community `mcp-atlassian` package). CLI alternative: `jira-cli` by ankitpokhrel.
   - Linear: community `linear-mcp-server` (no official Anthropic server). Or use the Linear API directly.
   - ClickUp: official ClickUp MCP server — see ClickUp developer docs for "connect an AI assistant to ClickUp's MCP server".
-- **Local**: ask where they'd like issues stored (suggest `.agents/moonjelly-reef/issue-tracker/` as default).
+- **Local**: continue to step 1b.
+
+### 1b. Local tracker options
+
+If the user chose local, ask:
+
+> "Two options for local tracker files:"
+>
+> 1. **Gitignored** — tracker files live in a directory that's `.gitignore`'d. Simple, no git noise. Works great for solo use on one machine.
+> 2. **Committed** — tracker files are committed and pushed to a branch. Syncs across machines and agents automatically.
+>
+> "Which do you prefer?"
+
+**If gitignored:**
+
+1. Ask where to store tracker files. Suggest `.agents/moonjelly-reef/tracker/` as default.
+2. Offer to add the path to `.gitignore`: "Want me to add `{path}` to `.gitignore`?"
+3. If yes, append the path to `.gitignore` (create the file if needed).
+4. Set tracker type to `local-tracker-gitignored`.
+
+**If committed:**
+
+1. Ask where to store tracker files. Suggest `.agents/moonjelly-reef/tracker/` as default.
+2. Verify the chosen path is NOT already in `.gitignore`. If it is, warn the user and ask them to pick a different path or remove the gitignore rule.
+3. Ask which branch to commit tracker updates to. Suggest `main`: "Which branch should tracker updates be committed to? (suggest: `main`)"
+4. Set tracker type to `local-tracker-committed`.
 
 ### 2. Check for optional skills
 
@@ -64,24 +89,27 @@ For each skill not found, tell the user it's optional and reef has a fallback:
 >
 > "Run the install commands above if you want them, or skip — the reef works fine without them."
 
-### 4. Write config
+### 3. Write config
 
 Create `.agents/moonjelly-reef/config.md`:
 
 ```markdown
-# Moonjelly Reef Config
-
-| Setting                       | Value  |
-| ----------------------------- | ------ |
-| Tracker                       | github |
-| Local path                    | —      |
-| tdd installed                 | yes    |
-| ubiquitous-language installed | yes    |
+---
+tracker: github
+tracker-path: —
+tracker-branch: —
+tdd-installed: true
+ubiquitous-language-installed: true
+---
 ```
 
-For local tracker, `Local path` would be the chosen directory (e.g. `.agents/moonjelly-reef/issue-tracker/`).
+Values for `tracker`: `github`, `local-tracker-gitignored`, `local-tracker-committed`, `jira`, `linear`, `clickup`, or any custom name.
 
-### 5. Offer autopilot
+`tracker-path` is set when tracker is `local-tracker-gitignored` or `local-tracker-committed` (e.g. `.agents/moonjelly-reef/tracker/`). Otherwise `—`.
+
+`tracker-branch` is set when tracker is `local-tracker-committed` (e.g. `main`). Otherwise `—`.
+
+### 4. Offer autopilot
 
 > "Want the reef to pulse on its own while you're away? I can set up a recurring cron that runs `/reef-pulse --afk` every hour (or any interval you prefer)."
 
@@ -92,13 +120,14 @@ CronCreate cron="7 * * * *" prompt="/reef-pulse --afk" durable=true
 ```
 
 Let the user pick the interval. Common choices:
+
 - `"7 * * * *"` — hourly
 - `"*/30 * * * *"` — every 30 minutes
 - `"3 9 * * 1-5"` — weekday mornings
 
 If the user declines, skip — they can always set it up later.
 
-### 6. Confirm
+### 5. Confirm
 
 > "You're all set. The reef is alive. 🪼"
 >
