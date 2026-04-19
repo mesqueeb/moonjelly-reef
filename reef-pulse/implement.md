@@ -114,6 +114,13 @@ Decisions made during implementation that weren't covered by the acceptance crit
 
 ```sh
 commit.sh --branch $SLICE_BRANCH -m "$SLICE_NAME: implementation"
+```
+
+```sh
+REPORT = {report-content} # from context
+```
+
+```sh
 gh pr create --base $TARGET_BRANCH --title "$SLICE_NAME" --body "$REPORT"
 ```
 

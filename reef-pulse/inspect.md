@@ -97,7 +97,7 @@ Set the PR number from the slice body. If not found there, try `gh pr list --sea
 
 ```sh
 PR_NUMBER = {from slice body} # if not found, try gh pr list --search
-REPORT = {inspection report assembled during phase-specific}
+REPORT = {report-content} # from context
 ```
 
 ```sh

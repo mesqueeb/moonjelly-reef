@@ -77,7 +77,7 @@ Set variables from the discussion:
 
 ```sh
 PLAN_ID = $ISSUE_ID
-PLAN_CONTENT = {plan-content} # assembled during phase-specific
+PLAN_CONTENT = {plan-content} # from context
 ```
 
 ```sh

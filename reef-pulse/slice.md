@@ -112,25 +112,27 @@ If anything looks off, adjust the breakdown. Do not ask the user — reef-scope 
 
 ## 5. Create slices
 
-Read the config to determine tracker type.
+Create slices in dependency order (blockers first) so you can reference real IDs in `blocked-by`.
 
-### GitHub tracker
+```sh
+tracker.sh issue create --title "{slice-title}" --body "{slice-body}" --label to-implement
+```
 
-Create sub-issues with `gh issue create`. Create them in dependency order (blockers first) so you can reference real issue numbers in `blocked-by`.
+Use `to-implement` if no blockers, `to-await-waves` if blocked.
 
-Each sub-issue body:
+Each slice body:
 
 ```markdown
 ## Plan
 
-#{plan-issue-number}
+{plan-reference}
 
 ## Plan context
 
 - **Target branch**: {target-branch}
 - **Base branch**: {base-branch}
 - **Type**: {feature/refactor/bug}
-- **Plan**: #{plan-issue-number}
+- **Plan**: {plan-reference}
 
 ## What to build
 
@@ -144,23 +146,12 @@ Each sub-issue body:
 
 ## Blocked by
 
-- #{issue-number} {title} (or "None — can start immediately")
+- {dependency-reference} {title} (or "None — can start immediately")
 
 ## Success criteria covered
 
 - Success criterion {n}: {criterion text}
 ```
-
-Label each slice: `to-implement` if no blockers, `to-await-waves` if blocked.
-
-### Local tracker
-
-Create slice files in `{path}/{title}/slices/`:
-
-- Unblocked: `[to-implement] 001-auth-endpoint.md`
-- Blocked: `[to-await-waves] 002-token-storage.md`
-
-Each slice file follows the same body template as the GitHub issue above, but with local file references instead of issue numbers (e.g. `Blocked by: 001-auth-endpoint`).
 
 ## 6. Update the plan
 
