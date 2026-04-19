@@ -5,7 +5,7 @@ description: Present the final report to the human for review. Human approves (m
 
 # reef-land
 
-> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](../reef-pulse/tracker-reference.md).
+> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI.
 
 ## Input
 

@@ -7,7 +7,7 @@ description: The Moonjelly Reef orchestrator. A single pulse that scans all issu
 
 Before starting, verify `.agents/moonjelly-reef/config.md` exists. If not, read and follow [setup.md](setup.md) first and return here after.
 
-> **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
+> **Tracker note**: Examples below show GitHub and local file operations. For Jira, Linear, ClickUp, or other trackers, use the equivalent operations via MCP tools or CLI.
 
 You are the orchestrator. You scan, dispatch, and exit. You hold no state — tags are the state.
 

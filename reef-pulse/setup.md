@@ -30,7 +30,10 @@ The user may also name a tracker not listed (ClickUp, Notion, etc.) — that's f
 **For each tracker type, verify the tooling:**
 
 - **GitHub**: confirm `gh` CLI is available and authenticated (`gh auth status`).
-- **Jira / Linear / ClickUp / other**: suggest the user install the relevant MCP server so reef skills can interact with it. Check if one is already configured. See [tracker-reference.md](tracker-reference.md) for common MCP servers.
+- **Jira / Linear / ClickUp / other**: suggest the user install the relevant MCP server so reef skills can interact with it. Check if one is already configured. Common MCP servers:
+  - Jira / Confluence: Atlassian's official remote MCP server at `https://mcp.atlassian.com/v1/sse` (or community `mcp-atlassian` package). CLI alternative: `jira-cli` by ankitpokhrel.
+  - Linear: community `linear-mcp-server` (no official Anthropic server). Or use the Linear API directly.
+  - ClickUp: official ClickUp MCP server — see ClickUp developer docs for "connect an AI assistant to ClickUp's MCP server".
 - **Local**: ask where they'd like issues stored (suggest `.agents/moonjelly-reef/issue-tracker/` as default).
 
 ### 2. Check for optional skills
