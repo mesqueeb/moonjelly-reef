@@ -1,6 +1,6 @@
 # merge
 
-> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
+> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -10,17 +10,19 @@ An issue tagged `to-merge` with an open PR.
 
 Read the item to find the PR reference. Check the Plan context to determine whether this is **single-slice** (target branch = base branch) or **multi-slice** (target branch forks from base branch).
 
+Set the pre-fetch variables:
+
 ```sh
 ISSUE_ID = {issue-id} # pre-existing and passed or generate
 ```
 
-### Fetch context
+## 0. Fetch context
 
 ```sh
 tracker.sh issue view $ISSUE_ID --json body,title,labels
 ```
 
-### Variables
+Set the post-fetch variables (after reading the slice body):
 
 ```sh
 SLICE_NAME = {from slice body}
@@ -45,11 +47,7 @@ gh pr view $PR_NUMBER --json mergeStateStatus -q .mergeStateStatus
 Enter a worktree on the slice branch:
 
 ```sh
-WORKTREE=$(reef-worktree-enter.sh \
-  --base-branch {base-branch} --target-branch {target-branch} \
-  --phase merge --slice {slice-name} \
-  --slice-branch $SLICE_BRANCH --branch-op checkout)
-cd "$WORKTREE"
+worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
 ```
 
 Note: the worktree enters on `SLICE_BRANCH` via `worktree-enter.sh --fork-from $SLICE_BRANCH`, not on the target branch. This ensures you are testing the slice code with the latest target merged in.
@@ -75,7 +73,7 @@ tracker.sh issue edit $SLICE_NUMBER --remove-label to-merge --add-label to-rewor
 Clean up the worktree:
 
 ```sh
-reef-worktree-exit.sh --path "$WORKTREE"
+worktree-exit.sh --path $WORKTREE_PATH
 ```
 
 If tests failed, stop here. Do not proceed to single-slice or multi-slice steps.
@@ -122,19 +120,7 @@ Are ALL slices for the plan now tagged `done`?
 tracker.sh issue view $PLAN_ID --json body,title,labels
 ```
 
-#### GitHub tracker
-
-Check all sub-issues of the plan. If all are closed with `done` label:
-
-- Change the plan issue label from `in-progress` to `to-ratify`.
-
-#### Local tracker
-
-Check all files in the `slices/` folder. If all have `[done]` prefix:
-
-- Rename the plan from `[in-progress] plan.md` to `[to-ratify] plan.md`.
-
-If not all done, do nothing — more slices are still in progress.
+If all slices are done, change the plan label from `in-progress` to `to-ratify`. If not all done, do nothing — more slices are still in progress.
 
 ### 4. Close the slice
 

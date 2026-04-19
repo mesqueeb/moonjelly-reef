@@ -1,6 +1,6 @@
 # inspect
 
-> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
+> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -12,6 +12,28 @@ Read the slice to find the PR reference. If the slice doesn't have a PR linked, 
 
 ```sh
 gh pr list --search "slice-name"
+```
+
+Set the pre-fetch variables:
+
+```sh
+ISSUE_ID = {issue-id} # pre-existing and passed or generate
+```
+
+## 0. Fetch context
+
+```sh
+tracker.sh issue view $ISSUE_ID --json body,title,labels
+```
+
+Set the post-fetch variables (after reading the slice body):
+
+```sh
+SLICE_NAME = {from slice body}
+SLICE_NUMBER = $ISSUE_ID
+SLICE_BRANCH = {from slice body}
+PR_NUMBER = {from slice body}
+WORKTREE_PATH = ../worktree-$SLICE_NAME-inspect
 ```
 
 ## Mindset
@@ -34,12 +56,7 @@ A few things you naturally do:
 Use a worktree so you don't disturb the main checkout or any other agent's work.
 
 ```sh
-SLICE_BRANCH=$(gh pr view {pr-number} --json headRefName -q .headRefName)
-WORKTREE=$(reef-worktree-enter.sh \
-  --base-branch {base-branch} --target-branch {target-branch} \
-  --phase inspect --slice {slice-name} \
-  --slice-branch "$SLICE_BRANCH" --branch-op checkout)
-cd "$WORKTREE"
+worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
 ```
 
 Run the full project test suite. Record the result.
@@ -72,41 +89,43 @@ Do these yourself — commit and push to the PR branch:
 
 ```sh
 # Only if you made cleanup commits
-reef-worktree-commit.sh --slice-branch "$SLICE_BRANCH" -m "inspect: cleanup"
+commit.sh --branch $SLICE_BRANCH -m "inspect: cleanup"
 ```
 
-### 5. Document judgment calls
+### 5. Update the PR
+
+```sh
+REPORT = {report-content} # from context
+```
+
+```sh
+gh pr edit $PR_NUMBER --body "$REPORT"
+```
+
+### 6. Document judgment calls
 
 Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
-### 6. Verdict
+### 7. Verdict
 
 **If all acceptance criteria are met and the suite is green:**
 
-### GitHub tracker
-
-Add label `to-merge` to the slice issue. Remove `to-inspect`.
-
-### Local tracker
-
-Rename from `[to-inspect] ...` to `[to-merge] ...`.
+```sh
+tracker.sh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-merge
+```
 
 **If gaps are found:**
 
-### GitHub tracker
+```sh
+tracker.sh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-rework
+```
 
-Add label `to-rework` to the slice issue. Remove `to-inspect`.
 Leave specific review comments on the PR for each gap. Be precise — tell the implementer exactly what's wrong and what "fixed" looks like.
-
-### Local tracker
-
-Rename from `[to-inspect] ...` to `[to-rework] ...`.
-Add the feedback to the slice file body.
 
 ## Clean up
 
 ```sh
-reef-worktree-exit.sh --path "$WORKTREE"
+worktree-exit.sh --path $WORKTREE_PATH
 ```
 
 ## Handoff
