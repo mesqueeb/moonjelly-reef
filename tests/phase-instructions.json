@@ -30,7 +30,7 @@
       {
         "op": "fetch-context",
         "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
-        "tracker-local": "$LOCAL_PATH/$ISSUE_ID (\\w+)/[to-scope] plan.md"
+        "tracker-local": "$LOCAL_PATH/$ISSUE_ID */[to-scope] plan.md"
       },
       { "op": "phase-specific" },
       {
@@ -62,17 +62,24 @@
       {
         "op": "set-variables",
         "sh": [
-          "PLAN_ID = {from plan metadata}",
-          "PLAN_TITLE = {from plan metadata}",
-          "BASE_BRANCH = {from plan metadata}",
-          "TARGET_BRANCH = {from plan metadata}",
-          "WORKTREE_PATH = ../worktree-$PLAN_ID-slice"
+          "ISSUE_ID = {issue-id} # pre-existing and passed or generate",
+          "LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md"
         ]
       },
       {
         "op": "fetch-context",
-        "tracker-github": "gh issue view $PLAN_ID --json body,title,labels",
-        "tracker-local": "$LOCAL_PATH/$PLAN_ID (\\w+)/[to-slice] plan.md"
+        "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
+        "tracker-local": "$LOCAL_PATH/$ISSUE_ID */[to-slice] plan.md"
+      },
+      {
+        "op": "set-variables",
+        "sh": [
+          "PLAN_ID = $ISSUE_ID",
+          "PLAN_TITLE = {from plan body}",
+          "BASE_BRANCH = {from plan body}",
+          "TARGET_BRANCH = {from plan body}",
+          "WORKTREE_PATH = ../worktree-$PLAN_ID-slice"
+        ]
       },
       { "op": "phase-specific" },
       {
@@ -96,7 +103,7 @@
         "tracker-github": "gh issue edit $PLAN_ID --remove-label to-slice --add-label in-progress",
         "tracker-local": [
           "worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH",
-          "commit.sh --branch $TARGET_BRANCH -m \"slice: create slices for $PLAN_TITLE\"",
+          "commit.sh --branch $TARGET_BRANCH -m \"slice: create slices for $PLAN_ID $PLAN_TITLE\"",
           "worktree-exit.sh --path $WORKTREE_PATH"
         ]
       },
@@ -109,18 +116,25 @@
       {
         "op": "set-variables",
         "sh": [
-          "SLICE_NAME = {from slice metadata}",
-          "SLICE_NUMBER = {from slice metadata}",
-          "BASE_BRANCH = {from slice/plan metadata}",
-          "TARGET_BRANCH = {from slice/plan metadata}",
-          "SLICE_BRANCH = {PR branch, e.g. feat/001-auth-endpoint}",
-          "WORKTREE_PATH = ../worktree-$SLICE_NAME-implement"
+          "ISSUE_ID = {issue-id} # pre-existing and passed or generate",
+          "LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md"
         ]
       },
       {
         "op": "fetch-context",
-        "tracker-github": "gh issue view $SLICE_NUMBER --json body,title,labels",
-        "tracker-local": "$LOCAL_PATH/$PLAN_ID (\\w+)/slices/[to-implement] $SLICE_NAME.md"
+        "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
+        "tracker-local": "$LOCAL_PATH/*/slices/[to-implement] $ISSUE_ID.md"
+      },
+      {
+        "op": "set-variables",
+        "sh": [
+          "SLICE_NAME = {from slice body}",
+          "SLICE_NUMBER = $ISSUE_ID",
+          "BASE_BRANCH = {from slice/plan body}",
+          "TARGET_BRANCH = {from slice/plan body}",
+          "SLICE_BRANCH = {PR branch, e.g. feat/001-auth-endpoint}",
+          "WORKTREE_PATH = ../worktree-$SLICE_NAME-implement"
+        ]
       },
       {
         "op": "enter",
@@ -158,18 +172,25 @@
       {
         "op": "set-variables",
         "sh": [
-          "SLICE_NAME = {from slice metadata}",
-          "SLICE_NUMBER = {from slice metadata}",
-          "SLICE_BRANCH = {from slice metadata}",
-          "BASE_BRANCH = {from slice/plan metadata}",
-          "TARGET_BRANCH = {from slice/plan metadata}",
-          "WORKTREE_PATH = ../worktree-$SLICE_NAME-inspect"
+          "ISSUE_ID = {issue-id} # pre-existing and passed or generate",
+          "LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md"
         ]
       },
       {
         "op": "fetch-context",
-        "tracker-github": "gh issue view $SLICE_NUMBER --json body,title,labels",
-        "tracker-local": "$LOCAL_PATH/$PLAN_ID (\\w+)/slices/[to-inspect] $SLICE_NAME.md"
+        "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
+        "tracker-local": "$LOCAL_PATH/*/slices/[to-inspect] $ISSUE_ID.md"
+      },
+      {
+        "op": "set-variables",
+        "sh": [
+          "SLICE_NAME = {from slice body}",
+          "SLICE_NUMBER = $ISSUE_ID",
+          "SLICE_BRANCH = {from slice body}",
+          "BASE_BRANCH = {from slice/plan body}",
+          "TARGET_BRANCH = {from slice/plan body}",
+          "WORKTREE_PATH = ../worktree-$SLICE_NAME-inspect"
+        ]
       },
       {
         "op": "enter",
@@ -201,19 +222,26 @@
       {
         "op": "set-variables",
         "sh": [
-          "SLICE_NAME = {from slice metadata}",
-          "SLICE_NUMBER = {from slice metadata}",
-          "SLICE_BRANCH = {from slice metadata}",
-          "PR_NUMBER = {from slice metadata}",
-          "BASE_BRANCH = {from slice/plan metadata}",
-          "TARGET_BRANCH = {from slice/plan metadata}",
-          "WORKTREE_PATH = ../worktree-$SLICE_NAME-rework"
+          "ISSUE_ID = {issue-id} # pre-existing and passed or generate",
+          "LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md"
         ]
       },
       {
         "op": "fetch-context",
-        "tracker-github": "gh issue view $SLICE_NUMBER --json body,title,labels",
-        "tracker-local": "$LOCAL_PATH/$PLAN_ID (\\w+)/slices/[to-rework] $SLICE_NAME.md"
+        "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
+        "tracker-local": "$LOCAL_PATH/*/slices/[to-rework] $ISSUE_ID.md"
+      },
+      {
+        "op": "set-variables",
+        "sh": [
+          "SLICE_NAME = {from slice body}",
+          "SLICE_NUMBER = $ISSUE_ID",
+          "SLICE_BRANCH = {from slice body}",
+          "PR_NUMBER = {from slice body}",
+          "BASE_BRANCH = {from slice/plan body}",
+          "TARGET_BRANCH = {from slice/plan body}",
+          "WORKTREE_PATH = ../worktree-$SLICE_NAME-rework"
+        ]
       },
       {
         "op": "enter",
@@ -247,17 +275,24 @@
       {
         "op": "set-variables",
         "sh": [
-          "SLICE_NAME = {from slice metadata}",
-          "SLICE_NUMBER = {from slice metadata}",
-          "BASE_BRANCH = {from slice/plan metadata}",
-          "TARGET_BRANCH = {from slice/plan metadata}",
-          "WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves"
+          "ISSUE_ID = {issue-id} # pre-existing and passed or generate",
+          "LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md"
         ]
       },
       {
         "op": "fetch-context",
-        "tracker-github": "gh issue view $SLICE_NUMBER --json body,title,labels",
-        "tracker-local": "$LOCAL_PATH/$PLAN_ID (\\w+)/slices/[to-await-waves] $SLICE_NAME.md"
+        "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
+        "tracker-local": "$LOCAL_PATH/*/slices/[to-await-waves] $ISSUE_ID.md"
+      },
+      {
+        "op": "set-variables",
+        "sh": [
+          "SLICE_NAME = {from slice body}",
+          "SLICE_NUMBER = $ISSUE_ID",
+          "BASE_BRANCH = {from slice/plan body}",
+          "TARGET_BRANCH = {from slice/plan body}",
+          "WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves"
+        ]
       },
       {
         "op": "enter",
@@ -283,18 +318,25 @@
       {
         "op": "set-variables",
         "sh": [
-          "SLICE_NAME = {from slice metadata}",
-          "SLICE_NUMBER = {from slice metadata}",
-          "PR_NUMBER = {from slice metadata}",
-          "BASE_BRANCH = {from slice/plan metadata}",
-          "TARGET_BRANCH = {from slice/plan metadata}",
-          "WORKTREE_PATH = ../worktree-$SLICE_NAME-merge"
+          "ISSUE_ID = {issue-id} # pre-existing and passed or generate",
+          "LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md"
         ]
       },
       {
         "op": "fetch-context",
-        "tracker-github": "gh issue view $SLICE_NUMBER --json body,title,labels",
-        "tracker-local": "$LOCAL_PATH/$PLAN_ID (\\w+)/slices/[to-merge] $SLICE_NAME.md"
+        "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
+        "tracker-local": "$LOCAL_PATH/*/slices/[to-merge] $ISSUE_ID.md"
+      },
+      {
+        "op": "set-variables",
+        "sh": [
+          "SLICE_NAME = {from slice body}",
+          "SLICE_NUMBER = $ISSUE_ID",
+          "PR_NUMBER = {from slice body}",
+          "BASE_BRANCH = {from slice/plan body}",
+          "TARGET_BRANCH = {from slice/plan body}",
+          "WORKTREE_PATH = ../worktree-$SLICE_NAME-merge"
+        ]
       },
       {
         "op": "pr-merge",
@@ -324,17 +366,24 @@
       {
         "op": "set-variables",
         "sh": [
-          "PLAN_ID = {from plan metadata}",
-          "PLAN_TITLE = {from plan metadata}",
-          "BASE_BRANCH = {from plan metadata}",
-          "TARGET_BRANCH = {from plan metadata}",
-          "WORKTREE_PATH = ../worktree-$PLAN_ID-ratify"
+          "ISSUE_ID = {issue-id} # pre-existing and passed or generate",
+          "LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md"
         ]
       },
       {
         "op": "fetch-context",
-        "tracker-github": "gh issue view $PLAN_ID --json body,title,labels",
-        "tracker-local": "$LOCAL_PATH/$PLAN_ID (\\w+)/[to-ratify] plan.md"
+        "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
+        "tracker-local": "$LOCAL_PATH/$ISSUE_ID */[to-ratify] plan.md"
+      },
+      {
+        "op": "set-variables",
+        "sh": [
+          "PLAN_ID = $ISSUE_ID",
+          "PLAN_TITLE = {from plan body}",
+          "BASE_BRANCH = {from plan body}",
+          "TARGET_BRANCH = {from plan body}",
+          "WORKTREE_PATH = ../worktree-$PLAN_ID-ratify"
+        ]
       },
       {
         "op": "enter",
@@ -355,7 +404,7 @@
         "tracker-local": [
           "worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH",
           "mv \"[to-ratify]\" \"[to-land]\" or \"[to-rescan]\"",
-          "commit.sh --branch $TARGET_BRANCH -m \"ratify: update tracker for $PLAN_TITLE\"",
+          "commit.sh --branch $TARGET_BRANCH -m \"ratify: update tracker for $PLAN_ID $PLAN_TITLE\"",
           "worktree-exit.sh --path $WORKTREE_PATH"
         ],
         "tracker-github-pass": "gh issue edit $PLAN_ID --remove-label to-ratify --add-label to-land",
@@ -370,17 +419,24 @@
       {
         "op": "set-variables",
         "sh": [
-          "PLAN_ID = {from plan metadata}",
-          "PLAN_TITLE = {from plan metadata}",
-          "BASE_BRANCH = {from plan metadata}",
-          "TARGET_BRANCH = {from plan metadata}",
-          "WORKTREE_PATH = ../worktree-$PLAN_ID-rescan"
+          "ISSUE_ID = {issue-id} # pre-existing and passed or generate",
+          "LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md"
         ]
       },
       {
         "op": "fetch-context",
-        "tracker-github": "gh issue view $PLAN_ID --json body,title,labels",
-        "tracker-local": "$LOCAL_PATH/$PLAN_ID (\\w+)/[to-rescan] plan.md"
+        "tracker-github": "gh issue view $ISSUE_ID --json body,title,labels",
+        "tracker-local": "$LOCAL_PATH/$ISSUE_ID */[to-rescan] plan.md"
+      },
+      {
+        "op": "set-variables",
+        "sh": [
+          "PLAN_ID = $ISSUE_ID",
+          "PLAN_TITLE = {from plan body}",
+          "BASE_BRANCH = {from plan body}",
+          "TARGET_BRANCH = {from plan body}",
+          "WORKTREE_PATH = ../worktree-$PLAN_ID-rescan"
+        ]
       },
       {
         "op": "enter",
@@ -392,7 +448,7 @@
         "tracker-github": "gh issue edit $PLAN_ID --remove-label to-rescan --add-label in-progress",
         "tracker-local": [
           "worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH",
-          "commit.sh --branch $TARGET_BRANCH -m \"rescan: update tracker for $PLAN_TITLE\"",
+          "commit.sh --branch $TARGET_BRANCH -m \"rescan: update tracker for $PLAN_ID $PLAN_TITLE\"",
           "worktree-exit.sh --path $WORKTREE_PATH"
         ]
       },

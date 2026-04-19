@@ -10,15 +10,11 @@ An issue tagged `to-merge` with an open PR.
 
 Read the item to find the PR reference. Check the Plan context to determine whether this is **single-slice** (target branch = base branch) or **multi-slice** (target branch forks from base branch).
 
-Set the initial variables:
+Set the pre-fetch variables:
 
 ```sh
-SLICE_NAME = {from slice metadata}
-SLICE_NUMBER = {from slice metadata}
-PR_NUMBER = {from slice metadata}
-BASE_BRANCH = {from slice/plan metadata}
-TARGET_BRANCH = {from slice/plan metadata}
-WORKTREE_PATH = ../worktree-$SLICE_NAME-merge
+ISSUE_ID = {issue-id} # pre-existing and passed or generate
+LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md
 ```
 
 ## 0. Fetch context
@@ -26,7 +22,7 @@ WORKTREE_PATH = ../worktree-$SLICE_NAME-merge
 ### GitHub tracker
 
 ```sh
-gh issue view $SLICE_NUMBER --json body,title,labels
+gh issue view $ISSUE_ID --json body,title,labels
 ```
 
 ### Local tracker
@@ -34,7 +30,18 @@ gh issue view $SLICE_NUMBER --json body,title,labels
 Read the file at:
 
 ```sh
-$LOCAL_PATH/$PLAN_ID (\w+)/slices/[to-merge] $SLICE_NAME.md
+$LOCAL_PATH/*/slices/[to-merge] $ISSUE_ID.md
+```
+
+Set the post-fetch variables (after reading the slice body):
+
+```sh
+SLICE_NAME = {from slice body}
+SLICE_NUMBER = $ISSUE_ID
+PR_NUMBER = {from slice body}
+BASE_BRANCH = {from slice/plan body}
+TARGET_BRANCH = {from slice/plan body}
+WORKTREE_PATH = ../worktree-$SLICE_NAME-merge
 ```
 
 ## Single-slice

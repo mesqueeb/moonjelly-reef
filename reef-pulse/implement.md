@@ -10,7 +10,7 @@ Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the is
 
 This skill requires a specific slice: e.g. `#55` or `my-feature/001-auth-endpoint`.
 
-If no slice is given, look for slices tagged `to-implement`. If multiple, pick the first unblocked one (or ask).
+If no slice is given, look for slices tagged `to-implement`. If multiple, pick the first unblocked one. If none, exit silently.
 
 Read the slice (issue or file). It must contain:
 
@@ -20,15 +20,11 @@ Read the slice (issue or file). It must contain:
 
 If the target branch is missing from the slice, check the plan metadata. The target branch is always set — for single-slice it equals the base branch, for multi-slice it's a dedicated branch.
 
-Set the initial variables:
+Set the pre-fetch variables:
 
 ```sh
-SLICE_NAME = {from slice metadata}
-SLICE_NUMBER = {from slice metadata}
-BASE_BRANCH = {from slice/plan metadata}
-TARGET_BRANCH = {from slice/plan metadata}
-SLICE_BRANCH = {PR branch, e.g. feat/001-auth-endpoint}
-WORKTREE_PATH = ../worktree-$SLICE_NAME-implement
+ISSUE_ID = {issue-id} # pre-existing and passed or generate
+LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md
 ```
 
 ## 0. Fetch context
@@ -36,7 +32,7 @@ WORKTREE_PATH = ../worktree-$SLICE_NAME-implement
 ### GitHub tracker
 
 ```sh
-gh issue view $SLICE_NUMBER --json body,title,labels
+gh issue view $ISSUE_ID --json body,title,labels
 ```
 
 ### Local tracker
@@ -44,7 +40,18 @@ gh issue view $SLICE_NUMBER --json body,title,labels
 Read the file at:
 
 ```sh
-$LOCAL_PATH/$PLAN_ID (\w+)/slices/[to-implement] $SLICE_NAME.md
+$LOCAL_PATH/*/slices/[to-implement] $ISSUE_ID.md
+```
+
+Set the post-fetch variables (after reading the slice body):
+
+```sh
+SLICE_NAME = {from slice body}
+SLICE_NUMBER = $ISSUE_ID
+BASE_BRANCH = {from slice/plan body}
+TARGET_BRANCH = {from slice/plan body}
+SLICE_BRANCH = {PR branch, e.g. feat/001-auth-endpoint}
+WORKTREE_PATH = ../worktree-$SLICE_NAME-implement
 ```
 
 ## 1. Git prep

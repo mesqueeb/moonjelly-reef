@@ -36,7 +36,7 @@ gh issue view $ISSUE_ID --json body,title,labels
 Read the file at:
 
 ```sh
-$LOCAL_PATH/$ISSUE_ID (\w+)/[to-scope] plan.md
+$LOCAL_PATH/$ISSUE_ID */[to-scope] plan.md
 ```
 
 ## 1. Git prep

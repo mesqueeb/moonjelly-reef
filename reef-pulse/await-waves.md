@@ -10,14 +10,11 @@ This skill requires a specific slice: e.g. `#55` or `my-feature/002-token-storag
 
 Read the slice. It must have a `blocked-by` list referencing other slices.
 
-Set the initial variables:
+Set the pre-fetch variables:
 
 ```sh
-SLICE_NAME = {from slice metadata}
-SLICE_NUMBER = {from slice metadata}
-BASE_BRANCH = {from slice/plan metadata}
-TARGET_BRANCH = {from slice/plan metadata}
-WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves
+ISSUE_ID = {issue-id} # pre-existing and passed or generate
+LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md
 ```
 
 ## 0. Fetch context
@@ -25,7 +22,7 @@ WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves
 ### GitHub tracker
 
 ```sh
-gh issue view $SLICE_NUMBER --json body,title,labels
+gh issue view $ISSUE_ID --json body,title,labels
 ```
 
 ### Local tracker
@@ -33,7 +30,17 @@ gh issue view $SLICE_NUMBER --json body,title,labels
 Read the file at:
 
 ```sh
-$LOCAL_PATH/$PLAN_ID (\w+)/slices/[to-await-waves] $SLICE_NAME.md
+$LOCAL_PATH/*/slices/[to-await-waves] $ISSUE_ID.md
+```
+
+Set the post-fetch variables (after reading the slice body):
+
+```sh
+SLICE_NAME = {from slice body}
+SLICE_NUMBER = $ISSUE_ID
+BASE_BRANCH = {from slice/plan body}
+TARGET_BRANCH = {from slice/plan body}
+WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves
 ```
 
 ## 1. Check dependencies

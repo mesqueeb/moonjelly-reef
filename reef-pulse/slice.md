@@ -11,16 +11,13 @@ Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the is
 This skill accepts:
 
 - a specific issue: e.g. `#42` or `my-feature`
-- nothing: look for items tagged `to-slice`. If multiple, ask the user to pick. If none, explain that items need to be scoped first and suggest `/reef-scope`.
+- nothing: look for items tagged `to-slice`. If multiple, pick the first one. If none, exit silently.
 
-Set the initial variables:
+Set the pre-fetch variables:
 
 ```sh
-PLAN_ID = {from plan metadata}
-PLAN_TITLE = {from plan metadata}
-BASE_BRANCH = {from plan metadata}
-TARGET_BRANCH = {from plan metadata}
-WORKTREE_PATH = ../worktree-$PLAN_ID-slice
+ISSUE_ID = {issue-id} # pre-existing and passed or generate
+LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md
 ```
 
 ## 0. Fetch context
@@ -28,7 +25,7 @@ WORKTREE_PATH = ../worktree-$PLAN_ID-slice
 ### GitHub tracker
 
 ```sh
-gh issue view $PLAN_ID --json body,title,labels
+gh issue view $ISSUE_ID --json body,title,labels
 ```
 
 ### Local tracker
@@ -36,7 +33,17 @@ gh issue view $PLAN_ID --json body,title,labels
 Read the file at:
 
 ```sh
-$LOCAL_PATH/$PLAN_ID (\w+)/[to-slice] plan.md
+$LOCAL_PATH/$ISSUE_ID */[to-slice] plan.md
+```
+
+Set the post-fetch variables (after reading the plan body):
+
+```sh
+PLAN_ID = $ISSUE_ID
+PLAN_TITLE = {from plan body}
+BASE_BRANCH = {from plan body}
+TARGET_BRANCH = {from plan body}
+WORKTREE_PATH = ../worktree-$PLAN_ID-slice
 ```
 
 Read the issue. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The plan metadata block tells you the work type, base branch, and target branch name.
@@ -195,7 +202,7 @@ Commit and push the plan and slice files so other agents see them:
 
 ```sh
 worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
-commit.sh --branch $TARGET_BRANCH -m "slice: create slices for $PLAN_TITLE"
+commit.sh --branch $TARGET_BRANCH -m "slice: create slices for $PLAN_ID $PLAN_TITLE"
 worktree-exit.sh --path $WORKTREE_PATH
 ```
 

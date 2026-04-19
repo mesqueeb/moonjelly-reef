@@ -10,14 +10,11 @@ This skill requires a specific issue: e.g. `#42` or `my-feature`.
 
 Read the plan fully — the plan, success criteria, coverage matrix, agent decisions, and the ratify report that identified the gaps.
 
-Set the initial variables:
+Set the pre-fetch variables:
 
 ```sh
-PLAN_ID = {from plan metadata}
-PLAN_TITLE = {from plan metadata}
-BASE_BRANCH = {from plan metadata}
-TARGET_BRANCH = {from plan metadata}
-WORKTREE_PATH = ../worktree-$PLAN_ID-rescan
+ISSUE_ID = {issue-id} # pre-existing and passed or generate
+LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md
 ```
 
 ## 0. Fetch context
@@ -25,7 +22,7 @@ WORKTREE_PATH = ../worktree-$PLAN_ID-rescan
 ### GitHub tracker
 
 ```sh
-gh issue view $PLAN_ID --json body,title,labels
+gh issue view $ISSUE_ID --json body,title,labels
 ```
 
 ### Local tracker
@@ -33,7 +30,17 @@ gh issue view $PLAN_ID --json body,title,labels
 Read the file at:
 
 ```sh
-$LOCAL_PATH/$PLAN_ID (\w+)/[to-rescan] plan.md
+$LOCAL_PATH/$ISSUE_ID */[to-rescan] plan.md
+```
+
+Set the post-fetch variables (after reading the plan body):
+
+```sh
+PLAN_ID = $ISSUE_ID
+PLAN_TITLE = {from plan body}
+BASE_BRANCH = {from plan body}
+TARGET_BRANCH = {from plan body}
+WORKTREE_PATH = ../worktree-$PLAN_ID-rescan
 ```
 
 ## Mindset
@@ -142,7 +149,7 @@ For local tracker, commit and push the updated plan files and new slice files:
 
 ```sh
 worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
-commit.sh --branch $TARGET_BRANCH -m "rescan: update tracker for $PLAN_TITLE"
+commit.sh --branch $TARGET_BRANCH -m "rescan: update tracker for $PLAN_ID $PLAN_TITLE"
 worktree-exit.sh --path $WORKTREE_PATH
 ```
 

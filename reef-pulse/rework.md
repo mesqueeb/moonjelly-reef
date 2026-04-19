@@ -10,16 +10,11 @@ This skill requires a specific slice: e.g. `#55` or `my-feature/001-auth-endpoin
 
 Read the slice to find the PR reference.
 
-Set the initial variables:
+Set the pre-fetch variables:
 
 ```sh
-SLICE_NAME = {from slice metadata}
-SLICE_NUMBER = {from slice metadata}
-SLICE_BRANCH = {from slice metadata}
-PR_NUMBER = {from slice metadata}
-BASE_BRANCH = {from slice/plan metadata}
-TARGET_BRANCH = {from slice/plan metadata}
-WORKTREE_PATH = ../worktree-$SLICE_NAME-rework
+ISSUE_ID = {issue-id} # pre-existing and passed or generate
+LOCAL_PATH = {local-path} # set only if defined at .agents/moonjelly-reef/config.md
 ```
 
 ## 0. Fetch context
@@ -27,7 +22,7 @@ WORKTREE_PATH = ../worktree-$SLICE_NAME-rework
 ### GitHub tracker
 
 ```sh
-gh issue view $SLICE_NUMBER --json body,title,labels
+gh issue view $ISSUE_ID --json body,title,labels
 ```
 
 ### Local tracker
@@ -35,7 +30,19 @@ gh issue view $SLICE_NUMBER --json body,title,labels
 Read the file at:
 
 ```sh
-$LOCAL_PATH/$PLAN_ID (\w+)/slices/[to-rework] $SLICE_NAME.md
+$LOCAL_PATH/*/slices/[to-rework] $ISSUE_ID.md
+```
+
+Set the post-fetch variables (after reading the slice body):
+
+```sh
+SLICE_NAME = {from slice body}
+SLICE_NUMBER = $ISSUE_ID
+SLICE_BRANCH = {from slice body}
+PR_NUMBER = {from slice body}
+BASE_BRANCH = {from slice/plan body}
+TARGET_BRANCH = {from slice/plan body}
+WORKTREE_PATH = ../worktree-$SLICE_NAME-rework
 ```
 
 ## Process
