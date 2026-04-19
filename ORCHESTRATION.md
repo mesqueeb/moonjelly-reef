@@ -50,11 +50,40 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - set-variables
   ```sh
   PLAN_ID = $ISSUE_ID
-  PLAN_CONTENT = {plan-content} # assembled during phase-specific
+  PLAN_CONTENT = {plan-content} # from context
   ```
 - update-tracker
   ```sh
   tracker.sh issue edit $PLAN_ID --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
+  ```
+
+### [/reef-land](./reef-land/SKILL.md)
+
+- set-variables
+  ```sh
+  PLAN_ID = {issue-id} # pre-existing and passed
+  PR_NUMBER = {from plan body or gh pr list}
+  ```
+- phase-specific
+- pr-merge — if approved
+  ```sh
+  gh pr merge $PR_NUMBER --merge --delete-branch
+  ```
+- fetch — if approved
+  ```sh
+  git fetch origin --prune
+  ```
+- update-tracker — if approved
+  ```sh
+  tracker.sh issue close $PLAN_ID
+  ```
+- update-tracker — if re-scope
+  ```sh
+  tracker.sh issue edit $PLAN_ID --remove-label to-land --add-label to-scope
+  ```
+- update-tracker — if re-scan
+  ```sh
+  tracker.sh issue edit $PLAN_ID --remove-label to-land --add-label to-rescan
   ```
 
 ## Phases
@@ -130,7 +159,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - set-variables
   ```sh
-  REPORT = {implementation report assembled during phase-specific}
+  REPORT = {report-content} # from context
   ```
 - pr-create
   ```sh
@@ -165,7 +194,6 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   SLICE_NAME = {from slice body}
   SLICE_NUMBER = $ISSUE_ID
   SLICE_BRANCH = {from slice body}
-  PR_NUMBER = {from slice body}
   WORKTREE_PATH = ../worktree-$SLICE_NAME-inspect
   ```
 - enter-worktree
@@ -179,7 +207,8 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - set-variables
   ```sh
-  REPORT = {inspection report assembled during phase-specific}
+  PR_NUMBER = {from slice body} # if not found, try gh pr list --search
+  REPORT = {report-content} # from context
   ```
 - update-pr-body
   ```sh
@@ -222,7 +251,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - set-variables
   ```sh
-  REPORT = {updated implementation report with rework notes}
+  REPORT = {report-content} # from context
   ```
 - update-pr-body
   ```sh
@@ -256,7 +285,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - dep-check
   ```sh
-  tracker.sh issue view $DEP_ID --json labels
+  tracker.sh issue view <dependency-id> --json labels
   ```
 - enter-worktree
   ```sh
@@ -293,7 +322,32 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   PR_NUMBER = {from slice body}
   PLAN_ID = {from slice/plan body}
   TARGET_BRANCH = {from slice/plan body}
+  SLICE_BRANCH = {from slice body}
   WORKTREE_PATH = ../worktree-$SLICE_NAME-merge
+  ```
+- pre-merge-check
+  ```sh
+  gh pr view $PR_NUMBER --json mergeStateStatus -q .mergeStateStatus
+  ```
+- enter-worktree
+  ```sh
+  worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
+  ```
+- merge-target-into-slice
+  ```sh
+  git merge origin/$TARGET_BRANCH
+  ```
+- commit-code — if merge-needed
+  ```sh
+  commit.sh --branch $SLICE_BRANCH -m "merge: resolve conflicts with $TARGET_BRANCH"
+  ```
+- update-tracker — if tests-fail
+  ```sh
+  tracker.sh issue edit $SLICE_NUMBER --remove-label to-merge --add-label to-rework
+  ```
+- exit-worktree
+  ```sh
+  worktree-exit.sh --path $WORKTREE_PATH
   ```
 - update-tracker — if single-slice (PR stays open for reef-land — stop here)
   ```sh
@@ -303,11 +357,14 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   gh pr merge $PR_NUMBER --squash --delete-branch
   ```
-- enter-worktree — if multi-slice
+- check-siblings — if multi-slice
   ```sh
-  worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+  tracker.sh issue list --json number,labels --search "parent:$PLAN_ID"
   ```
-- phase-specific — if multi-slice
+- check-completion — if multi-slice
+  ```sh
+  tracker.sh issue view $PLAN_ID --json body,title,labels
+  ```
 - update-tracker — if multi-slice
   ```sh
   tracker.sh issue close $SLICE_NUMBER
@@ -315,10 +372,6 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - update-tracker — if all-slices-done
   ```sh
   tracker.sh issue edit $PLAN_ID --remove-label in-progress --add-label to-ratify
-  ```
-- exit-worktree — if multi-slice
-  ```sh
-  worktree-exit.sh --path $WORKTREE_PATH
   ```
 
 ### [ratify.md](./reef-pulse/ratify.md)
@@ -350,7 +403,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - set-variables
   ```sh
-  REPORT = {ratify report assembled during phase-specific}
+  REPORT = {report-content} # from context
   ```
 - pr-create — if pass
   ```sh

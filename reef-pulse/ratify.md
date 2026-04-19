@@ -86,15 +86,22 @@ Look for problems that only appear when slices are composed:
 - Are there any test gaps at the integration boundaries? (Prevents painpoint C3 — mocked-away bugs.)
 - **Terminology inconsistencies**: did different slices use different words for the same concept? If terminology drifted across slices, run `/ubiquitous-language` against the target branch to flag ambiguities and include findings in the report.
 
-### 6. Produce the report
+### 6. Documentation
 
-The report goes on a **PR from the target branch to the base branch** (usually `main`). This PR is what the human will ultimately merge or reject.
+When you find non-obvious behavior worth documenting during your holistic review:
+
+1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and push directly to the target branch:
 
 ```sh
-gh pr create --base $BASE_BRANCH --head $TARGET_BRANCH --title "$PLAN_TITLE" --body "$REPORT"
+commit.sh --branch $TARGET_BRANCH -m "ratify: add documentation"
 ```
+2. **Outside-of-code docs if warranted.** If the behavior is significant enough to document beyond a code comment, check the repo's `AGENTS.md`/`CLAUDE.md` for a documentation locations section. If it exists, follow it. If it doesn't, create a brief entry.
 
-If a PR already exists for this target branch, update its description instead.
+Don't document what's obvious from reading the code.
+
+### 7. Produce the report
+
+The report goes on a **PR from the target branch to the base branch** (usually `main`). This PR is what the human will ultimately merge or reject.
 
 The report should be concise and focused on what the human needs to know. Do NOT dump the entire plan — the human can read the plan. Focus on:
 
@@ -130,22 +137,20 @@ The report should be concise and focused on what the human needs to know. Do NOT
 {link to plan or file}
 ```
 
-### 7. Document judgment calls
+#### Document judgment calls
 
 Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
-## Documentation
-
-When you find non-obvious behavior worth documenting during your holistic review:
-
-1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and push directly to the target branch:
+#### Submit the report
 
 ```sh
-commit.sh --branch $TARGET_BRANCH -m "ratify: add documentation"
+REPORT = {report-content} # from context
 ```
-2. **Outside-of-code docs if warranted.** If the behavior is significant enough to document beyond a code comment, check the repo's `AGENTS.md`/`CLAUDE.md` for a documentation locations section. If it exists, follow it. If it doesn't, create a brief entry.
 
-Don't document what's obvious from reading the code.
+```sh
+gh pr create --base $BASE_BRANCH --head $TARGET_BRANCH --title "$PLAN_TITLE" --body "$REPORT"
+# If a PR already exists for this target branch, update its description instead.
+```
 
 ### 8. Tag
 

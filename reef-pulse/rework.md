@@ -72,6 +72,10 @@ commit.sh --branch $SLICE_BRANCH -m "rework: address inspection feedback"
 Rewrite the report section of the PR description using the same template as the implement phase. This is a fresh report, not an append — the current state should be clear without reading history.
 
 ```sh
+REPORT = {report-content} # from context
+```
+
+```sh
 gh pr edit $PR_NUMBER --body "$REPORT"
 ```
 
