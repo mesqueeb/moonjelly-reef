@@ -25,14 +25,6 @@ ISSUE_ID = {issue-id} # pre-existing and passed or generate
 tracker.sh issue view $ISSUE_ID --json body,title,labels
 ```
 
-Set the post-fetch variables (after reading the plan body):
-
-```sh
-PLAN_ID = $ISSUE_ID
-TARGET_BRANCH = {from plan body}
-WORKTREE_PATH = ../worktree-$PLAN_ID-slice
-```
-
 Read the issue. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The plan metadata block tells you the work type, base branch, and target branch name.
 
 ## 1. Draft vertical slices
@@ -55,5 +47,5 @@ For small bugs (scope = quick fix in the plan): produce a single slice. The plan
 
 After drafting, check: **did you produce exactly 1 slice?**
 
-- **1 slice** — delegate to [slice-single.md](slice-single.md) (fast path: no worktree, no branch, tag `to-implement`)
-- **2+ slices** — delegate to [slice-multi.md](slice-multi.md) (full flow: worktree, branch, coverage matrix, sub-issues, tag `in-progress`)
+- **1 slice** — read and execute [slice-single.md](slice-single.md) (fast path: no worktree, no branch, tag `to-implement`)
+- **2+ slices** — read and execute [slice-multi.md](slice-multi.md) (full flow: worktree, branch, coverage matrix, sub-issues, tag `in-progress`)

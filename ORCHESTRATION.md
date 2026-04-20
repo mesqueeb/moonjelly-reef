@@ -98,18 +98,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   tracker.sh issue view $ISSUE_ID --json body,title,labels
   ```
-- set-variables
-  ```sh
-  PLAN_ID = $ISSUE_ID
-  TARGET_BRANCH = {from plan body}
-  WORKTREE_PATH = ../worktree-$PLAN_ID-slice
-  ```
 
 ### [slice-single.md](./reef-pulse/slice-single.md)
 
 - set-variables
   ```sh
-  PLAN_ID = {from router}
+  PLAN_ID = $ISSUE_ID
   PLAN_BODY = {plan body with acceptance criteria and plan context appended}
   ```
 - update-tracker
@@ -119,11 +113,17 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 
 ### [slice-multi.md](./reef-pulse/slice-multi.md)
 
+- set-variables
+  ```sh
+  PLAN_ID = $ISSUE_ID
+  TARGET_BRANCH = {from plan body}
+  WORKTREE_PATH = ../worktree-$PLAN_ID-slice
+  ```
 - enter-worktree
   ```sh
   worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
   ```
-- create-remote-branch — if new-branch
+- create-remote-branch
   ```sh
   git push -u origin $TARGET_BRANCH
   ```
@@ -294,9 +294,13 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   TARGET_BRANCH = {from slice/plan body}
   WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves
   ```
+- set-variables
+  ```sh
+  DEPENDENCY_ID = {from slice blocked-by list}
+  ```
 - dep-check
   ```sh
-  tracker.sh issue view <dependency-id> --json labels
+  tracker.sh issue view $DEPENDENCY_ID --json labels
   ```
 - enter-worktree
   ```sh

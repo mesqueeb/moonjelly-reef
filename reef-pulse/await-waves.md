@@ -36,7 +36,11 @@ WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves
 For each dependency in the `blocked-by` list, check if the blocking slice is tagged `done`:
 
 ```sh
-tracker.sh issue view <dependency-id> --json labels
+DEPENDENCY_ID = {from slice blocked-by list}
+```
+
+```sh
+tracker.sh issue view $DEPENDENCY_ID --json labels
 ```
 
 **If any dependency is NOT done**: exit silently. Do nothing. This slice stays `to-await-waves`. It will be checked again on the next pulse.

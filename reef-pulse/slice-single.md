@@ -8,13 +8,10 @@ Single-slice fast path — delegated from [slice.md](slice.md).
 
 ## Input (from router)
 
-The router has already fetched context and drafted exactly 1 slice. You receive:
+The router has already fetched context and drafted exactly 1 slice. Set post-fetch variables:
 
 ```sh
-PLAN_ID = {from router}
-PLAN_BODY = {current plan body}
-ACCEPTANCE_CRITERIA = {drafted acceptance criteria for the single slice}
-BASE_BRANCH = {from plan body}
+PLAN_ID = $ISSUE_ID
 ```
 
 ## 1. Update the plan body

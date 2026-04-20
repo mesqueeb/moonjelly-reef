@@ -8,10 +8,10 @@ Multi-slice flow — delegated from [slice.md](slice.md).
 
 ## Input (from router)
 
-The router has already fetched context and drafted 2+ slices. You receive:
+The router has already fetched context and drafted 2+ slices. Set post-fetch variables:
 
 ```sh
-PLAN_ID = {from router}
+PLAN_ID = $ISSUE_ID
 TARGET_BRANCH = {from plan body}
 WORKTREE_PATH = ../worktree-$PLAN_ID-slice
 ```
