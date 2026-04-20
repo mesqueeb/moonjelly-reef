@@ -97,7 +97,28 @@ Look for problems that only appear when slices are composed:
 - Are there any test gaps at the integration boundaries? (Prevents painpoint C3 — mocked-away bugs.)
 - **Terminology inconsistencies**: did different slices use different words for the same concept? If terminology drifted across slices, run `/ubiquitous-language` against the target branch to flag ambiguities and include findings in the report.
 
-### 6. Documentation
+### 6. Plan re-review
+
+Before deciding PASS vs GAPS, re-review the entire plan through the lens of your findings from steps 3-5:
+
+- Re-read the plan top to bottom. With your holistic review findings in mind, are the success criteria still correct and complete?
+- If the review revealed something that SHOULD have been a criterion but wasn't, update the success criteria on the plan issue.
+- Classify each gap found:
+  - **Missing coverage**: a success criterion has no slice addressing it
+  - **Incomplete implementation**: a slice was done but didn't fully satisfy a criterion when composed
+  - **Integration gap**: slices work individually but not together
+  - **Planning gap**: the plan or success criteria were ambiguous or missed something
+
+If you updated the plan's success criteria:
+
+```sh
+PLAN_BODY="{plan body with updated success criteria}"
+./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
+```
+
+If any gaps need decisions beyond what success criteria cover (e.g. the plan itself is ambiguous about a design direction), this is a **safety valve** — tag `to-scope` instead of `to-rework` so a new scoping session can resolve the ambiguity.
+
+### 7. Documentation
 
 When you find non-obvious behavior worth documenting during your holistic review:
 
@@ -111,7 +132,7 @@ When you find non-obvious behavior worth documenting during your holistic review
 
 Don't document what's obvious from reading the code.
 
-### 7. Produce the report
+### 8. Produce the report
 
 The report goes on a **PR from the target branch to the base branch** (usually `main`). This PR is what the human will ultimately merge or reject.
 
@@ -168,7 +189,7 @@ PR_BODY="$PR_BODY\n\n$REPORT"
 gh pr edit "$PR_NUMBER" --body "$PR_BODY"
 ```
 
-### 8. Tag
+### 9. Tag
 
 **If all criteria met (PASS):**
 
@@ -176,10 +197,16 @@ gh pr edit "$PR_NUMBER" --body "$PR_BODY"
 ./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land
 ```
 
-**If gaps found:**
+**If gaps found (fixable within success criteria):**
 
 ```sh
-./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rescan
+./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rework
+```
+
+**If gaps need decisions beyond success criteria (safety valve):**
+
+```sh
+./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-scope
 ```
 
 ## Clean up
@@ -193,7 +220,7 @@ gh pr edit "$PR_NUMBER" --body "$PR_BODY"
 Read the plan issue body for any existing `### 🪼 Pulse metrics` rows (scope and slice metrics). Extract them as `planIssueMetrics`.
 
 ```sh
-nextPhase="to-land" # or "to-rescan" if gaps found
+nextPhase="to-land" # or "to-rework" if gaps found, "to-scope" if safety valve
 planPr="$PR_NUMBER"
 summary="Ratify {PASS|GAPS FOUND} — {one-line summary}"
 planIssueMetrics="{metrics rows from plan issue body, or empty if none}"
