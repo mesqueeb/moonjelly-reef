@@ -202,7 +202,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH to read the codebase for informed slicing decisions`
   ```sh
-  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
   ```
 - create-remote-branch
   ```sh
@@ -252,6 +252,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   SLICE_NAME="{from slice body}"
   SLICE_ID="$ISSUE_ID"
+  BASE_BRANCH="{from slice/plan body}"
   TARGET_BRANCH="{from slice/plan body}"
   SLICE_BRANCH="{PR branch, e.g. feat/001-auth-endpoint}"
   WORKTREE_PATH=".worktrees/$SLICE_NAME-implement"
@@ -259,7 +260,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH so you start from a clean integration point`
   ```sh
-  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code
@@ -309,12 +310,13 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   SLICE_NAME="{from slice body}"
   SLICE_ID="$ISSUE_ID"
   SLICE_BRANCH="{from slice body}"
+  TARGET_BRANCH="{from slice/plan body}"
   WORKTREE_PATH=".worktrees/$SLICE_NAME-inspect"
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $SLICE_BRANCH to review the implementation`
   ```sh
-  ./worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$SLICE_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code — if cleanup-needed
@@ -358,13 +360,14 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   SLICE_NAME="{from slice body}"
   SLICE_ID="$ISSUE_ID"
   SLICE_BRANCH="{from slice body}"
+  TARGET_BRANCH="{from slice/plan body}"
   PR_NUMBER="{from slice body}"
   WORKTREE_PATH=".worktrees/$SLICE_NAME-rework"
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $SLICE_BRANCH to apply fixes to the existing PR branch`
   ```sh
-  ./worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$SLICE_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code
@@ -407,6 +410,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   SLICE_NAME="{from slice body}"
   SLICE_ID="$ISSUE_ID"
+  BASE_BRANCH="{from slice/plan body}"
   TARGET_BRANCH="{from slice/plan body}"
   WORKTREE_PATH=".worktrees/$SLICE_NAME-await-waves"
   ```
@@ -421,7 +425,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH to be able to read up to date code`
   ```sh
-  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - set-variables
@@ -469,11 +473,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $SLICE_BRANCH (not $TARGET_BRANCH) so you are testing the slice code with the latest target merged in`
   ```sh
-  ./worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
-  ```
-- merge-target-into-slice
-  ```sh
-  git merge "origin/$TARGET_BRANCH"
+  ./worktree-enter.sh --fork-from "$SLICE_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - commit-code — if merge-needed
   ```sh
@@ -565,7 +565,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH because all slice PRs are merged there`
   ```sh
-  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code — if documentation-added
@@ -612,6 +612,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   PLAN_ID="$ISSUE_ID"
   PR_NUMBER="{from plan body frontmatter PR: \"#N\"}"
+  BASE_BRANCH="{from plan body}"
   TARGET_BRANCH="{from plan body}"
   WORKTREE_PATH=".worktrees/$PLAN_ID-rescan"
   ```
@@ -622,7 +623,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH to read the current state of the code`
   ```sh
-  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - update-tracker
