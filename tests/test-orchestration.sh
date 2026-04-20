@@ -169,6 +169,44 @@ for raw in lines:
 " > "$TMPFILE"
 
 # ============================================================
+# Validate ORCHESTRATION.md structure
+# ============================================================
+
+echo "=== ORCHESTRATION.md structure ==="
+in_section=false
+section_line=0
+section_name=""
+struct_fail=0
+while IFS= read -r line; do
+  section_line=$((section_line + 1))
+  # Detect ### headings
+  case "$line" in
+    '### '*)
+      in_section=true
+      section_name="$line"
+      continue
+      ;;
+    '## '* | '# '*)
+      in_section=false
+      continue
+      ;;
+  esac
+  if $in_section && [ -n "$line" ]; then
+    case "$line" in
+      '- '*) ;;
+      '  '*) ;;
+      *)
+        fail "ORCHESTRATION.md structure > bad line in $section_name" "line $section_line: $line"
+        struct_fail=1
+        ;;
+    esac
+  fi
+done < "$ORCHESTRATION"
+if [ "$struct_fail" -eq 0 ]; then
+  pass "ORCHESTRATION.md structure > all section lines start with '- ' or '  '"
+fi
+
+# ============================================================
 # Run tests
 # ============================================================
 
