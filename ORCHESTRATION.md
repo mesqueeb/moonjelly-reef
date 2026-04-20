@@ -103,13 +103,14 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   gh pr merge $PR_NUMBER --$MERGE_STRATEGY --delete-branch
   ```
-- fetch — if approved
+- pull
+  - contains: `Pull the merged changes into the current branch if it matches the base branch:`
   ```sh
   git fetch origin --prune
-  ```
-- pull — if approved and current branch matches base branch
-  ```sh
-  git pull --ff-only origin $BASE_BRANCH
+  CURRENT=$(git branch --show-current)
+  if [ "$CURRENT" = "$BASE_BRANCH" ]; then
+    git pull --ff-only origin $BASE_BRANCH
+  fi
   ```
 - update-tracker — if approved
   ```sh
