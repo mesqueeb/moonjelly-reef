@@ -141,6 +141,7 @@ Update the plan body with the revised criteria and coverage matrix. Change label
 ```sh
 PLAN_BODY="{plan body with updated criteria and coverage matrix}"
 ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-rescan --add-label in-progress
+gh pr edit "$PR_NUMBER" --remove-label to-rescan --add-label in-progress
 ```
 
 ## Clean up

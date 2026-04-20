@@ -71,6 +71,7 @@ If the test suite fails after merging, tag the slice `to-rework` and stop:
 
 ```sh
 ./tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label to-rework
+gh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-rework
 ```
 
 Clean up the worktree:

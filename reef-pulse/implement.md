@@ -136,7 +136,7 @@ REPORT="{report-content}" # starts with: closes #$SLICE_ID $SLICE_NAME\n\n
 ```
 
 ```sh
-gh pr create --base "$TARGET_BRANCH" --title "$SLICE_NAME" --body "$REPORT"
+gh pr create --base "$TARGET_BRANCH" --title "$SLICE_NAME" --body "$REPORT" --label to-inspect
 ```
 
 The PR targets the **target branch** (which equals `{base-branch}` for single-slice work).

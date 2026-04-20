@@ -25,6 +25,7 @@ SLICE_ID="$ISSUE_ID"
 ```sh
 MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}"
 gh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
+gh pr edit "$PR_NUMBER" --remove-label to-merge --add-label landed
 ```
 
 ## 2. Check siblings and plan completion

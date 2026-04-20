@@ -122,12 +122,14 @@ gh pr edit "$PR_NUMBER" --body "$PR_BODY"
 
 ```sh
 ./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge
+gh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-merge
 ```
 
 **If gaps are found:**
 
 ```sh
 ./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework
+gh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-rework
 ```
 
 Leave specific review comments on the PR for each gap. Be precise — tell the implementer exactly what's wrong and what "fixed" looks like.

@@ -160,7 +160,7 @@ Format the report as a collapsible block with local timestamp (`yyyy/MM/dd HH:mm
 ```sh
 REPORT="{ratify-report}" # <details><summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
 # if no PR exists:
-gh pr create --base "$BASE_BRANCH" --head "$TARGET_BRANCH" --title "$PLAN_TITLE" --body "$REPORT"
+gh pr create --base "$BASE_BRANCH" --head "$TARGET_BRANCH" --title "$PLAN_TITLE" --body "$REPORT" --label to-ratify
 # if PR exists, append:
 PR_NUMBER="{from pr create output or existing PR}"
 PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q .body)
@@ -174,12 +174,14 @@ gh pr edit "$PR_NUMBER" --body "$PR_BODY"
 
 ```sh
 ./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land
+gh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-land
 ```
 
 **If gaps found:**
 
 ```sh
 ./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rescan
+gh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-rescan
 ```
 
 ## Clean up

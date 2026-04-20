@@ -24,6 +24,7 @@ Remove `to-merge`, add `to-land`:
 
 ```sh
 ./tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-land
+gh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-land
 ```
 
 ## Handoff
