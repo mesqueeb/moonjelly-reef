@@ -8,7 +8,7 @@
 
 This skill requires a specific issue: e.g. `#42` or `my-feature`.
 
-Read the plan fully — the plan, success criteria, coverage matrix, agent decisions, and the gap report that triggered the rescan. The gap report is a comment on the plan issue, written either by ratify (automated holistic review) or by reef-land (human review with PR comments).
+Read the plan fully — the plan, success criteria, coverage matrix, and agent decisions. Then read the PR body for gap reports that triggered the rescan. Gap reports are `<details><summary>` blocks on the PR body, written either by ratify (automated holistic review) or by reef-land (human review).
 
 Set the pre-fetch variables:
 
@@ -26,8 +26,15 @@ Set the post-fetch variables (after reading the plan body):
 
 ```sh
 PLAN_ID = $ISSUE_ID
+PR_NUMBER = {from plan body frontmatter PR: #N}
 TARGET_BRANCH = {from plan body}
 WORKTREE_PATH = ../worktree-$PLAN_ID-rescan
+```
+
+## Fetch PR
+
+```sh
+gh pr view $PR_NUMBER --json body
 ```
 
 ## Mindset
@@ -45,7 +52,7 @@ Do NOT ask a human. If the gaps need decisions that aren't in the success criter
 
 ### 0. Git prep
 
-Enter a worktree forked from $TARGET_BRANCH to read the current state of the code after ratify found gaps:
+Enter a worktree forked from $TARGET_BRANCH to read the current state of the code:
 
 ```sh
 worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH

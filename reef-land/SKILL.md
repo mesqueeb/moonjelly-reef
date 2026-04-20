@@ -145,41 +145,51 @@ When all change requests are scoped, assess their size:
 
 ### Writing the gap report (substantial changes only)
 
-Write the gap report as a comment on the plan issue. The reader of this report is a different agent (rescan) that has no context from this conversation — be explicit and self-contained.
+The gap report goes on the PR body in a `<details><summary>` block. Rescan has no context from this conversation — be explicit and self-contained.
+
+If the discussion changed any plan-level Decisions, Stories, or Success Criteria, also update the plan body:
 
 ```sh
-tracker.sh issue comment $PLAN_ID --body "$GAP_REPORT"
+PLAN_BODY = $(tracker.sh issue view $PLAN_ID --json body -q .body)
+# Update outdated sections, then:
+tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY"
 ```
 
-The gap report format:
+Append the gap report to the current PR body. Include original PR review comments (quoted, with file:line) and the refined context from your discussion.
 
 ```markdown
-## Change requests from human review
+<details>
+<summary>Change requests from human review — {yyyy/MM/dd HH:mm}</summary>
 
 ### Gaps
 
 - **Gap 1**: {description} — maps to SC{N} / new criterion
-- **Gap 2**: {description} — maps to SC{N} / new criterion
-- ...
+
+  > Original comment ({file}:{line}): {quoted PR review comment}
+
+  Context: {what was clarified or decided}
 
 ### New or updated success criteria (if any)
 
 - [ ] {new criterion}
 
-### Context
-
-{Any relevant context from the discussion that would help the implementing agent.}
+</details>
 ```
 
-Then tag for rescan:
+Write this to the PR and update the tag:
 
 ```sh
+PR_BODY = {current PR body with gap report appended in <details><summary> block}
+```
+
+```sh
+gh pr edit $PR_NUMBER --body "$PR_BODY"
 tracker.sh issue edit $PLAN_ID --remove-label to-land --add-label to-rescan
 ```
 
 Tell the human:
 
-> "Change requests scoped and written to the plan. The reef will pick this up on the next pulse and create new slices to address them."
+> "Change requests scoped and written to the PR. The reef will pick this up on the next pulse and create new slices to address them."
 
 ## 4. Capture concerns in follow-up issue (when chosen in step 2)
 

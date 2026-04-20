@@ -89,7 +89,7 @@ tracker.sh issue edit $ISSUE_ID --body "$ISSUE_BODY"
 Metrics section format:
 
 ```markdown
-### 🪼 Pulse metrics — {YYYY-MM-DD HH:MM UTC}
+### 🪼 Pulse metrics — {yyyy/MM/dd HH:mm}
 
 | Phase     | Target | Duration | Tokens | Tool uses | Outcome       |
 | --------- | ------ | -------- | ------ | --------- | ------------- |

@@ -83,9 +83,13 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   gh pr view $PR_NUMBER --json comments,reviews # if not already fetched
   ```
 - phase-specific
-- update-tracker — if change-requests
+- set-variables — if change-requests
   ```sh
-  tracker.sh issue comment $PLAN_ID --body "$GAP_REPORT"
+  PR_BODY = {current PR body with gap report appended in <details><summary> block}
+  ```
+- update-pr-body — if change-requests
+  ```sh
+  gh pr edit $PR_NUMBER --body "$PR_BODY"
   ```
 - update-tracker — if change-requests
   ```sh
@@ -495,15 +499,24 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - set-variables
   ```sh
-  REPORT = {report-content} # from context
+  REPORT = {report-content in <details><summary> block with timestamp}
   ```
-- pr-create — if pass
+- pr-create — if no-pr-exists
   ```sh
   gh pr create --base $BASE_BRANCH --head $TARGET_BRANCH --title "$PLAN_TITLE" --body "$REPORT"
   ```
+- set-variables
+  ```sh
+  PR_NUMBER = {from gh pr create output or existing PR}
+  PR_BODY = {current PR body with $REPORT appended}
+  ```
+- update-pr-body — if pr-exists
+  ```sh
+  gh pr edit $PR_NUMBER --body "$PR_BODY"
+  ```
 - update-tracker
   - pass: `tracker.sh issue edit $PLAN_ID --remove-label to-ratify --add-label to-land`
-  - fail: `tracker.sh issue edit $PLAN_ID --body "$REPORT" --remove-label to-ratify --add-label to-rescan`
+  - fail: `tracker.sh issue edit $PLAN_ID --remove-label to-ratify --add-label to-rescan`
 - exit-worktree
   ```sh
   worktree-exit.sh --path $WORKTREE_PATH
@@ -522,11 +535,16 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - set-variables
   ```sh
   PLAN_ID = $ISSUE_ID
+  PR_NUMBER = {from plan body frontmatter PR: #N}
   TARGET_BRANCH = {from plan body}
   WORKTREE_PATH = ../worktree-$PLAN_ID-rescan
   ```
+- fetch-pr
+  ```sh
+  gh pr view $PR_NUMBER --json body
+  ```
 - enter-worktree
-  - contains: `Enter a worktree forked from $TARGET_BRANCH to read the current state of the code after ratify found gaps`
+  - contains: `Enter a worktree forked from $TARGET_BRANCH to read the current state of the code`
   ```sh
   worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
   ```

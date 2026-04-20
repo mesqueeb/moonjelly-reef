@@ -143,13 +143,38 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 #### Submit the report
 
-```sh
-REPORT = {report-content} # from context
+Format the report as a collapsible block with local timestamp (`yyyy/MM/dd HH:mm`):
+
+```markdown
+<details>
+<summary>Ratify report — {yyyy/MM/dd HH:mm}</summary>
+
+{report content: verdict, criteria checklist, test results, gaps if any}
+
+</details>
 ```
 
 ```sh
+REPORT = {report-content in <details><summary> block with timestamp}
+```
+
+If no PR exists yet for this target branch, create one:
+
+```sh
 gh pr create --base $BASE_BRANCH --head $TARGET_BRANCH --title "$PLAN_TITLE" --body "$REPORT"
-# If a PR already exists for this target branch, update its description instead.
+```
+
+Set the PR number and prepare the updated body (append the report to any existing content):
+
+```sh
+PR_NUMBER = {from gh pr create output or existing PR}
+PR_BODY = {current PR body with $REPORT appended}
+```
+
+If a PR already exists (e.g. after a rescan cycle), append the report to the existing PR body:
+
+```sh
+gh pr edit $PR_NUMBER --body "$PR_BODY"
 ```
 
 ### 8. Tag
@@ -165,8 +190,6 @@ tracker.sh issue edit $PLAN_ID --remove-label to-ratify --add-label to-land
 ```sh
 tracker.sh issue edit $PLAN_ID --remove-label to-ratify --add-label to-rescan
 ```
-
-Add a comment on the plan listing the specific gaps.
 
 ## Clean up
 
