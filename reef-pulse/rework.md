@@ -106,6 +106,7 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ```sh
 ./tracker.sh issue edit "$SLICE_ID" --remove-label to-rework --add-label to-inspect
+gh pr edit "$PR_NUMBER" --remove-label to-rework --add-label to-inspect
 ```
 
 ### 9. Clean up

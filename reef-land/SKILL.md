@@ -186,6 +186,7 @@ If the discussion changed any plan-level Decisions, Stories, or Success Criteria
 ```sh
 PLAN_BODY=$(./tracker.sh issue view "$PLAN_ID" --json body)
 ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
+gh pr edit "$PR_NUMBER" --remove-label to-land --add-label to-rescan
 ```
 
 Tell the human:
@@ -224,6 +225,7 @@ MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}"
 
 ```sh
 gh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
+gh pr edit "$PR_NUMBER" --remove-label to-land --add-label landed
 ```
 
 Pull the merged changes into the current branch if it matches the base branch:

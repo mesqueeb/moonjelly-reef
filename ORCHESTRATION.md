@@ -125,6 +125,10 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   PLAN_BODY=$(./tracker.sh issue view "$PLAN_ID" --json body)
   ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
   ```
+- sync-pr-label — if change-requests
+  ```sh
+  gh pr edit "$PR_NUMBER" --remove-label to-land --add-label to-rescan
+  ```
 - pre-merge-check — if approved
   ```sh
   gh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
@@ -136,6 +140,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - pr-merge — if approved
   ```sh
   gh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
+  gh pr edit "$PR_NUMBER" --remove-label to-land --add-label landed
   ```
 - pull
   - contains: `Pull the merged changes into the current branch if it matches the base branch:`
@@ -274,7 +279,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - pr-create
   ```sh
-  gh pr create --base "$TARGET_BRANCH" --title "$SLICE_NAME" --body "$REPORT"
+  gh pr create --base "$TARGET_BRANCH" --title "$SLICE_NAME" --body "$REPORT" --label to-inspect
   ```
 - set-variables
   ```sh
@@ -333,8 +338,8 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   gh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker
-  - pass: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge`
-  - fail: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework`
+  - pass: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge` + `gh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-merge`
+  - fail: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework` + `gh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-rework`
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
@@ -404,6 +409,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - update-tracker — if slice
   ```sh
   ./tracker.sh issue edit "$SLICE_ID" --remove-label to-rework --add-label to-inspect
+  gh pr edit "$PR_NUMBER" --remove-label to-rework --add-label to-inspect
   ```
 - update-tracker — if plan single-slice
   ```sh
@@ -510,6 +516,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - update-tracker — if tests-fail
   ```sh
   ./tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label to-rework
+  gh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-rework
   ```
 - exit-worktree
   ```sh
@@ -525,6 +532,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - update-tracker
   ```sh
   ./tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-land
+  gh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-land
   ```
 - handoff
   ```sh
@@ -548,6 +556,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - pr-merge
   ```sh
   gh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
+  gh pr edit "$PR_NUMBER" --remove-label to-merge --add-label landed
   ```
 - check-siblings-and-completion
   ```sh
@@ -604,7 +613,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   REPORT="{ratify-report}" # <details><summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
   # if no PR exists:
-  gh pr create --base "$BASE_BRANCH" --head "$TARGET_BRANCH" --title "$PLAN_TITLE" --body "$REPORT"
+  gh pr create --base "$BASE_BRANCH" --head "$TARGET_BRANCH" --title "$PLAN_TITLE" --body "$REPORT" --label to-ratify
   # if PR exists, append:
   PR_NUMBER="{from pr create output or existing PR}"
   PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q .body)
@@ -612,8 +621,8 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   gh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker
-  - pass: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land`
-  - fail: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rework`
+  - pass: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land` + `gh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-land`
+  - fail: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rework` + `gh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-rework`
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
