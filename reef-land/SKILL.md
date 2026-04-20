@@ -143,7 +143,7 @@ If a question can be answered by exploring the codebase, explore the codebase in
 When all change requests are scoped, assess their size:
 
 - **Trivial** (renames, typos, small restructures, comment fixes): offer to make the fixes right now on the PR branch, run tests, and re-present for approval. If the human agrees, make the commits, push, and return to **step 2** to re-evaluate.
-- **Substantial** (new logic, architectural changes, new acceptance criteria): write a gap report and send to rescan.
+- **Substantial** (new logic, architectural changes, new acceptance criteria): write a gap report and send to rework.
 
 ### Writing the gap report (substantial changes only)
 
