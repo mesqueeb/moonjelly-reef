@@ -31,7 +31,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - set-variables
   ```sh
   ISSUE_ID="{from dispatched items}"
-  ISSUE_BODY="{current issue body with metrics section appended}"
+  ISSUE_BODY="{current issue body with metrics rows inserted into the table}"
   ```
 - update-tracker
   ```sh
@@ -40,7 +40,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - set-variables
   ```sh
   PLAN_PR_NUMBER="$planPr" # from handoff — never read issue bodies for this
-  PLAN_PR_BODY="{current plan PR body with metrics section appended}"
+  PLAN_PR_BODY="{current plan PR body with metrics rows inserted into the table}"
   ```
 - update-pr-body — if planPr is not "—"
   ```sh
@@ -438,14 +438,9 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - handoff
   ```sh
-  # if unblocked:
-  nextPhase="to-implement"
+  nextPhase="to-implement" # or "to-await-waves" if still blocked
   planPr="—"
-  summary="Slice {name} is unblocked and ready for implementation"
-  # if still blocked:
-  nextPhase="to-await-waves"
-  planPr="—"
-  summary="still blocked by #N, #M"
+  summary="Slice {name} is unblocked and ready for implementation" # or "still blocked by #N, #M"
   ```
 
 ### [merge.md](./reef-pulse/merge.md)

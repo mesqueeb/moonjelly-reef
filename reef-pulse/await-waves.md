@@ -90,9 +90,9 @@ SLICE_BODY="{slice body, with updated acceptance criteria if changed}"
 ## Handoff
 
 ```sh
-nextPhase="to-implement"
+nextPhase="to-implement" # or "to-await-waves" if still blocked
 planPr="—"
-summary="Slice {name} is unblocked and ready for implementation"
+summary="Slice {name} is unblocked and ready for implementation" # or "still blocked by #N, #M"
 ```
 
 Report these three variables to the caller.
