@@ -30,7 +30,7 @@ Set the post-fetch variables (after reading the slice body):
 SLICE_NAME="{from slice body}"
 SLICE_ID="$ISSUE_ID"
 SLICE_BRANCH="{from slice body}"
-WORKTREE_PATH="../worktree-$SLICE_NAME-inspect"
+WORKTREE_PATH=".worktrees/$SLICE_NAME-inspect"
 ```
 
 ## Mindset

@@ -30,7 +30,7 @@ Set the post-fetch variables (after reading the plan body):
 PLAN_ID="$ISSUE_ID"
 PR_NUMBER="{from plan body frontmatter PR: #N}"
 TARGET_BRANCH="{from plan body}"
-WORKTREE_PATH="../worktree-$PLAN_ID-rescan"
+WORKTREE_PATH=".worktrees/$PLAN_ID-rescan"
 ```
 
 ## Fetch PR

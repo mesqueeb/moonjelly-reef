@@ -98,7 +98,15 @@ Ask the user:
 > 1. `squash` — squash and merge (one clean commit per PR)
 > 2. `merge` — merge commit (preserves full branch history)
 
-### 4. Write config
+### 4. Ignore reef worktrees
+
+Reef keeps its temporary git worktrees under `.worktrees/` inside the repo.
+
+1. Check whether `.worktrees/` is already ignored.
+2. If not, offer to add it to `.gitignore`: "Want me to add `.worktrees/` to `.gitignore` so reef's temporary worktrees don't show up as untracked files?"
+3. If yes, append `.worktrees/` to `.gitignore` (create the file if needed).
+
+### 5. Write config
 
 Create `.agents/moonjelly-reef/config.md`:
 
@@ -119,7 +127,7 @@ Values for `tracker`: `github`, `local-tracker-gitignored`, `local-tracker-commi
 
 `tracker-branch` is set when tracker is `local-tracker-committed` (e.g. `main`). Otherwise `—`.
 
-### 5. Offer autopilot
+### 6. Offer autopilot
 
 > "Want the reef to pulse on its own while you're away? I can set up a recurring cron that runs `/reef-pulse --afk` every hour (or any interval you prefer)."
 
@@ -137,7 +145,7 @@ Let the user pick the interval. Common choices:
 
 If the user declines, skip — they can always set it up later.
 
-### 6. Confirm
+### 7. Confirm
 
 > "You're all set. The reef is alive. 🪼"
 >

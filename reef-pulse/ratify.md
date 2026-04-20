@@ -35,7 +35,7 @@ PLAN_ID="$ISSUE_ID"
 PLAN_TITLE="{from plan body}"
 BASE_BRANCH="{from plan body}"
 TARGET_BRANCH="{from plan body}"
-WORKTREE_PATH="../worktree-$PLAN_ID-ratify"
+WORKTREE_PATH=".worktrees/$PLAN_ID-ratify"
 ```
 
 ## Mindset

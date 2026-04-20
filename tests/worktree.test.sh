@@ -104,6 +104,26 @@ test_enter_at_caller_defined_path() {
   teardown_repos
 }
 
+test_enter_creates_nested_parent_dirs() {
+  setup_repos
+  cd "$REPO"
+
+  wt_path="$REPO/.worktrees/nested/worktree-ratify"
+  if path="$(enter --fork-from main --path "$wt_path" 2>/dev/null)"; then
+    resolved_actual="$(cd "$path" && pwd -P)"
+    resolved_expected="$(cd "$wt_path" && pwd -P)"
+    if [ "$resolved_expected" = "$resolved_actual" ] && [ -d "$REPO/.worktrees/nested" ]; then
+      pass "enter: creates nested parent dirs for repo-local worktrees"
+    else
+      fail "enter: creates nested parent dirs for repo-local worktrees" "expected=$resolved_expected actual=$resolved_actual"
+    fi
+  else
+    fail "enter: creates nested parent dirs for repo-local worktrees" "script failed"
+  fi
+
+  teardown_repos
+}
+
 test_enter_fails_if_worktree_exists() {
   setup_repos
   cd "$REPO"
@@ -326,6 +346,7 @@ test_commit_fails_on_nothing_to_commit() {
 
 test_enter_detached_head
 test_enter_at_caller_defined_path
+test_enter_creates_nested_parent_dirs
 test_enter_fails_if_worktree_exists
 test_enter_fails_on_missing_args
 
