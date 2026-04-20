@@ -89,7 +89,16 @@ For each skill not found, tell the user it's optional and reef has a fallback:
 >
 > "Run the install commands above if you want them, or skip — the reef works fine without them."
 
-### 3. Write config
+### 3. Merge strategy
+
+Ask the user:
+
+> "What merge strategy should the reef use for PRs? (recommended: `squash`)"
+>
+> 1. `squash` — squash and merge (one clean commit per PR)
+> 2. `merge` — merge commit (preserves full branch history)
+
+### 4. Write config
 
 Create `.agents/moonjelly-reef/config.md`:
 
@@ -98,6 +107,7 @@ Create `.agents/moonjelly-reef/config.md`:
 tracker: github
 tracker-path: —
 tracker-branch: —
+merge-strategy: squash
 tdd-installed: true
 ubiquitous-language-installed: true
 ---
@@ -109,7 +119,7 @@ Values for `tracker`: `github`, `local-tracker-gitignored`, `local-tracker-commi
 
 `tracker-branch` is set when tracker is `local-tracker-committed` (e.g. `main`). Otherwise `—`.
 
-### 4. Offer autopilot
+### 5. Offer autopilot
 
 > "Want the reef to pulse on its own while you're away? I can set up a recurring cron that runs `/reef-pulse --afk` every hour (or any interval you prefer)."
 
@@ -127,7 +137,7 @@ Let the user pick the interval. Common choices:
 
 If the user declines, skip — they can always set it up later.
 
-### 5. Confirm
+### 6. Confirm
 
 > "You're all set. The reef is alive. 🪼"
 >

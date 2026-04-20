@@ -6,7 +6,7 @@
 
 An orchestration framework for AI agent workflows. A short-lived pulse scans for work, dispatches skills, and goes back to sleep. State lives in tags. The reef does the rest.
 
-This framework is **Issue tracker agnostic**. GitHub Issues, Jira, ClickUp, Linear, any kanban board or simply local MD files. Use yours.
+This framework is **Issue tracker agnostic**. GitHub Issues or simply local MD files. It can also handle others like Jira, ClickUp, Linear, as long as you have an MCP installed for those.
 
 ## Install
 
@@ -14,7 +14,7 @@ This framework is **Issue tracker agnostic**. GitHub Issues, Jira, ClickUp, Line
 npx skills@latest add mesqueeb/moonjelly-reef
 ```
 
-On first run, reef-pulse will prompt you to configure your issue tracker and install optional dependencies (`tdd`, `ubiquitous-language`).
+On first run, reef-pulse will prompt you to mention which issue tracker you want to use.
 
 ## 🪼 The moonjelly pulse
 
@@ -52,7 +52,8 @@ stateDiagram-v2
         to_ratify --> to_land : ratify.md<br />holistic review on target branch
         to_ratify --> gaps_to_rescan : ratify.md<br />gaps found
         gaps_to_rescan --> slice_lifecycle : rescan.md<br />analyze gaps, create new slices
-        to_land --> [*] : /reef-land<br />human reviews report, merges into main
+        to_land --> [*] : /reef-land<br />human approves, merges into main
+        to_land --> gaps_to_rescan : /reef-land<br />human requests changes, scoped into gaps
     }
 
     state "SLICE LIFECYCLE (per slice)" as slice_lifecycle {
@@ -119,7 +120,7 @@ Design principles:
 <details>
 <summary>🤿 <b><code>/reef-land</code></b> — review and land the work</summary>
 
-Finds the open PR for the issue and presents it to the diver. The diver approves (merge + close), requests re-scoping, or sends it back for new slices.
+Finds the open PR for the issue, summarizes the report, and checks for PR comments. If the diver has concerns or left PR comments, runs an interview to scope the change requests into concrete gaps, then tags `to-rescan`. If approved, merges and closes.
 
 | source file | [`reef-land/SKILL.md`](reef-land/SKILL.md) |
 | :---------- | :----------------------------------------- |

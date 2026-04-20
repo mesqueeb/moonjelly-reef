@@ -63,29 +63,65 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 
 - set-variables
   ```sh
-  PLAN_ID = {issue-id} # pre-existing and passed
-  PR_NUMBER = {from plan body or gh pr list}
+  PLAN_ID = {issue-id} # if passed
+  PR_NUMBER = {pr-number} # if passed
+  ```
+- fetch-context
+  ```sh
+  tracker.sh issue view $PLAN_ID --json body,title,labels # if PLAN_ID known
+  gh pr view $PR_NUMBER --json number,body,headRefName,baseRefName,comments,reviews # if PR_NUMBER known
+  ```
+- set-variables
+  ```sh
+  PLAN_ID = {from PR body or already known}
+  PR_NUMBER = {from plan body or already known}
+  BASE_BRANCH = {from plan body}
+  PR_BODY = {the PR body content — this is the ratify report}
+  ```
+- fetch-pr-comments-and-reviews
+  ```sh
+  gh pr view $PR_NUMBER --json comments,reviews # if not already fetched
   ```
 - phase-specific
+- update-tracker — if change-requests
+  ```sh
+  tracker.sh issue comment $PLAN_ID --body "$GAP_REPORT"
+  ```
+- update-tracker — if change-requests
+  ```sh
+  tracker.sh issue edit $PLAN_ID --remove-label to-land --add-label to-rescan
+  ```
+- pre-merge-check — if approved
+  ```sh
+  gh pr view $PR_NUMBER --json mergeStateStatus -q .mergeStateStatus
+  ```
+- set-variables — if approved
+  ```sh
+  MERGE_STRATEGY = {from .agents/moonjelly-reef/config.md merge-strategy field}
+  ```
 - pr-merge — if approved
   ```sh
-  gh pr merge $PR_NUMBER --merge --delete-branch
+  gh pr merge $PR_NUMBER --$MERGE_STRATEGY --delete-branch
   ```
 - fetch — if approved
   ```sh
   git fetch origin --prune
   ```
+- pull — if approved and current branch matches base branch
+  ```sh
+  git pull --ff-only origin $BASE_BRANCH
+  ```
 - update-tracker — if approved
   ```sh
   tracker.sh issue close $PLAN_ID
   ```
-- update-tracker — if re-scope
+- set-variables — if follow-up
   ```sh
-  tracker.sh issue edit $PLAN_ID --remove-label to-land --add-label to-scope
+  FOLLOW_UP_CONTEXT = {summary of PR comments and concerns from step 2}
   ```
-- update-tracker — if re-scan
+- create-tracker — if follow-up
   ```sh
-  tracker.sh issue edit $PLAN_ID --remove-label to-land --add-label to-rescan
+  tracker.sh issue create --title "Follow-up: {summary of concerns}" --body "$FOLLOW_UP_CONTEXT" --label to-scope
   ```
 
 ## Phases
@@ -383,6 +419,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   worktree-exit.sh --path $WORKTREE_PATH
   ```
+
 ### [merge-single.md](./reef-pulse/merge-single.md)
 
 - set-variables
@@ -402,9 +439,13 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   PR_NUMBER = {from slice body}
   SLICE_ID = $ISSUE_ID
   ```
+- set-variables
+  ```sh
+  MERGE_STRATEGY = {from .agents/moonjelly-reef/config.md merge-strategy field}
+  ```
 - pr-merge
   ```sh
-  gh pr merge $PR_NUMBER --squash --delete-branch
+  gh pr merge $PR_NUMBER --$MERGE_STRATEGY --delete-branch
   ```
 - check-siblings-and-completion
   ```sh

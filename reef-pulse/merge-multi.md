@@ -21,10 +21,9 @@ SLICE_ID = $ISSUE_ID
 ## 1. Merge
 
 ```sh
-gh pr merge $PR_NUMBER --squash --delete-branch
+MERGE_STRATEGY = {from .agents/moonjelly-reef/config.md merge-strategy field}
+gh pr merge $PR_NUMBER --$MERGE_STRATEGY --delete-branch
 ```
-
-Use squash merge by default unless the project convention differs. `--delete-branch` deletes the remote slice branch.
 
 ## 2. Check siblings and plan completion
 
