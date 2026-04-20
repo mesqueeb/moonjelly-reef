@@ -11,7 +11,7 @@ Single-slice fast path — delegated from [slice.md](slice.md).
 The router has already fetched context and drafted exactly 1 slice. Set post-fetch variables:
 
 ```sh
-PLAN_ID = $ISSUE_ID
+PLAN_ID="$ISSUE_ID"
 ```
 
 ## 1. Update the plan body
@@ -26,13 +26,13 @@ Take the fast path — skip the target branch, sub-issues, coverage matrix, and 
 Assemble the updated plan body:
 
 ```sh
-PLAN_BODY = {plan body with target branch added to frontmatter and acceptance criteria appended}
+PLAN_BODY="{plan body with target branch added to frontmatter and acceptance criteria appended}"
 ```
 
 ## 2. Tag to-implement
 
 ```sh
-tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement
+tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement
 ```
 
 ## Handoff

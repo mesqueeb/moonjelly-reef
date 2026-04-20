@@ -13,22 +13,22 @@ Read the slice to find the PR reference.
 Set the pre-fetch variables:
 
 ```sh
-ISSUE_ID = {issue-id} # pre-existing and passed or generate
+ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ```
 
 ## 0. Fetch context
 
 ```sh
-tracker.sh issue view $ISSUE_ID --json body,title,labels
+tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
 Set the post-fetch variables (after reading the slice body):
 
 ```sh
-SLICE_NAME = {from slice body}
-SLICE_ID = $ISSUE_ID
-SLICE_BRANCH = {from slice body}
-WORKTREE_PATH = ../worktree-$SLICE_NAME-inspect
+SLICE_NAME="{from slice body}"
+SLICE_ID="$ISSUE_ID"
+SLICE_BRANCH="{from slice body}"
+WORKTREE_PATH="../worktree-$SLICE_NAME-inspect"
 ```
 
 ## Mindset
@@ -51,7 +51,7 @@ A few things you naturally do:
 Enter a worktree forked from $SLICE_BRANCH to review the implementation without disturbing the main checkout:
 
 ```sh
-worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
+worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
 ```
 
 Run the full project test suite. Record the result.
@@ -84,7 +84,7 @@ Do these yourself — commit and push to the PR branch:
 
 ```sh
 # Only if you made cleanup commits
-commit.sh --branch $SLICE_BRANCH -m "inspect: cleanup"
+commit.sh --branch "$SLICE_BRANCH" -m "inspect: cleanup"
 ```
 
 ### 5. Document judgment calls
@@ -98,11 +98,11 @@ Set the PR number from the slice body. If not found there, try `gh pr list --sea
 Read the current PR body, then append the inspect report as a collapsible block:
 
 ```sh
-PR_NUMBER = {from slice body} # if not found, try gh pr list --search
-PR_BODY = $(gh pr view $PR_NUMBER --json body -q .body)
-REPORT = {inspect report in <details><summary><h3>🧿 Inspect review — {yyyy/MM/dd HH:mm}</h3></summary> block}
-PR_BODY = {current PR body with $REPORT appended}
-gh pr edit $PR_NUMBER --body "$PR_BODY"
+PR_NUMBER="{from slice body}" # if not found, try gh pr list --search
+PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q .body)
+REPORT="{inspect-report}" # <details><summary><h3>🧿 Inspect review — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+PR_BODY="$PR_BODY\n\n$REPORT"
+gh pr edit "$PR_NUMBER" --body "$PR_BODY"
 ```
 
 ### 7. Verdict
@@ -110,13 +110,13 @@ gh pr edit $PR_NUMBER --body "$PR_BODY"
 **If all acceptance criteria are met and the suite is green:**
 
 ```sh
-tracker.sh issue edit $SLICE_ID --remove-label to-inspect --add-label to-merge
+tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge
 ```
 
 **If gaps are found:**
 
 ```sh
-tracker.sh issue edit $SLICE_ID --remove-label to-inspect --add-label to-rework
+tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework
 ```
 
 Leave specific review comments on the PR for each gap. Be precise — tell the implementer exactly what's wrong and what "fixed" looks like.
@@ -124,7 +124,7 @@ Leave specific review comments on the PR for each gap. Be precise — tell the i
 ## Clean up
 
 ```sh
-worktree-exit.sh --path $WORKTREE_PATH
+worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
 ## Handoff

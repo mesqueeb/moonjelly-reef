@@ -16,11 +16,11 @@ You are the orchestrator. You scan, dispatch, and exit. You hold no state — ta
 If the tracker type in config is `local-tracker-committed`, the tracker files live in a git-tracked directory on a specific branch. Sync it before scanning:
 
 ```sh
-TRACKER_BRANCH = {from config.md} # e.g. main
+TRACKER_BRANCH="{from config.md}" # e.g. main
 ```
 
 ```sh
-git fetch origin $TRACKER_BRANCH && git checkout $TRACKER_BRANCH && git pull
+git fetch origin "$TRACKER_BRANCH" && git checkout "$TRACKER_BRANCH" && git pull
 ```
 
 If the tracker is `github`, `local-tracker-gitignored`, or any MCP-based tracker, skip this step.
@@ -81,9 +81,9 @@ After all dispatched agents complete, collect the task notification metadata fro
 Append **one metrics section per plan** to the plan issue body using `tracker.sh issue edit --body`. Read the current body first, then append the new metrics section at the bottom.
 
 ```sh
-ISSUE_ID = {from dispatched items}
-ISSUE_BODY = {current issue body with metrics section appended}
-tracker.sh issue edit $ISSUE_ID --body "$ISSUE_BODY"
+ISSUE_ID="{from dispatched items}"
+ISSUE_BODY="{current issue body with metrics section appended}"
+tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
 ```
 
 Metrics section format:

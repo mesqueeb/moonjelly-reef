@@ -13,22 +13,22 @@ Read the slice. It must have a `blocked-by` list referencing other slices.
 Set the pre-fetch variables:
 
 ```sh
-ISSUE_ID = {issue-id} # pre-existing and passed or generate
+ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ```
 
 ## 0. Fetch context
 
 ```sh
-tracker.sh issue view $ISSUE_ID --json body,title,labels
+tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
 Set the post-fetch variables (after reading the slice body):
 
 ```sh
-SLICE_NAME = {from slice body}
-SLICE_ID = $ISSUE_ID
-TARGET_BRANCH = {from slice/plan body}
-WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves
+SLICE_NAME="{from slice body}"
+SLICE_ID="$ISSUE_ID"
+TARGET_BRANCH="{from slice/plan body}"
+WORKTREE_PATH="../worktree-$SLICE_NAME-await-waves"
 ```
 
 ## 1. Check dependencies
@@ -36,11 +36,11 @@ WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves
 For each dependency in the `blocked-by` list, check if the blocking slice is tagged `done`:
 
 ```sh
-DEPENDENCY_ID = {from slice blocked-by list}
+DEPENDENCY_ID="{from slice blocked-by list}"
 ```
 
 ```sh
-tracker.sh issue view $DEPENDENCY_ID --json labels
+tracker.sh issue view "$DEPENDENCY_ID" --json labels
 ```
 
 **If any dependency is NOT done**: exit silently. Do nothing. This slice stays `to-await-waves`. It will be checked again on the next pulse.
@@ -52,7 +52,7 @@ tracker.sh issue view $DEPENDENCY_ID --json labels
 Enter a worktree forked from $TARGET_BRANCH to be able to read up to date code (earlier slices may have changed the codebase):
 
 ```sh
-worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
 ```
 
 Earlier slices may have changed the codebase. Read this slice's acceptance criteria and compare against the current state of the code:
@@ -66,23 +66,23 @@ Earlier slices may have changed the codebase. Read this slice's acceptance crite
 **If adjustments needed**: update the slice's acceptance criteria and description to reflect the current reality. Be specific about what changed and why.
 
 ```sh
-SLICE_BODY = {slice body, with updated acceptance criteria if changed}
+SLICE_BODY="{slice body, with updated acceptance criteria if changed}"
 ```
 
 ```sh
-tracker.sh issue edit $SLICE_ID --body "$SLICE_BODY"
+tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY"
 ```
 
 ## 3. Promote
 
 ```sh
-tracker.sh issue edit $SLICE_ID --remove-label to-await-waves --add-label to-implement
+tracker.sh issue edit "$SLICE_ID" --remove-label to-await-waves --add-label to-implement
 ```
 
 ## 4. Clean up
 
 ```sh
-worktree-exit.sh --path $WORKTREE_PATH
+worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
 ## Handoff

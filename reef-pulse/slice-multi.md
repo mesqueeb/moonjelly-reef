@@ -11,11 +11,11 @@ Multi-slice flow — delegated from [slice.md](slice.md).
 The router has already fetched context and drafted 2+ slices. Set post-fetch variables:
 
 ```sh
-PLAN_ID = $ISSUE_ID
-TARGET_BRANCH = {from plan body}
-BASE_BRANCH = {from plan body}
-PLAN_TYPE = {from plan body} # feature, refactor, or bug
-WORKTREE_PATH = ../worktree-$PLAN_ID-slice
+PLAN_ID="$ISSUE_ID"
+TARGET_BRANCH="{from plan body}"
+BASE_BRANCH="{from plan body}"
+PLAN_TYPE="{from plan body}" # feature, refactor, or bug
+WORKTREE_PATH="../worktree-$PLAN_ID-slice"
 ```
 
 ## 1. Enter worktree
@@ -23,13 +23,13 @@ WORKTREE_PATH = ../worktree-$PLAN_ID-slice
 Enter a worktree forked from $TARGET_BRANCH to read the codebase for informed slicing decisions:
 
 ```sh
-worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
 ```
 
 If the target branch does not exist on origin yet, create it:
 
 ```sh
-git push -u origin $TARGET_BRANCH
+git push -u origin "$TARGET_BRANCH"
 ```
 
 If the plan says to work on the current branch (no new target branch), skip the branch creation but still create a worktree to read the codebase.
@@ -67,9 +67,9 @@ Create them in dependency order (blockers first) so you can reference real issue
 Assemble each slice body:
 
 ```sh
-SLICE_TITLE = {slice-title}
-SLICE_BODY = {slice-body} # as per the template below
-SLICE_LABEL = to-implement # or to-await-waves if blocked
+SLICE_TITLE="{slice-title}"
+SLICE_BODY="{slice-body}" # as per the template below
+SLICE_LABEL="to-implement" # or to-await-waves if blocked
 ```
 
 Slice body template:
@@ -104,7 +104,7 @@ type: $PLAN_TYPE
 Create the slice:
 
 ```sh
-tracker.sh issue create --title "$SLICE_TITLE" --body "$SLICE_BODY" --label $SLICE_LABEL
+tracker.sh issue create --title "$SLICE_TITLE" --body "$SLICE_BODY" --label "$SLICE_LABEL"
 ```
 
 Label each slice: `to-implement` if no blockers, `to-await-waves` if blocked.
@@ -114,11 +114,11 @@ Label each slice: `to-implement` if no blockers, `to-await-waves` if blocked.
 Append the coverage matrix and a listing of all created sub-issues with their tags to the plan body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-ratify` once all slices are done.
 
 ```sh
-PLAN_BODY = {plan body with coverage matrix appended}
+PLAN_BODY="{plan body with coverage matrix appended}"
 ```
 
 ```sh
-tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-slice --add-label in-progress
+tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label in-progress
 ```
 
 ## 6. Document judgment calls
@@ -128,7 +128,7 @@ Document judgment calls made during this phase as a comment on the plan. Only do
 ## 7. Clean up
 
 ```sh
-worktree-exit.sh --path $WORKTREE_PATH
+worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
 ## Handoff

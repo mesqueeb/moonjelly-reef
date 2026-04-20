@@ -17,23 +17,23 @@ Read the plan. It must have:
 Set the pre-fetch variables:
 
 ```sh
-ISSUE_ID = {issue-id} # pre-existing and passed or generate
+ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ```
 
 ## 0. Fetch context
 
 ```sh
-tracker.sh issue view $ISSUE_ID --json body,title,labels
+tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
 Set the post-fetch variables (after reading the plan body):
 
 ```sh
-PLAN_ID = $ISSUE_ID
-PLAN_TITLE = {from plan body}
-BASE_BRANCH = {from plan body}
-TARGET_BRANCH = {from plan body}
-WORKTREE_PATH = ../worktree-$PLAN_ID-ratify
+PLAN_ID="$ISSUE_ID"
+PLAN_TITLE="{from plan body}"
+BASE_BRANCH="{from plan body}"
+TARGET_BRANCH="{from plan body}"
+WORKTREE_PATH="../worktree-$PLAN_ID-ratify"
 ```
 
 ## Mindset
@@ -49,7 +49,7 @@ Think like a CTO doing a final walkthrough before shipping.
 Enter a worktree forked from $TARGET_BRANCH because all slice PRs are merged there — you are reviewing the aggregate, not individual slices:
 
 ```sh
-worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
 ```
 
 Verify you have the latest — all slice PRs should be merged into this branch.
@@ -93,7 +93,7 @@ When you find non-obvious behavior worth documenting during your holistic review
 1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and push directly to the target branch:
 
 ```sh
-commit.sh --branch $TARGET_BRANCH -m "ratify: add documentation"
+commit.sh --branch "$TARGET_BRANCH" -m "ratify: add documentation"
 ```
 2. **Outside-of-code docs if warranted.** If the behavior is significant enough to document beyond a code comment, check the repo's `AGENTS.md`/`CLAUDE.md` for a documentation locations section. If it exists, follow it. If it doesn't, create a brief entry.
 
@@ -145,37 +145,15 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 Format the report as a collapsible block with local timestamp (`yyyy/MM/dd HH:mm`):
 
-```markdown
-<details>
-<summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>
-
-{report content: verdict, criteria checklist, test results, gaps if any}
-
-</details>
-```
-
 ```sh
-REPORT = {report-content in <details><summary> block with timestamp}
-```
-
-If no PR exists yet for this target branch, create one. The body must start with the closes reference:
-
-```sh
-PR_BODY = "closes #$PLAN_ID $PLAN_TITLE\n\n$REPORT"
-gh pr create --base $BASE_BRANCH --head $TARGET_BRANCH --title "$PLAN_TITLE" --body "$PR_BODY"
-```
-
-Set the PR number and prepare the updated body (append the report to any existing content):
-
-```sh
-PR_NUMBER = {from gh pr create output or existing PR}
-PR_BODY = {current PR body with $REPORT appended}
-```
-
-If a PR already exists (e.g. after a rescan cycle), append the report to the existing PR body:
-
-```sh
-gh pr edit $PR_NUMBER --body "$PR_BODY"
+REPORT="{ratify-report}" # <details><summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+# if no PR exists:
+gh pr create --base "$BASE_BRANCH" --head "$TARGET_BRANCH" --title "$PLAN_TITLE" --body "$REPORT"
+# if PR exists, append:
+PR_NUMBER="{from pr create output or existing PR}"
+PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q .body)
+PR_BODY="$PR_BODY\n\n$REPORT"
+gh pr edit "$PR_NUMBER" --body "$PR_BODY"
 ```
 
 ### 8. Tag
@@ -183,19 +161,19 @@ gh pr edit $PR_NUMBER --body "$PR_BODY"
 **If all criteria met (PASS):**
 
 ```sh
-tracker.sh issue edit $PLAN_ID --remove-label to-ratify --add-label to-land
+tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land
 ```
 
 **If gaps found:**
 
 ```sh
-tracker.sh issue edit $PLAN_ID --remove-label to-ratify --add-label to-rescan
+tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rescan
 ```
 
 ## Clean up
 
 ```sh
-worktree-exit.sh --path $WORKTREE_PATH
+worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
 ## Handoff

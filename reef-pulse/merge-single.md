@@ -13,7 +13,7 @@ The router has already fetched context, set variables, and completed the pre-mer
 Set the variables needed for this path:
 
 ```sh
-PLAN_ID = {from slice/plan body}
+PLAN_ID="{from slice/plan body}"
 ```
 
 ## 1. Tag plan to-land
@@ -21,7 +21,7 @@ PLAN_ID = {from slice/plan body}
 Remove `to-merge`, add `to-land`:
 
 ```sh
-tracker.sh issue edit $PLAN_ID --remove-label to-merge --add-label to-land
+tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-land
 ```
 
 ## Handoff

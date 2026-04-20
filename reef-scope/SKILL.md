@@ -19,13 +19,13 @@ This skill accepts:
 Set the initial variables:
 
 ```sh
-ISSUE_ID = {issue-id} # pre-existing and passed or generate
+ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ```
 
 ## 0. Fetch context
 
 ```sh
-tracker.sh issue view $ISSUE_ID --json body,title,labels
+tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
 ## 1. Git prep
@@ -76,14 +76,14 @@ type: $PLAN_TYPE
 Set variables from the discussion:
 
 ```sh
-PLAN_ID = $ISSUE_ID
-BASE_BRANCH = {from base branch discussion}
-PLAN_TYPE = {feature, refactor, or bug}
-PLAN_CONTENT = {plan-content} # frontmatter + plan body from context
+PLAN_ID="$ISSUE_ID"
+BASE_BRANCH="{from base branch discussion}"
+PLAN_TYPE="{feature, refactor, or bug}"
+PLAN_CONTENT="{plan-content}" # frontmatter + plan body from context
 ```
 
 ```sh
-tracker.sh issue edit $PLAN_ID --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
+tracker.sh issue edit "$PLAN_ID" --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
 ```
 
 ## Handoff
