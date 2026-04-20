@@ -39,6 +39,7 @@ Set the post-fetch variables (after reading the slice body):
 ```sh
 SLICE_NAME="{from slice body}"
 SLICE_ID="$ISSUE_ID"
+BASE_BRANCH="{from slice/plan body}"
 TARGET_BRANCH="{from slice/plan body}"
 SLICE_BRANCH="{PR branch, e.g. feat/001-auth-endpoint}"
 WORKTREE_PATH=".worktrees/$SLICE_NAME-implement"
@@ -51,8 +52,16 @@ This is non-negotiable. Every step must pass before writing any code.
 Enter a worktree forked from $TARGET_BRANCH so you start from a clean integration point (earlier slices' work is already merged there):
 
 ```sh
-./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
 ```
+
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$TARGET_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+
+```sh
+./tracker.sh issue edit "$SLICE_ID" --add-label blocked-with-conflicts
+```
+
+Stop — do not proceed.
 
 Verify:
 
