@@ -96,36 +96,13 @@ Addressed feedback from inspection round {N}:
 
 Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
-### 8. Append metrics to plan PR
-
-Compute the duration from the start of this phase to now. Find the plan PR (the PR targeting the base branch from the plan issue). If the plan is single-slice (target branch = base branch), the slice PR is the plan PR — use `$PR_NUMBER`. If multi-slice, find the plan PR via `gh pr list --base $BASE_BRANCH --head $TARGET_BRANCH`.
-
-Read the plan PR body, then append a metrics row:
-
-```sh
-PLAN_PR_NUMBER = {plan PR number — equals $PR_NUMBER for single-slice, or found via gh pr list for multi-slice}
-PLAN_PR_BODY = {current plan PR body with metrics row appended to the metrics table}
-```
-
-```sh
-gh pr edit $PLAN_PR_NUMBER --body "$PLAN_PR_BODY"
-```
-
-Metrics row format (append to the existing metrics table, or create one if none exists):
-
-```markdown
-| rework | #$SLICE_ID $SLICE_NAME | $DURATION | $TOKENS | $TOOL_USES | feedback addressed |
-```
-
-Where `$DURATION` is human-readable (e.g. `42s`, `1m 12s`), `$TOKENS` is space-separated thousands from your session metadata (or `—` if unavailable), and `$TOOL_USES` is from your session metadata (or `—` if unavailable).
-
-### 9. Tag
+### 8. Tag
 
 ```sh
 tracker.sh issue edit $SLICE_ID --remove-label to-rework --add-label to-inspect
 ```
 
-### 10. Clean up
+### 9. Clean up
 
 ```sh
 worktree-exit.sh --path $WORKTREE_PATH

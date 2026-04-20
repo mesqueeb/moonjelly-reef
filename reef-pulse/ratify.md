@@ -152,32 +152,7 @@ gh pr create --base $BASE_BRANCH --head $TARGET_BRANCH --title "$PLAN_TITLE" --b
 # If a PR already exists for this target branch, update its description instead.
 ```
 
-### 8. Append metrics to plan PR
-
-**On PASS only:** Before appending your own ratify metrics row, check the plan issue body for scope/slice metrics rows (in the `🪼 Pulse metrics` section). If those rows exist on the plan issue but are not yet on the plan PR, copy them to the top of the PR's metrics table. This ensures the complete history — from scoping through landing — is visible on the final PR.
-
-Then append your own ratify metrics row:
-
-```sh
-PLAN_PR_NUMBER = {from gh pr create output or existing PR}
-PLAN_PR_BODY = {current plan PR body with scope/slice metrics copied from plan issue (if not already present) and ratify metrics row appended}
-```
-
-```sh
-gh pr edit $PLAN_PR_NUMBER --body "$PLAN_PR_BODY"
-```
-
-Metrics row format:
-
-```markdown
-| ratify | — | $DURATION | $TOKENS | $TOOL_USES | {verdict: "pass" or "gaps found"} |
-```
-
-Where `$DURATION` is human-readable (e.g. `42s`, `1m 12s`), `$TOKENS` is space-separated thousands from your session metadata (or `—` if unavailable), and `$TOOL_USES` is from your session metadata (or `—` if unavailable).
-
-**On GAPS FOUND:** Append your ratify metrics row to the plan PR body (without copying scope/slice metrics — that will happen when ratify eventually passes).
-
-### 9. Tag
+### 8. Tag
 
 **If all criteria met (PASS):**
 

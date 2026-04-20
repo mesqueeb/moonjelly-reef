@@ -35,6 +35,15 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   tracker.sh issue edit $ISSUE_ID --body "$ISSUE_BODY"
   ```
+- set-variables
+  ```sh
+  PLAN_PR_NUMBER = {from plan issue body PR reference, or from gh pr list}
+  PLAN_PR_BODY = {current plan PR body with metrics section appended}
+  ```
+- update-pr-body — if plan PR exists
+  ```sh
+  gh pr edit $PLAN_PR_NUMBER --body "$PLAN_PR_BODY"
+  ```
 
 ### [/reef-scope](./reef-scope/SKILL.md)
 
@@ -162,14 +171,6 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement
   ```
-- set-variables
-  ```sh
-  PLAN_ISSUE_BODY = {current plan issue body with metrics row appended to the metrics table}
-  ```
-- update-tracker
-  ```sh
-  tracker.sh issue edit $PLAN_ID --body "$PLAN_ISSUE_BODY"
-  ```
 
 ### [slice-multi.md](./reef-pulse/slice-multi.md)
 
@@ -208,14 +209,6 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - update-tracker
   ```sh
   tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-slice --add-label in-progress
-  ```
-- set-variables
-  ```sh
-  PLAN_ISSUE_BODY = {current plan issue body with metrics row appended to the metrics table}
-  ```
-- update-tracker
-  ```sh
-  tracker.sh issue edit $PLAN_ID --body "$PLAN_ISSUE_BODY"
   ```
 - exit-worktree
   ```sh
@@ -263,15 +256,6 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   PR_NUMBER = {from gh pr create output}
   SLICE_BODY = {slice body with PR reference appended}
   ```
-- set-variables
-  ```sh
-  PLAN_PR_NUMBER = {plan PR number — equals $PR_NUMBER for single-slice, or found via gh pr list for multi-slice}
-  PLAN_PR_BODY = {current plan PR body with metrics row appended to the metrics table}
-  ```
-- update-pr-body
-  ```sh
-  gh pr edit $PLAN_PR_NUMBER --body "$PLAN_PR_BODY"
-  ```
 - update-tracker
   ```sh
   tracker.sh issue edit $SLICE_ID --body "$SLICE_BODY" --remove-label to-implement --add-label to-inspect
@@ -317,15 +301,6 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   gh pr edit $PR_NUMBER --body "$REPORT"
   ```
-- set-variables
-  ```sh
-  PLAN_PR_NUMBER = {plan PR number — equals $PR_NUMBER for single-slice, or found via gh pr list for multi-slice}
-  PLAN_PR_BODY = {current plan PR body with metrics row appended to the metrics table}
-  ```
-- update-pr-body
-  ```sh
-  gh pr edit $PLAN_PR_NUMBER --body "$PLAN_PR_BODY"
-  ```
 - update-tracker
   - pass: `tracker.sh issue edit $SLICE_ID --remove-label to-inspect --add-label to-merge`
   - fail: `tracker.sh issue edit $SLICE_ID --remove-label to-inspect --add-label to-rework`
@@ -369,15 +344,6 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - update-pr-body
   ```sh
   gh pr edit $PR_NUMBER --body "$REPORT"
-  ```
-- set-variables
-  ```sh
-  PLAN_PR_NUMBER = {plan PR number — equals $PR_NUMBER for single-slice, or found via gh pr list for multi-slice}
-  PLAN_PR_BODY = {current plan PR body with metrics row appended to the metrics table}
-  ```
-- update-pr-body
-  ```sh
-  gh pr edit $PLAN_PR_NUMBER --body "$PLAN_PR_BODY"
   ```
 - update-tracker
   ```sh
@@ -483,14 +449,6 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   PLAN_ID = {from slice/plan body}
   ```
-- set-variables
-  ```sh
-  PLAN_PR_BODY = {current plan PR body with metrics row appended to the metrics table}
-  ```
-- update-pr-body
-  ```sh
-  gh pr edit $PR_NUMBER --body "$PLAN_PR_BODY"
-  ```
 - update-tracker
   ```sh
   tracker.sh issue edit $PLAN_ID --remove-label to-merge --add-label to-land
@@ -527,15 +485,6 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - update-tracker — if all-slices-done
   ```sh
   tracker.sh issue edit $PLAN_ID --remove-label in-progress --add-label to-ratify
-  ```
-- set-variables
-  ```sh
-  PLAN_PR_NUMBER = {plan PR number, found via gh pr list}
-  PLAN_PR_BODY = {current plan PR body with metrics row appended to the metrics table}
-  ```
-- update-pr-body
-  ```sh
-  gh pr edit $PLAN_PR_NUMBER --body "$PLAN_PR_BODY"
   ```
 
 ### [ratify.md](./reef-pulse/ratify.md)
@@ -574,15 +523,6 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   gh pr create --base $BASE_BRANCH --head $TARGET_BRANCH --title "$PLAN_TITLE" --body "$REPORT"
   ```
-- set-variables
-  ```sh
-  PLAN_PR_NUMBER = {from gh pr create output or existing PR}
-  PLAN_PR_BODY = {current plan PR body with scope/slice metrics copied from plan issue (if not already present) and ratify metrics row appended}
-  ```
-- update-pr-body
-  ```sh
-  gh pr edit $PLAN_PR_NUMBER --body "$PLAN_PR_BODY"
-  ```
 - update-tracker
   - pass: `tracker.sh issue edit $PLAN_ID --remove-label to-ratify --add-label to-land`
   - fail: `tracker.sh issue edit $PLAN_ID --body "$REPORT" --remove-label to-ratify --add-label to-rescan`
@@ -620,15 +560,6 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - update-tracker
   ```sh
   tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-rescan --add-label in-progress
-  ```
-- set-variables
-  ```sh
-  PLAN_PR_NUMBER = {plan PR number, found via gh pr list --base $BASE_BRANCH --head $TARGET_BRANCH}
-  PLAN_PR_BODY = {current plan PR body with metrics row appended to the metrics table}
-  ```
-- update-pr-body
-  ```sh
-  gh pr edit $PLAN_PR_NUMBER --body "$PLAN_PR_BODY"
   ```
 - exit-worktree
   ```sh

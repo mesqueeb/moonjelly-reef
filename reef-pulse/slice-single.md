@@ -35,26 +35,6 @@ PLAN_BODY = {plan body with target branch added to frontmatter and acceptance cr
 tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement
 ```
 
-## 3. Append metrics to plan issue
-
-Compute the duration from the start of this phase to now. Read the current plan issue body, then append a metrics row to the metrics section:
-
-```sh
-PLAN_ISSUE_BODY = {current plan issue body with metrics row appended to the metrics table}
-```
-
-```sh
-tracker.sh issue edit $PLAN_ID --body "$PLAN_ISSUE_BODY"
-```
-
-Metrics row format (append to the existing metrics table, or create one if none exists):
-
-```markdown
-| slice | #$PLAN_ID | $DURATION | $TOKENS | $TOOL_USES | single-slice, tagged to-implement |
-```
-
-Where `$DURATION` is human-readable (e.g. `42s`, `1m 12s`), `$TOKENS` is space-separated thousands from your session metadata (or `—` if unavailable), and `$TOOL_USES` is from your session metadata (or `—` if unavailable).
-
 ## Handoff
 
 Report: "Single slice — fast path. Plan is the slice. Tagged `to-implement`, targeting $BASE_BRANCH directly. Run `/reef-pulse` to kick it off." Include duration, token usage, and tool uses from this session.

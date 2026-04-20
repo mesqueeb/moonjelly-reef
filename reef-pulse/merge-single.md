@@ -16,29 +16,7 @@ Set the variables needed for this path:
 PLAN_ID = {from slice/plan body}
 ```
 
-## 1. Append metrics to plan PR
-
-Compute the duration from the start of this phase to now. For single-slice, the slice PR is the plan PR — use `$PR_NUMBER`.
-
-Read the plan PR body, then append a metrics row:
-
-```sh
-PLAN_PR_BODY = {current plan PR body with metrics row appended to the metrics table}
-```
-
-```sh
-gh pr edit $PR_NUMBER --body "$PLAN_PR_BODY"
-```
-
-Metrics row format (append to the existing metrics table, or create one if none exists):
-
-```markdown
-| merge | #$SLICE_ID $SLICE_NAME | $DURATION | $TOKENS | $TOOL_USES | single-slice, tagged to-land |
-```
-
-Where `$DURATION` is human-readable (e.g. `42s`, `1m 12s`), `$TOKENS` is space-separated thousands from your session metadata (or `—` if unavailable), and `$TOOL_USES` is from your session metadata (or `—` if unavailable).
-
-## 2. Tag plan to-land
+## 1. Tag plan to-land
 
 Remove `to-merge`, add `to-land`:
 

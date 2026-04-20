@@ -128,29 +128,6 @@ PLAN_BODY = {plan body with updated criteria and coverage matrix}
 tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-rescan --add-label in-progress
 ```
 
-### 8. Append metrics to plan PR
-
-Compute the duration from the start of this phase to now. Find the plan PR (the PR targeting the base branch from the plan issue).
-
-Read the plan PR body, then append a metrics row:
-
-```sh
-PLAN_PR_NUMBER = {plan PR number, found via gh pr list --base $BASE_BRANCH --head $TARGET_BRANCH}
-PLAN_PR_BODY = {current plan PR body with metrics row appended to the metrics table}
-```
-
-```sh
-gh pr edit $PLAN_PR_NUMBER --body "$PLAN_PR_BODY"
-```
-
-Metrics row format (append to the existing metrics table, or create one if none exists):
-
-```markdown
-| rescan | — | $DURATION | $TOKENS | $TOOL_USES | {N} new slices created |
-```
-
-Where `$DURATION` is human-readable (e.g. `42s`, `1m 12s`), `$TOKENS` is space-separated thousands from your session metadata (or `—` if unavailable), and `$TOOL_USES` is from your session metadata (or `—` if unavailable).
-
 ## Clean up
 
 ```sh
