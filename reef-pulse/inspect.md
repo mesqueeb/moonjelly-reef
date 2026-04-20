@@ -95,13 +95,14 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 Set the PR number from the slice body. If not found there, try `gh pr list --search`. If PR_NUMBER is nowhere to be found, tag the issue `pr-missing` and stop.
 
-```sh
-PR_NUMBER = {from slice body} # if not found, try gh pr list --search
-REPORT = {report-content} # from context
-```
+Read the current PR body, then append the inspect report as a collapsible block:
 
 ```sh
-gh pr edit $PR_NUMBER --body "$REPORT"
+PR_NUMBER = {from slice body} # if not found, try gh pr list --search
+PR_BODY = $(gh pr view $PR_NUMBER --json body -q .body)
+REPORT = {inspect report in <details><summary><h3>🧿 Inspect review — {yyyy/MM/dd HH:mm}</h3></summary> block}
+PR_BODY = {current PR body with $REPORT appended}
+gh pr edit $PR_NUMBER --body "$PR_BODY"
 ```
 
 ### 7. Verdict

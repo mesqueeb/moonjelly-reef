@@ -118,8 +118,10 @@ Decisions made during implementation that weren't covered by the acceptance crit
 commit.sh --branch $SLICE_BRANCH -m "$SLICE_NAME: implementation"
 ```
 
+The PR body must start with the "closes" reference, followed by the implementation report:
+
 ```sh
-REPORT = {report-content} # from context
+REPORT = {report-content} # starts with: closes #$SLICE_ID $SLICE_NAME\n\n
 ```
 
 ```sh

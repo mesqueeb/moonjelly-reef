@@ -147,19 +147,11 @@ When all change requests are scoped, assess their size:
 
 The gap report goes on the PR body in a `<details><summary>` block. Rescan has no context from this conversation — be explicit and self-contained.
 
-If the discussion changed any plan-level Decisions, Stories, or Success Criteria, also update the plan body:
-
-```sh
-PLAN_BODY = $(tracker.sh issue view $PLAN_ID --json body -q .body)
-# Update outdated sections, then:
-tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY"
-```
-
 Append the gap report to the current PR body. Include original PR review comments (quoted, with file:line) and the refined context from your discussion.
 
 ```markdown
 <details>
-<summary>Change requests from human review — {yyyy/MM/dd HH:mm}</summary>
+<summary><h3>📝 Change requests from human review — {yyyy/MM/dd HH:mm}</h3></summary>
 
 ### Gaps
 
@@ -185,6 +177,14 @@ PR_BODY = {current PR body with gap report appended in <details><summary> block}
 ```sh
 gh pr edit $PR_NUMBER --body "$PR_BODY"
 tracker.sh issue edit $PLAN_ID --remove-label to-land --add-label to-rescan
+```
+
+If the discussion changed any plan-level Decisions, Stories, or Success Criteria, also update the plan body:
+
+```sh
+PLAN_BODY = $(tracker.sh issue view $PLAN_ID --json body) # extract .body from result
+# Update outdated sections, then:
+tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY"
 ```
 
 Tell the human:

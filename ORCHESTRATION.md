@@ -95,6 +95,11 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   tracker.sh issue edit $PLAN_ID --remove-label to-land --add-label to-rescan
   ```
+- update-plan-body — if change-requests and plan decisions changed
+  ```sh
+  PLAN_BODY = $(tracker.sh issue view $PLAN_ID --json body)
+  tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY"
+  ```
 - pre-merge-check — if approved
   ```sh
   gh pr view $PR_NUMBER --json mergeStateStatus -q .mergeStateStatus
@@ -227,7 +232,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - set-variables
   ```sh
-  REPORT = {report-content} # from context
+  REPORT = {report-content} # starts with: closes #$SLICE_ID $SLICE_NAME\n\n
   ```
 - pr-create
   ```sh
@@ -277,11 +282,19 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - set-variables
   ```sh
   PR_NUMBER = {from slice body} # if not found, try gh pr list --search
-  REPORT = {report-content} # from context
+  ```
+- fetch-pr-body
+  ```sh
+  PR_BODY = $(gh pr view $PR_NUMBER --json body -q .body)
+  ```
+- set-variables
+  ```sh
+  REPORT = {inspect report in <details><summary><h3>🧿 Inspect review — {yyyy/MM/dd HH:mm}</h3></summary> block}
+  PR_BODY = {current PR body with $REPORT appended}
   ```
 - update-pr-body
   ```sh
-  gh pr edit $PR_NUMBER --body "$REPORT"
+  gh pr edit $PR_NUMBER --body "$PR_BODY"
   ```
 - update-tracker
   - pass: `tracker.sh issue edit $SLICE_ID --remove-label to-inspect --add-label to-merge`
@@ -319,13 +332,18 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   commit.sh --branch $SLICE_BRANCH -m "rework: address inspection feedback"
   ```
+- fetch-pr-body
+  ```sh
+  PR_BODY = $(gh pr view $PR_NUMBER --json body -q .body)
+  ```
 - set-variables
   ```sh
-  REPORT = {report-content} # from context
+  REPORT = {rework report in <details><summary><h3>🦀 Rework — {yyyy/MM/dd HH:mm}</h3></summary> block}
+  PR_BODY = {current PR body with $REPORT appended}
   ```
 - update-pr-body
   ```sh
-  gh pr edit $PR_NUMBER --body "$REPORT"
+  gh pr edit $PR_NUMBER --body "$PR_BODY"
   ```
 - update-tracker
   ```sh

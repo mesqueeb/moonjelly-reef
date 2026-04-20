@@ -71,25 +71,24 @@ commit.sh --branch $SLICE_BRANCH -m "rework: address inspection feedback"
 
 ### 6. Update the PR description
 
-Rewrite the report section of the PR description using the same template as the implement phase. This is a fresh report, not an append — the current state should be clear without reading history.
+Read the current PR body, then append the rework report as a collapsible block:
 
 ```sh
-REPORT = {report-content} # from context
+PR_BODY = $(gh pr view $PR_NUMBER --json body -q .body)
+REPORT = {rework report in <details><summary><h3>🦀 Rework — {yyyy/MM/dd HH:mm}</h3></summary> block}
+```
+
+The rework report should include:
+- What feedback was addressed (referencing the inspect review that triggered it)
+- What was changed for each item
+- Test results after fixes
+
+```sh
+PR_BODY = {current PR body with $REPORT appended}
 ```
 
 ```sh
-gh pr edit $PR_NUMBER --body "$REPORT"
-```
-
-Add a section at the bottom:
-
-```markdown
-## Rework notes
-
-Addressed feedback from inspection round {N}:
-
-- {feedback item 1}: {what was done}
-- {feedback item 2}: {what was done}
+gh pr edit $PR_NUMBER --body "$PR_BODY"
 ```
 
 ### 7. Document judgment calls

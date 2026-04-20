@@ -147,7 +147,7 @@ Format the report as a collapsible block with local timestamp (`yyyy/MM/dd HH:mm
 
 ```markdown
 <details>
-<summary>Ratify report — {yyyy/MM/dd HH:mm}</summary>
+<summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>
 
 {report content: verdict, criteria checklist, test results, gaps if any}
 
@@ -158,10 +158,11 @@ Format the report as a collapsible block with local timestamp (`yyyy/MM/dd HH:mm
 REPORT = {report-content in <details><summary> block with timestamp}
 ```
 
-If no PR exists yet for this target branch, create one:
+If no PR exists yet for this target branch, create one. The body must start with the closes reference:
 
 ```sh
-gh pr create --base $BASE_BRANCH --head $TARGET_BRANCH --title "$PLAN_TITLE" --body "$REPORT"
+PR_BODY = "closes #$PLAN_ID $PLAN_TITLE\n\n$REPORT"
+gh pr create --base $BASE_BRANCH --head $TARGET_BRANCH --title "$PLAN_TITLE" --body "$PR_BODY"
 ```
 
 Set the PR number and prepare the updated body (append the report to any existing content):
