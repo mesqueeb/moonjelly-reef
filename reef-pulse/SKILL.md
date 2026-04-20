@@ -11,6 +11,12 @@ Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the is
 
 You are the orchestrator. You scan, dispatch, and exit. You hold no state — tags are the state.
 
+Capture the skill base directory (provided by the harness as "Base directory for this skill: {path}" at invocation time):
+
+```sh
+SKILL_DIR = {base directory for this skill}
+```
+
 ## 0. Sync tracker branch (local-tracker-committed only)
 
 If the tracker type in config is `local-tracker-committed`, the tracker files live in a git-tracked directory on a specific branch. Sync it before scanning:
@@ -58,18 +64,18 @@ Run these queries in parallel where possible for performance.
 
 **Do NOT ask the user for confirmation. Dispatch immediately.** The tags are the authorization — if an item is tagged for automated work, dispatch it without hesitation. Dispatch all items in parallel via sub-agents. When agent teams are supported in the environment, they can be used to parallelise items linked to the same plan.
 
-For each item, spawn a sub-agent with: `"Read and follow reef-pulse/{file}. Target: #{number}."`
+For each item, spawn a sub-agent with: `"Read and follow $SKILL_DIR/{file}. Target: #{number}."`
 
 | Tag              | File                             |
 | ---------------- | -------------------------------- |
-| `to-slice`       | [slice.md](slice.md)             |
-| `to-await-waves` | [await-waves.md](await-waves.md) |
-| `to-implement`   | [implement.md](implement.md)     |
-| `to-inspect`     | [inspect.md](inspect.md)         |
-| `to-rework`      | [rework.md](rework.md)           |
-| `to-merge`       | [merge.md](merge.md)             |
-| `to-ratify`      | [ratify.md](ratify.md)           |
-| `to-rescan`      | [rescan.md](rescan.md)           |
+| `to-slice`       | `$SKILL_DIR/slice.md`            |
+| `to-await-waves` | `$SKILL_DIR/await-waves.md`      |
+| `to-implement`   | `$SKILL_DIR/implement.md`        |
+| `to-inspect`     | `$SKILL_DIR/inspect.md`          |
+| `to-rework`      | `$SKILL_DIR/rework.md`           |
+| `to-merge`       | `$SKILL_DIR/merge.md`            |
+| `to-ratify`      | `$SKILL_DIR/ratify.md`           |
+| `to-rescan`      | `$SKILL_DIR/rescan.md`           |
 
 ### Step 3. Log phase metrics to plan issues
 

@@ -19,6 +19,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 
 - set-variables
   ```sh
+  SKILL_DIR = {base directory for this skill}
   TRACKER_BRANCH = {from config.md} # e.g. main
   ```
 - checkout-tracker-branch — if local-tracker-committed
@@ -26,6 +27,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   git fetch origin $TRACKER_BRANCH && git checkout $TRACKER_BRANCH && git pull
   ```
 - phase-specific
+  - contains: `$SKILL_DIR/{file}`
 - set-variables
   ```sh
   ISSUE_ID = {from dispatched items}
