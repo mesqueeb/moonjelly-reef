@@ -532,7 +532,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - set-variables
   ```sh
   PLAN_ID="$ISSUE_ID"
-  PR_NUMBER="{from plan body frontmatter PR: #N}"
+  PR_NUMBER="{from plan body frontmatter PR: \"#N\"}"
   TARGET_BRANCH="{from plan body}"
   WORKTREE_PATH="../worktree-$PLAN_ID-rescan"
   ```

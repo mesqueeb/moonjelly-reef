@@ -27,7 +27,7 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Read the issue. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The plan metadata block tells you the work type, base branch, and target branch name.
+Read the issue. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The frontmatter block tells you the work type, base branch, and target branch name.
 
 ## 1. Draft vertical slices
 

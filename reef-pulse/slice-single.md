@@ -20,7 +20,7 @@ PLAN_ID="$ISSUE_ID"
 
 Take the fast path — skip the target branch, sub-issues, coverage matrix, and ratify. The plan becomes the slice:
 
-1. **Target branch = base branch.** Do not create a new branch. Add `target branch` to the plan frontmatter, set to the same value as `base branch`.
+1. **Target branch = base branch.** Do not create a new branch. Add `target-branch` to the plan frontmatter, set to the same value as `base-branch`.
 2. **No sub-issues.** The plan IS the slice.
 3. **Write acceptance criteria on the plan.** Append an `## Acceptance criteria` section to the plan body with the criteria you drafted for the single slice.
 4. **No coverage matrix.** Success criteria and acceptance criteria are 1:1 — the mapping adds no information.

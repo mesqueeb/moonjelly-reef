@@ -20,7 +20,7 @@ Read the slice (issue or file). It must contain:
 - Target branch name (in "Plan context" section)
 - Parent plan reference
 
-If the target branch is missing from the slice, check the plan metadata. The target branch is always set — for single-slice it equals the base branch, for multi-slice it's a dedicated branch.
+If the target branch is missing from the slice, check the plan frontmatter. The target branch is always set — for single-slice it equals the base branch, for multi-slice it's a dedicated branch.
 
 Set the pre-fetch variables:
 

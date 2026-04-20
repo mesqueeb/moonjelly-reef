@@ -33,7 +33,6 @@
 | **success criteria** | Plan-level testable conditions that define when the entire issue is done | requirements, specs, definition of done |
 | **acceptance criteria** | Slice-level testable conditions that define when a single slice is done | checklist, slice criteria, ACs (never abbreviate) |
 | **coverage matrix** | A table mapping each success criterion to which slice(s) and acceptance criteria cover it — only used for multi-slice | traceability matrix, mapping |
-| **plan metadata** | The table at the top of a plan with type, base branch, and target branch fields | header, config, frontmatter |
 
 ## Phases
 
