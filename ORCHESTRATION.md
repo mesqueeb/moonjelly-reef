@@ -118,7 +118,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker — if change-requests
   ```sh
-  ./tracker.sh issue edit "$PLAN_ID" --remove-label to-land --add-label to-rescan
+  ./tracker.sh issue edit "$PLAN_ID" --remove-label to-land --add-label to-rework
   ```
 - update-plan-body — if change-requests and plan decisions changed
   ```sh

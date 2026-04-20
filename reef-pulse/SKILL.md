@@ -56,7 +56,6 @@ Read the config to determine the tracker type, then scan for all tagged issues.
 ./tracker.sh issue list --label "to-rework" --json number,title --limit 100
 ./tracker.sh issue list --label "to-merge" --json number,title --limit 100
 ./tracker.sh issue list --label "to-ratify" --json number,title --limit 100
-./tracker.sh issue list --label "to-rescan" --json number,title --limit 100
 ./tracker.sh issue list --label "to-land" --json number,title --limit 100
 ```
 
@@ -79,7 +78,6 @@ For each item, spawn a sub-agent with: `"Read and follow $SKILL_DIR/{file}. Targ
 | `to-rework`      | `$SKILL_DIR/rework.md`      |
 | `to-merge`       | `$SKILL_DIR/merge.md`       |
 | `to-ratify`      | `$SKILL_DIR/ratify.md`      |
-| `to-rescan`      | `$SKILL_DIR/rescan.md`      |
 
 ### Step 3. Log phase metrics
 

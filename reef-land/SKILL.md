@@ -178,7 +178,7 @@ PR_BODY="{current PR body with gap report appended in <details><summary> block}"
 
 ```sh
 gh pr edit "$PR_NUMBER" --body "$PR_BODY"
-./tracker.sh issue edit "$PLAN_ID" --remove-label to-land --add-label to-rescan
+./tracker.sh issue edit "$PLAN_ID" --remove-label to-land --add-label to-rework
 ```
 
 If the discussion changed any plan-level Decisions, Stories, or Success Criteria, also update the plan body:
@@ -190,7 +190,7 @@ PLAN_BODY=$(./tracker.sh issue view "$PLAN_ID" --json body)
 
 Tell the human:
 
-> "Change requests scoped and written to the PR. The reef will pick this up on the next pulse and create new slices to address them."
+> "Change requests scoped and written to the PR. The reef will pick this up on the next pulse and rework them on the existing PR."
 
 ## 4. Capture concerns in follow-up issue (when chosen in step 2)
 
