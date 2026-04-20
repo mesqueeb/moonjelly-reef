@@ -69,4 +69,10 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ## Handoff
 
-Report: "Slice {name} merged. {N} of {total} slices complete." If promoted to `to-ratify`: "All slices done — plan is ready for ratification." Include duration, token usage, and tool uses from this session.
+Return the structured handoff so reef-pulse can log metrics and route the next phase:
+
+```sh
+nextPhase="{to-ratify if all slices done, or in-progress}"
+planPr="{from plan body PR: #N, or — if no plan PR exists yet}"
+summary="{one-line outcome, e.g. slice merged, 3/4 done}"
+```

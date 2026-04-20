@@ -58,13 +58,10 @@ Read the issue and any existing decision record. Assess: is this a **feature**, 
 
 ## 3. Base branch
 
-Ask the user which branch to work off of:
+Detect the current branch (`git rev-parse --abbrev-ref HEAD`). Present options interactively — use `AskUserQuestion` if available, otherwise ask as a text question:
 
-> "What branch should we work off of? Some options:"
->
-> - "`main`"
-> - "The current branch (`branch-name`)"
-> - "Something else?"
+- **First option (recommended)**: the currently checked-out branch
+- **Second option**: `main` — only include this if the current branch is not already `main`
 
 The target branch is decided later during slicing — don't ask about it here.
 
@@ -96,7 +93,7 @@ tracker.sh issue edit "$PLAN_ID" --body "$PLAN_CONTENT" --remove-label to-scope 
 
 ## 5. Append metrics
 
-Compute the duration from `$START_TIME` to now. Read the current plan issue body, then append a metrics section at the bottom:
+Compute the duration from `$START_TIME` to now. Read the current plan issue body, then append a metrics row:
 
 ```sh
 DURATION = {human-readable duration since START_TIME, e.g. "42s", "1m 12s"}
@@ -107,14 +104,14 @@ PLAN_BODY = {current plan issue body with metrics section appended}
 tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY"
 ```
 
-Metrics section format:
+Use the standard metrics table format. If the table doesn't exist yet, create it:
 
 ```markdown
-### 🪼 Pulse metrics — {YYYY-MM-DD HH:MM UTC}
+### 🪼 Pulse metrics
 
-| Phase | Target | Duration | Tokens | Tool uses | Outcome |
-| --- | --- | --- | --- | --- | --- |
-| scope | #$PLAN_ID | $DURATION | — | — | plan created |
+| Phase | Target | Duration | Tokens | Tool uses | Outcome | Date | Time |
+| ----- | ------ | -------- | ------ | --------- | ------- | ---- | ---- |
+| scope | #$PLAN_ID | $DURATION | — | — | plan created | {yyyy/MM/dd} | {HH:mm} |
 ```
 
 ## Handoff

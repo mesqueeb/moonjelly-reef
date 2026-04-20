@@ -98,4 +98,10 @@ worktree-exit.sh --path "$WORKTREE_PATH"
 
 ## Handoff
 
-Report completion including duration, token usage, and tool uses from this session. The next phase is inspection (re-review).
+Return the structured handoff so reef-pulse can log metrics and route the next phase:
+
+```sh
+nextPhase="to-inspect"
+planPr="{from slice/plan body PR: #N, or — if no plan PR exists yet}"
+summary="{one-line outcome, e.g. reworked — addressed N comments}"
+```

@@ -140,4 +140,10 @@ worktree-exit.sh --path "$WORKTREE_PATH"
 
 ## Handoff
 
-Report: "Created {N} new slices to address gaps. Coverage matrix updated. The reef will pick these up on the next pulse." Include duration, token usage, and tool uses from this session.
+Return the structured handoff so reef-pulse can log metrics and route the next phase:
+
+```sh
+nextPhase="in-progress"
+planPr="{from plan body PR: #N, or — if no plan PR exists yet}"
+summary="{one-line outcome, e.g. N new slices created}"
+```

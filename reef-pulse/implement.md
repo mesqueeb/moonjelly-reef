@@ -155,4 +155,10 @@ worktree-exit.sh --path "$WORKTREE_PATH"
 
 ## Handoff
 
-If dispatched by reef-pulse or an orchestrator, report completion including duration, token usage, and tool uses from this session. The next phase for this slice is inspection.
+Return the structured handoff so reef-pulse can log metrics and route the next phase:
+
+```sh
+nextPhase="to-inspect"
+planPr="{from slice/plan body PR: #N, or — if no plan PR exists yet}"
+summary="{one-line outcome, e.g. PR #72 created}"
+```

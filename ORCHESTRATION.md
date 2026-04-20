@@ -29,7 +29,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - set-variables
   ```sh
   ISSUE_ID="{from dispatched items}"
-  ISSUE_BODY="{current issue body with metrics section appended}"
+  ISSUE_BODY="{current issue body with metrics rows appended}"
   ```
 - update-tracker
   ```sh
@@ -37,8 +37,8 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - set-variables
   ```sh
-  PLAN_PR_NUMBER = {from plan issue body PR reference, or from gh pr list}
-  PLAN_PR_BODY = {current plan PR body with metrics section appended}
+  PLAN_PR_NUMBER="{planPr from handoff}"
+  PLAN_PR_BODY="{current plan PR body with metrics rows appended}"
   ```
 - update-pr-body — if plan PR exists
   ```sh
@@ -180,6 +180,15 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement
   ```
+- handoff
+  - contains: `nextPhase=`
+  - contains: `planPr=`
+  - contains: `summary=`
+  ```sh
+  nextPhase="to-implement"
+  planPr="—"
+  summary="single-slice, tagged to-implement"
+  ```
 
 ### [slice-multi.md](./reef-pulse/slice-multi.md)
 
@@ -222,6 +231,15 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - exit-worktree
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
+  ```
+- handoff
+  - contains: `nextPhase=`
+  - contains: `planPr=`
+  - contains: `summary=`
+  ```sh
+  nextPhase="in-progress"
+  planPr="—"
+  summary="{one-line outcome, e.g. N slices created, M unblocked}"
   ```
 
 ### [implement.md](./reef-pulse/implement.md)
@@ -273,6 +291,15 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
   ```
+- handoff
+  - contains: `nextPhase=`
+  - contains: `planPr=`
+  - contains: `summary=`
+  ```sh
+  nextPhase="to-inspect"
+  planPr="{from slice/plan body PR: #N, or — if no plan PR exists yet}"
+  summary="{one-line outcome, e.g. PR #72 created}"
+  ```
 
 ### [inspect.md](./reef-pulse/inspect.md)
 
@@ -315,6 +342,15 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - exit-worktree
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
+  ```
+- handoff
+  - contains: `nextPhase=`
+  - contains: `planPr=`
+  - contains: `summary=`
+  ```sh
+  nextPhase="{to-merge or to-rework}"
+  planPr="{from slice/plan body PR: #N, or — if no plan PR exists yet}"
+  summary="{one-line outcome, e.g. passed or gaps found}"
   ```
 
 ### [rework.md](./reef-pulse/rework.md)
@@ -360,6 +396,15 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
   ```
+- handoff
+  - contains: `nextPhase=`
+  - contains: `planPr=`
+  - contains: `summary=`
+  ```sh
+  nextPhase="to-inspect"
+  planPr="{from slice/plan body PR: #N, or — if no plan PR exists yet}"
+  summary="{one-line outcome, e.g. reworked — addressed N comments}"
+  ```
 
 ### [await-waves.md](./reef-pulse/await-waves.md)
 
@@ -403,6 +448,15 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - exit-worktree
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
+  ```
+- handoff
+  - contains: `nextPhase=`
+  - contains: `planPr=`
+  - contains: `summary=`
+  ```sh
+  nextPhase="to-implement"
+  planPr="{from slice/plan body PR: #N, or — if no plan PR exists yet}"
+  summary="{one-line outcome, e.g. unblocked — deps done}"
   ```
 
 ### [merge.md](./reef-pulse/merge.md)
@@ -460,6 +514,15 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-land
   ```
+- handoff
+  - contains: `nextPhase=`
+  - contains: `planPr=`
+  - contains: `summary=`
+  ```sh
+  nextPhase="to-land"
+  planPr="{from slice/plan body PR: #N, or — if no plan PR exists yet}"
+  summary="single-slice — PR stays open for human review"
+  ```
 
 ### [merge-multi.md](./reef-pulse/merge-multi.md)
 
@@ -492,6 +555,15 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - update-tracker — if all-slices-done
   ```sh
   tracker.sh issue edit "$PLAN_ID" --remove-label in-progress --add-label to-ratify
+  ```
+- handoff
+  - contains: `nextPhase=`
+  - contains: `planPr=`
+  - contains: `summary=`
+  ```sh
+  nextPhase="{to-ratify if all slices done, or in-progress}"
+  planPr="{from plan body PR: #N, or — if no plan PR exists yet}"
+  summary="{one-line outcome, e.g. slice merged, 3/4 done}"
   ```
 
 ### [ratify.md](./reef-pulse/ratify.md)
@@ -540,6 +612,17 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
   ```
+- handoff
+  - contains: `nextPhase=`
+  - contains: `planPr=`
+  - contains: `summary=`
+  - contains: `planIssueMetrics=`
+  ```sh
+  nextPhase="{to-land or to-rescan}"
+  planPr="{PR number from pr create output or existing PR}"
+  summary="{one-line outcome, e.g. pass or gaps found}"
+  planIssueMetrics="{metrics table rows from plan issue body, or — if none}"
+  ```
 
 ### [rescan.md](./reef-pulse/rescan.md)
 
@@ -576,4 +659,13 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - exit-worktree
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
+  ```
+- handoff
+  - contains: `nextPhase=`
+  - contains: `planPr=`
+  - contains: `summary=`
+  ```sh
+  nextPhase="in-progress"
+  planPr="{from plan body PR: #N, or — if no plan PR exists yet}"
+  summary="{one-line outcome, e.g. N new slices created}"
   ```

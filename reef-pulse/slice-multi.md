@@ -133,4 +133,10 @@ worktree-exit.sh --path "$WORKTREE_PATH"
 
 ## Handoff
 
-Report: "Slices created with acceptance criteria, dependency graph, and coverage matrix. Unblocked slices are tagged `to-implement` and ready for implementation. Run `/reef-pulse` to kick them all off."
+Return the structured handoff so reef-pulse can log metrics and route the next phase:
+
+```sh
+nextPhase="in-progress"
+planPr="—"
+summary="{one-line outcome, e.g. N slices created, M unblocked}"
+```

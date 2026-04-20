@@ -37,4 +37,10 @@ tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --a
 
 ## Handoff
 
-Report: "Single slice — fast path. Plan is the slice. Tagged `to-implement`, targeting $BASE_BRANCH directly. Run `/reef-pulse` to kick it off." Include duration, token usage, and tool uses from this session.
+Return the structured handoff so reef-pulse can log metrics and route the next phase:
+
+```sh
+nextPhase="to-implement"
+planPr="—"
+summary="single-slice, tagged to-implement"
+```
