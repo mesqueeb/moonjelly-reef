@@ -78,10 +78,11 @@ Slice body template:
 
 ```markdown
 ---
-parent plan: #$PLAN_ID
-base branch: $BASE_BRANCH
-target branch: $TARGET_BRANCH
+parent-plan: "#$PLAN_ID"
+base-branch: $BASE_BRANCH
+target-branch: $TARGET_BRANCH
 type: $PLAN_TYPE
+
 ---
 
 ## What to build
