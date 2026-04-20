@@ -8,7 +8,8 @@
 # --path:      absolute or relative path where the worktree will be created
 #
 # Always creates a detached HEAD worktree from origin/{fork-from}.
-# The caller decides the path — worktrees typically live as sibling folders to the repo.
+# The caller decides the path — Reef phases conventionally keep worktrees inside
+# the repo under .worktrees/ so the main checkout stays self-contained.
 # Prints the absolute worktree path to stdout.
 set -eu
 
@@ -37,6 +38,8 @@ if [ -d "$WORKTREE_PATH" ]; then
   echo "Error: worktree path already exists: $WORKTREE_PATH" >&2
   exit 1
 fi
+
+mkdir -p "$(dirname "$WORKTREE_PATH")"
 
 git fetch origin --prune >/dev/null 2>&1
 

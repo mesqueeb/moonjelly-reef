@@ -31,7 +31,7 @@ SLICE_NAME="{from slice body}"
 SLICE_ID="$ISSUE_ID"
 SLICE_BRANCH="{from slice body}"
 PR_NUMBER="{from slice body}"
-WORKTREE_PATH="../worktree-$SLICE_NAME-rework"
+WORKTREE_PATH=".worktrees/$SLICE_NAME-rework"
 ```
 
 ## Process

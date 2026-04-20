@@ -17,7 +17,7 @@ PLAN_ID="$ISSUE_ID"
 TARGET_BRANCH="{from plan body}"
 BASE_BRANCH="{from plan body}"
 PLAN_TYPE="{from plan body}" # feature, refactor, or bug
-WORKTREE_PATH="../worktree-$PLAN_ID-slice"
+WORKTREE_PATH=".worktrees/$PLAN_ID-slice"
 ```
 
 ## 1. Enter worktree
