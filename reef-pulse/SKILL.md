@@ -107,21 +107,21 @@ No timestamp in the header. Each row gets a `Date` column (`yyyy-MM-dd HH:mm`).
 
 #### 3a. Write metrics to the plan issue
 
-Append one metrics section per plan to the plan issue body. Read the current body first, then append.
+Read the current plan issue body. If a `### 🪼 Pulse metrics` table exists, insert the new row(s) at the end of the table (after the last `|...|` row, before any subsequent content like `<details>` blocks). If no table exists, append it to the end of the body.
 
 ```sh
 ISSUE_ID="{from dispatched items}"
-ISSUE_BODY="{current issue body with metrics section appended}"
+ISSUE_BODY="{current issue body with metrics rows inserted into the table}"
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
 ```
 
 #### 3b. Write metrics to the plan PR
 
-Use `planPr` from the handoff to determine the target PR. If `planPr` is `—`, no plan PR exists yet — skip this sub-step. Otherwise, append the same metrics rows to the plan PR body.
+Use `planPr` from the handoff to determine the target PR. If `planPr` is `—`, no plan PR exists yet — skip this sub-step. Otherwise, read the current plan PR body and insert the same metrics rows into the existing `### 🪼 Pulse metrics` table (after the last `|...|` row, before any subsequent content). If no table exists, append it to the end.
 
 ```sh
 PLAN_PR_NUMBER="$planPr" # from handoff — never read issue bodies for this
-PLAN_PR_BODY="{current plan PR body with metrics section appended}"
+PLAN_PR_BODY="{current plan PR body with metrics rows inserted into the table}"
 gh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
 ```
 

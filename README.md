@@ -40,7 +40,6 @@ stateDiagram-v2
         state "🤿　to-scope" as to_scope
         state "🌊　to-slice" as to_slice
         state "🌊　to-ratify" as to_ratify
-        state "🌊　to-rescan" as gaps_to_rescan
         state "🤿　to-land" as to_land
 
         [*] --> to_scope
@@ -50,10 +49,9 @@ stateDiagram-v2
         slice_lifecycle --> to_ratify
         slice_lifecycle --> to_land
         to_ratify --> to_land : ratify.md<br />holistic review on target branch
-        to_ratify --> gaps_to_rescan : ratify.md<br />gaps found
-        gaps_to_rescan --> slice_lifecycle : rescan.md<br />analyze gaps, create new slices
+        to_ratify --> slice_lifecycle : ratify.md<br />gaps found, add to-rework
         to_land --> [*] : /reef-land<br />human approves, merges into main
-        to_land --> gaps_to_rescan : /reef-land<br />human requests changes, scoped into gaps
+        to_land --> slice_lifecycle : /reef-land<br />human requests changes<br />add to-rework
     }
 
     state "SLICE LIFECYCLE (per slice)" as slice_lifecycle {
@@ -61,7 +59,7 @@ stateDiagram-v2
         state "🌊　to-await-waves" as to_await
         state "🌊　to-implement" as to_implement
         state "🌊　to-inspect" as to_inspect
-        state "🌊　to-rework" as needs_rework
+        state "🌊　to-rework" as to_rework
         state "🌊　to-merge" as to_merge
         state "merge.md<br />🔷　multi-slice:<br />merge PR, when all done → to-ratify" as merge_multi
         state "merge.md<br />🔶　single-slice:<br />PR stays open → to-land" as merge_single
@@ -70,14 +68,14 @@ stateDiagram-v2
         to_await --> to_implement : await-waves.md<br />check if deps are done, re-review plan
         to_implement --> to_inspect : implement.md<br />TDD per slice, full suite green
         to_inspect --> to_merge : inspect.md<br />acceptance criteria met, PR clean
-        to_inspect --> needs_rework : inspect.md<br />gaps flagged
-        needs_rework --> to_inspect : rework.md<br />read feedback, fix, re-verify
+        to_inspect --> to_rework : inspect.md<br />gaps flagged
+        to_rework --> to_inspect : rework.md<br />read feedback, fix, re-verify
         to_merge --> merge_multi
         to_merge --> merge_single
     }
 
     class to_scope,to_land human
-    class to_slice,to_ratify,gaps_to_rescan,to_await,to_implement,to_inspect,needs_rework,to_merge agent
+    class to_slice,to_ratify,plan_rework,to_await,to_implement,to_inspect,to_rework,to_merge agent
     class merge_multi,merge_single arrow
 ```
 
