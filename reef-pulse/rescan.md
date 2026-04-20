@@ -45,6 +45,8 @@ Do NOT ask a human. If the gaps need decisions that aren't in the success criter
 
 ### 0. Git prep
 
+Enter a worktree forked from $TARGET_BRANCH to read the current state of the code after ratify found gaps:
+
 ```sh
 worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
 ```

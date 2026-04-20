@@ -20,6 +20,8 @@ WORKTREE_PATH = ../worktree-$PLAN_ID-slice
 
 ## 1. Enter worktree
 
+Enter a worktree forked from $TARGET_BRANCH to read the codebase for informed slicing decisions:
+
 ```sh
 worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
 ```

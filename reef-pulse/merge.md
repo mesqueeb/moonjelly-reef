@@ -45,13 +45,11 @@ Check the merge state of the PR:
 gh pr view $PR_NUMBER --json mergeStateStatus -q .mergeStateStatus
 ```
 
-Enter a worktree on the slice branch:
+Enter a worktree forked from $SLICE_BRANCH (not $TARGET_BRANCH) so you are testing the slice code with the latest target merged in:
 
 ```sh
 worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
 ```
-
-Note: the worktree enters on `SLICE_BRANCH` via `worktree-enter.sh --fork-from $SLICE_BRANCH`, not on the target branch. This ensures you are testing the slice code with the latest target merged in.
 
 Merge the target branch into the slice branch:
 

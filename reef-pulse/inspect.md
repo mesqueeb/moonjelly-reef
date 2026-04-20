@@ -48,7 +48,7 @@ A few things you naturally do:
 
 ### 1. Pull and verify
 
-Use a worktree so you don't disturb the main checkout or any other agent's work.
+Enter a worktree forked from $SLICE_BRANCH to review the implementation without disturbing the main checkout:
 
 ```sh
 worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH

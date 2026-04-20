@@ -124,6 +124,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   WORKTREE_PATH = ../worktree-$PLAN_ID-slice
   ```
 - enter-worktree
+  - contains: `Enter a worktree forked from $TARGET_BRANCH to read the codebase for informed slicing decisions`
   ```sh
   worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
   ```
@@ -174,6 +175,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   WORKTREE_PATH = ../worktree-$SLICE_NAME-implement
   ```
 - enter-worktree
+  - contains: `Enter a worktree forked from $TARGET_BRANCH so you start from a clean integration point`
   ```sh
   worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
   ```
@@ -222,6 +224,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   WORKTREE_PATH = ../worktree-$SLICE_NAME-inspect
   ```
 - enter-worktree
+  - contains: `Enter a worktree forked from $SLICE_BRANCH to review the implementation`
   ```sh
   worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
   ```
@@ -266,6 +269,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   WORKTREE_PATH = ../worktree-$SLICE_NAME-rework
   ```
 - enter-worktree
+  - contains: `Enter a worktree forked from $SLICE_BRANCH to apply fixes to the existing PR branch`
   ```sh
   worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
   ```
@@ -317,11 +321,11 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   tracker.sh issue view $DEPENDENCY_ID --json labels
   ```
 - enter-worktree
+  - contains: `Enter a worktree forked from $TARGET_BRANCH to be able to read up to date code`
   ```sh
   worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
   ```
 - phase-specific
-  - contains: `Enter a worktree forked from $TARGET_BRANCH to be able to read up to date code`
 - set-variables
   ```sh
   SLICE_BODY = {slice body, with updated acceptance criteria if changed}
@@ -359,6 +363,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   gh pr view $PR_NUMBER --json mergeStateStatus -q .mergeStateStatus
   ```
 - enter-worktree
+  - contains: `Enter a worktree forked from $SLICE_BRANCH (not $TARGET_BRANCH) so you are testing the slice code with the latest target merged in`
   ```sh
   worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
   ```
@@ -437,6 +442,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   WORKTREE_PATH = ../worktree-$PLAN_ID-ratify
   ```
 - enter-worktree
+  - contains: `Enter a worktree forked from $TARGET_BRANCH because all slice PRs are merged there`
   ```sh
   worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
   ```
@@ -478,6 +484,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   WORKTREE_PATH = ../worktree-$PLAN_ID-rescan
   ```
 - enter-worktree
+  - contains: `Enter a worktree forked from $TARGET_BRANCH to read the current state of the code after ratify found gaps`
   ```sh
   worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
   ```

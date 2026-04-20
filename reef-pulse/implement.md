@@ -46,6 +46,8 @@ WORKTREE_PATH = ../worktree-$SLICE_NAME-implement
 
 This is non-negotiable. Every step must pass before writing any code.
 
+Enter a worktree forked from $TARGET_BRANCH so you start from a clean integration point (earlier slices' work is already merged there):
+
 ```sh
 worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
 ```

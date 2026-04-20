@@ -36,6 +36,8 @@ WORKTREE_PATH = ../worktree-$SLICE_NAME-rework
 
 ### 1. Git prep
 
+Enter a worktree forked from $SLICE_BRANCH to apply fixes to the existing PR branch:
+
 ```sh
 worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
 ```
