@@ -9,6 +9,14 @@ Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the is
 
 > **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
+## Metrics
+
+Record the start time at invocation:
+
+```sh
+START_TIME = {current UTC timestamp}
+```
+
 ## Input
 
 This skill accepts:
@@ -84,6 +92,29 @@ PLAN_CONTENT = {plan-content} # frontmatter + plan body from context
 
 ```sh
 tracker.sh issue edit $PLAN_ID --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
+```
+
+## 5. Append metrics
+
+Compute the duration from `$START_TIME` to now. Read the current plan issue body, then append a metrics section at the bottom:
+
+```sh
+DURATION = {human-readable duration since START_TIME, e.g. "42s", "1m 12s"}
+PLAN_BODY = {current plan issue body with metrics section appended}
+```
+
+```sh
+tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY"
+```
+
+Metrics section format:
+
+```markdown
+### 🪼 Pulse metrics — {YYYY-MM-DD HH:MM UTC}
+
+| Phase | Target | Duration | Tokens | Tool uses | Outcome |
+| --- | --- | --- | --- | --- | --- |
+| scope | #$PLAN_ID | $DURATION | — | — | plan created |
 ```
 
 ## Handoff

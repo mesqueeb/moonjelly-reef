@@ -125,7 +125,27 @@ tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-slice --add
 
 Document judgment calls made during this phase as a comment on the plan. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
-## 7. Clean up
+## 7. Append metrics to plan issue
+
+Compute the duration from the start of this phase to now. Read the current plan issue body, then append a metrics row to the metrics section:
+
+```sh
+PLAN_ISSUE_BODY = {current plan issue body with metrics row appended to the metrics table}
+```
+
+```sh
+tracker.sh issue edit $PLAN_ID --body "$PLAN_ISSUE_BODY"
+```
+
+Metrics row format (append to the existing metrics table, or create one if none exists):
+
+```markdown
+| slice | #$PLAN_ID | $DURATION | $TOKENS | $TOOL_USES | {N} slices created, tagged to-implement |
+```
+
+Where `$DURATION` is human-readable (e.g. `42s`, `1m 12s`), `$TOKENS` is space-separated thousands from your session metadata (or `—` if unavailable), and `$TOOL_USES` is from your session metadata (or `—` if unavailable).
+
+## 8. Clean up
 
 ```sh
 worktree-exit.sh --path $WORKTREE_PATH

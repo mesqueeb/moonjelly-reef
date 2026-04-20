@@ -232,6 +232,10 @@ Analyze gaps found by ratify, re-review the entire plan, create new slices to ad
 
 <p align="right">💡🐡<br /><sub>An anglerfish drifts through absolute darkness, its lure casting light on creatures no one knew were lurking in the deep.</sub></p>
 
+## Phase metrics
+
+Every phase tracks its duration and token usage. Metrics accumulate in a single table on the final PR, giving the reviewer a complete cost/time breakdown from scoping through landing. Scope and slice metrics are recorded on the plan issue (before a PR exists) and copied to the PR by ratify. Automated phases write directly to the plan PR after each completion. When all work is done, a bold **Total** row sums durations and tokens across the entire lifecycle.
+
 ## Orchestration accuracy
 
 The reason this orchestration framework works is explicit boundaries. Each phase has four well-defined concerns:

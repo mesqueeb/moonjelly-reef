@@ -101,14 +101,25 @@ Metrics section format:
 Rules:
 
 - Only log phases that were dispatched this pulse. If nothing was dispatched, skip this step entirely.
-- If a dispatch failed or the agent returned no metadata, log what you have with `—` for missing fields.
+- If a dispatch failed or the agent returned no metadata, log what you have with `—` for missing fields. Fall back to `—` for any metadata field (duration, tokens, tool uses) that is unavailable.
 - Duration should be human-readable (e.g. `42s`, `1m 12s`). Tokens should use space-separated thousands.
+
+#### Total row on ratify-to-land
+
+When logging a ratify phase whose outcome results in `to-land`, append the ratify metrics row and then a bold **Total** row that sums all durations and tokens in the metrics table. Unknown token values (`—`) are excluded from the total. This is the last automated edit to the metrics table before the human reviews.
+
+Example:
+
+```markdown
+| ratify | — | 1m 5s | 15 200 | 20 | pass |
+| **Total** | | **5m 30s** | **62 359** | **87** | |
+```
 
 ### Step 4. Present human (🤿) items (--hitl only)
 
 If running in `--afk` mode, skip this step entirely.
 
-If running in `--hitl` mode, present human-required items:
+If running in `--hitl` mode, present human-required items immediately without waiting for dispatched agents to complete. Automated agents run in the background — metrics collection (Step 3) happens after agents complete but must not block the human workflow. Present human items as soon as dispatch is done:
 
 | Tag        | Skill         | Presentation                                                              |
 | ---------- | ------------- | ------------------------------------------------------------------------- |
