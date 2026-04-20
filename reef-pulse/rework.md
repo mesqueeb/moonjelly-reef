@@ -39,7 +39,7 @@ WORKTREE_PATH="../worktree-$SLICE_NAME-rework"
 Enter a worktree forked from $SLICE_BRANCH to apply fixes to the existing PR branch:
 
 ```sh
-worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
+./worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
 ```
 
 ### 2. Read all feedback
@@ -66,7 +66,7 @@ Not a subset. The full project test suite must be green.
 ### 5. Push fixes
 
 ```sh
-commit.sh --branch "$SLICE_BRANCH" -m "rework: address inspection feedback"
+./commit.sh --branch "$SLICE_BRANCH" -m "rework: address inspection feedback"
 ```
 
 ### 6. Update the PR description
@@ -93,7 +93,7 @@ tracker.sh issue edit "$SLICE_ID" --remove-label to-rework --add-label to-inspec
 ### 9. Clean up
 
 ```sh
-worktree-exit.sh --path "$WORKTREE_PATH"
+./worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
 ## Handoff

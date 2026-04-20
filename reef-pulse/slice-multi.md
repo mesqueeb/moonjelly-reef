@@ -23,7 +23,7 @@ WORKTREE_PATH="../worktree-$PLAN_ID-slice"
 Enter a worktree forked from $TARGET_BRANCH to read the codebase for informed slicing decisions:
 
 ```sh
-worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
 ```
 
 If the target branch does not exist on origin yet, create it:
@@ -128,7 +128,7 @@ Document judgment calls made during this phase as a comment on the plan. Only do
 ## 7. Clean up
 
 ```sh
-worktree-exit.sh --path "$WORKTREE_PATH"
+./worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
 ## Handoff

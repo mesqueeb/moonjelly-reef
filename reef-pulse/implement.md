@@ -49,7 +49,7 @@ This is non-negotiable. Every step must pass before writing any code.
 Enter a worktree forked from $TARGET_BRANCH so you start from a clean integration point (earlier slices' work is already merged there):
 
 ```sh
-worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
 ```
 
 Verify:
@@ -115,7 +115,7 @@ Decisions made during implementation that weren't covered by the acceptance crit
 ## 5. Open the PR
 
 ```sh
-commit.sh --branch "$SLICE_BRANCH" -m "$SLICE_NAME: implementation"
+./commit.sh --branch "$SLICE_BRANCH" -m "$SLICE_NAME: implementation"
 ```
 
 The PR body must start with the "closes" reference, followed by the implementation report:
@@ -150,7 +150,7 @@ tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY" --remove-label to-impleme
 ## 8. Clean up
 
 ```sh
-worktree-exit.sh --path "$WORKTREE_PATH"
+./worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
 ## Handoff

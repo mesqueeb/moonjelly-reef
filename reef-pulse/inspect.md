@@ -51,7 +51,7 @@ A few things you naturally do:
 Enter a worktree forked from $SLICE_BRANCH to review the implementation without disturbing the main checkout:
 
 ```sh
-worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
+./worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
 ```
 
 Run the full project test suite. Record the result.
@@ -84,7 +84,7 @@ Do these yourself — commit and push to the PR branch:
 
 ```sh
 # Only if you made cleanup commits
-commit.sh --branch "$SLICE_BRANCH" -m "inspect: cleanup"
+./commit.sh --branch "$SLICE_BRANCH" -m "inspect: cleanup"
 ```
 
 ### 5. Document judgment calls
@@ -124,7 +124,7 @@ Leave specific review comments on the PR for each gap. Be precise — tell the i
 ## Clean up
 
 ```sh
-worktree-exit.sh --path "$WORKTREE_PATH"
+./worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
 ## Handoff

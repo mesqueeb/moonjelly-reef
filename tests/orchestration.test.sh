@@ -41,13 +41,13 @@ fail() {
 make_pattern() {
   cmd="$1"
   case "$cmd" in
-    worktree-enter.sh*)
+    *worktree-enter.sh*)
       echo "worktree-enter.sh --fork-from"
       ;;
-    commit.sh*)
+    *commit.sh*)
       echo "commit.sh --branch"
       ;;
-    worktree-exit.sh*)
+    *worktree-exit.sh*)
       echo "worktree-exit.sh"
       ;;
     "gh pr create"*)  echo "gh pr create" ;;

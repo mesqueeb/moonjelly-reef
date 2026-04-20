@@ -52,7 +52,7 @@ tracker.sh issue view "$DEPENDENCY_ID" --json labels
 Enter a worktree forked from $TARGET_BRANCH to be able to read up to date code (earlier slices may have changed the codebase):
 
 ```sh
-worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
 ```
 
 Earlier slices may have changed the codebase. Read this slice's acceptance criteria and compare against the current state of the code:
@@ -82,7 +82,7 @@ tracker.sh issue edit "$SLICE_ID" --remove-label to-await-waves --add-label to-i
 ## 4. Clean up
 
 ```sh
-worktree-exit.sh --path "$WORKTREE_PATH"
+./worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
 ## Handoff

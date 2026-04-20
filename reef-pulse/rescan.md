@@ -55,7 +55,7 @@ Do NOT ask a human. If the gaps need decisions that aren't in the success criter
 Enter a worktree forked from $TARGET_BRANCH to read the current state of the code:
 
 ```sh
-worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
 ```
 
 ### 1. Analyze the gaps
@@ -135,7 +135,7 @@ tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-rescan --
 ## Clean up
 
 ```sh
-worktree-exit.sh --path "$WORKTREE_PATH"
+./worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
 ## Handoff

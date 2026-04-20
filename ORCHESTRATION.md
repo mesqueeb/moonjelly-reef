@@ -172,7 +172,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH to read the codebase for informed slicing decisions`
   ```sh
-  worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - create-remote-branch
   ```sh
@@ -199,7 +199,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path "$WORKTREE_PATH"
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 
 ### [implement.md](./reef-pulse/implement.md)
@@ -223,12 +223,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH so you start from a clean integration point`
   ```sh
-  worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code
   ```sh
-  commit.sh --branch "$SLICE_BRANCH" -m "$SLICE_NAME: implementation"
+  ./commit.sh --branch "$SLICE_BRANCH" -m "$SLICE_NAME: implementation"
   ```
 - set-variables
   ```sh
@@ -249,7 +249,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path "$WORKTREE_PATH"
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 
 ### [inspect.md](./reef-pulse/inspect.md)
@@ -272,12 +272,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $SLICE_BRANCH to review the implementation`
   ```sh
-  worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code — if cleanup-needed
   ```sh
-  commit.sh --branch "$SLICE_BRANCH" -m "inspect: cleanup"
+  ./commit.sh --branch "$SLICE_BRANCH" -m "inspect: cleanup"
   ```
 - update-pr-body
   ```sh
@@ -292,7 +292,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   - fail: `tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework`
 - exit-worktree
   ```sh
-  worktree-exit.sh --path "$WORKTREE_PATH"
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 
 ### [rework.md](./reef-pulse/rework.md)
@@ -316,12 +316,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $SLICE_BRANCH to apply fixes to the existing PR branch`
   ```sh
-  worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code
   ```sh
-  commit.sh --branch "$SLICE_BRANCH" -m "rework: address inspection feedback"
+  ./commit.sh --branch "$SLICE_BRANCH" -m "rework: address inspection feedback"
   ```
 - update-pr-body
   ```sh
@@ -336,7 +336,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path "$WORKTREE_PATH"
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 
 ### [await-waves.md](./reef-pulse/await-waves.md)
@@ -367,7 +367,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH to be able to read up to date code`
   ```sh
-  worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - set-variables
@@ -380,7 +380,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path "$WORKTREE_PATH"
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 
 ### [merge.md](./reef-pulse/merge.md)
@@ -409,7 +409,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $SLICE_BRANCH (not $TARGET_BRANCH) so you are testing the slice code with the latest target merged in`
   ```sh
-  worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
   ```
 - merge-target-into-slice
   ```sh
@@ -417,7 +417,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - commit-code — if merge-needed
   ```sh
-  commit.sh --branch "$SLICE_BRANCH" -m "merge: resolve conflicts with $TARGET_BRANCH"
+  ./commit.sh --branch "$SLICE_BRANCH" -m "merge: resolve conflicts with $TARGET_BRANCH"
   ```
 - update-tracker — if tests-fail
   ```sh
@@ -425,7 +425,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path "$WORKTREE_PATH"
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 
 ### [merge-single.md](./reef-pulse/merge-single.md)
@@ -493,12 +493,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH because all slice PRs are merged there`
   ```sh
-  worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code — if documentation-added
   ```sh
-  commit.sh --branch "$TARGET_BRANCH" -m "ratify: add documentation"
+  ./commit.sh --branch "$TARGET_BRANCH" -m "ratify: add documentation"
   ```
 - submit-report
   ```sh
@@ -516,7 +516,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   - fail: `tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rescan`
 - exit-worktree
   ```sh
-  worktree-exit.sh --path "$WORKTREE_PATH"
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 
 ### [rescan.md](./reef-pulse/rescan.md)
@@ -543,7 +543,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH to read the current state of the code`
   ```sh
-  worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - update-tracker
@@ -553,5 +553,5 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path "$WORKTREE_PATH"
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
