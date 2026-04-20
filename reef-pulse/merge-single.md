@@ -2,7 +2,9 @@
 
 Single-slice merge path — delegated from [merge.md](merge.md).
 
-> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
+> **Shell blocks are literal commands** — `./tracker.sh` is a real script next to this file. Execute it as written; do not substitute with raw git commands.
+>
+> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -21,7 +23,7 @@ PLAN_ID="{from slice/plan body}"
 Remove `to-merge`, add `to-land`:
 
 ```sh
-tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-land
+./tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-land
 ```
 
 ## Handoff

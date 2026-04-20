@@ -5,7 +5,9 @@ description: Present the final report to the human for review. Human approves (m
 
 # reef-land
 
-> **Tracker note**: Commands below use `tracker.sh` syntax for issue operations. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls. PR operations always use `gh` directly regardless of tracker.
+> **Shell blocks are literal commands** — `./tracker.sh` is a real script next to this file. Execute it as written; do not substitute with raw git commands.
+>
+> **Tracker note**: Commands below use `./tracker.sh` syntax for issue operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls. PR operations always use `gh` directly regardless of tracker.
 
 ## Input
 
@@ -24,7 +26,7 @@ Use whichever identifier you have to look up the other:
 
 - If you have `PLAN_ID`: read the plan body to find the PR number.
   ```sh
-  tracker.sh issue view "$PLAN_ID" --json body,title,labels # if PLAN_ID known
+  ./tracker.sh issue view "$PLAN_ID" --json body,title,labels # if PLAN_ID known
   ```
 - If you have `PR_NUMBER`: read the PR to find the plan issue reference.
   ```sh
@@ -176,14 +178,14 @@ PR_BODY="{current PR body with gap report appended in <details><summary> block}"
 
 ```sh
 gh pr edit "$PR_NUMBER" --body "$PR_BODY"
-tracker.sh issue edit "$PLAN_ID" --remove-label to-land --add-label to-rescan
+./tracker.sh issue edit "$PLAN_ID" --remove-label to-land --add-label to-rescan
 ```
 
 If the discussion changed any plan-level Decisions, Stories, or Success Criteria, also update the plan body:
 
 ```sh
-PLAN_BODY=$(tracker.sh issue view "$PLAN_ID" --json body)
-tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
+PLAN_BODY=$(./tracker.sh issue view "$PLAN_ID" --json body)
+./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
 ```
 
 Tell the human:
@@ -199,7 +201,7 @@ FOLLOW_UP_CONTEXT="{summary of PR comments and concerns from step 2}"
 ```
 
 ```sh
-tracker.sh issue create --title "Follow-up: {summary of concerns}" --body "$FOLLOW_UP_CONTEXT" --label to-scope
+./tracker.sh issue create --title "Follow-up: {summary of concerns}" --body "$FOLLOW_UP_CONTEXT" --label to-scope
 ```
 
 Tell the human: "Created follow-up issue #{N}." Then continue to **step 5 (Approve)**.
@@ -237,7 +239,7 @@ fi
 Close the plan:
 
 ```sh
-tracker.sh issue close "$PLAN_ID"
+./tracker.sh issue close "$PLAN_ID"
 ```
 
 ## 6. Status report

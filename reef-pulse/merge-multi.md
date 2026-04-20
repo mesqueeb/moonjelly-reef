@@ -2,7 +2,9 @@
 
 Multi-slice merge flow — delegated from [merge.md](merge.md).
 
-> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
+> **Shell blocks are literal commands** — `./tracker.sh` is a real script next to this file. Execute it as written; do not substitute with raw git commands.
+>
+> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -30,7 +32,7 @@ gh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
 Fetch the plan body — it contains the coverage matrix with all slice issue numbers:
 
 ```sh
-tracker.sh issue view "$PLAN_ID" --json body,title,labels
+./tracker.sh issue view "$PLAN_ID" --json body,title,labels
 ```
 
 Extract the sibling slice IDs from the coverage matrix. For each sibling (excluding the current slice):
@@ -42,7 +44,7 @@ SIBLING_ID="{from coverage matrix}"
 Fetch its labels:
 
 ```sh
-tracker.sh issue view "$SIBLING_ID" --json labels
+./tracker.sh issue view "$SIBLING_ID" --json labels
 ```
 
 For any sibling tagged `to-await-waves`, check their `blocked-by` list. If this merged slice was the last blocker, leave them as `to-await-waves` — the next pulse will dispatch the await-waves phase to re-review their plan before promoting.
@@ -54,13 +56,13 @@ Check: are ALL slices for the plan now tagged `done`? If all slices are done, ch
 Close the slice issue. Add label `done`. Remove `to-merge`:
 
 ```sh
-tracker.sh issue close "$SLICE_ID"
+./tracker.sh issue close "$SLICE_ID"
 ```
 
 ## 4. Update plan tag — if all slices done
 
 ```sh
-tracker.sh issue edit "$PLAN_ID" --remove-label in-progress --add-label to-ratify
+./tracker.sh issue edit "$PLAN_ID" --remove-label in-progress --add-label to-ratify
 ```
 
 ## 5. Document judgment calls

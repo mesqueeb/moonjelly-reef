@@ -6,8 +6,8 @@ The test runner checks: (1) each command string exists in the .md file, (2) they
 
 `if` means the operation is conditional — it must exist in the .md but only runs when the condition holds.
 
-Tracker commands use `tracker.sh issue ...` syntax.
-For GitHub: replace `tracker.sh` with `gh`.
+Tracker commands use `./tracker.sh issue ...` syntax.
+For GitHub: replace `./tracker.sh` with `gh`.
 For MCP trackers (ClickUp, Jira, Linear): use equivalent MCP tool calls.
 
 Only variables referenced in an op's cmd/tracker field belong in set-variables.
@@ -33,7 +33,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
   ```
 
 ### [/reef-scope](./reef-scope/SKILL.md)
@@ -44,7 +44,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - phase-specific
 - set-variables
@@ -56,7 +56,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit "$PLAN_ID" --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
+  ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
   ```
 
 ### [/reef-land](./reef-land/SKILL.md)
@@ -68,7 +68,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$PLAN_ID" --json body,title,labels # if PLAN_ID known
+  ./tracker.sh issue view "$PLAN_ID" --json body,title,labels # if PLAN_ID known
   gh pr view "$PR_NUMBER" --json number,body,headRefName,baseRefName,comments,reviews # if PR_NUMBER known
   ```
 - set-variables
@@ -93,12 +93,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker — if change-requests
   ```sh
-  tracker.sh issue edit "$PLAN_ID" --remove-label to-land --add-label to-rescan
+  ./tracker.sh issue edit "$PLAN_ID" --remove-label to-land --add-label to-rescan
   ```
 - update-plan-body — if change-requests and plan decisions changed
   ```sh
-  PLAN_BODY=$(tracker.sh issue view "$PLAN_ID" --json body)
-  tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
+  PLAN_BODY=$(./tracker.sh issue view "$PLAN_ID" --json body)
+  ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
   ```
 - pre-merge-check — if approved
   ```sh
@@ -123,7 +123,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker — if approved
   ```sh
-  tracker.sh issue close "$PLAN_ID"
+  ./tracker.sh issue close "$PLAN_ID"
   ```
 - set-variables — if follow-up
   ```sh
@@ -131,7 +131,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - create-tracker — if follow-up
   ```sh
-  tracker.sh issue create --title "Follow-up: {summary of concerns}" --body "$FOLLOW_UP_CONTEXT" --label to-scope
+  ./tracker.sh issue create --title "Follow-up: {summary of concerns}" --body "$FOLLOW_UP_CONTEXT" --label to-scope
   ```
 
 ## Phases
@@ -144,7 +144,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 
 ### [slice-single.md](./reef-pulse/slice-single.md)
@@ -156,7 +156,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement
+  ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement
   ```
 
 ### [slice-multi.md](./reef-pulse/slice-multi.md)
@@ -187,7 +187,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - create-slices
   ```sh
-  tracker.sh issue create --title "$SLICE_TITLE" --body "$SLICE_BODY" --label "$SLICE_LABEL"
+  ./tracker.sh issue create --title "$SLICE_TITLE" --body "$SLICE_BODY" --label "$SLICE_LABEL"
   ```
 - set-variables
   ```sh
@@ -195,7 +195,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label in-progress
+  ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label in-progress
   ```
 - exit-worktree
   ```sh
@@ -210,7 +210,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
@@ -245,7 +245,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY" --remove-label to-implement --add-label to-inspect
+  ./tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY" --remove-label to-implement --add-label to-inspect
   ```
 - exit-worktree
   ```sh
@@ -260,7 +260,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
@@ -288,8 +288,8 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   gh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker
-  - pass: `tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge`
-  - fail: `tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework`
+  - pass: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge`
+  - fail: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework`
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
@@ -303,7 +303,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
@@ -332,7 +332,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit "$SLICE_ID" --remove-label to-rework --add-label to-inspect
+  ./tracker.sh issue edit "$SLICE_ID" --remove-label to-rework --add-label to-inspect
   ```
 - exit-worktree
   ```sh
@@ -347,7 +347,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
@@ -362,7 +362,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - dep-check
   ```sh
-  tracker.sh issue view "$DEPENDENCY_ID" --json labels
+  ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH to be able to read up to date code`
@@ -376,7 +376,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY" --remove-label to-await-waves --add-label to-implement
+  ./tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY" --remove-label to-await-waves --add-label to-implement
   ```
 - exit-worktree
   ```sh
@@ -391,7 +391,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
@@ -421,7 +421,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker — if tests-fail
   ```sh
-  tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label to-rework
+  ./tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label to-rework
   ```
 - exit-worktree
   ```sh
@@ -436,7 +436,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-land
+  ./tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-land
   ```
 
 ### [merge-multi.md](./reef-pulse/merge-multi.md)
@@ -457,7 +457,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - check-siblings-and-completion
   ```sh
-  tracker.sh issue view "$PLAN_ID" --json body,title,labels
+  ./tracker.sh issue view "$PLAN_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
@@ -465,11 +465,11 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue close "$SLICE_ID"
+  ./tracker.sh issue close "$SLICE_ID"
   ```
 - update-tracker — if all-slices-done
   ```sh
-  tracker.sh issue edit "$PLAN_ID" --remove-label in-progress --add-label to-ratify
+  ./tracker.sh issue edit "$PLAN_ID" --remove-label in-progress --add-label to-ratify
   ```
 
 ### [ratify.md](./reef-pulse/ratify.md)
@@ -480,7 +480,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
@@ -512,8 +512,8 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   gh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker
-  - pass: `tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land`
-  - fail: `tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rescan`
+  - pass: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land`
+  - fail: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rescan`
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
@@ -527,7 +527,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
@@ -549,7 +549,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - update-tracker
   ```sh
   PLAN_BODY="{plan body with updated criteria and coverage matrix}"
-  tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-rescan --add-label in-progress
+  ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-rescan --add-label in-progress
   ```
 - exit-worktree
   ```sh
