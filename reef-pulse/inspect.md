@@ -24,17 +24,19 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Set the post-fetch variables (after reading the issue body). Extract from frontmatter — works for both slices and plans:
+Set the post-fetch variables (after reading the issue body):
 
 ```sh
-SLICE_NAME="{from slice body}"
+# If slice (has parent-plan: in frontmatter):
+#   SLICE_NAME = from slice body, SLICE_BRANCH = from slice body
+# If plan (has base branch: but no parent-plan:):
+#   SLICE_NAME = plan-id, SLICE_BRANCH = PR head branch, TARGET_BRANCH = base branch
+SLICE_NAME="{from slice body or plan-id}"
 SLICE_ID="$ISSUE_ID"
-SLICE_BRANCH="{from slice body}"
-TARGET_BRANCH="{from slice/plan body}"
+SLICE_BRANCH="{from slice body or PR head branch}"
+TARGET_BRANCH="{from slice/plan body or base branch}"
 WORKTREE_PATH=".worktrees/$SLICE_NAME-inspect"
 ```
-
-For plan issues (no `parent-plan:` in frontmatter): use the PR's head branch as `SLICE_BRANCH`, and the plan's base branch as `TARGET_BRANCH`. Read success criteria from the plan body instead of acceptance criteria.
 
 ## Mindset
 

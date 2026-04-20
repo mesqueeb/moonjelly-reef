@@ -313,10 +313,10 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - set-variables
   ```sh
-  SLICE_NAME="{from slice body}"
+  SLICE_NAME="{from slice body or plan-id}"
   SLICE_ID="$ISSUE_ID"
-  SLICE_BRANCH="{from slice body}"
-  TARGET_BRANCH="{from slice/plan body}"
+  SLICE_BRANCH="{from slice body or PR head branch}"
+  TARGET_BRANCH="{from slice/plan body or base branch}"
   WORKTREE_PATH=".worktrees/$SLICE_NAME-inspect"
   ```
 - enter-worktree
