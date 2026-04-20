@@ -86,6 +86,16 @@ PLAN_CONTENT="{plan-content}" # frontmatter + plan body from context
 tracker.sh issue edit "$PLAN_ID" --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
 ```
 
+## 5. Append metrics
+
+Record a start timestamp at the beginning of this skill invocation and compute wall-clock duration at the end. Append a `### 🪼 Pulse metrics` table to the plan issue body with one scope row. Tokens and tool uses show `—` (not available for HITL sessions).
+
+```sh
+ISSUE_ID="{from dispatched items}"
+ISSUE_BODY="{current issue body with metrics section appended}"
+tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+```
+
 ## Handoff
 
 Tell the user:

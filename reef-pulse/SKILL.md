@@ -71,14 +71,29 @@ For each item, spawn a sub-agent with: `"Read and follow reef-pulse/{file}. Targ
 | `to-ratify`      | [ratify.md](ratify.md)           |
 | `to-rescan`      | [rescan.md](rescan.md)           |
 
-### Step 3. Log phase metrics to plan issues
+### Step 3. Collect and write metrics
 
-After all dispatched agents complete, collect the task notification metadata from each (duration, tokens, tool uses, and outcome). Group the results by plan issue:
+After all dispatched agents complete, collect from each: task notification metadata (duration, tokens, tool uses) and the structured handoff (`nextPhase`, `planPr`, `summary`).
 
-- **Single-slice plans**: the plan issue itself is the target.
-- **Multi-slice plans**: the slice issue body links back to its plan (look for the `Plan: #N` line).
+Use `planPr` from the handoff to determine where to write metrics:
+- If `planPr` is a PR number: write to the plan PR body.
+- If `planPr` is `—`: write to the plan issue body.
 
-Append **one metrics section per plan** to the plan issue body using `tracker.sh issue edit --body`. Read the current body first, then append the new metrics section at the bottom.
+Metrics table format — a single table titled `### 🪼 Pulse metrics` (no timestamp in header):
+
+```markdown
+### 🪼 Pulse metrics
+
+| Phase | Target | Duration | Tokens | Tool uses | Outcome | Date | Time |
+| ----- | ------ | -------- | ------ | --------- | ------- | ---- | ---- |
+| implement | #55 | 42s | 12 340 | 18 | PR created | 2026/04/20 | 14:32 |
+```
+
+Append rows to the existing table. If the table does not exist yet, create it. Use `—` for any missing field. Duration: human-readable (`42s`, `1m 12s`). Tokens: space-separated thousands. Date/Time: local timezone (`yyyy/MM/dd`, `HH:mm`).
+
+**On ratify handoff with `nextPhase: to-land`**: the ratify handoff includes `planIssueMetrics` (scope/slice rows from the plan issue). Prepend those rows to the PR table (dedup if already present), append the ratify row, then append a bold **Total** row summing Duration and Tokens.
+
+Write the updated body:
 
 ```sh
 ISSUE_ID="{from dispatched items}"
@@ -86,23 +101,15 @@ ISSUE_BODY="{current issue body with metrics section appended}"
 tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
 ```
 
-Metrics section format:
-
-```markdown
-### 🪼 Pulse metrics — {yyyy/MM/dd HH:mm}
-
-| Phase     | Target | Duration | Tokens | Tool uses | Outcome       |
-| --------- | ------ | -------- | ------ | --------- | ------------- |
-| implement | #55    | 42s      | 12 340 | 18        | ✅ PR created |
-| implement | #56    | 38s      | 10 890 | 15        | ✅ PR created |
-| inspect   | #53    | 25s      | 8 200  | 12        | ✅ passed     |
+```sh
+PLAN_PR_BODY="{current PR body with metrics table updated}"
+gh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
 ```
 
 Rules:
-
-- Only log phases that were dispatched this pulse. If nothing was dispatched, skip this step entirely.
-- If a dispatch failed or the agent returned no metadata, log what you have with `—` for missing fields.
-- Duration should be human-readable (e.g. `42s`, `1m 12s`). Tokens should use space-separated thousands.
+- Only log phases dispatched this pulse. If nothing was dispatched, skip this step.
+- If a dispatch failed or returned no metadata, log with `—` for missing fields.
+- Do NOT read issue bodies to discover PR numbers — use `planPr` from the handoff.
 
 ### Step 4. Present human (🤿) items (--hitl only)
 

@@ -26,4 +26,10 @@ tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-land
 
 ## Handoff
 
-Report: "Single slice verified. PR stays open for human review. Run `/reef-land #{number}`."
+Return the structured handoff:
+
+```sh
+nextPhase="to-land"
+planPr="$PR_NUMBER"
+summary="single-slice — PR stays open for human review"
+```

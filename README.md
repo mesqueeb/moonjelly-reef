@@ -232,6 +232,10 @@ Analyze gaps found by ratify, re-review the entire plan, create new slices to ad
 
 <p align="right">💡🐡<br /><sub>An anglerfish drifts through absolute darkness, its lure casting light on creatures no one knew were lurking in the deep.</sub></p>
 
+## Phase metrics
+
+Each phase tracks duration and token usage. The orchestrator (reef-pulse) collects metrics from task notifications after sub-agents complete and writes them to a single `### 🪼 Pulse metrics` table on the plan PR (or plan issue, pre-PR). The table accumulates rows chronologically across all pulses, giving the reviewer a full cost/time breakdown when they run `/reef-land`.
+
 ## Orchestration accuracy
 
 The reason this orchestration framework works is explicit boundaries. Each phase has four well-defined concerns:

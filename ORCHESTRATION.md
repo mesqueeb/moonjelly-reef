@@ -35,6 +35,14 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
   ```
+- set-variables
+  ```sh
+  PLAN_PR_BODY="{current PR body with metrics table updated}"
+  ```
+- update-pr-body
+  ```sh
+  gh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
+  ```
 
 ### [/reef-scope](./reef-scope/SKILL.md)
 
@@ -158,6 +166,10 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement
   ```
+- handoff
+  - contains: `nextPhase="to-implement"`
+  - contains: `planPr=`
+  - contains: `summary=`
 
 ### [slice-multi.md](./reef-pulse/slice-multi.md)
 
@@ -201,6 +213,10 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
   ```
+- handoff
+  - contains: `nextPhase="in-progress"`
+  - contains: `planPr=`
+  - contains: `summary=`
 
 ### [implement.md](./reef-pulse/implement.md)
 
@@ -251,6 +267,10 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
   ```
+- handoff
+  - contains: `nextPhase=`
+  - contains: `planPr=`
+  - contains: `summary=`
 
 ### [inspect.md](./reef-pulse/inspect.md)
 
@@ -294,6 +314,10 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
   ```
+- handoff
+  - contains: `nextPhase=`
+  - contains: `planPr=`
+  - contains: `summary=`
 
 ### [rework.md](./reef-pulse/rework.md)
 
@@ -338,6 +362,10 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
   ```
+- handoff
+  - contains: `nextPhase="to-inspect"`
+  - contains: `planPr=`
+  - contains: `summary=`
 
 ### [await-waves.md](./reef-pulse/await-waves.md)
 
@@ -382,6 +410,10 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
   ```
+- handoff
+  - contains: `nextPhase="to-implement"`
+  - contains: `planPr=`
+  - contains: `summary=`
 
 ### [merge.md](./reef-pulse/merge.md)
 
@@ -438,6 +470,10 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-land
   ```
+- handoff
+  - contains: `nextPhase="to-land"`
+  - contains: `planPr=`
+  - contains: `summary=`
 
 ### [merge-multi.md](./reef-pulse/merge-multi.md)
 
@@ -471,6 +507,10 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   tracker.sh issue edit "$PLAN_ID" --remove-label in-progress --add-label to-ratify
   ```
+- handoff
+  - contains: `nextPhase=`
+  - contains: `planPr=`
+  - contains: `summary=`
 
 ### [ratify.md](./reef-pulse/ratify.md)
 
@@ -518,6 +558,11 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
   ```
+- handoff
+  - contains: `nextPhase=`
+  - contains: `planPr=`
+  - contains: `planIssueMetrics=`
+  - contains: `summary=`
 
 ### [rescan.md](./reef-pulse/rescan.md)
 
@@ -555,3 +600,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
   ```
+- handoff
+  - contains: `nextPhase="in-progress"`
+  - contains: `planPr=`
+  - contains: `summary=`

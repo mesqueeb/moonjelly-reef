@@ -69,4 +69,10 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ## Handoff
 
-Report: "Slice {name} merged. {N} of {total} slices complete." If promoted to `to-ratify`: "All slices done — plan is ready for ratification."
+Return the structured handoff:
+
+```sh
+nextPhase="{to-ratify or in-progress}"
+planPr="$PR_NUMBER"
+summary="slice merged — {N}/{total} complete"
+```

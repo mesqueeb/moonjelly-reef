@@ -87,4 +87,10 @@ worktree-exit.sh --path "$WORKTREE_PATH"
 
 ## Handoff
 
-If dispatched by reef-pulse, report: "Slice {name} is unblocked and ready for implementation."
+Return the structured handoff:
+
+```sh
+nextPhase="to-implement"
+planPr="—"
+summary="slice unblocked — ready for implementation"
+```
