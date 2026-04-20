@@ -68,10 +68,12 @@ If the suite fails after merging, tag the slice `to-rework` with a note explaini
 ### 2. Merge
 
 ```sh
-gh pr merge $PR_NUMBER --squash --delete-branch
+MERGE_STRATEGY = {from .agents/moonjelly-reef/config.md merge-strategy field}
 ```
 
-Use squash merge by default unless the project convention differs. `--delete-branch` deletes the remote slice branch.
+```sh
+gh pr merge $PR_NUMBER --$MERGE_STRATEGY --delete-branch
+```
 
 ### 3. Verify post-merge
 

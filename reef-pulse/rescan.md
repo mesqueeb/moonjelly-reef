@@ -8,7 +8,7 @@
 
 This skill requires a specific issue: e.g. `#42` or `my-feature`.
 
-Read the plan fully — the plan, success criteria, coverage matrix, agent decisions, and the ratify report that identified the gaps.
+Read the plan fully — the plan, success criteria, coverage matrix, agent decisions, and the gap report that triggered the rescan. The gap report is a comment on the plan issue, written either by ratify (automated holistic review) or by reef-land (human review with PR comments).
 
 Set the pre-fetch variables:
 
@@ -51,7 +51,7 @@ worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
 
 ### 1. Analyze the gaps
 
-Read the ratify report's gaps. For each gap, classify it:
+Read the gap report's entries. For each gap, classify it:
 
 - **Missing coverage**: a success criterion has no slice addressing it → need a new slice
 - **Incomplete implementation**: a slice was done but didn't fully satisfy an acceptance criterion → need a rework or new slice
@@ -62,9 +62,9 @@ Read the ratify report's gaps. For each gap, classify it:
 
 This is the step that makes rescanning different from just "create follow-up tickets."
 
-Read the entire plan top to bottom. With the ratify report's findings in mind:
+Read the entire plan top to bottom. With the gap report's findings in mind:
 
-- Are the success criteria still correct and complete? If the ratify found something that SHOULD have been a criterion but wasn't, add it.
+- Are the success criteria still correct and complete? If the gap report found something that SHOULD have been a criterion but wasn't, add it.
 - Does the coverage matrix need updating beyond just the new slices?
 - Are there planning-level statements that turned out to be wrong or ambiguous? Update them.
 
