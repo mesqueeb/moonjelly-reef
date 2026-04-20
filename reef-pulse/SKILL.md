@@ -90,13 +90,13 @@ After all dispatched agents complete, collect from each: task notification metad
 ```markdown
 ### 🪼 Pulse metrics
 
-| Phase     | Target | Duration | Tokens | Tool uses | Outcome       | Date       | Time  |
-| --------- | ------ | -------- | ------ | --------- | ------------- | ---------- | ----- |
-| implement | #55    | 42s      | 12 340 | 18        | ✅ PR created | 2026/04/20 | 14:30 |
-| inspect   | #53    | 25s      | 8 200  | 12        | ✅ passed     | 2026/04/20 | 14:31 |
+| Phase     | Target | Duration | Tokens | Tool uses | Outcome       | Date             |
+| --------- | ------ | -------- | ------ | --------- | ------------- | ---------------- |
+| implement | #55    | 42s      | 12 340 | 18        | ✅ PR created | 2026-04-20 14:30 |
+| inspect   | #53    | 25s      | 8 200  | 12        | ✅ passed     | 2026-04-20 14:31 |
 ```
 
-No timestamp in the header. Each row gets `Date` (`yyyy/MM/dd`) and `Time` (`HH:mm`) columns.
+No timestamp in the header. Each row gets a `Date` column (`yyyy-MM-dd HH:mm`).
 
 #### Rules
 
@@ -132,9 +132,9 @@ When a ratify handoff has `nextPhase: to-land`, use `planIssueMetrics` from the 
 Example:
 
 ```markdown
-| scope   | #15 | 1m 30s  | —      | —  | plan created  | 2026/04/18 | 09:00 |
-| slice   | #15 | 45s     | 8 100  | 10 | slices created | 2026/04/18 | 09:05 |
-| ratify  | —   | 1m 5s   | 15 200 | 20 | pass          | 2026/04/20 | 14:35 |
+| scope | #15 | 1m 30s | — | — | plan created | 2026/04/18 | 09:00 |
+| slice | #15 | 45s | 8 100 | 10 | slices created | 2026/04/18 | 09:05 |
+| ratify | — | 1m 5s | 15 200 | 20 | pass | 2026/04/20 | 14:35 |
 | **Total** | | **5m 30s** | **62 359** | **87** | | | |
 ```
 

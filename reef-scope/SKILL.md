@@ -114,9 +114,9 @@ Metrics section format:
 ```markdown
 ### 🪼 Pulse metrics
 
-| Phase | Target | Duration | Tokens | Tool uses | Outcome | Date | Time |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| scope | #$PLAN_ID | $DURATION | — | — | plan created | {yyyy/MM/dd} | {HH:mm} |
+| Phase | Target    | Duration  | Tokens | Tool uses | Outcome      | Date               |
+| ----- | --------- | --------- | ------ | --------- | ------------ | ------------------ |
+| scope | #$PLAN_ID | $DURATION | —      | —         | plan created | {yyyy-MM-dd HH:mm} |
 ```
 
 ## Handoff
