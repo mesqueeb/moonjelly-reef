@@ -26,15 +26,9 @@ Set the post-fetch variables (after reading the slice body):
 
 ```sh
 SLICE_NAME = {from slice body}
-SLICE_NUMBER = $ISSUE_ID
+SLICE_ID = $ISSUE_ID
 TARGET_BRANCH = {from slice/plan body}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves
-```
-
-## Enter worktree
-
-```sh
-worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
 ```
 
 ## 1. Check dependencies
@@ -42,7 +36,11 @@ worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
 For each dependency in the `blocked-by` list, check if the blocking slice is tagged `done`:
 
 ```sh
-tracker.sh issue view <dependency-id> --json labels
+DEPENDENCY_ID = {from slice blocked-by list}
+```
+
+```sh
+tracker.sh issue view $DEPENDENCY_ID --json labels
 ```
 
 **If any dependency is NOT done**: exit silently. Do nothing. This slice stays `to-await-waves`. It will be checked again on the next pulse.
@@ -50,6 +48,12 @@ tracker.sh issue view <dependency-id> --json labels
 **If ALL dependencies are done**: continue to step 2.
 
 ## 2. Re-review the plan
+
+Enter a worktree forked from $TARGET_BRANCH to be able to read up to date code (earlier slices may have changed the codebase):
+
+```sh
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+```
 
 Earlier slices may have changed the codebase. Read this slice's acceptance criteria and compare against the current state of the code:
 
@@ -66,13 +70,13 @@ SLICE_BODY = {slice body, with updated acceptance criteria if changed}
 ```
 
 ```sh
-tracker.sh issue edit $SLICE_NUMBER --body "$SLICE_BODY"
+tracker.sh issue edit $SLICE_ID --body "$SLICE_BODY"
 ```
 
 ## 3. Promote
 
 ```sh
-tracker.sh issue edit $SLICE_NUMBER --remove-label to-await-waves --add-label to-implement
+tracker.sh issue edit $SLICE_ID --remove-label to-await-waves --add-label to-implement
 ```
 
 ## 4. Clean up

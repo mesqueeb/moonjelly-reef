@@ -26,7 +26,7 @@ Set the post-fetch variables (after reading the slice body):
 
 ```sh
 SLICE_NAME = {from slice body}
-SLICE_NUMBER = $ISSUE_ID
+SLICE_ID = $ISSUE_ID
 SLICE_BRANCH = {from slice body}
 PR_NUMBER = {from slice body}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-rework
@@ -35,6 +35,8 @@ WORKTREE_PATH = ../worktree-$SLICE_NAME-rework
 ## Process
 
 ### 1. Git prep
+
+Enter a worktree forked from $SLICE_BRANCH to apply fixes to the existing PR branch:
 
 ```sh
 worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
@@ -97,7 +99,7 @@ Document judgment calls made during this phase on the PR. Only document decision
 ### 8. Tag
 
 ```sh
-tracker.sh issue edit $SLICE_NUMBER --remove-label to-rework --add-label to-inspect
+tracker.sh issue edit $SLICE_ID --remove-label to-rework --add-label to-inspect
 ```
 
 ### 9. Clean up

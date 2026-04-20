@@ -46,7 +46,7 @@ Think like a CTO doing a final walkthrough before shipping.
 
 ### 1. Get on the target branch
 
-Use a worktree so you don't disturb the main checkout or any other agent's work.
+Enter a worktree forked from $TARGET_BRANCH because all slice PRs are merged there — you are reviewing the aggregate, not individual slices:
 
 ```sh
 worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH

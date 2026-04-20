@@ -2,7 +2,7 @@
 
 Source of truth for what each skill/phase .md file should contain.
 Each entry is an ordered list of operations.
-The test runner checks: (1) each command string exists in the .md file, (2) they appear in this order.
+The test runner checks: (1) each command string exists in the .md file, (2) they appear in this order, (3) `contains` strings are present in the body.
 
 `if` means the operation is conditional — it must exist in the .md but only runs when the condition holds.
 
@@ -50,7 +50,9 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - set-variables
   ```sh
   PLAN_ID = $ISSUE_ID
-  PLAN_CONTENT = {plan-content} # from context
+  BASE_BRANCH = {from base branch discussion}
+  PLAN_TYPE = {feature, refactor, or bug}
+  PLAN_CONTENT = {plan-content} # frontmatter + plan body from context
   ```
 - update-tracker
   ```sh
@@ -101,9 +103,14 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   gh pr merge $PR_NUMBER --$MERGE_STRATEGY --delete-branch
   ```
-- fetch — if approved
+- pull
+  - contains: `Pull the merged changes into the current branch if it matches the base branch:`
   ```sh
   git fetch origin --prune
+  CURRENT=$(git branch --show-current)
+  if [ "$CURRENT" = "$BASE_BRANCH" ]; then
+    git pull --ff-only origin $BASE_BRANCH
+  fi
   ```
 - update-tracker — if approved
   ```sh
@@ -130,32 +137,56 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   tracker.sh issue view $ISSUE_ID --json body,title,labels
   ```
+
+### [slice-single.md](./reef-pulse/slice-single.md)
+
+- set-variables
+  ```sh
+  PLAN_ID = $ISSUE_ID
+  PLAN_BODY = {plan body with target branch added to frontmatter and acceptance criteria appended}
+  ```
+- update-tracker
+  ```sh
+  tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement
+  ```
+
+### [slice-multi.md](./reef-pulse/slice-multi.md)
+
 - set-variables
   ```sh
   PLAN_ID = $ISSUE_ID
   TARGET_BRANCH = {from plan body}
+  BASE_BRANCH = {from plan body}
+  PLAN_TYPE = {from plan body} # feature, refactor, or bug
   WORKTREE_PATH = ../worktree-$PLAN_ID-slice
   ```
 - enter-worktree
+  - contains: `Enter a worktree forked from $TARGET_BRANCH to read the codebase for informed slicing decisions`
   ```sh
   worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
   ```
-- create-remote-branch — if multi-slice
+- create-remote-branch
   ```sh
   git push -u origin $TARGET_BRANCH
   ```
 - phase-specific
 - set-variables
   ```sh
+  SLICE_TITLE = {slice-title}
+  SLICE_BODY = {slice-body} # as per the template below
+  SLICE_LABEL = to-implement # or to-await-waves if blocked
+  ```
+- create-slices
+  ```sh
+  tracker.sh issue create --title "$SLICE_TITLE" --body "$SLICE_BODY" --label $SLICE_LABEL
+  ```
+- set-variables
+  ```sh
   PLAN_BODY = {plan body with coverage matrix appended}
   ```
-- update-tracker — if multi-slice
+- update-tracker
   ```sh
   tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-slice --add-label in-progress
-  ```
-- update-tracker — if single-slice
-  ```sh
-  tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement
   ```
 - exit-worktree
   ```sh
@@ -175,12 +206,13 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - set-variables
   ```sh
   SLICE_NAME = {from slice body}
-  SLICE_NUMBER = $ISSUE_ID
+  SLICE_ID = $ISSUE_ID
   TARGET_BRANCH = {from slice/plan body}
   SLICE_BRANCH = {PR branch, e.g. feat/001-auth-endpoint}
   WORKTREE_PATH = ../worktree-$SLICE_NAME-implement
   ```
 - enter-worktree
+  - contains: `Enter a worktree forked from $TARGET_BRANCH so you start from a clean integration point`
   ```sh
   worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
   ```
@@ -204,7 +236,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit $SLICE_NUMBER --body "$SLICE_BODY" --remove-label to-implement --add-label to-inspect
+  tracker.sh issue edit $SLICE_ID --body "$SLICE_BODY" --remove-label to-implement --add-label to-inspect
   ```
 - exit-worktree
   ```sh
@@ -224,12 +256,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - set-variables
   ```sh
   SLICE_NAME = {from slice body}
-  SLICE_NUMBER = $ISSUE_ID
+  SLICE_ID = $ISSUE_ID
   SLICE_BRANCH = {from slice body}
-  PR_NUMBER = {from slice body}
   WORKTREE_PATH = ../worktree-$SLICE_NAME-inspect
   ```
 - enter-worktree
+  - contains: `Enter a worktree forked from $SLICE_BRANCH to review the implementation`
   ```sh
   worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
   ```
@@ -240,6 +272,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - set-variables
   ```sh
+  PR_NUMBER = {from slice body} # if not found, try gh pr list --search
   REPORT = {report-content} # from context
   ```
 - update-pr-body
@@ -247,8 +280,8 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   gh pr edit $PR_NUMBER --body "$REPORT"
   ```
 - update-tracker
-  - pass: `tracker.sh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-merge`
-  - fail: `tracker.sh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-rework`
+  - pass: `tracker.sh issue edit $SLICE_ID --remove-label to-inspect --add-label to-merge`
+  - fail: `tracker.sh issue edit $SLICE_ID --remove-label to-inspect --add-label to-rework`
 - exit-worktree
   ```sh
   worktree-exit.sh --path $WORKTREE_PATH
@@ -267,12 +300,13 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - set-variables
   ```sh
   SLICE_NAME = {from slice body}
-  SLICE_NUMBER = $ISSUE_ID
+  SLICE_ID = $ISSUE_ID
   SLICE_BRANCH = {from slice body}
   PR_NUMBER = {from slice body}
   WORKTREE_PATH = ../worktree-$SLICE_NAME-rework
   ```
 - enter-worktree
+  - contains: `Enter a worktree forked from $SLICE_BRANCH to apply fixes to the existing PR branch`
   ```sh
   worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
   ```
@@ -291,7 +325,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit $SLICE_NUMBER --remove-label to-rework --add-label to-inspect
+  tracker.sh issue edit $SLICE_ID --remove-label to-rework --add-label to-inspect
   ```
 - exit-worktree
   ```sh
@@ -311,11 +345,20 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - set-variables
   ```sh
   SLICE_NAME = {from slice body}
-  SLICE_NUMBER = $ISSUE_ID
+  SLICE_ID = $ISSUE_ID
   TARGET_BRANCH = {from slice/plan body}
   WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves
   ```
+- set-variables
+  ```sh
+  DEPENDENCY_ID = {from slice blocked-by list}
+  ```
+- dep-check
+  ```sh
+  tracker.sh issue view $DEPENDENCY_ID --json labels
+  ```
 - enter-worktree
+  - contains: `Enter a worktree forked from $TARGET_BRANCH to be able to read up to date code`
   ```sh
   worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
   ```
@@ -326,7 +369,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit $SLICE_NUMBER --body "$SLICE_BODY" --remove-label to-await-waves --add-label to-implement
+  tracker.sh issue edit $SLICE_ID --body "$SLICE_BODY" --remove-label to-await-waves --add-label to-implement
   ```
 - exit-worktree
   ```sh
@@ -346,40 +389,80 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - set-variables
   ```sh
   SLICE_NAME = {from slice body}
-  SLICE_NUMBER = $ISSUE_ID
+  SLICE_ID = $ISSUE_ID
   PR_NUMBER = {from slice body}
-  PLAN_ID = {from slice/plan body}
   TARGET_BRANCH = {from slice/plan body}
+  SLICE_BRANCH = {from slice body}
   WORKTREE_PATH = ../worktree-$SLICE_NAME-merge
   ```
-- update-tracker — if single-slice (PR stays open for reef-land — stop here)
+- pre-merge-check
+  ```sh
+  gh pr view $PR_NUMBER --json mergeStateStatus -q .mergeStateStatus
+  ```
+- enter-worktree
+  - contains: `Enter a worktree forked from $SLICE_BRANCH (not $TARGET_BRANCH) so you are testing the slice code with the latest target merged in`
+  ```sh
+  worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
+  ```
+- merge-target-into-slice
+  ```sh
+  git merge origin/$TARGET_BRANCH
+  ```
+- commit-code — if merge-needed
+  ```sh
+  commit.sh --branch $SLICE_BRANCH -m "merge: resolve conflicts with $TARGET_BRANCH"
+  ```
+- update-tracker — if tests-fail
+  ```sh
+  tracker.sh issue edit $SLICE_ID --remove-label to-merge --add-label to-rework
+  ```
+- exit-worktree
+  ```sh
+  worktree-exit.sh --path $WORKTREE_PATH
+  ```
+
+### [merge-single.md](./reef-pulse/merge-single.md)
+
+- set-variables
+  ```sh
+  PLAN_ID = {from slice/plan body}
+  ```
+- update-tracker
   ```sh
   tracker.sh issue edit $PLAN_ID --remove-label to-merge --add-label to-land
   ```
-- set-variables — if multi-slice
+
+### [merge-multi.md](./reef-pulse/merge-multi.md)
+
+- set-variables
+  ```sh
+  PLAN_ID = {from slice/plan body}
+  PR_NUMBER = {from slice body}
+  SLICE_ID = $ISSUE_ID
+  ```
+- set-variables
   ```sh
   MERGE_STRATEGY = {from .agents/moonjelly-reef/config.md merge-strategy field}
   ```
-- pr-merge — if multi-slice
+- pr-merge
   ```sh
   gh pr merge $PR_NUMBER --$MERGE_STRATEGY --delete-branch
   ```
-- enter-worktree — if multi-slice
+- check-siblings-and-completion
   ```sh
-  worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+  tracker.sh issue view $PLAN_ID --json body,title,labels
   ```
-- phase-specific — if multi-slice
-- update-tracker — if multi-slice
+- set-variables
   ```sh
-  tracker.sh issue close $SLICE_NUMBER
+  SIBLING_ID = {from coverage matrix}
+  ```
+- update-tracker
+  ```sh
+  tracker.sh issue close $SLICE_ID
   ```
 - update-tracker — if all-slices-done
   ```sh
   tracker.sh issue edit $PLAN_ID --remove-label in-progress --add-label to-ratify
-  ```
-- exit-worktree — if multi-slice
-  ```sh
-  worktree-exit.sh --path $WORKTREE_PATH
   ```
 
 ### [ratify.md](./reef-pulse/ratify.md)
@@ -401,6 +484,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   WORKTREE_PATH = ../worktree-$PLAN_ID-ratify
   ```
 - enter-worktree
+  - contains: `Enter a worktree forked from $TARGET_BRANCH because all slice PRs are merged there`
   ```sh
   worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
   ```
@@ -442,6 +526,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   WORKTREE_PATH = ../worktree-$PLAN_ID-rescan
   ```
 - enter-worktree
+  - contains: `Enter a worktree forked from $TARGET_BRANCH to read the current state of the code after ratify found gaps`
   ```sh
   worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
   ```

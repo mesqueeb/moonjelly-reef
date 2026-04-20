@@ -64,6 +64,7 @@ make_pattern() {
     "tracker.sh issue list"*)  echo "tracker.sh issue list" ;;
     "git fetch"*)     echo "git fetch" ;;
     "git push"*)      echo "git push" ;;
+    "git merge"*)     echo "git merge" ;;
     "rename "*)       echo "rename" ;;
     *)                echo "$cmd" | cut -c1-30 ;;
   esac
@@ -158,7 +159,52 @@ for raw in lines:
         cmd = m.group(2)
         print(f'{source_file}|{op_name}|tracker-{sub}|{cmd}')
         continue
+
+    # Contains directive: '  - contains: \`...\`'
+    m = re.match(r'^\s+- contains:\s*\`([^\`]+)\`', line)
+    if m:
+        text = m.group(1)
+        print(f'{source_file}|{op_name}|contains|{text}')
+        continue
 " > "$TMPFILE"
+
+# ============================================================
+# Validate ORCHESTRATION.md structure
+# ============================================================
+
+echo "=== ORCHESTRATION.md structure ==="
+in_section=false
+section_line=0
+section_name=""
+struct_fail=0
+while IFS= read -r line; do
+  section_line=$((section_line + 1))
+  # Detect ### headings
+  case "$line" in
+    '### '*)
+      in_section=true
+      section_name="$line"
+      continue
+      ;;
+    '## '* | '# '*)
+      in_section=false
+      continue
+      ;;
+  esac
+  if $in_section && [ -n "$line" ]; then
+    case "$line" in
+      '- '*) ;;
+      '  '*) ;;
+      *)
+        fail "ORCHESTRATION.md structure > bad line in $section_name" "line $section_line: $line"
+        struct_fail=1
+        ;;
+    esac
+  fi
+done < "$ORCHESTRATION"
+if [ "$struct_fail" -eq 0 ]; then
+  pass "ORCHESTRATION.md structure > all section lines start with '- ' or '  '"
+fi
 
 # ============================================================
 # Run tests
@@ -200,6 +246,17 @@ while IFS='|' read -r source_file op_name check_type value; do
   label="$source_file > $op_name"
   if [ "$check_type" != "cmd" ]; then
     label="$label ($check_type)"
+  fi
+
+  # Contains directives: just check the string exists, no ordering.
+  if [ "$check_type" = "contains" ]; then
+    label="$source_file > $op_name (contains)"
+    if grep -qF -e "$value" "$md_path"; then
+      pass "$label"
+    else
+      fail "$label" "expected body to contain: $value"
+    fi
+    continue
   fi
 
   # For sh lines and tracker arrays, use the value literally.

@@ -40,23 +40,54 @@ BASE_BRANCH = {from plan body}
 PR_BODY = {the PR body content — this is the ratify report}
 ```
 
-Fetch PR comments and reviews:
+Fetch PR review threads and filter to only active (unresolved + current) comments:
 
 ```sh
-gh pr view $PR_NUMBER --json comments,reviews # if not already fetched above
+OWNER=$(gh repo view --json owner --jq '.owner.login')
+REPO=$(gh repo view --json name --jq '.name')
+
+gh api graphql \
+  -f owner="$OWNER" -f repo="$REPO" -F number="$PR_NUMBER" \
+  -f query='
+query($owner: String!, $repo: String!, $number: Int!) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $number) {
+      comments(first: 50) {
+        nodes { body author { login } createdAt }
+      }
+      reviewThreads(first: 100) {
+        nodes {
+          isResolved
+          isOutdated
+          comments(first: 5) {
+            nodes { body path line author { login } }
+          }
+        }
+      }
+    }
+  }
+}'
 ```
+
+From the result, filter with jq:
+
+- **PR comments** (conversation): `.comments.nodes` — these are always active (no outdated/resolved concept)
+- **Review thread counts**: `.reviewThreads.nodes as $t | { active: [$t[] | select(.isResolved == false and .isOutdated == false)] | length, outdated: [$t[] | select(.isOutdated == true)] | length, resolved: [$t[] | select(.isResolved == true)] | length }`
+- **Active review comments**: `.reviewThreads.nodes[] | select(.isResolved == false and .isOutdated == false) | .comments.nodes[] | {body, path, line, author: .author.login}`
+
+Both PR comments and active review comments count as PR comments for the steps below.
 
 ## 1. Summarize the report
 
 Using `$PR_BODY` (already fetched), give the human a brief summary:
 
 - What happened — how many slices, test results, overall status.
-- Whether there are existing PR comments (and how many).
-- Your assessment — factor in PR comments if they exist. E.g. "I think this is ready" vs "there are 3 PR comments that suggest changes are needed."
+- Whether there are active PR comments (unresolved + current) and how many. If there are also outdated/resolved threads, mention the count parenthetically (e.g. "2 active comments, 8 outdated/resolved").
+- Your assessment — factor in active PR comments if they exist. E.g. "I think this is ready" vs "there are 3 active PR comments that suggest changes are needed."
 
 ## 2. Route
 
-### If there are PR comments
+### If there are active PR comments
 
 Acknowledge them: "You've left N comments on the PR." Then show a grouped summary of the comments. Then ask:
 
@@ -66,7 +97,7 @@ Acknowledge them: "You've left N comments on the PR." Then show a grouped summar
 > 2. Merge first but capture PR concerns and comments in a follow-up issue → move to **step 4 (Capture concerns in follow-up issue)**, then **step 5 (Approve)**, then **step 6 (Status report)**
 > 3. Maybe later (exit) — the issue stays tagged `to-land` for next time.
 
-### If there are NO PR comments
+### If there are NO active PR comments
 
 Ask the human:
 
@@ -85,12 +116,11 @@ Then say: "Take your time reviewing. Leave any comments on the PR, then let me k
 
 ## 3. Scope change requests
 
-This section activates when there are PR comments, the human raised concerns during the report discussion, or the human explicitly requests changes.
+This section activates when there are active PR comments, the human raised concerns during the report discussion, or the human explicitly requests changes.
 
 Collect all feedback from:
 
-- PR line comments
-- PR review comments
+- Active (unresolved + current) PR review thread comments
 - Anything the human said during steps 1–2
 
 Then interview the human to refine the change requests into concrete, actionable gaps. The goal is alignment — you need to understand exactly what the human wants changed so the reef can act on it without further human input.

@@ -48,36 +48,38 @@ Read the issue and any existing decision record. Assess: is this a **feature**, 
 - **Refactor**: see [scope-refactor.md](scope-refactor.md)
 - **Bug**: see [triage-issue.md](triage-issue.md)
 
-## 3. Branch strategy
+## 3. Base branch
 
-Discuss with the user:
+Ask the user which branch to work off of:
 
 > "What branch should we work off of? Some options:"
 >
-> - "Create a new target branch from `main` (e.g. `reef/my-feature`)"
-> - "Work off the current branch (`branch-name`)"
+> - "`main`"
+> - "The current branch (`branch-name`)"
 > - "Something else?"
 
-Also ask what the target branch should be called if creating one. Don't enforce naming — just capture the decision.
-
-This gets documented in the plan so every downstream phase knows where to branch from and where PRs target.
+The target branch is decided later during slicing — don't ask about it here.
 
 ## 4. Persist the plan
 
 The plan gets **prepended** to the evolving file (pushing the decision record down) which becomes our PLAN_CONTENT variable. The decision record remains at the bottom for reference.
 
-At the top of the plan content, include a metadata block that downstream phases will read:
+The plan body starts with frontmatter that downstream phases will read:
 
-```sh
-BASE_BRANCH=$BASE_BRANCH
-TARGET_BRANCH=$TARGET_BRANCH
+```markdown
+---
+base branch: $BASE_BRANCH
+type: $PLAN_TYPE
+---
 ```
 
 Set variables from the discussion:
 
 ```sh
 PLAN_ID = $ISSUE_ID
-PLAN_CONTENT = {plan-content} # from context
+BASE_BRANCH = {from base branch discussion}
+PLAN_TYPE = {feature, refactor, or bug}
+PLAN_CONTENT = {plan-content} # frontmatter + plan body from context
 ```
 
 ```sh

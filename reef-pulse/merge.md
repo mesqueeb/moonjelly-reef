@@ -1,5 +1,7 @@
 # merge
 
+Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, read and follow [setup.md](setup.md) first and return here after.
+
 > **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
@@ -26,99 +28,58 @@ Set the post-fetch variables (after reading the slice body):
 
 ```sh
 SLICE_NAME = {from slice body}
-SLICE_NUMBER = $ISSUE_ID
+SLICE_ID = $ISSUE_ID
 PR_NUMBER = {from slice body}
-PLAN_ID = {from slice/plan body}
 TARGET_BRANCH = {from slice/plan body}
+SLICE_BRANCH = {from slice body}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-merge
 ```
 
-## Single-slice
+## Pre-merge check
 
-The PR targets the base branch. The human will merge it during `/reef-land` — do NOT merge it here.
+Unconditional for both single-slice and multi-slice. Ensures the slice branch integrates cleanly with the target branch before proceeding.
 
-1. Tag the plan `to-land`. Remove `to-merge`.
-2. Report: "Single slice verified. PR stays open for human review. Run `/reef-land #{number}`."
-
-**Stop here — do not continue to multi-slice steps below.**
-
-## Multi-slice
-
-### 1. Pre-merge checks
-
-Verify:
-
-- [ ] The PR is approved (has `to-merge` tag, set by the inspector)
-- [ ] The slice branch is up to date with the target branch:
+Check the merge state of the PR:
 
 ```sh
-gh pr view {pr-number} --json mergeStateStatus -q .mergeStateStatus
+gh pr view $PR_NUMBER --json mergeStateStatus -q .mergeStateStatus
 ```
 
-If the slice branch is behind the target branch (merge conflicts or `BEHIND`):
-
-1. Check out the implementation worktree (it should still exist from the implement phase)
-2. Merge the target branch into the slice branch: `git merge origin/{target-branch}`
-3. Resolve any conflicts
-4. Run the full test suite — must be green with the merged code
-5. Push the updated slice branch
-
-If the suite fails after merging, tag the slice `to-rework` with a note explaining what broke. Do not proceed.
-
-### 2. Merge
+Enter a worktree forked from $SLICE_BRANCH (not $TARGET_BRANCH) so you are testing the slice code with the latest target merged in:
 
 ```sh
-MERGE_STRATEGY = {from .agents/moonjelly-reef/config.md merge-strategy field}
+worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
 ```
+
+Merge the target branch into the slice branch:
 
 ```sh
-gh pr merge $PR_NUMBER --$MERGE_STRATEGY --delete-branch
+git merge origin/$TARGET_BRANCH
 ```
 
-### 3. Verify post-merge
-
-Use a temporary worktree to verify the target branch after merge.
+Run the full test suite. If the target branch merged cleanly and tests pass, commit and push:
 
 ```sh
-worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+commit.sh --branch $SLICE_BRANCH -m "merge: resolve conflicts with $TARGET_BRANCH"
 ```
 
-Run the full test suite. If it fails, **do not proceed** — tag the slice `to-rework` with a note that the merge broke tests and what failed.
-
-### 4. Document judgment calls
-
-Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
-
-### 5. Close the slice
-
-Close the slice issue and update the plan label. Add label `done`. Remove `to-merge`.
+If the test suite fails after merging, tag the slice `to-rework` and stop:
 
 ```sh
-tracker.sh issue close $SLICE_NUMBER
-tracker.sh issue edit $PLAN_ID --remove-label in-progress --add-label to-ratify
+tracker.sh issue edit $SLICE_ID --remove-label to-merge --add-label to-rework
 ```
 
-### 6. Check siblings
-
-Look at all sibling slices (other slices under the same plan). For any tagged `to-await-waves`, check their `blocked-by` list. If this merged slice was the last blocker, leave them as `to-await-waves` — the next pulse will dispatch the await-waves phase to re-review their plan before promoting.
-
-### 7. Check plan completion
-
-Are ALL slices for the plan now tagged `done`?
-
-```sh
-tracker.sh issue list --label done --parent $PLAN_ID
-tracker.sh issue view $PLAN_ID --json body,labels
-```
-
-If all slices are done, change the plan label from `in-progress` to `to-ratify`. If not all done, do nothing — more slices are still in progress.
-
-## Clean up
+Clean up the worktree:
 
 ```sh
 worktree-exit.sh --path $WORKTREE_PATH
 ```
 
-### Handoff
+If tests failed, stop here. Do not proceed to single-slice or multi-slice steps.
 
-Report: "Slice {name} merged. {N} of {total} slices complete." If promoted to `to-ratify`: "All slices done — plan is ready for ratification."
+## Delegate
+
+After the pre-merge check passes, check: **is this single-slice or multi-slice?**
+
+- **Single-slice** (target branch = base branch) — read and execute [merge-single.md](merge-single.md) (fast path: tag plan `to-land`, human merges via `/reef-land`)
+- **Multi-slice** (target branch forks from base branch) — read and execute [merge-multi.md](merge-multi.md) (full flow: squash merge PR, check siblings, check completion)
