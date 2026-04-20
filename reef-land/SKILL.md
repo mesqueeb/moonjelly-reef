@@ -186,7 +186,7 @@ If the discussion changed any plan-level Decisions, Stories, or Success Criteria
 ```sh
 PLAN_BODY=$(./tracker.sh issue view "$PLAN_ID" --json body)
 ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
-gh pr edit "$PR_NUMBER" --remove-label to-land --add-label to-rescan
+gh pr edit "$PR_NUMBER" --remove-label to-land --add-label to-rework
 ```
 
 Tell the human:

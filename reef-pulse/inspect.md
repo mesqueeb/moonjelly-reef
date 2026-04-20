@@ -8,9 +8,9 @@
 
 ## Input
 
-This skill requires a specific slice: e.g. `#55` or `my-feature/001-auth-endpoint`.
+This skill requires a specific issue (slice or plan): e.g. `#55` or `my-feature/001-auth-endpoint`.
 
-Read the slice to find the PR reference.
+Read the issue to find the PR reference.
 
 Set the pre-fetch variables:
 
@@ -24,7 +24,7 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Set the post-fetch variables (after reading the slice body):
+Set the post-fetch variables (after reading the issue body). Extract from frontmatter — works for both slices and plans:
 
 ```sh
 SLICE_NAME="{from slice body}"
@@ -33,6 +33,8 @@ SLICE_BRANCH="{from slice body}"
 TARGET_BRANCH="{from slice/plan body}"
 WORKTREE_PATH=".worktrees/$SLICE_NAME-inspect"
 ```
+
+For plan issues (no `parent-plan:` in frontmatter): use the PR's head branch as `SLICE_BRANCH`, and the plan's base branch as `TARGET_BRANCH`. Read success criteria from the plan body instead of acceptance criteria.
 
 ## Mindset
 

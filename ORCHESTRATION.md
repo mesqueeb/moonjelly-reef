@@ -127,7 +127,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - sync-pr-label — if change-requests
   ```sh
-  gh pr edit "$PR_NUMBER" --remove-label to-land --add-label to-rescan
+  gh pr edit "$PR_NUMBER" --remove-label to-land --add-label to-rework
   ```
 - pre-merge-check — if approved
   ```sh
@@ -361,7 +361,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
-- set-variables — if slice (has `parent-plan:` in frontmatter)
+- set-variables — if slice or single-slice plan
   ```sh
   SLICE_NAME="{from slice body}"
   SLICE_ID="$ISSUE_ID"
@@ -370,34 +370,32 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   PR_NUMBER="{from slice body}"
   WORKTREE_PATH=".worktrees/$SLICE_NAME-rework"
   ```
-- set-variables — if plan (no `parent-plan:` in frontmatter)
+- set-variables — if multi-slice plan
   ```sh
   PLAN_ID="$ISSUE_ID"
-  PLAN_TITLE="{from plan body}"
   BASE_BRANCH="{from plan body}"
   TARGET_BRANCH="{from plan body}"
   PR_NUMBER="{from plan body or PR search}"
-  WORKING_BRANCH="{TARGET_BRANCH for multi-slice, PR head branch for single-slice}"
   WORKTREE_PATH=".worktrees/$PLAN_ID-rework"
   ```
-- enter-worktree — if slice
+- enter-worktree — if slice or single-slice plan
   - contains: `Enter a worktree forked from $SLICE_BRANCH to apply fixes to the existing PR branch`
   ```sh
   ./worktree-enter.sh --fork-from "$SLICE_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
-- enter-worktree — if plan
-  - contains: `Enter a worktree forked from $WORKING_BRANCH to apply fixes to the existing PR`
+- enter-worktree — if multi-slice plan
+  - contains: `Enter a worktree forked from $TARGET_BRANCH to apply fixes to the existing PR`
   ```sh
-  ./worktree-enter.sh --fork-from "$WORKING_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
-- commit-code — if slice
+- commit-code — if slice or single-slice plan
   ```sh
   ./commit.sh --branch "$SLICE_BRANCH" -m "rework: address inspection feedback"
   ```
-- commit-code — if plan
+- commit-code — if multi-slice plan
   ```sh
-  ./commit.sh --branch "$WORKING_BRANCH" -m "rework: address review feedback"
+  ./commit.sh --branch "$TARGET_BRANCH" -m "rework: address review feedback"
   ```
 - update-pr-body
   ```sh
@@ -406,18 +404,10 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   PR_BODY="$PR_BODY\n\n$REPORT"
   gh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
-- update-tracker — if slice
+- update-tracker
   ```sh
-  ./tracker.sh issue edit "$SLICE_ID" --remove-label to-rework --add-label to-inspect
+  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-rework --add-label to-inspect
   gh pr edit "$PR_NUMBER" --remove-label to-rework --add-label to-inspect
-  ```
-- update-tracker — if plan single-slice
-  ```sh
-  ./tracker.sh issue edit "$PLAN_ID" --remove-label to-rework --add-label to-inspect
-  ```
-- update-tracker — if plan multi-slice
-  ```sh
-  ./tracker.sh issue edit "$PLAN_ID" --remove-label to-rework --add-label to-ratify
   ```
 - exit-worktree
   ```sh
@@ -425,7 +415,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - handoff
   ```sh
-  nextPhase="to-inspect" # single-slice, or "to-ratify" for multi-slice
+  nextPhase="to-inspect"
   planPr="$PR_NUMBER"
   summary="Rework complete — addressed review feedback"
   ```
