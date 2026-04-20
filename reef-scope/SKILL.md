@@ -106,7 +106,7 @@ PLAN_BODY = {current plan issue body with metrics section appended}
 ```
 
 ```sh
-tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY"
+./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
 ```
 
 Metrics section format:

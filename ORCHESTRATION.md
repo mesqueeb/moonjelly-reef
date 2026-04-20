@@ -80,7 +80,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY"
+  ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
   ```
 
 ### [/reef-land](./reef-land/SKILL.md)
