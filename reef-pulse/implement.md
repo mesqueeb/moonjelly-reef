@@ -78,9 +78,11 @@ Commit your work when implementation is complete.
 
 ## 4. Write the report
 
-When implementation is complete, compose the PR description using this template:
+When implementation is complete, compose the PR description. The `closes` reference must be at the very top of the PR body so GitHub auto-closes the slice issue on merge:
 
 ```markdown
+closes #$SLICE_ID $SLICE_NAME
+
 ## Slice
 
 {link to slice issue or file path}
@@ -130,8 +132,10 @@ The PR targets the **target branch** (which equals `{base-branch}` for single-sl
 
 ```sh
 PR_NUMBER = {from gh pr create output}
-SLICE_BODY = {slice body with PR reference appended}
+SLICE_BODY = {slice body with PR: #$PR_NUMBER added to frontmatter}
 ```
+
+After creating the PR, persist `PR: #N` in the slice issue frontmatter so downstream phases can find it. Add the `PR:` field to the existing YAML frontmatter block in the slice body.
 
 ## 6. Document judgment calls
 

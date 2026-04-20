@@ -103,9 +103,11 @@ Don't document what's obvious from reading the code.
 
 The report goes on a **PR from the target branch to the base branch** (usually `main`). This PR is what the human will ultimately merge or reject.
 
-The report should be concise and focused on what the human needs to know. Do NOT dump the entire plan — the human can read the plan. Focus on:
+The report should be concise and focused on what the human needs to know. Do NOT dump the entire plan — the human can read the plan. The `closes` reference must be at the very top of the PR body so GitHub auto-closes the plan issue on merge:
 
 ```markdown
+closes #$PLAN_ID $PLAN_TITLE
+
 ## Final Report
 
 ### Status: {PASS / GAPS FOUND}
@@ -150,6 +152,16 @@ REPORT = {report-content} # from context
 ```sh
 gh pr create --base $BASE_BRANCH --head $TARGET_BRANCH --title "$PLAN_TITLE" --body "$REPORT"
 # If a PR already exists for this target branch, update its description instead.
+```
+
+After creating the PR, persist `PR: #N` in the plan issue frontmatter so downstream phases can find it. Add the `PR:` field to the existing YAML frontmatter block in the plan body.
+
+```sh
+PLAN_BODY = {plan body with PR: #$PLAN_PR_NUMBER added to frontmatter}
+```
+
+```sh
+tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY"
 ```
 
 ### 8. Append metrics to plan PR

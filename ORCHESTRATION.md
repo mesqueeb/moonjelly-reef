@@ -255,13 +255,14 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   REPORT = {report-content} # from context
   ```
 - pr-create
+  - contains: `closes #$SLICE_ID $SLICE_NAME`
   ```sh
   gh pr create --base $TARGET_BRANCH --title "$SLICE_NAME" --body "$REPORT"
   ```
 - set-variables
   ```sh
   PR_NUMBER = {from gh pr create output}
-  SLICE_BODY = {slice body with PR reference appended}
+  SLICE_BODY = {slice body with PR: #$PR_NUMBER added to frontmatter}
   ```
 - set-variables
   ```sh
@@ -571,8 +572,17 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   REPORT = {report-content} # from context
   ```
 - pr-create — if pass
+  - contains: `closes #$PLAN_ID $PLAN_TITLE`
   ```sh
   gh pr create --base $BASE_BRANCH --head $TARGET_BRANCH --title "$PLAN_TITLE" --body "$REPORT"
+  ```
+- set-variables
+  ```sh
+  PLAN_BODY = {plan body with PR: #$PLAN_PR_NUMBER added to frontmatter}
+  ```
+- update-tracker
+  ```sh
+  tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY"
   ```
 - set-variables
   ```sh
