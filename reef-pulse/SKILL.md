@@ -58,6 +58,8 @@ Run these queries in parallel where possible for performance.
 
 **Do NOT ask the user for confirmation. Dispatch immediately.** The tags are the authorization — if an item is tagged for automated work, dispatch it without hesitation. Dispatch all items in parallel via sub-agents. When agent teams are supported in the environment, they can be used to parallelise items linked to the same plan.
 
+**CRITICAL: Do NOT use `isolation: "worktree"` when spawning sub-agents.** Each phase manages its own worktree via `worktree-enter.sh` (fetches from origin, forks from the correct remote branch). Platform isolation bypasses this and causes merge conflicts.
+
 For each item, spawn a sub-agent with: `"Read and follow reef-pulse/{file}. Target: #{number}."`
 
 | Tag              | File                             |
