@@ -61,7 +61,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 committed_enter() {
   mkdir -p "$ROOT/.worktrees"
   WORKTREE_TMP="$ROOT/.worktrees/tracker-$$"
-  "$SCRIPT_DIR/worktree-enter.sh" --fork-from "$TRACKER_BRANCH" --path "$WORKTREE_TMP" >/dev/null 2>&1
+  "$SCRIPT_DIR/worktree-enter.sh" --fork-from "$TRACKER_BRANCH" --pull-latest "$TRACKER_BRANCH" --path "$WORKTREE_TMP" >/dev/null 2>&1
   # Re-resolve TRACKER_PATH relative to the worktree
   case "$_raw_path" in
     /*) ;; # absolute path, no change
