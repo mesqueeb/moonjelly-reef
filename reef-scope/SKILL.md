@@ -112,11 +112,11 @@ tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY"
 Metrics section format:
 
 ```markdown
-### 🪼 Pulse metrics — {YYYY-MM-DD HH:MM UTC}
+### 🪼 Pulse metrics
 
-| Phase | Target | Duration | Tokens | Tool uses | Outcome |
-| --- | --- | --- | --- | --- | --- |
-| scope | #$PLAN_ID | $DURATION | — | — | plan created |
+| Phase | Target | Duration | Tokens | Tool uses | Outcome | Date | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| scope | #$PLAN_ID | $DURATION | — | — | plan created | {yyyy/MM/dd} | {HH:mm} |
 ```
 
 ## Handoff

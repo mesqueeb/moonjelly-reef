@@ -37,12 +37,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - set-variables
   ```sh
-  PLAN_PR_NUMBER = {from plan issue body PR reference, or from gh pr list}
-  PLAN_PR_BODY = {current plan PR body with metrics section appended}
+  PLAN_PR_NUMBER="$planPr" # from handoff — never read issue bodies for this
+  PLAN_PR_BODY="{current plan PR body with metrics section appended}"
   ```
-- update-pr-body — if plan PR exists
+- update-pr-body — if planPr is not "—"
   ```sh
-  gh pr edit $PLAN_PR_NUMBER --body "$PLAN_PR_BODY"
+  gh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
   ```
 
 ### [/reef-scope](./reef-scope/SKILL.md)
@@ -180,6 +180,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement
   ```
+- handoff
+  ```sh
+  nextPhase="to-implement"
+  planPr="—"
+  summary="Single slice — fast path, targeting $BASE_BRANCH directly"
+  ```
 
 ### [slice-multi.md](./reef-pulse/slice-multi.md)
 
@@ -222,6 +228,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
+  ```
+- handoff
+  ```sh
+  nextPhase="in-progress"
+  planPr="—"
+  summary="Slices created with acceptance criteria, dependency graph, and coverage matrix"
   ```
 
 ### [implement.md](./reef-pulse/implement.md)
@@ -273,6 +285,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
+- handoff
+  ```sh
+  nextPhase="to-inspect"
+  planPr="$PR_NUMBER"
+  summary="Implementation complete for $SLICE_NAME"
+  ```
 
 ### [inspect.md](./reef-pulse/inspect.md)
 
@@ -315,6 +333,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
+  ```
+- handoff
+  ```sh
+  nextPhase="to-merge" # or "to-rework" if gaps found
+  planPr="$PR_NUMBER"
+  summary="{verdict}: {one-line summary of findings}"
   ```
 
 ### [rework.md](./reef-pulse/rework.md)
@@ -360,6 +384,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
+- handoff
+  ```sh
+  nextPhase="to-inspect"
+  planPr="$PR_NUMBER"
+  summary="Rework complete — addressed inspection feedback"
+  ```
 
 ### [await-waves.md](./reef-pulse/await-waves.md)
 
@@ -403,6 +433,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
+  ```
+- handoff
+  ```sh
+  nextPhase="to-implement"
+  planPr="—"
+  summary="Slice {name} is unblocked and ready for implementation"
   ```
 
 ### [merge.md](./reef-pulse/merge.md)
@@ -460,6 +496,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   ./tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-land
   ```
+- handoff
+  ```sh
+  nextPhase="to-land"
+  planPr="$PR_NUMBER" # inherited from router context
+  summary="Single slice verified — PR stays open for human review"
+  ```
 
 ### [merge-multi.md](./reef-pulse/merge-multi.md)
 
@@ -492,6 +534,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - update-tracker — if all-slices-done
   ```sh
   ./tracker.sh issue edit "$PLAN_ID" --remove-label in-progress --add-label to-ratify
+  ```
+- handoff
+  ```sh
+  nextPhase="to-ratify" # or "in-progress" if not all slices done
+  planPr="—" # multi-slice: no plan PR yet
+  summary="Slice {name} merged — {N} of {total} slices complete"
   ```
 
 ### [ratify.md](./reef-pulse/ratify.md)
@@ -540,6 +588,13 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
+- handoff
+  ```sh
+  nextPhase="to-land" # or "to-rescan" if gaps found
+  planPr="$PR_NUMBER"
+  summary="Ratify {PASS|GAPS FOUND} — {one-line summary}"
+  planIssueMetrics="{metrics rows from plan issue body, or empty if none}"
+  ```
 
 ### [rescan.md](./reef-pulse/rescan.md)
 
@@ -576,4 +631,10 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
+  ```
+- handoff
+  ```sh
+  nextPhase="in-progress"
+  planPr="$PR_NUMBER"
+  summary="Created {N} new slices to address gaps — coverage matrix updated"
   ```

@@ -100,4 +100,10 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ## Handoff
 
-Report completion including duration, token usage, and tool uses from this session. The next phase is inspection (re-review).
+```sh
+nextPhase="to-inspect"
+planPr="$PR_NUMBER"
+summary="Rework complete — addressed inspection feedback"
+```
+
+Report these three variables to the caller.

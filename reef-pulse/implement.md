@@ -157,4 +157,10 @@ Persist the PR reference on the slice body so downstream phases (inspect, rework
 
 ## Handoff
 
-If dispatched by reef-pulse or an orchestrator, report completion including duration, token usage, and tool uses from this session. The next phase for this slice is inspection.
+```sh
+nextPhase="to-inspect"
+planPr="$PR_NUMBER"
+summary="Implementation complete for $SLICE_NAME"
+```
+
+Report these three variables to the caller.

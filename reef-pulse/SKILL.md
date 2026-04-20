@@ -77,14 +77,31 @@ For each item, spawn a sub-agent with: `"Read and follow reef-pulse/{file}. Targ
 
 ### Step 3. Log phase metrics
 
-After all dispatched agents complete, collect the task notification metadata from each (duration, tokens, tool uses, and outcome). Group the results by plan.
+After all dispatched agents complete, collect from each: task notification metadata (duration, tokens, tool uses) and the structured handoff variables (`nextPhase`, `planPr`, `summary`). Group results by plan.
 
-- **Single-slice plans**: the plan issue itself is the target.
-- **Multi-slice plans**: the slice issue body links back to its plan (look for the `Plan: #N` line).
+#### Metrics table format
+
+```markdown
+### 🪼 Pulse metrics
+
+| Phase     | Target | Duration | Tokens | Tool uses | Outcome       | Date       | Time  |
+| --------- | ------ | -------- | ------ | --------- | ------------- | ---------- | ----- |
+| implement | #55    | 42s      | 12 340 | 18        | ✅ PR created | 2026/04/20 | 14:30 |
+| inspect   | #53    | 25s      | 8 200  | 12        | ✅ passed     | 2026/04/20 | 14:31 |
+```
+
+No timestamp in the header. Each row gets `Date` (`yyyy/MM/dd`) and `Time` (`HH:mm`) columns.
+
+#### Rules
+
+- Only log phases dispatched this pulse. If nothing was dispatched, skip this step entirely.
+- Fall back to `—` for any missing metadata field (duration, tokens, tool uses).
+- Duration: human-readable (`42s`, `1m 12s`). Tokens: space-separated thousands.
+- Do NOT read issue bodies to discover PR numbers. Use `planPr` from the handoff.
 
 #### 3a. Write metrics to the plan issue
 
-Append **one metrics section per plan** to the plan issue body using `./tracker.sh issue edit --body`. Read the current body first, then append the new metrics section at the bottom.
+Append one metrics section per plan to the plan issue body. Read the current body first, then append.
 
 ```sh
 ISSUE_ID="{from dispatched items}"
@@ -94,45 +111,25 @@ ISSUE_BODY="{current issue body with metrics section appended}"
 
 #### 3b. Write metrics to the plan PR
 
-If a plan PR exists (look for a `PR: #N` reference in the plan issue body), also append the same metrics rows to the plan PR body. For single-slice plans, the slice PR is the plan PR. For multi-slice plans, find the plan PR via `gh pr list --base $BASE_BRANCH --head $TARGET_BRANCH`.
-
-If no plan PR exists yet (e.g. scope and slice phases run before a PR is created), skip this sub-step — the metrics on the plan issue will be copied to the PR later by reef-pulse when the PR is created.
-
-When a ratify phase creates a new plan PR, check the plan issue body for scope/slice metrics rows (in the `🪼 Pulse metrics` sections). If those rows exist on the plan issue but are not yet on the plan PR, copy them to the top of the PR's metrics table. This ensures the complete history — from scoping through landing — is visible on the final PR.
+Use `planPr` from the handoff to determine the target PR. If `planPr` is `—`, no plan PR exists yet — skip this sub-step. Otherwise, append the same metrics rows to the plan PR body.
 
 ```sh
-PLAN_PR_NUMBER = {from plan issue body PR reference, or from gh pr list}
-PLAN_PR_BODY = {current plan PR body with metrics section appended}
-gh pr edit $PLAN_PR_NUMBER --body "$PLAN_PR_BODY"
+PLAN_PR_NUMBER="$planPr" # from handoff — never read issue bodies for this
+PLAN_PR_BODY="{current plan PR body with metrics section appended}"
+gh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
 ```
-
-#### Metrics section format
-
-```markdown
-### 🪼 Pulse metrics — {yyyy/MM/dd HH:mm}
-
-| Phase     | Target | Duration | Tokens | Tool uses | Outcome       |
-| --------- | ------ | -------- | ------ | --------- | ------------- |
-| implement | #55    | 42s      | 12 340 | 18        | ✅ PR created |
-| implement | #56    | 38s      | 10 890 | 15        | ✅ PR created |
-| inspect   | #53    | 25s      | 8 200  | 12        | ✅ passed     |
-```
-
-#### Rules
-
-- Only log phases that were dispatched this pulse. If nothing was dispatched, skip this step entirely.
-- If a dispatch failed or the agent returned no metadata, log what you have with `—` for missing fields. Fall back to `—` for any metadata field (duration, tokens, tool uses) that is unavailable.
-- Duration should be human-readable (e.g. `42s`, `1m 12s`). Tokens should use space-separated thousands.
 
 #### Total row on ratify-to-land
 
-When logging a ratify phase whose outcome results in `to-land`, append the ratify metrics row and then a bold **Total** row that sums all durations and tokens in the metrics table. Unknown token values (`—`) are excluded from the total. This is the last automated edit to the metrics table before the human reviews.
+When a ratify handoff has `nextPhase: to-land`, use `planIssueMetrics` from the ratify handoff (scope/slice metrics rows from the plan issue). Prepend those rows to the PR's existing metrics table (dedup if already present), append the ratify row, then append a bold **Total** row summing all durations and tokens. Unknown values (`—`) are excluded from the total. This is the last automated edit to the metrics table.
 
 Example:
 
 ```markdown
-| ratify | — | 1m 5s | 15 200 | 20 | pass |
-| **Total** | | **5m 30s** | **62 359** | **87** | |
+| scope   | #15 | 1m 30s  | —      | —  | plan created  | 2026/04/18 | 09:00 |
+| slice   | #15 | 45s     | 8 100  | 10 | slices created | 2026/04/18 | 09:05 |
+| ratify  | —   | 1m 5s   | 15 200 | 20 | pass          | 2026/04/20 | 14:35 |
+| **Total** | | **5m 30s** | **62 359** | **87** | | | |
 ```
 
 ### Step 4. Present human (🤿) items (--hitl only)

@@ -182,7 +182,13 @@ gh pr edit "$PR_NUMBER" --body "$PR_BODY"
 
 ## Handoff
 
-If pass: "Target branch reviewed and final report written on PR #{number}. Ready for `/reef-land` — human review."
-If gaps: "Gaps found during holistic review. Tagged `to-rescan` for rescanning to create new slices."
+Read the plan issue body for any existing `### 🪼 Pulse metrics` rows (scope and slice metrics). Extract them as `planIssueMetrics`.
 
-Include duration, token usage, and tool uses from this session.
+```sh
+nextPhase="to-land" # or "to-rescan" if gaps found
+planPr="$PR_NUMBER"
+summary="Ratify {PASS|GAPS FOUND} — {one-line summary}"
+planIssueMetrics="{metrics rows from plan issue body, or empty if none}"
+```
+
+Report these four variables to the caller.
