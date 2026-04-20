@@ -1,6 +1,8 @@
 # await-waves
 
-> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
+> **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
+>
+> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. No judgment calls expected — if blocked, exit silently. If deps are done, promote. Never block waiting for human input.
 
@@ -19,7 +21,7 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ## 0. Fetch context
 
 ```sh
-tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
 Set the post-fetch variables (after reading the slice body):
@@ -40,7 +42,7 @@ DEPENDENCY_ID="{from slice blocked-by list}"
 ```
 
 ```sh
-tracker.sh issue view "$DEPENDENCY_ID" --json labels
+./tracker.sh issue view "$DEPENDENCY_ID" --json labels
 ```
 
 **If any dependency is NOT done**: exit silently. Do nothing. This slice stays `to-await-waves`. It will be checked again on the next pulse.
@@ -52,7 +54,7 @@ tracker.sh issue view "$DEPENDENCY_ID" --json labels
 Enter a worktree forked from $TARGET_BRANCH to be able to read up to date code (earlier slices may have changed the codebase):
 
 ```sh
-worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
 ```
 
 Earlier slices may have changed the codebase. Read this slice's acceptance criteria and compare against the current state of the code:
@@ -70,19 +72,19 @@ SLICE_BODY="{slice body, with updated acceptance criteria if changed}"
 ```
 
 ```sh
-tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY"
+./tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY"
 ```
 
 ## 3. Promote
 
 ```sh
-tracker.sh issue edit "$SLICE_ID" --remove-label to-await-waves --add-label to-implement
+./tracker.sh issue edit "$SLICE_ID" --remove-label to-await-waves --add-label to-implement
 ```
 
 ## 4. Clean up
 
 ```sh
-worktree-exit.sh --path "$WORKTREE_PATH"
+./worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
 ## Handoff

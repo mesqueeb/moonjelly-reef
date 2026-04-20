@@ -1,6 +1,8 @@
 # ratify
 
-> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
+> **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
+>
+> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -24,7 +26,7 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ## 0. Fetch context
 
 ```sh
-tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
 Set the post-fetch variables (after reading the plan body):
@@ -50,7 +52,7 @@ Think like a CTO doing a final walkthrough before shipping.
 Enter a worktree forked from $TARGET_BRANCH because all slice PRs are merged there — you are reviewing the aggregate, not individual slices:
 
 ```sh
-worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
 ```
 
 Verify you have the latest — all slice PRs should be merged into this branch.
@@ -94,7 +96,7 @@ When you find non-obvious behavior worth documenting during your holistic review
 1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and push directly to the target branch:
 
 ```sh
-commit.sh --branch "$TARGET_BRANCH" -m "ratify: add documentation"
+./commit.sh --branch "$TARGET_BRANCH" -m "ratify: add documentation"
 ```
 
 2. **Outside-of-code docs if warranted.** If the behavior is significant enough to document beyond a code comment, check the repo's `AGENTS.md`/`CLAUDE.md` for a documentation locations section. If it exists, follow it. If it doesn't, create a brief entry.
@@ -163,19 +165,19 @@ gh pr edit "$PR_NUMBER" --body "$PR_BODY"
 **If all criteria met (PASS):**
 
 ```sh
-tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land
+./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land
 ```
 
 **If gaps found:**
 
 ```sh
-tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rescan
+./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rescan
 ```
 
 ## Clean up
 
 ```sh
-worktree-exit.sh --path "$WORKTREE_PATH"
+./worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
 ## Handoff

@@ -7,7 +7,9 @@ description: The Moonjelly Reef orchestrator. A single pulse that scans all issu
 
 Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, read and follow [setup.md](setup.md) first and return here after.
 
-> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
+> **Shell blocks are literal commands** — `./tracker.sh` is a real script next to this file. Execute it as written; do not substitute with raw git commands.
+>
+> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 You are the orchestrator. You scan, dispatch, and exit. You hold no state — tags are the state.
 
@@ -40,16 +42,16 @@ Read the config to determine the tracker type, then scan for all tagged issues.
 
 ```sh
 # Scan all reef-tagged issues
-tracker.sh issue list --label "to-scope" --json number,title --limit 100
-tracker.sh issue list --label "to-slice" --json number,title --limit 100
-tracker.sh issue list --label "to-await-waves" --json number,title --limit 100
-tracker.sh issue list --label "to-implement" --json number,title --limit 100
-tracker.sh issue list --label "to-inspect" --json number,title --limit 100
-tracker.sh issue list --label "to-rework" --json number,title --limit 100
-tracker.sh issue list --label "to-merge" --json number,title --limit 100
-tracker.sh issue list --label "to-ratify" --json number,title --limit 100
-tracker.sh issue list --label "to-rescan" --json number,title --limit 100
-tracker.sh issue list --label "to-land" --json number,title --limit 100
+./tracker.sh issue list --label "to-scope" --json number,title --limit 100
+./tracker.sh issue list --label "to-slice" --json number,title --limit 100
+./tracker.sh issue list --label "to-await-waves" --json number,title --limit 100
+./tracker.sh issue list --label "to-implement" --json number,title --limit 100
+./tracker.sh issue list --label "to-inspect" --json number,title --limit 100
+./tracker.sh issue list --label "to-rework" --json number,title --limit 100
+./tracker.sh issue list --label "to-merge" --json number,title --limit 100
+./tracker.sh issue list --label "to-ratify" --json number,title --limit 100
+./tracker.sh issue list --label "to-rescan" --json number,title --limit 100
+./tracker.sh issue list --label "to-land" --json number,title --limit 100
 ```
 
 Run these queries in parallel where possible for performance.
@@ -82,12 +84,12 @@ After all dispatched agents complete, collect the task notification metadata fro
 
 #### 3a. Write metrics to the plan issue
 
-Append **one metrics section per plan** to the plan issue body using `tracker.sh issue edit --body`. Read the current body first, then append the new metrics section at the bottom.
+Append **one metrics section per plan** to the plan issue body using `./tracker.sh issue edit --body`. Read the current body first, then append the new metrics section at the bottom.
 
 ```sh
 ISSUE_ID="{from dispatched items}"
 ISSUE_BODY="{current issue body with metrics section appended}"
-tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
 ```
 
 #### 3b. Write metrics to the plan PR
