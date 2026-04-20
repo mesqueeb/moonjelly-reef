@@ -356,7 +356,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
-- set-variables
+- set-variables — if slice (has `parent-plan:` in frontmatter)
   ```sh
   SLICE_NAME="{from slice body}"
   SLICE_ID="$ISSUE_ID"
@@ -365,15 +365,34 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   PR_NUMBER="{from slice body}"
   WORKTREE_PATH=".worktrees/$SLICE_NAME-rework"
   ```
-- enter-worktree
+- set-variables — if plan (no `parent-plan:` in frontmatter)
+  ```sh
+  PLAN_ID="$ISSUE_ID"
+  PLAN_TITLE="{from plan body}"
+  BASE_BRANCH="{from plan body}"
+  TARGET_BRANCH="{from plan body}"
+  PR_NUMBER="{from plan body or PR search}"
+  WORKING_BRANCH="{TARGET_BRANCH for multi-slice, PR head branch for single-slice}"
+  WORKTREE_PATH=".worktrees/$PLAN_ID-rework"
+  ```
+- enter-worktree — if slice
   - contains: `Enter a worktree forked from $SLICE_BRANCH to apply fixes to the existing PR branch`
   ```sh
   ./worktree-enter.sh --fork-from "$SLICE_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
+- enter-worktree — if plan
+  - contains: `Enter a worktree forked from $WORKING_BRANCH to apply fixes to the existing PR`
+  ```sh
+  ./worktree-enter.sh --fork-from "$WORKING_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
+  ```
 - phase-specific
-- commit-code
+- commit-code — if slice
   ```sh
   ./commit.sh --branch "$SLICE_BRANCH" -m "rework: address inspection feedback"
+  ```
+- commit-code — if plan
+  ```sh
+  ./commit.sh --branch "$WORKING_BRANCH" -m "rework: address review feedback"
   ```
 - update-pr-body
   ```sh
@@ -382,9 +401,17 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   PR_BODY="$PR_BODY\n\n$REPORT"
   gh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
-- update-tracker
+- update-tracker — if slice
   ```sh
   ./tracker.sh issue edit "$SLICE_ID" --remove-label to-rework --add-label to-inspect
+  ```
+- update-tracker — if plan single-slice
+  ```sh
+  ./tracker.sh issue edit "$PLAN_ID" --remove-label to-rework --add-label to-inspect
+  ```
+- update-tracker — if plan multi-slice
+  ```sh
+  ./tracker.sh issue edit "$PLAN_ID" --remove-label to-rework --add-label to-ratify
   ```
 - exit-worktree
   ```sh
@@ -392,9 +419,9 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - handoff
   ```sh
-  nextPhase="to-inspect"
+  nextPhase="to-inspect" # single-slice, or "to-ratify" for multi-slice
   planPr="$PR_NUMBER"
-  summary="Rework complete — addressed inspection feedback"
+  summary="Rework complete — addressed review feedback"
   ```
 
 ### [await-waves.md](./reef-pulse/await-waves.md)
@@ -586,14 +613,14 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   - pass: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land`
-  - fail: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rescan`
+  - fail: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rework`
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 - handoff
   ```sh
-  nextPhase="to-land" # or "to-rescan" if gaps found
+  nextPhase="to-land" # or "to-rework" if gaps found, "to-scope" if safety valve
   planPr="$PR_NUMBER"
   summary="Ratify {PASS|GAPS FOUND} — {one-line summary}"
   planIssueMetrics="{metrics rows from plan issue body, or empty if none}"
