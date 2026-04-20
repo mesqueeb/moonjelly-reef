@@ -30,6 +30,7 @@ Set the post-fetch variables (after reading the slice body):
 SLICE_NAME="{from slice body}"
 SLICE_ID="$ISSUE_ID"
 SLICE_BRANCH="{from slice body}"
+TARGET_BRANCH="{from slice/plan body}"
 PR_NUMBER="{from slice body}"
 WORKTREE_PATH=".worktrees/$SLICE_NAME-rework"
 ```
@@ -41,8 +42,16 @@ WORKTREE_PATH=".worktrees/$SLICE_NAME-rework"
 Enter a worktree forked from $SLICE_BRANCH to apply fixes to the existing PR branch:
 
 ```sh
-./worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$SLICE_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
 ```
+
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$SLICE_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+
+```sh
+./tracker.sh issue edit "$SLICE_ID" --add-label blocked-with-conflicts
+```
+
+Stop — do not proceed.
 
 ### 2. Read all feedback
 
