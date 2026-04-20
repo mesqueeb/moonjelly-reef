@@ -6,8 +6,8 @@ The test runner checks: (1) each command string exists in the .md file, (2) they
 
 `if` means the operation is conditional — it must exist in the .md but only runs when the condition holds.
 
-Tracker commands use `tracker.sh issue ...` syntax.
-For GitHub: replace `tracker.sh` with `gh`.
+Tracker commands use `./tracker.sh issue ...` syntax.
+For GitHub: replace `./tracker.sh` with `gh`.
 For MCP trackers (ClickUp, Jira, Linear): use equivalent MCP tool calls.
 
 Only variables referenced in an op's cmd/tracker field belong in set-variables.
@@ -33,7 +33,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
   ```
 - set-variables
   ```sh
@@ -57,7 +57,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - phase-specific
 - set-variables
@@ -69,7 +69,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit "$PLAN_ID" --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
+  ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
   ```
 - set-variables
   ```sh
@@ -90,7 +90,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$PLAN_ID" --json body,title,labels # if PLAN_ID known
+  ./tracker.sh issue view "$PLAN_ID" --json body,title,labels # if PLAN_ID known
   gh pr view "$PR_NUMBER" --json number,body,headRefName,baseRefName,comments,reviews # if PR_NUMBER known
   ```
 - set-variables
@@ -115,12 +115,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker — if change-requests
   ```sh
-  tracker.sh issue edit "$PLAN_ID" --remove-label to-land --add-label to-rescan
+  ./tracker.sh issue edit "$PLAN_ID" --remove-label to-land --add-label to-rescan
   ```
 - update-plan-body — if change-requests and plan decisions changed
   ```sh
-  PLAN_BODY=$(tracker.sh issue view "$PLAN_ID" --json body)
-  tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
+  PLAN_BODY=$(./tracker.sh issue view "$PLAN_ID" --json body)
+  ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
   ```
 - pre-merge-check — if approved
   ```sh
@@ -145,7 +145,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker — if approved
   ```sh
-  tracker.sh issue close "$PLAN_ID"
+  ./tracker.sh issue close "$PLAN_ID"
   ```
 - set-variables — if follow-up
   ```sh
@@ -153,7 +153,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - create-tracker — if follow-up
   ```sh
-  tracker.sh issue create --title "Follow-up: {summary of concerns}" --body "$FOLLOW_UP_CONTEXT" --label to-scope
+  ./tracker.sh issue create --title "Follow-up: {summary of concerns}" --body "$FOLLOW_UP_CONTEXT" --label to-scope
   ```
 
 ## Phases
@@ -166,7 +166,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 
 ### [slice-single.md](./reef-pulse/slice-single.md)
@@ -178,7 +178,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement
+  ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement
   ```
 - handoff
   - contains: `nextPhase=`
@@ -203,7 +203,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH to read the codebase for informed slicing decisions`
   ```sh
-  worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - create-remote-branch
   ```sh
@@ -218,7 +218,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - create-slices
   ```sh
-  tracker.sh issue create --title "$SLICE_TITLE" --body "$SLICE_BODY" --label "$SLICE_LABEL"
+  ./tracker.sh issue create --title "$SLICE_TITLE" --body "$SLICE_BODY" --label "$SLICE_LABEL"
   ```
 - set-variables
   ```sh
@@ -226,11 +226,11 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label in-progress
+  ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label in-progress
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path "$WORKTREE_PATH"
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 - handoff
   - contains: `nextPhase=`
@@ -250,7 +250,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
@@ -263,12 +263,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH so you start from a clean integration point`
   ```sh
-  worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code
   ```sh
-  commit.sh --branch "$SLICE_BRANCH" -m "$SLICE_NAME: implementation"
+  ./commit.sh --branch "$SLICE_BRANCH" -m "$SLICE_NAME: implementation"
   ```
 - set-variables
   ```sh
@@ -285,11 +285,11 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY" --remove-label to-implement --add-label to-inspect
+  ./tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY" --remove-label to-implement --add-label to-inspect
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path "$WORKTREE_PATH"
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 - handoff
   - contains: `nextPhase=`
@@ -309,7 +309,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
@@ -321,12 +321,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $SLICE_BRANCH to review the implementation`
   ```sh
-  worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code — if cleanup-needed
   ```sh
-  commit.sh --branch "$SLICE_BRANCH" -m "inspect: cleanup"
+  ./commit.sh --branch "$SLICE_BRANCH" -m "inspect: cleanup"
   ```
 - update-pr-body
   ```sh
@@ -337,11 +337,11 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   gh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker
-  - pass: `tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge`
-  - fail: `tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework`
+  - pass: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge`
+  - fail: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework`
 - exit-worktree
   ```sh
-  worktree-exit.sh --path "$WORKTREE_PATH"
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 - handoff
   - contains: `nextPhase=`
@@ -361,7 +361,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
@@ -374,12 +374,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $SLICE_BRANCH to apply fixes to the existing PR branch`
   ```sh
-  worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code
   ```sh
-  commit.sh --branch "$SLICE_BRANCH" -m "rework: address inspection feedback"
+  ./commit.sh --branch "$SLICE_BRANCH" -m "rework: address inspection feedback"
   ```
 - update-pr-body
   ```sh
@@ -390,11 +390,11 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit "$SLICE_ID" --remove-label to-rework --add-label to-inspect
+  ./tracker.sh issue edit "$SLICE_ID" --remove-label to-rework --add-label to-inspect
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path "$WORKTREE_PATH"
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 - handoff
   - contains: `nextPhase=`
@@ -414,7 +414,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
@@ -429,12 +429,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - dep-check
   ```sh
-  tracker.sh issue view "$DEPENDENCY_ID" --json labels
+  ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH to be able to read up to date code`
   ```sh
-  worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - set-variables
@@ -443,11 +443,11 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY" --remove-label to-await-waves --add-label to-implement
+  ./tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY" --remove-label to-await-waves --add-label to-implement
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path "$WORKTREE_PATH"
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 - handoff
   - contains: `nextPhase=`
@@ -467,7 +467,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
@@ -485,7 +485,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $SLICE_BRANCH (not $TARGET_BRANCH) so you are testing the slice code with the latest target merged in`
   ```sh
-  worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
   ```
 - merge-target-into-slice
   ```sh
@@ -493,15 +493,15 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - commit-code — if merge-needed
   ```sh
-  commit.sh --branch "$SLICE_BRANCH" -m "merge: resolve conflicts with $TARGET_BRANCH"
+  ./commit.sh --branch "$SLICE_BRANCH" -m "merge: resolve conflicts with $TARGET_BRANCH"
   ```
 - update-tracker — if tests-fail
   ```sh
-  tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label to-rework
+  ./tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label to-rework
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path "$WORKTREE_PATH"
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 
 ### [merge-single.md](./reef-pulse/merge-single.md)
@@ -512,7 +512,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-land
+  ./tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-land
   ```
 - handoff
   - contains: `nextPhase=`
@@ -542,7 +542,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - check-siblings-and-completion
   ```sh
-  tracker.sh issue view "$PLAN_ID" --json body,title,labels
+  ./tracker.sh issue view "$PLAN_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
@@ -550,11 +550,11 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - update-tracker
   ```sh
-  tracker.sh issue close "$SLICE_ID"
+  ./tracker.sh issue close "$SLICE_ID"
   ```
 - update-tracker — if all-slices-done
   ```sh
-  tracker.sh issue edit "$PLAN_ID" --remove-label in-progress --add-label to-ratify
+  ./tracker.sh issue edit "$PLAN_ID" --remove-label in-progress --add-label to-ratify
   ```
 - handoff
   - contains: `nextPhase=`
@@ -574,7 +574,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
@@ -587,12 +587,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH because all slice PRs are merged there`
   ```sh
-  worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code — if documentation-added
   ```sh
-  commit.sh --branch "$TARGET_BRANCH" -m "ratify: add documentation"
+  ./commit.sh --branch "$TARGET_BRANCH" -m "ratify: add documentation"
   ```
 - submit-report
   ```sh
@@ -606,11 +606,11 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   gh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker
-  - pass: `tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land`
-  - fail: `tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rescan`
+  - pass: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land`
+  - fail: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rescan`
 - exit-worktree
   ```sh
-  worktree-exit.sh --path "$WORKTREE_PATH"
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 - handoff
   - contains: `nextPhase=`
@@ -632,7 +632,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
@@ -648,17 +648,17 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH to read the current state of the code`
   ```sh
-  worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - update-tracker
   ```sh
   PLAN_BODY="{plan body with updated criteria and coverage matrix}"
-  tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-rescan --add-label in-progress
+  ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-rescan --add-label in-progress
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path "$WORKTREE_PATH"
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 - handoff
   - contains: `nextPhase=`

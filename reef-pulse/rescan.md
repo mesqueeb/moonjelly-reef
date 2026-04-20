@@ -1,6 +1,8 @@
 # rescan
 
-> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
+> **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
+>
+> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -19,7 +21,7 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ## 0. Fetch context
 
 ```sh
-tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
 Set the post-fetch variables (after reading the plan body):
@@ -55,7 +57,7 @@ Do NOT ask a human. If the gaps need decisions that aren't in the success criter
 Enter a worktree forked from $TARGET_BRANCH to read the current state of the code:
 
 ```sh
-worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
 ```
 
 ### 1. Analyze the gaps
@@ -80,7 +82,7 @@ Read the entire plan top to bottom. With the gap report's findings in mind:
 If the plan or success criteria need updates:
 
 ```sh
-tracker.sh issue edit "$PLAN_ID" --body "{updated plan body}"
+./tracker.sh issue edit "$PLAN_ID" --body "{updated plan body}"
 ```
 
 ### 3. Create new slices
@@ -98,7 +100,7 @@ Follow the same format as the slice phase:
 Create new slices linked to the plan:
 
 ```sh
-tracker.sh issue create --title "{slice-title}" --body "{slice-body}" --label to-implement
+./tracker.sh issue create --title "{slice-title}" --body "{slice-body}" --label to-implement
 ```
 
 Use `to-implement` if no blockers, `to-await-waves` if blocked.
@@ -108,7 +110,7 @@ Use `to-implement` if no blockers, `to-await-waves` if blocked.
 Add rows for the new slices. Every gap must now map to an acceptance criterion on a new slice.
 
 ```sh
-tracker.sh issue edit "$PLAN_ID" --body "{plan body with updated coverage matrix}"
+./tracker.sh issue edit "$PLAN_ID" --body "{plan body with updated coverage matrix}"
 ```
 
 ### 5. Handle original slices
@@ -129,13 +131,13 @@ Update the plan body with the revised criteria and coverage matrix. Change label
 
 ```sh
 PLAN_BODY="{plan body with updated criteria and coverage matrix}"
-tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-rescan --add-label in-progress
+./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-rescan --add-label in-progress
 ```
 
 ## Clean up
 
 ```sh
-worktree-exit.sh --path "$WORKTREE_PATH"
+./worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
 ## Handoff

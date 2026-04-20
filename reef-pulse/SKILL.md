@@ -7,7 +7,9 @@ description: The Moonjelly Reef orchestrator. A single pulse that scans all issu
 
 Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, read and follow [setup.md](setup.md) first and return here after.
 
-> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
+> **Shell blocks are literal commands** — `./tracker.sh` is a real script next to this file. Execute it as written; do not substitute with raw git commands.
+>
+> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 You are the orchestrator. You scan, dispatch, and exit. You hold no state — tags are the state.
 
@@ -40,16 +42,16 @@ Read the config to determine the tracker type, then scan for all tagged issues.
 
 ```sh
 # Scan all reef-tagged issues
-tracker.sh issue list --label "to-scope" --json number,title --limit 100
-tracker.sh issue list --label "to-slice" --json number,title --limit 100
-tracker.sh issue list --label "to-await-waves" --json number,title --limit 100
-tracker.sh issue list --label "to-implement" --json number,title --limit 100
-tracker.sh issue list --label "to-inspect" --json number,title --limit 100
-tracker.sh issue list --label "to-rework" --json number,title --limit 100
-tracker.sh issue list --label "to-merge" --json number,title --limit 100
-tracker.sh issue list --label "to-ratify" --json number,title --limit 100
-tracker.sh issue list --label "to-rescan" --json number,title --limit 100
-tracker.sh issue list --label "to-land" --json number,title --limit 100
+./tracker.sh issue list --label "to-scope" --json number,title --limit 100
+./tracker.sh issue list --label "to-slice" --json number,title --limit 100
+./tracker.sh issue list --label "to-await-waves" --json number,title --limit 100
+./tracker.sh issue list --label "to-implement" --json number,title --limit 100
+./tracker.sh issue list --label "to-inspect" --json number,title --limit 100
+./tracker.sh issue list --label "to-rework" --json number,title --limit 100
+./tracker.sh issue list --label "to-merge" --json number,title --limit 100
+./tracker.sh issue list --label "to-ratify" --json number,title --limit 100
+./tracker.sh issue list --label "to-rescan" --json number,title --limit 100
+./tracker.sh issue list --label "to-land" --json number,title --limit 100
 ```
 
 Run these queries in parallel where possible for performance.
@@ -92,9 +94,9 @@ One table per plan/PR titled `### 🪼 Pulse metrics` (no timestamp in header). 
 ```markdown
 ### 🪼 Pulse metrics
 
-| Phase | Target | Duration | Tokens | Tool uses | Outcome | Date | Time |
-| ----- | ------ | -------- | ------ | --------- | ------- | ---- | ---- |
-| implement | #55 | 42s | 12 340 | 18 | PR created | 2026/04/20 | 14:32 |
+| Phase     | Target | Duration | Tokens | Tool uses | Outcome    | Date       | Time  |
+| --------- | ------ | -------- | ------ | --------- | ---------- | ---------- | ----- |
+| implement | #55    | 42s      | 12 340 | 18        | PR created | 2026/04/20 | 14:32 |
 ```
 
 - Duration: human-readable (`42s`, `1m 12s`). Tokens: space-separated thousands.
@@ -107,7 +109,7 @@ One table per plan/PR titled `### 🪼 Pulse metrics` (no timestamp in header). 
 ```sh
 ISSUE_ID="{from dispatched items}"
 ISSUE_BODY="{current issue body with metrics rows appended}"
-tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
 ```
 
 #### Write to plan PR

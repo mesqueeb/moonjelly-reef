@@ -4,7 +4,7 @@
 set -u
 
 TESTS_DIR="$(cd "$(dirname "$0")" && pwd)"
-SCRIPT_DIR="$TESTS_DIR/../reef-pulse/scripts"
+SCRIPT_DIR="$TESTS_DIR/../reef-pulse"
 PASS=0
 FAIL=0
 TOTAL=0

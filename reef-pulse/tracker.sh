@@ -61,7 +61,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 committed_enter() {
   WORKTREE_TMP="$(mktemp -d)"
   rmdir "$WORKTREE_TMP"
-  "$SCRIPT_DIR/scripts/worktree-enter.sh" --fork-from "$TRACKER_BRANCH" --path "$WORKTREE_TMP" >/dev/null 2>&1
+  "$SCRIPT_DIR/worktree-enter.sh" --fork-from "$TRACKER_BRANCH" --path "$WORKTREE_TMP" >/dev/null 2>&1
   # Re-resolve TRACKER_PATH relative to the worktree
   case "$_raw_path" in
     /*) ;; # absolute path, no change
@@ -72,9 +72,9 @@ committed_enter() {
 
 committed_exit() {
   _msg="$1"
-  "$SCRIPT_DIR/scripts/commit.sh" --branch "$TRACKER_BRANCH" -m "$_msg" >/dev/null 2>&1
+  "$SCRIPT_DIR/commit.sh" --branch "$TRACKER_BRANCH" -m "$_msg" >/dev/null 2>&1
   cd "$ROOT"
-  "$SCRIPT_DIR/scripts/worktree-exit.sh" --path "$WORKTREE_TMP" >/dev/null 2>&1
+  "$SCRIPT_DIR/worktree-exit.sh" --path "$WORKTREE_TMP" >/dev/null 2>&1
 }
 
 # ============================================================

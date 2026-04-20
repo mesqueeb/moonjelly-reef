@@ -1,6 +1,8 @@
 # inspect
 
-> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
+> **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
+>
+> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -19,7 +21,7 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ## 0. Fetch context
 
 ```sh
-tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
 Set the post-fetch variables (after reading the slice body):
@@ -51,7 +53,7 @@ A few things you naturally do:
 Enter a worktree forked from $SLICE_BRANCH to review the implementation without disturbing the main checkout:
 
 ```sh
-worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
+./worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
 ```
 
 Run the full project test suite. Record the result.
@@ -84,7 +86,7 @@ Do these yourself — commit and push to the PR branch:
 
 ```sh
 # Only if you made cleanup commits
-commit.sh --branch "$SLICE_BRANCH" -m "inspect: cleanup"
+./commit.sh --branch "$SLICE_BRANCH" -m "inspect: cleanup"
 ```
 
 ### 5. Document judgment calls
@@ -110,13 +112,13 @@ gh pr edit "$PR_NUMBER" --body "$PR_BODY"
 **If all acceptance criteria are met and the suite is green:**
 
 ```sh
-tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge
+./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge
 ```
 
 **If gaps are found:**
 
 ```sh
-tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework
+./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework
 ```
 
 Leave specific review comments on the PR for each gap. Be precise — tell the implementer exactly what's wrong and what "fixed" looks like.
@@ -124,7 +126,7 @@ Leave specific review comments on the PR for each gap. Be precise — tell the i
 ## Clean up
 
 ```sh
-worktree-exit.sh --path "$WORKTREE_PATH"
+./worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
 ## Handoff

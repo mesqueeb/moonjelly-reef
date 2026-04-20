@@ -2,7 +2,9 @@
 
 Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, read and follow [setup.md](setup.md) first and return here after.
 
-> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
+> **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
+>
+> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -21,7 +23,7 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ## 0. Fetch context
 
 ```sh
-tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
 Set the post-fetch variables (after reading the slice body):
@@ -48,7 +50,7 @@ gh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
 Enter a worktree forked from $SLICE_BRANCH (not $TARGET_BRANCH) so you are testing the slice code with the latest target merged in:
 
 ```sh
-worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
+./worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
 ```
 
 Merge the target branch into the slice branch:
@@ -60,19 +62,19 @@ git merge "origin/$TARGET_BRANCH"
 Run the full test suite. If the target branch merged cleanly and tests pass, commit and push:
 
 ```sh
-commit.sh --branch "$SLICE_BRANCH" -m "merge: resolve conflicts with $TARGET_BRANCH"
+./commit.sh --branch "$SLICE_BRANCH" -m "merge: resolve conflicts with $TARGET_BRANCH"
 ```
 
 If the test suite fails after merging, tag the slice `to-rework` and stop:
 
 ```sh
-tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label to-rework
+./tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label to-rework
 ```
 
 Clean up the worktree:
 
 ```sh
-worktree-exit.sh --path "$WORKTREE_PATH"
+./worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
 If tests failed, stop here. Do not proceed to single-slice or multi-slice steps.
