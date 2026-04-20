@@ -29,6 +29,7 @@ Set the post-fetch variables (after reading the plan body):
 ```sh
 PLAN_ID="$ISSUE_ID"
 PR_NUMBER="{from plan body frontmatter PR: \"#N\"}"
+BASE_BRANCH="{from plan body}"
 TARGET_BRANCH="{from plan body}"
 WORKTREE_PATH=".worktrees/$PLAN_ID-rescan"
 ```
@@ -57,8 +58,16 @@ Do NOT ask a human. If the gaps need decisions that aren't in the success criter
 Enter a worktree forked from $TARGET_BRANCH to read the current state of the code:
 
 ```sh
-./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
 ```
+
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$TARGET_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+
+```sh
+./tracker.sh issue edit "$PLAN_ID" --add-label blocked-with-conflicts
+```
+
+Stop — do not proceed.
 
 ### 1. Analyze the gaps
 

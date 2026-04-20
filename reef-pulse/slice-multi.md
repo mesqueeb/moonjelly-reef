@@ -25,8 +25,16 @@ WORKTREE_PATH=".worktrees/$PLAN_ID-slice"
 Enter a worktree forked from $TARGET_BRANCH to read the codebase for informed slicing decisions:
 
 ```sh
-./worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
 ```
+
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$TARGET_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+
+```sh
+./tracker.sh issue edit "$PLAN_ID" --add-label blocked-with-conflicts
+```
+
+Stop — do not proceed.
 
 If the target branch does not exist on origin yet, create it:
 

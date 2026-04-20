@@ -50,16 +50,18 @@ gh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
 Enter a worktree forked from $SLICE_BRANCH (not $TARGET_BRANCH) so you are testing the slice code with the latest target merged in:
 
 ```sh
-./worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$SLICE_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
 ```
 
-Merge the target branch into the slice branch:
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$SLICE_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
 
 ```sh
-git merge "origin/$TARGET_BRANCH"
+./tracker.sh issue edit "$SLICE_ID" --add-label blocked-with-conflicts
 ```
 
-Run the full test suite. If the target branch merged cleanly and tests pass, commit and push:
+Stop — do not proceed.
+
+Run the full test suite. If tests pass, commit and push:
 
 ```sh
 ./commit.sh --branch "$SLICE_BRANCH" -m "merge: resolve conflicts with $TARGET_BRANCH"
