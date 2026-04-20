@@ -34,7 +34,7 @@ SLICE_ID="$ISSUE_ID"
 PR_NUMBER="{from slice body}"
 TARGET_BRANCH="{from slice/plan body}"
 SLICE_BRANCH="{from slice body}"
-WORKTREE_PATH="../worktree-$SLICE_NAME-merge"
+WORKTREE_PATH=".worktrees/$SLICE_NAME-merge"
 ```
 
 ## Pre-merge check

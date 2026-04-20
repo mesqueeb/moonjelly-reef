@@ -17,6 +17,7 @@ TMPFILE="$(mktemp)"
 PASS=0
 FAIL=0
 TOTAL=0
+OUTPUT_BUF=""
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -25,15 +26,18 @@ NC='\033[0m'
 pass() {
   PASS=$((PASS + 1))
   TOTAL=$((TOTAL + 1))
-  printf "${GREEN}PASS${NC}: %s\n" "$1"
+  OUTPUT_BUF="${OUTPUT_BUF}$(printf "${GREEN}PASS${NC}: %s" "$1")
+"
 }
 
 fail() {
   FAIL=$((FAIL + 1))
   TOTAL=$((TOTAL + 1))
-  printf "${RED}FAIL${NC}: %s\n" "$1"
+  OUTPUT_BUF="${OUTPUT_BUF}$(printf "${RED}FAIL${NC}: %s" "$1")
+"
   if [ $# -gt 1 ]; then
-    printf "  %s\n" "$2"
+    OUTPUT_BUF="${OUTPUT_BUF}$(printf "  %s" "$2")
+"
   fi
 }
 
@@ -172,7 +176,8 @@ for raw in lines:
 # Validate ORCHESTRATION.md structure
 # ============================================================
 
-echo "=== ORCHESTRATION.md structure ==="
+OUTPUT_BUF="${OUTPUT_BUF}=== ORCHESTRATION.md structure ===
+"
 in_section=false
 section_line=0
 section_name=""
@@ -224,8 +229,9 @@ while IFS='|' read -r source_file op_name check_type value; do
     prev_line=0
     prev_op=""
     prev_check_type=""
-    echo ""
-    echo "=== $source_file ==="
+    OUTPUT_BUF="${OUTPUT_BUF}
+=== $source_file ===
+"
     if [ ! -f "$md_path" ]; then
       fail "$source_file: file not found"
       continue
@@ -291,9 +297,12 @@ rm -f "$TMPFILE"
 # ============================================================
 
 echo ""
-echo "================================"
-printf "Results: %s passed, %s failed, %s total\n" "$PASS" "$FAIL" "$TOTAL"
-
 if [ "$FAIL" -gt 0 ]; then
+  printf "%s" "$OUTPUT_BUF"
+  echo "================================"
+  printf "Results: %s passed, ${RED}%s failed${NC}, %s total\n" "$PASS" "$FAIL" "$TOTAL"
   exit 1
+else
+  echo "================================"
+  printf "Results: %s passed, %s total\n" "$PASS" "$TOTAL"
 fi

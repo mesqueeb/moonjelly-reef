@@ -30,7 +30,7 @@ Set the post-fetch variables (after reading the slice body):
 SLICE_NAME="{from slice body}"
 SLICE_ID="$ISSUE_ID"
 TARGET_BRANCH="{from slice/plan body}"
-WORKTREE_PATH="../worktree-$SLICE_NAME-await-waves"
+WORKTREE_PATH=".worktrees/$SLICE_NAME-await-waves"
 ```
 
 ## 1. Check dependencies

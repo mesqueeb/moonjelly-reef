@@ -19,6 +19,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 
 - set-variables
   ```sh
+  SKILL_DIR="{base directory for this skill}"
   TRACKER_BRANCH="{from config.md}" # e.g. main
   ```
 - checkout-tracker-branch — if local-tracker-committed
@@ -26,6 +27,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   git fetch origin "$TRACKER_BRANCH" && git checkout "$TRACKER_BRANCH" && git pull
   ```
 - phase-specific
+  - contains: `$SKILL_DIR/{file}`
 - set-variables
   ```sh
   ISSUE_ID="{from dispatched items}"
@@ -195,7 +197,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   TARGET_BRANCH="{from plan body}"
   BASE_BRANCH="{from plan body}"
   PLAN_TYPE="{from plan body}" # feature, refactor, or bug
-  WORKTREE_PATH="../worktree-$PLAN_ID-slice"
+  WORKTREE_PATH=".worktrees/$PLAN_ID-slice"
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH to read the codebase for informed slicing decisions`
@@ -252,7 +254,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   SLICE_ID="$ISSUE_ID"
   TARGET_BRANCH="{from slice/plan body}"
   SLICE_BRANCH="{PR branch, e.g. feat/001-auth-endpoint}"
-  WORKTREE_PATH="../worktree-$SLICE_NAME-implement"
+  WORKTREE_PATH=".worktrees/$SLICE_NAME-implement"
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH so you start from a clean integration point`
@@ -307,7 +309,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   SLICE_NAME="{from slice body}"
   SLICE_ID="$ISSUE_ID"
   SLICE_BRANCH="{from slice body}"
-  WORKTREE_PATH="../worktree-$SLICE_NAME-inspect"
+  WORKTREE_PATH=".worktrees/$SLICE_NAME-inspect"
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $SLICE_BRANCH to review the implementation`
@@ -357,7 +359,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   SLICE_ID="$ISSUE_ID"
   SLICE_BRANCH="{from slice body}"
   PR_NUMBER="{from slice body}"
-  WORKTREE_PATH="../worktree-$SLICE_NAME-rework"
+  WORKTREE_PATH=".worktrees/$SLICE_NAME-rework"
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $SLICE_BRANCH to apply fixes to the existing PR branch`
@@ -406,7 +408,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   SLICE_NAME="{from slice body}"
   SLICE_ID="$ISSUE_ID"
   TARGET_BRANCH="{from slice/plan body}"
-  WORKTREE_PATH="../worktree-$SLICE_NAME-await-waves"
+  WORKTREE_PATH=".worktrees/$SLICE_NAME-await-waves"
   ```
 - set-variables
   ```sh
@@ -458,7 +460,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   PR_NUMBER="{from slice body}"
   TARGET_BRANCH="{from slice/plan body}"
   SLICE_BRANCH="{from slice body}"
-  WORKTREE_PATH="../worktree-$SLICE_NAME-merge"
+  WORKTREE_PATH=".worktrees/$SLICE_NAME-merge"
   ```
 - pre-merge-check
   ```sh
@@ -558,7 +560,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   PLAN_TITLE="{from plan body}"
   BASE_BRANCH="{from plan body}"
   TARGET_BRANCH="{from plan body}"
-  WORKTREE_PATH="../worktree-$PLAN_ID-ratify"
+  WORKTREE_PATH=".worktrees/$PLAN_ID-ratify"
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH because all slice PRs are merged there`
@@ -611,7 +613,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   PLAN_ID="$ISSUE_ID"
   PR_NUMBER="{from plan body frontmatter PR: #N}"
   TARGET_BRANCH="{from plan body}"
-  WORKTREE_PATH="../worktree-$PLAN_ID-rescan"
+  WORKTREE_PATH=".worktrees/$PLAN_ID-rescan"
   ```
 - fetch-pr
   ```sh

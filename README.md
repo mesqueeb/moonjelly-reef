@@ -249,7 +249,7 @@ The reason this orchestration framework works is explicit boundaries. Each phase
 
 [`tests/test-orchestration.sh`](tests/test-orchestration.sh) verifies that each phase's `.md` instructions include these deterministic parts of the orchestration in the correct order. If a phase drifts — missing a variable declaration, reordering a commit and PR create, or dropping a tracker update — the test catches it.
 
-To further ensure no sub-agent messes up worktree creation, branch targeting, or commit flow, all git operations are wrapped in shell scripts (`worktree-enter.sh`, `worktree-exit.sh`, `commit.sh`) with extra sanitisation. Target branch names and paths are passed via shell variables so that sub-agents never have to reason about git orchestration themselves.
+To further ensure no sub-agent messes up worktree creation, branch targeting, or commit flow, all git operations are wrapped in shell scripts (`worktree-enter.sh`, `worktree-exit.sh`, `commit.sh`) with extra sanitisation. Reef keeps its temporary worktrees under `.worktrees/` inside the repo, and target branch names and paths are passed via shell variables so that sub-agents never have to reason about git orchestration themselves.
 
 ## Autopilot
 

@@ -41,7 +41,7 @@ SLICE_NAME="{from slice body}"
 SLICE_ID="$ISSUE_ID"
 TARGET_BRANCH="{from slice/plan body}"
 SLICE_BRANCH="{PR branch, e.g. feat/001-auth-endpoint}"
-WORKTREE_PATH="../worktree-$SLICE_NAME-implement"
+WORKTREE_PATH=".worktrees/$SLICE_NAME-implement"
 ```
 
 ## 1. Git prep
