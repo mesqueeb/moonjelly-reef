@@ -135,4 +135,10 @@ Document judgment calls made during this phase as a comment on the plan. Only do
 
 ## Handoff
 
-Report: "Slices created with acceptance criteria, dependency graph, and coverage matrix. Unblocked slices are tagged `to-implement` and ready for implementation. Run `/reef-pulse` to kick them all off."
+```sh
+nextPhase="in-progress"
+planPr="—"
+summary="Slices created with acceptance criteria, dependency graph, and coverage matrix"
+```
+
+Report these three variables to the caller.

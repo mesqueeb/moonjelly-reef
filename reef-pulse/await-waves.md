@@ -89,4 +89,10 @@ SLICE_BODY="{slice body, with updated acceptance criteria if changed}"
 
 ## Handoff
 
-If dispatched by reef-pulse, report: "Slice {name} is unblocked and ready for implementation."
+```sh
+nextPhase="to-implement"
+planPr="—"
+summary="Slice {name} is unblocked and ready for implementation"
+```
+
+Report these three variables to the caller.

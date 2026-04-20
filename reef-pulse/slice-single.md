@@ -39,4 +39,10 @@ PLAN_BODY="{plan body with target branch added to frontmatter and acceptance cri
 
 ## Handoff
 
-Report: "Single slice — fast path. Plan is the slice. Tagged `to-implement`, targeting $BASE_BRANCH directly. Run `/reef-pulse` to kick it off."
+```sh
+nextPhase="to-implement"
+planPr="—"
+summary="Single slice — fast path, targeting $BASE_BRANCH directly"
+```
+
+Report these three variables to the caller.

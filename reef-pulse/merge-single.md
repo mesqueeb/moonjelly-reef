@@ -28,4 +28,10 @@ Remove `to-merge`, add `to-land`:
 
 ## Handoff
 
-Report: "Single slice verified. PR stays open for human review. Run `/reef-land #{number}`."
+```sh
+nextPhase="to-land"
+planPr="$PR_NUMBER" # inherited from router context
+summary="Single slice verified — PR stays open for human review"
+```
+
+Report these three variables to the caller.

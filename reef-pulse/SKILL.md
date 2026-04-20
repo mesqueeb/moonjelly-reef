@@ -81,14 +81,33 @@ For each item, spawn a sub-agent with: `"Read and follow $SKILL_DIR/{file}. Targ
 | `to-ratify`      | `$SKILL_DIR/ratify.md`      |
 | `to-rescan`      | `$SKILL_DIR/rescan.md`      |
 
-### Step 3. Log phase metrics to plan issues
+### Step 3. Log phase metrics
 
-After all dispatched agents complete, collect the task notification metadata from each (duration, tokens, tool uses, and outcome). Group the results by plan issue:
+After all dispatched agents complete, collect from each: task notification metadata (duration, tokens, tool uses) and the structured handoff variables (`nextPhase`, `planPr`, `summary`). Group results by plan.
 
-- **Single-slice plans**: the plan issue itself is the target.
-- **Multi-slice plans**: the slice issue body links back to its plan (look for the `Plan: #N` line).
+#### Metrics table format
 
-Append **one metrics section per plan** to the plan issue body using `./tracker.sh issue edit --body`. Read the current body first, then append the new metrics section at the bottom.
+```markdown
+### 🪼 Pulse metrics
+
+| Phase     | Target | Duration | Tokens | Tool uses | Outcome       | Date             |
+| --------- | ------ | -------- | ------ | --------- | ------------- | ---------------- |
+| implement | #55    | 42s      | 12 340 | 18        | ✅ PR created | 2026-04-20 14:30 |
+| inspect   | #53    | 25s      | 8 200  | 12        | ✅ passed     | 2026-04-20 14:31 |
+```
+
+No timestamp in the header. Each row gets a `Date` column (`yyyy-MM-dd HH:mm`).
+
+#### Rules
+
+- Only log phases dispatched this pulse. If nothing was dispatched, skip this step entirely.
+- Fall back to `—` for any missing metadata field (duration, tokens, tool uses).
+- Duration: human-readable (`42s`, `1m 12s`). Tokens: space-separated thousands.
+- Do NOT read issue bodies to discover PR numbers. Use `planPr` from the handoff.
+
+#### 3a. Write metrics to the plan issue
+
+Append one metrics section per plan to the plan issue body. Read the current body first, then append.
 
 ```sh
 ISSUE_ID="{from dispatched items}"
@@ -96,29 +115,34 @@ ISSUE_BODY="{current issue body with metrics section appended}"
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
 ```
 
-Metrics section format:
+#### 3b. Write metrics to the plan PR
 
-```markdown
-### 🪼 Pulse metrics — {yyyy/MM/dd HH:mm}
+Use `planPr` from the handoff to determine the target PR. If `planPr` is `—`, no plan PR exists yet — skip this sub-step. Otherwise, append the same metrics rows to the plan PR body.
 
-| Phase     | Target | Duration | Tokens | Tool uses | Outcome       |
-| --------- | ------ | -------- | ------ | --------- | ------------- |
-| implement | #55    | 42s      | 12 340 | 18        | ✅ PR created |
-| implement | #56    | 38s      | 10 890 | 15        | ✅ PR created |
-| inspect   | #53    | 25s      | 8 200  | 12        | ✅ passed     |
+```sh
+PLAN_PR_NUMBER="$planPr" # from handoff — never read issue bodies for this
+PLAN_PR_BODY="{current plan PR body with metrics section appended}"
+gh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
 ```
 
-Rules:
+#### Total row on ratify-to-land
 
-- Only log phases that were dispatched this pulse. If nothing was dispatched, skip this step entirely.
-- If a dispatch failed or the agent returned no metadata, log what you have with `—` for missing fields.
-- Duration should be human-readable (e.g. `42s`, `1m 12s`). Tokens should use space-separated thousands.
+When a ratify handoff has `nextPhase: to-land`, use `planIssueMetrics` from the ratify handoff (scope/slice metrics rows from the plan issue). Prepend those rows to the PR's existing metrics table (dedup if already present), append the ratify row, then append a bold **Total** row summing all durations and tokens. Unknown values (`—`) are excluded from the total. This is the last automated edit to the metrics table.
+
+Example:
+
+```markdown
+| scope | #15 | 1m 30s | — | — | plan created | 2026/04/18 | 09:00 |
+| slice | #15 | 45s | 8 100 | 10 | slices created | 2026/04/18 | 09:05 |
+| ratify | — | 1m 5s | 15 200 | 20 | pass | 2026/04/20 | 14:35 |
+| **Total** | | **5m 30s** | **62 359** | **87** | | | |
+```
 
 ### Step 4. Present human (🤿) items (--hitl only)
 
 If running in `--afk` mode, skip this step entirely.
 
-If running in `--hitl` mode, present human-required items:
+If running in `--hitl` mode, present human-required items immediately without waiting for dispatched agents to complete. Automated agents run in the background — metrics collection (Step 3) happens after agents complete but must not block the human workflow. Present human items as soon as dispatch is done:
 
 | Tag        | Skill         | Presentation                                                              |
 | ---------- | ------------- | ------------------------------------------------------------------------- |

@@ -142,4 +142,10 @@ PLAN_BODY="{plan body with updated criteria and coverage matrix}"
 
 ## Handoff
 
-Report: "Created {N} new slices to address gaps. Coverage matrix updated. The reef will pick these up on the next pulse."
+```sh
+nextPhase="in-progress"
+planPr="$PR_NUMBER"
+summary="Created {N} new slices to address gaps — coverage matrix updated"
+```
+
+Report these three variables to the caller.

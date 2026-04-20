@@ -131,4 +131,10 @@ Leave specific review comments on the PR for each gap. Be precise — tell the i
 
 ## Handoff
 
-If dispatched by reef-pulse, report the verdict and a one-line summary.
+```sh
+nextPhase="to-merge" # or "to-rework" if gaps found
+planPr="$PR_NUMBER"
+summary="{verdict}: {one-line summary of findings}"
+```
+
+Report these three variables to the caller.

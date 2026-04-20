@@ -232,6 +232,10 @@ Analyze gaps found by ratify, re-review the entire plan, create new slices to ad
 
 <p align="right">💡🐡<br /><sub>An anglerfish drifts through absolute darkness, its lure casting light on creatures no one knew were lurking in the deep.</sub></p>
 
+## Phase metrics
+
+Every phase tracks its duration and token usage. Metrics are written exclusively by reef-pulse after each dispatched sub-agent completes — individual phase files do not self-report metrics. Metrics accumulate in a single table on the plan issue (and the plan PR once one exists), giving the reviewer a complete cost/time breakdown from scoping through landing. reef-scope is the only exception: because it runs in the user's session (not as a sub-agent), it records its own wall-clock duration on the plan issue. When all work is done, a bold **Total** row sums durations and tokens across the entire lifecycle.
+
 ## Orchestration accuracy
 
 The reason this orchestration framework works is explicit boundaries. Each phase has four well-defined concerns:
