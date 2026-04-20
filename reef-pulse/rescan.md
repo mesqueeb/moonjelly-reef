@@ -29,14 +29,19 @@ Set the post-fetch variables (after reading the plan body):
 ```sh
 PLAN_ID="$ISSUE_ID"
 PR_NUMBER="{from plan body frontmatter PR: #N}"
-TARGET_BRANCH="{from plan body}"
 WORKTREE_PATH="../worktree-$PLAN_ID-rescan"
 ```
 
 ## Fetch PR
 
 ```sh
-gh pr view "$PR_NUMBER" --json body
+gh pr view "$PR_NUMBER" --json body,headRefName
+```
+
+Resolve `TARGET_BRANCH` from the PR's head branch — this is the actual integration point where earlier work lives. Fall back to the plan's `target-branch` frontmatter field only if no PR exists.
+
+```sh
+TARGET_BRANCH="{headRefName from PR if PR exists, else from plan body}"
 ```
 
 ## Mindset

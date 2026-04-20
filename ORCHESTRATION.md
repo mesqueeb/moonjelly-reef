@@ -533,12 +533,15 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   PLAN_ID="$ISSUE_ID"
   PR_NUMBER="{from plan body frontmatter PR: #N}"
-  TARGET_BRANCH="{from plan body}"
   WORKTREE_PATH="../worktree-$PLAN_ID-rescan"
   ```
 - fetch-pr
   ```sh
-  gh pr view "$PR_NUMBER" --json body
+  gh pr view "$PR_NUMBER" --json body,headRefName
+  ```
+- set-variables
+  ```sh
+  TARGET_BRANCH="{headRefName from PR if PR exists, else from plan body}"
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH to read the current state of the code`
