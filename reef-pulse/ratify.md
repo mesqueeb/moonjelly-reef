@@ -178,5 +178,11 @@ worktree-exit.sh --path "$WORKTREE_PATH"
 
 ## Handoff
 
-If pass: "Target branch reviewed and final report written on PR #{number}. Ready for `/reef-land` — human review."
-If gaps: "Gaps found during holistic review. Tagged `to-rescan` for rescanning to create new slices."
+Return structured handoff. If pass, include `planIssueMetrics` — the scope/slice metric rows read from the plan issue body (the `### 🪼 Pulse metrics` table rows, if present).
+
+```sh
+nextPhase="{to-land or to-rescan}"
+planPr="$PR_NUMBER"
+summary="{one-line outcome, e.g. passed — final report on PR #N}"
+planIssueMetrics="{metric table rows from plan issue body, or — if none}"
+```

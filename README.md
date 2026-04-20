@@ -247,6 +247,10 @@ The reason this orchestration framework works is explicit boundaries. Each phase
 
 To further ensure no sub-agent messes up worktree creation, branch targeting, or commit flow, all git operations are wrapped in shell scripts (`worktree-enter.sh`, `worktree-exit.sh`, `commit.sh`) with extra sanitisation. Target branch names and paths are passed via shell variables so that sub-agents never have to reason about git orchestration themselves.
 
+## Metrics
+
+Each phase tracks duration and token usage. reef-pulse collects this metadata from sub-agent task notifications and appends rows to a single `### 🪼 Pulse metrics` table on the plan PR (or plan issue pre-PR). When the work lands, the final PR contains an aggregated table covering every phase from scope through ratify.
+
 ## Autopilot
 
 Run the reef on autopilot so it pulses while you're away. In any Claude Code session:

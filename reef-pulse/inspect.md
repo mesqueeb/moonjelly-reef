@@ -129,4 +129,10 @@ worktree-exit.sh --path "$WORKTREE_PATH"
 
 ## Handoff
 
-If dispatched by reef-pulse, report the verdict and a one-line summary.
+Return structured handoff:
+
+```sh
+nextPhase="{to-merge or to-rework}"
+planPr="—" # inspect doesn't know the plan PR
+summary="{one-line verdict, e.g. passed or gaps found}"
+```

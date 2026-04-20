@@ -9,6 +9,10 @@ Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the is
 
 > **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
+## Start timestamp
+
+Record the current time at invocation for duration calculation at the end.
+
 ## Input
 
 This skill accepts:
@@ -84,6 +88,15 @@ PLAN_CONTENT="{plan-content}" # frontmatter + plan body from context
 
 ```sh
 tracker.sh issue edit "$PLAN_ID" --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
+```
+
+## 5. Append metrics
+
+Compute wall-clock duration from the start timestamp. Append a `### 🪼 Pulse metrics` table to the plan issue body with a single scope row. Tokens and tool uses show `—` (not available in HITL sessions).
+
+```sh
+PLAN_CONTENT="{plan content with metrics table appended}"
+tracker.sh issue edit "$PLAN_ID" --body "$PLAN_CONTENT"
 ```
 
 ## Handoff

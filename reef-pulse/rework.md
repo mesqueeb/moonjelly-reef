@@ -98,4 +98,10 @@ worktree-exit.sh --path "$WORKTREE_PATH"
 
 ## Handoff
 
-Report completion. The next phase is inspection (re-review).
+Return structured handoff:
+
+```sh
+nextPhase="to-inspect"
+planPr="—" # rework doesn't know the plan PR
+summary="{one-line outcome, e.g. reworked N issues}"
+```

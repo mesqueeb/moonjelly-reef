@@ -35,6 +35,14 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
   ```
+- set-variables — if ratify-to-land
+  ```sh
+  PLAN_PR_BODY="{plan PR body with complete metrics table}"
+  ```
+- update-pr — if ratify-to-land
+  ```sh
+  gh pr edit "$PR_NUMBER" --body "$PLAN_PR_BODY"
+  ```
 
 ### [/reef-scope](./reef-scope/SKILL.md)
 
@@ -57,6 +65,11 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - update-tracker
   ```sh
   tracker.sh issue edit "$PLAN_ID" --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
+  ```
+- append-metrics
+  ```sh
+  PLAN_CONTENT="{plan content with metrics table appended}"
+  tracker.sh issue edit "$PLAN_ID" --body "$PLAN_CONTENT"
   ```
 
 ### [/reef-land](./reef-land/SKILL.md)
@@ -158,6 +171,13 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement
   ```
+- handoff
+  - contains: `Return structured handoff`
+  ```sh
+  nextPhase="to-implement"
+  planPr="—" # no PR exists yet at slice time
+  summary="{one-line outcome, e.g. single-slice, tagged to-implement}"
+  ```
 
 ### [slice-multi.md](./reef-pulse/slice-multi.md)
 
@@ -200,6 +220,13 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - exit-worktree
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
+  ```
+- handoff
+  - contains: `Return structured handoff`
+  ```sh
+  nextPhase="in-progress"
+  planPr="—" # no PR exists yet at slice time
+  summary="{one-line outcome, e.g. N slices created, M unblocked}"
   ```
 
 ### [implement.md](./reef-pulse/implement.md)
@@ -251,6 +278,13 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
   ```
+- handoff
+  - contains: `Return structured handoff`
+  ```sh
+  nextPhase="to-inspect"
+  planPr="—" # implement doesn't know the plan PR
+  summary="{one-line outcome, e.g. PR #N created for slice}"
+  ```
 
 ### [inspect.md](./reef-pulse/inspect.md)
 
@@ -293,6 +327,13 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - exit-worktree
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
+  ```
+- handoff
+  - contains: `Return structured handoff`
+  ```sh
+  nextPhase="{to-merge or to-rework}"
+  planPr="—" # inspect doesn't know the plan PR
+  summary="{one-line verdict, e.g. passed or gaps found}"
   ```
 
 ### [rework.md](./reef-pulse/rework.md)
@@ -338,6 +379,13 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
   ```
+- handoff
+  - contains: `Return structured handoff`
+  ```sh
+  nextPhase="to-inspect"
+  planPr="—" # rework doesn't know the plan PR
+  summary="{one-line outcome, e.g. reworked N issues}"
+  ```
 
 ### [await-waves.md](./reef-pulse/await-waves.md)
 
@@ -381,6 +429,13 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - exit-worktree
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
+  ```
+- handoff
+  - contains: `Return structured handoff`
+  ```sh
+  nextPhase="to-implement"
+  planPr="—" # await-waves doesn't know the plan PR
+  summary="{one-line outcome, e.g. slice unblocked and ready}"
   ```
 
 ### [merge.md](./reef-pulse/merge.md)
@@ -438,6 +493,13 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-land
   ```
+- handoff
+  - contains: `Return structured handoff`
+  ```sh
+  nextPhase="to-land"
+  planPr="—" # single-slice has no separate plan PR yet
+  summary="{one-line outcome, e.g. single slice verified, PR stays open}"
+  ```
 
 ### [merge-multi.md](./reef-pulse/merge-multi.md)
 
@@ -470,6 +532,13 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - update-tracker — if all-slices-done
   ```sh
   tracker.sh issue edit "$PLAN_ID" --remove-label in-progress --add-label to-ratify
+  ```
+- handoff
+  - contains: `Return structured handoff`
+  ```sh
+  nextPhase="{in-progress or to-ratify}"
+  planPr="—" # multi-slice merge doesn't know the plan PR yet
+  summary="{one-line outcome, e.g. slice merged, N of M complete}"
   ```
 
 ### [ratify.md](./reef-pulse/ratify.md)
@@ -518,6 +587,14 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
   ```
+- handoff
+  - contains: `Return structured handoff`
+  ```sh
+  nextPhase="{to-land or to-rescan}"
+  planPr="$PR_NUMBER"
+  summary="{one-line outcome, e.g. passed — final report on PR #N}"
+  planIssueMetrics="{metric table rows from plan issue body, or — if none}"
+  ```
 
 ### [rescan.md](./reef-pulse/rescan.md)
 
@@ -554,4 +631,11 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - exit-worktree
   ```sh
   worktree-exit.sh --path "$WORKTREE_PATH"
+  ```
+- handoff
+  - contains: `Return structured handoff`
+  ```sh
+  nextPhase="in-progress"
+  planPr="{plan PR number from plan body, or —}"
+  summary="{one-line outcome, e.g. N slices created to address gaps}"
   ```

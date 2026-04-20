@@ -140,4 +140,10 @@ worktree-exit.sh --path "$WORKTREE_PATH"
 
 ## Handoff
 
-Report: "Created {N} new slices to address gaps. Coverage matrix updated. The reef will pick these up on the next pulse."
+Return structured handoff:
+
+```sh
+nextPhase="in-progress"
+planPr="{plan PR number from plan body, or —}"
+summary="{one-line outcome, e.g. N slices created to address gaps}"
+```

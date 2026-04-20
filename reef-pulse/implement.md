@@ -155,4 +155,10 @@ worktree-exit.sh --path "$WORKTREE_PATH"
 
 ## Handoff
 
-If dispatched by reef-pulse or an orchestrator, report completion. The next phase for this slice is inspection.
+Return structured handoff:
+
+```sh
+nextPhase="to-inspect"
+planPr="—" # implement doesn't know the plan PR
+summary="{one-line outcome, e.g. PR #N created for slice}"
+```
