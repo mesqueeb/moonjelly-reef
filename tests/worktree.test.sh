@@ -8,6 +8,7 @@ SCRIPT_DIR="$TESTS_DIR/../reef-pulse"
 PASS=0
 FAIL=0
 TOTAL=0
+OUTPUT_BUF=""
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -16,15 +17,18 @@ NC='\033[0m'
 pass() {
   PASS=$((PASS + 1))
   TOTAL=$((TOTAL + 1))
-  printf "${GREEN}PASS${NC}: %s\n" "$1"
+  OUTPUT_BUF="${OUTPUT_BUF}$(printf "${GREEN}PASS${NC}: %s" "$1")
+"
 }
 
 fail() {
   FAIL=$((FAIL + 1))
   TOTAL=$((TOTAL + 1))
-  printf "${RED}FAIL${NC}: %s\n" "$1"
+  OUTPUT_BUF="${OUTPUT_BUF}$(printf "${RED}FAIL${NC}: %s" "$1")
+"
   if [ $# -gt 1 ]; then
-    printf "  %s\n" "$2"
+    OUTPUT_BUF="${OUTPUT_BUF}$(printf "  %s" "$2")
+"
   fi
 }
 
@@ -320,30 +324,28 @@ test_commit_fails_on_nothing_to_commit() {
 # Run all tests
 # ============================================================
 
-echo "=== worktree-enter.sh ==="
 test_enter_detached_head
 test_enter_at_caller_defined_path
 test_enter_fails_if_worktree_exists
 test_enter_fails_on_missing_args
 
-echo ""
-echo "=== worktree-exit.sh ==="
 test_exit_removes_clean_worktree
 test_exit_fails_on_unstaged_changes
 test_exit_fails_on_staged_changes
 test_exit_fails_on_missing_args
 
-echo ""
-echo "=== commit.sh ==="
 test_commit_pushes_to_branch
 test_commit_pushes_to_existing_branch
 test_commit_fails_on_missing_args
 test_commit_fails_on_nothing_to_commit
 
 echo ""
-echo "================================"
-printf "Results: %s passed, %s failed, %s total\n" "$PASS" "$FAIL" "$TOTAL"
-
 if [ "$FAIL" -gt 0 ]; then
+  printf "%s" "$OUTPUT_BUF"
+  echo "================================"
+  printf "Results: %s passed, ${RED}%s failed${NC}, %s total\n" "$PASS" "$FAIL" "$TOTAL"
   exit 1
+else
+  echo "================================"
+  printf "Results: %s passed, %s total\n" "$PASS" "$TOTAL"
 fi
