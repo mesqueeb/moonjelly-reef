@@ -147,7 +147,7 @@ When all change requests are scoped, assess their size:
 
 ### Writing the gap report (substantial changes only)
 
-The gap report goes on the PR body in a `<details><summary>` block. Rescan has no context from this conversation — be explicit and self-contained.
+The gap report goes on the PR body in a `<details><summary>` block. Rework has no context from this conversation — be explicit and self-contained.
 
 Append the gap report to the current PR body. Include original PR review comments (quoted, with file:line) and the refined context from your discussion.
 
