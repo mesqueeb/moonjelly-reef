@@ -18,15 +18,15 @@ PLAN_ID = $ISSUE_ID
 
 Take the fast path — skip the target branch, sub-issues, coverage matrix, and ratify. The plan becomes the slice:
 
-1. **Target branch = base branch.** Do not create a new branch. Set `Target branch` to the same value as `Base branch` in the plan context.
+1. **Target branch = base branch.** Do not create a new branch. Add `target branch` to the plan frontmatter, set to the same value as `base branch`.
 2. **No sub-issues.** The plan IS the slice.
-3. **Write acceptance criteria on the plan.** Append an `## Acceptance criteria` section to the plan body with the criteria you drafted for the single slice. Also append a `## Plan context` section with the base branch, target branch (= base branch), and type.
+3. **Write acceptance criteria on the plan.** Append an `## Acceptance criteria` section to the plan body with the criteria you drafted for the single slice.
 4. **No coverage matrix.** Success criteria and acceptance criteria are 1:1 — the mapping adds no information.
 
 Assemble the updated plan body:
 
 ```sh
-PLAN_BODY = {plan body with acceptance criteria and plan context appended}
+PLAN_BODY = {plan body with target branch added to frontmatter and acceptance criteria appended}
 ```
 
 ## 2. Tag to-implement
@@ -37,4 +37,4 @@ tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-slice --add
 
 ## Handoff
 
-Report: "Single slice — fast path. Plan is the slice. Tagged `to-implement`, targeting {base-branch} directly. Run `/reef-pulse` to kick it off."
+Report: "Single slice — fast path. Plan is the slice. Tagged `to-implement`, targeting $BASE_BRANCH directly. Run `/reef-pulse` to kick it off."

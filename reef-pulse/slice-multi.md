@@ -13,6 +13,8 @@ The router has already fetched context and drafted 2+ slices. Set post-fetch var
 ```sh
 PLAN_ID = $ISSUE_ID
 TARGET_BRANCH = {from plan body}
+BASE_BRANCH = {from plan body}
+PLAN_TYPE = {from plan body} # feature, refactor, or bug
 WORKTREE_PATH = ../worktree-$PLAN_ID-slice
 ```
 
@@ -58,25 +60,25 @@ If anything looks off, adjust the breakdown. Do not ask the user — reef-scope 
 
 ## 4. Create slices
 
-Read the config to determine tracker type.
+Create them in dependency order (blockers first) so you can reference real issue numbers in `blocked-by`.
 
-### GitHub tracker
+Assemble each slice body:
 
-Create sub-issues with `gh issue create`. Create them in dependency order (blockers first) so you can reference real issue numbers in `blocked-by`.
+```sh
+SLICE_TITLE = {slice-title}
+SLICE_BODY = {slice-body} # as per the template below
+SLICE_LABEL = to-implement # or to-await-waves if blocked
+```
 
-Each sub-issue body:
+Slice body template:
 
 ```markdown
-## Plan
-
-#{plan-issue-number}
-
-## Plan context
-
-- **Target branch**: {target-branch}
-- **Base branch**: {base-branch}
-- **Type**: {feature/refactor/bug}
-- **Plan**: #{plan-issue-number}
+---
+parent plan: #$PLAN_ID
+base branch: $BASE_BRANCH
+target branch: $TARGET_BRANCH
+type: $PLAN_TYPE
+---
 
 ## What to build
 
@@ -97,16 +99,13 @@ Each sub-issue body:
 - Success criterion {n}: {criterion text}
 ```
 
+Create the slice:
+
+```sh
+tracker.sh issue create --title "$SLICE_TITLE" --body "$SLICE_BODY" --label $SLICE_LABEL
+```
+
 Label each slice: `to-implement` if no blockers, `to-await-waves` if blocked.
-
-### Local tracker
-
-Create slice files in `{path}/{title}/slices/`:
-
-- Unblocked: `[to-implement] 001-auth-endpoint.md`
-- Blocked: `[to-await-waves] 002-token-storage.md`
-
-Each slice file follows the same body template as the GitHub issue above, but with local file references instead of issue numbers (e.g. `Blocked by: 001-auth-endpoint`).
 
 ## 5. Update the plan
 

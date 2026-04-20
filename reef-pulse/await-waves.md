@@ -26,7 +26,7 @@ Set the post-fetch variables (after reading the slice body):
 
 ```sh
 SLICE_NAME = {from slice body}
-SLICE_NUMBER = $ISSUE_ID
+SLICE_ID = $ISSUE_ID
 TARGET_BRANCH = {from slice/plan body}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves
 ```
@@ -49,7 +49,7 @@ tracker.sh issue view $DEPENDENCY_ID --json labels
 
 ## 2. Re-review the plan
 
-Enter a temporary worktree to inspect the target branch without disturbing the main checkout:
+Enter a worktree forked from $TARGET_BRANCH to be able to read up to date code (earlier slices may have changed the codebase):
 
 ```sh
 worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
@@ -70,13 +70,13 @@ SLICE_BODY = {slice body, with updated acceptance criteria if changed}
 ```
 
 ```sh
-tracker.sh issue edit $SLICE_NUMBER --body "$SLICE_BODY"
+tracker.sh issue edit $SLICE_ID --body "$SLICE_BODY"
 ```
 
 ## 3. Promote
 
 ```sh
-tracker.sh issue edit $SLICE_NUMBER --remove-label to-await-waves --add-label to-implement
+tracker.sh issue edit $SLICE_ID --remove-label to-await-waves --add-label to-implement
 ```
 
 ## 4. Clean up

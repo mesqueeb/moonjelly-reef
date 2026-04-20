@@ -159,6 +159,13 @@ for raw in lines:
         cmd = m.group(2)
         print(f'{source_file}|{op_name}|tracker-{sub}|{cmd}')
         continue
+
+    # Contains directive: '  - contains: \`...\`'
+    m = re.match(r'^\s+- contains:\s*\`([^\`]+)\`', line)
+    if m:
+        text = m.group(1)
+        print(f'{source_file}|{op_name}|contains|{text}')
+        continue
 " > "$TMPFILE"
 
 # ============================================================
@@ -201,6 +208,17 @@ while IFS='|' read -r source_file op_name check_type value; do
   label="$source_file > $op_name"
   if [ "$check_type" != "cmd" ]; then
     label="$label ($check_type)"
+  fi
+
+  # Contains directives: just check the string exists, no ordering.
+  if [ "$check_type" = "contains" ]; then
+    label="$source_file > $op_name (contains)"
+    if grep -qF -e "$value" "$md_path"; then
+      pass "$label"
+    else
+      fail "$label" "expected body to contain: $value"
+    fi
+    continue
   fi
 
   # For sh lines and tracker arrays, use the value literally.

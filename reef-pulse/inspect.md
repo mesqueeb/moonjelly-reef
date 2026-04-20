@@ -26,7 +26,7 @@ Set the post-fetch variables (after reading the slice body):
 
 ```sh
 SLICE_NAME = {from slice body}
-SLICE_NUMBER = $ISSUE_ID
+SLICE_ID = $ISSUE_ID
 SLICE_BRANCH = {from slice body}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-inspect
 ```
@@ -109,13 +109,13 @@ gh pr edit $PR_NUMBER --body "$REPORT"
 **If all acceptance criteria are met and the suite is green:**
 
 ```sh
-tracker.sh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-merge
+tracker.sh issue edit $SLICE_ID --remove-label to-inspect --add-label to-merge
 ```
 
 **If gaps are found:**
 
 ```sh
-tracker.sh issue edit $SLICE_NUMBER --remove-label to-inspect --add-label to-rework
+tracker.sh issue edit $SLICE_ID --remove-label to-inspect --add-label to-rework
 ```
 
 Leave specific review comments on the PR for each gap. Be precise — tell the implementer exactly what's wrong and what "fixed" looks like.

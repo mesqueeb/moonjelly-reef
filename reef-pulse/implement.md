@@ -36,7 +36,7 @@ Set the post-fetch variables (after reading the slice body):
 
 ```sh
 SLICE_NAME = {from slice body}
-SLICE_NUMBER = $ISSUE_ID
+SLICE_ID = $ISSUE_ID
 TARGET_BRANCH = {from slice/plan body}
 SLICE_BRANCH = {PR branch, e.g. feat/001-auth-endpoint}
 WORKTREE_PATH = ../worktree-$SLICE_NAME-implement
@@ -140,7 +140,7 @@ Document judgment calls made during this phase on the PR. Only document decision
 Persist the PR reference on the slice body so downstream phases (inspect, rework, merge) can find it.
 
 ```sh
-tracker.sh issue edit $SLICE_NUMBER --body "$SLICE_BODY" --remove-label to-implement --add-label to-inspect
+tracker.sh issue edit $SLICE_ID --body "$SLICE_BODY" --remove-label to-implement --add-label to-inspect
 ```
 
 ## 8. Clean up
