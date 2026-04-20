@@ -438,9 +438,14 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - handoff
   ```sh
+  # if unblocked:
   nextPhase="to-implement"
   planPr="—"
   summary="Slice {name} is unblocked and ready for implementation"
+  # if still blocked:
+  nextPhase="to-await-waves"
+  planPr="—"
+  summary="still blocked by #N, #M"
   ```
 
 ### [merge.md](./reef-pulse/merge.md)

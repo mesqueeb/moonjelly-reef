@@ -45,7 +45,7 @@ DEPENDENCY_ID="{from slice blocked-by list}"
 ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
 ```
 
-**If any dependency is NOT done**: exit silently. Do nothing. This slice stays `to-await-waves`. It will be checked again on the next pulse.
+**If any dependency is NOT done**: this slice stays `to-await-waves`. Skip to the handoff with `nextPhase: "to-await-waves"` and `summary: "still blocked by #N, #M"`.
 
 **If ALL dependencies are done**: continue to step 2.
 
