@@ -29,6 +29,24 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 
 Read the issue. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The frontmatter block tells you the work type, base branch, and target branch name.
 
+### Guard: verify branch frontmatter
+
+Parse the plan frontmatter. If `base-branch` or `target-branch` is missing, stop immediately:
+
+```sh
+./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-missing-scope
+```
+
+Then hand off with:
+
+```sh
+nextPhase="blocked-missing-scope"
+planPr="—"
+summary="Stopped: plan frontmatter is missing base-branch or target-branch. Re-run /reef-scope to fix."
+```
+
+Report these three variables to the caller and **do not continue**.
+
 ## 1. Draft vertical slices
 
 Break the plan into slices. Each slice is a thin vertical cut through ALL integration layers end-to-end — not a horizontal slice of one layer.

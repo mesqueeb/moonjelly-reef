@@ -66,11 +66,12 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   PLAN_ID="$ISSUE_ID"
   BASE_BRANCH="{from base branch discussion}"
+  TARGET_BRANCH="{from branch discussion}"
   PLAN_TYPE="{feature, refactor, or bug}"
-  PLAN_CONTENT="{plan-content}" # frontmatter + plan body from context
   ```
 - update-tracker
   ```sh
+  PLAN_CONTENT="{plan-content}" # frontmatter + plan body from context
   ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
   ```
 - set-variables
