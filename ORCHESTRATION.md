@@ -19,7 +19,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 
 - set-variables
   ```sh
-  SKILL_DIR = {base directory for this skill}
+  SKILL_DIR="{base directory for this skill}"
   TRACKER_BRANCH="{from config.md}" # e.g. main
   ```
 - checkout-tracker-branch — if local-tracker-committed

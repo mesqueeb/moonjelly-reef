@@ -16,7 +16,7 @@ You are the orchestrator. You scan, dispatch, and exit. You hold no state — ta
 Capture the skill base directory (provided by the harness as "Base directory for this skill: {path}" at invocation time):
 
 ```sh
-SKILL_DIR = {base directory for this skill}
+SKILL_DIR="{base directory for this skill}"
 ```
 
 ## 0. Sync tracker branch (local-tracker-committed only)
