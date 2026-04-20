@@ -1,6 +1,6 @@
 # rescan
 
-> **Tracker note**: Examples below show GitHub and local file operations. For other trackers, use the equivalent operations via MCP tools or CLI. See [tracker-reference.md](tracker-reference.md).
+> **Tracker note**: Commands below use `tracker.sh` syntax. For GitHub, replace `tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -8,7 +8,27 @@
 
 This skill requires a specific issue: e.g. `#42` or `my-feature`.
 
-Read the plan fully — the plan, success criteria, coverage matrix, agent decisions, and the ratify report that identified the gaps.
+Read the plan fully — the plan, success criteria, coverage matrix, agent decisions, and the gap report that triggered the rescan. The gap report is a comment on the plan issue, written either by ratify (automated holistic review) or by reef-land (human review with PR comments).
+
+Set the pre-fetch variables:
+
+```sh
+ISSUE_ID = {issue-id} # pre-existing and passed or generate
+```
+
+## 0. Fetch context
+
+```sh
+tracker.sh issue view $ISSUE_ID --json body,title,labels
+```
+
+Set the post-fetch variables (after reading the plan body):
+
+```sh
+PLAN_ID = $ISSUE_ID
+TARGET_BRANCH = {from plan body}
+WORKTREE_PATH = ../worktree-$PLAN_ID-rescan
+```
 
 ## Mindset
 
@@ -25,16 +45,15 @@ Do NOT ask a human. If the gaps need decisions that aren't in the success criter
 
 ### 0. Git prep
 
+Enter a worktree forked from $TARGET_BRANCH to read the current state of the code after ratify found gaps:
+
 ```sh
-WORKTREE=$(reef-worktree-enter.sh \
-  --base-branch {base-branch} --target-branch {target-branch} \
-  --phase rescan --slice {title})
-cd "$WORKTREE"
+worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
 ```
 
 ### 1. Analyze the gaps
 
-Read the ratify report's gaps. For each gap, classify it:
+Read the gap report's entries. For each gap, classify it:
 
 - **Missing coverage**: a success criterion has no slice addressing it → need a new slice
 - **Incomplete implementation**: a slice was done but didn't fully satisfy an acceptance criterion → need a rework or new slice
@@ -45,19 +64,17 @@ Read the ratify report's gaps. For each gap, classify it:
 
 This is the step that makes rescanning different from just "create follow-up tickets."
 
-Read the entire plan top to bottom. With the ratify report's findings in mind:
+Read the entire plan top to bottom. With the gap report's findings in mind:
 
-- Are the success criteria still correct and complete? If the ratify found something that SHOULD have been a criterion but wasn't, add it.
+- Are the success criteria still correct and complete? If the gap report found something that SHOULD have been a criterion but wasn't, add it.
 - Does the coverage matrix need updating beyond just the new slices?
 - Are there planning-level statements that turned out to be wrong or ambiguous? Update them.
 
-### GitHub tracker
+If the plan or success criteria need updates:
 
-If the plan or success criteria need updates, edit the plan body with `gh issue edit`.
-
-### Local tracker
-
-If the plan needs updates, edit the plan file directly.
+```sh
+tracker.sh issue edit $PLAN_ID --body "{updated plan body}"
+```
 
 ### 3. Create new slices
 
@@ -71,25 +88,21 @@ Follow the same format as the slice phase:
 - `blocked-by` references if the new slice depends on anything
 - Reference to the success criteria it covers
 
-### GitHub tracker
+Create new slices linked to the plan:
 
-Create sub-issues with `gh issue create`, linked to the plan. Label: `to-implement` or `to-await-waves`.
+```sh
+tracker.sh issue create --title "{slice-title}" --body "{slice-body}" --label to-implement
+```
 
-### Local tracker
-
-Create new slice files in `{path}/{title}/slices/`. Prefix: `[to-implement]` or `[to-await-waves]`.
+Use `to-implement` if no blockers, `to-await-waves` if blocked.
 
 ### 4. Update the coverage matrix
 
 Add rows for the new slices. Every gap must now map to an acceptance criterion on a new slice.
 
-### GitHub tracker
-
-Edit the plan body to update the coverage matrix section.
-
-### Local tracker
-
-Update the coverage matrix in the plan file.
+```sh
+tracker.sh issue edit $PLAN_ID --body "{plan body with updated coverage matrix}"
+```
 
 ### 5. Handle original slices
 
@@ -103,18 +116,23 @@ If a gap relates to a slice that was marked `done` but is now revealed as incomp
 
 Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
-### 7. Push and clean up
+### 7. Update plan and tag
 
-For local tracker, commit and push the updated plan files and new slice files:
+Update the plan body with the revised criteria and coverage matrix. Change label from `to-rescan` to `in-progress`. The merge phase will change it to `to-ratify` when all slices (including new ones) are `done`.
 
 ```sh
-reef-worktree-commit.sh --target-branch {target-branch} -m "rescan: new slices for {title}"
-reef-worktree-exit.sh --path "$WORKTREE"
+PLAN_BODY = {plan body with updated criteria and coverage matrix}
 ```
 
-### 8. Tag
+```sh
+tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-rescan --add-label in-progress
+```
 
-Change plan from `to-rescan` to `in-progress`. The merge phase will change it to `to-ratify` when all slices (including new ones) are `done`.
+## Clean up
+
+```sh
+worktree-exit.sh --path $WORKTREE_PATH
+```
 
 ## Handoff
 
