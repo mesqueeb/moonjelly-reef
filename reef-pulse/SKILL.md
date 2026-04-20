@@ -70,16 +70,16 @@ Run these queries in parallel where possible for performance.
 
 For each item, spawn a sub-agent with: `"Read and follow $SKILL_DIR/{file}. Target: #{number}."`
 
-| Tag              | File                             |
-| ---------------- | -------------------------------- |
-| `to-slice`       | `$SKILL_DIR/slice.md`            |
-| `to-await-waves` | `$SKILL_DIR/await-waves.md`      |
-| `to-implement`   | `$SKILL_DIR/implement.md`        |
-| `to-inspect`     | `$SKILL_DIR/inspect.md`          |
-| `to-rework`      | `$SKILL_DIR/rework.md`           |
-| `to-merge`       | `$SKILL_DIR/merge.md`            |
-| `to-ratify`      | `$SKILL_DIR/ratify.md`           |
-| `to-rescan`      | `$SKILL_DIR/rescan.md`           |
+| Tag              | File                        |
+| ---------------- | --------------------------- |
+| `to-slice`       | `$SKILL_DIR/slice.md`       |
+| `to-await-waves` | `$SKILL_DIR/await-waves.md` |
+| `to-implement`   | `$SKILL_DIR/implement.md`   |
+| `to-inspect`     | `$SKILL_DIR/inspect.md`     |
+| `to-rework`      | `$SKILL_DIR/rework.md`      |
+| `to-merge`       | `$SKILL_DIR/merge.md`       |
+| `to-ratify`      | `$SKILL_DIR/ratify.md`      |
+| `to-rescan`      | `$SKILL_DIR/rescan.md`      |
 
 ### Step 3. Log phase metrics to plan issues
 
