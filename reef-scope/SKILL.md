@@ -78,8 +78,9 @@ The plan body starts with frontmatter that downstream phases will read:
 
 ```markdown
 ---
-base branch: $BASE_BRANCH
+base-branch: $BASE_BRANCH
 type: $PLAN_TYPE
+
 ---
 ```
 
