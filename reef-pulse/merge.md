@@ -15,24 +15,24 @@ Read the item to find the PR reference. Check the Plan context to determine whet
 Set the pre-fetch variables:
 
 ```sh
-ISSUE_ID = {issue-id} # pre-existing and passed or generate
+ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ```
 
 ## 0. Fetch context
 
 ```sh
-tracker.sh issue view $ISSUE_ID --json body,title,labels
+tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
 Set the post-fetch variables (after reading the slice body):
 
 ```sh
-SLICE_NAME = {from slice body}
-SLICE_ID = $ISSUE_ID
-PR_NUMBER = {from slice body}
-TARGET_BRANCH = {from slice/plan body}
-SLICE_BRANCH = {from slice body}
-WORKTREE_PATH = ../worktree-$SLICE_NAME-merge
+SLICE_NAME="{from slice body}"
+SLICE_ID="$ISSUE_ID"
+PR_NUMBER="{from slice body}"
+TARGET_BRANCH="{from slice/plan body}"
+SLICE_BRANCH="{from slice body}"
+WORKTREE_PATH="../worktree-$SLICE_NAME-merge"
 ```
 
 ## Pre-merge check
@@ -42,37 +42,37 @@ Unconditional for both single-slice and multi-slice. Ensures the slice branch in
 Check the merge state of the PR:
 
 ```sh
-gh pr view $PR_NUMBER --json mergeStateStatus -q .mergeStateStatus
+gh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
 ```
 
 Enter a worktree forked from $SLICE_BRANCH (not $TARGET_BRANCH) so you are testing the slice code with the latest target merged in:
 
 ```sh
-worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
+worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
 ```
 
 Merge the target branch into the slice branch:
 
 ```sh
-git merge origin/$TARGET_BRANCH
+git merge "origin/$TARGET_BRANCH"
 ```
 
 Run the full test suite. If the target branch merged cleanly and tests pass, commit and push:
 
 ```sh
-commit.sh --branch $SLICE_BRANCH -m "merge: resolve conflicts with $TARGET_BRANCH"
+commit.sh --branch "$SLICE_BRANCH" -m "merge: resolve conflicts with $TARGET_BRANCH"
 ```
 
 If the test suite fails after merging, tag the slice `to-rework` and stop:
 
 ```sh
-tracker.sh issue edit $SLICE_ID --remove-label to-merge --add-label to-rework
+tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label to-rework
 ```
 
 Clean up the worktree:
 
 ```sh
-worktree-exit.sh --path $WORKTREE_PATH
+worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
 If tests failed, stop here. Do not proceed to single-slice or multi-slice steps.

@@ -8,26 +8,33 @@
 
 This skill requires a specific issue: e.g. `#42` or `my-feature`.
 
-Read the plan fully — the plan, success criteria, coverage matrix, agent decisions, and the gap report that triggered the rescan. The gap report is a comment on the plan issue, written either by ratify (automated holistic review) or by reef-land (human review with PR comments).
+Read the plan fully — the plan, success criteria, coverage matrix, and agent decisions. Then read the PR body for gap reports that triggered the rescan. Gap reports are `<details><summary>` blocks on the PR body, written either by ratify (automated holistic review) or by reef-land (human review).
 
 Set the pre-fetch variables:
 
 ```sh
-ISSUE_ID = {issue-id} # pre-existing and passed or generate
+ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ```
 
 ## 0. Fetch context
 
 ```sh
-tracker.sh issue view $ISSUE_ID --json body,title,labels
+tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
 Set the post-fetch variables (after reading the plan body):
 
 ```sh
-PLAN_ID = $ISSUE_ID
-TARGET_BRANCH = {from plan body}
-WORKTREE_PATH = ../worktree-$PLAN_ID-rescan
+PLAN_ID="$ISSUE_ID"
+PR_NUMBER="{from plan body frontmatter PR: #N}"
+TARGET_BRANCH="{from plan body}"
+WORKTREE_PATH="../worktree-$PLAN_ID-rescan"
+```
+
+## Fetch PR
+
+```sh
+gh pr view "$PR_NUMBER" --json body
 ```
 
 ## Mindset
@@ -45,10 +52,10 @@ Do NOT ask a human. If the gaps need decisions that aren't in the success criter
 
 ### 0. Git prep
 
-Enter a worktree forked from $TARGET_BRANCH to read the current state of the code after ratify found gaps:
+Enter a worktree forked from $TARGET_BRANCH to read the current state of the code:
 
 ```sh
-worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
 ```
 
 ### 1. Analyze the gaps
@@ -73,7 +80,7 @@ Read the entire plan top to bottom. With the gap report's findings in mind:
 If the plan or success criteria need updates:
 
 ```sh
-tracker.sh issue edit $PLAN_ID --body "{updated plan body}"
+tracker.sh issue edit "$PLAN_ID" --body "{updated plan body}"
 ```
 
 ### 3. Create new slices
@@ -101,7 +108,7 @@ Use `to-implement` if no blockers, `to-await-waves` if blocked.
 Add rows for the new slices. Every gap must now map to an acceptance criterion on a new slice.
 
 ```sh
-tracker.sh issue edit $PLAN_ID --body "{plan body with updated coverage matrix}"
+tracker.sh issue edit "$PLAN_ID" --body "{plan body with updated coverage matrix}"
 ```
 
 ### 5. Handle original slices
@@ -121,17 +128,14 @@ Document judgment calls made during this phase on the PR. Only document decision
 Update the plan body with the revised criteria and coverage matrix. Change label from `to-rescan` to `in-progress`. The merge phase will change it to `to-ratify` when all slices (including new ones) are `done`.
 
 ```sh
-PLAN_BODY = {plan body with updated criteria and coverage matrix}
-```
-
-```sh
-tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-rescan --add-label in-progress
+PLAN_BODY="{plan body with updated criteria and coverage matrix}"
+tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-rescan --add-label in-progress
 ```
 
 ## Clean up
 
 ```sh
-worktree-exit.sh --path $WORKTREE_PATH
+worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
 ## Handoff

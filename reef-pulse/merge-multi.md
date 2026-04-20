@@ -13,16 +13,16 @@ The router has already fetched context, set variables, and completed the pre-mer
 Set the variables needed for this path:
 
 ```sh
-PLAN_ID = {from slice/plan body}
-PR_NUMBER = {from slice body}
-SLICE_ID = $ISSUE_ID
+PLAN_ID="{from slice/plan body}"
+PR_NUMBER="{from slice body}"
+SLICE_ID="$ISSUE_ID"
 ```
 
 ## 1. Merge
 
 ```sh
-MERGE_STRATEGY = {from .agents/moonjelly-reef/config.md merge-strategy field}
-gh pr merge $PR_NUMBER --$MERGE_STRATEGY --delete-branch
+MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}"
+gh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
 ```
 
 ## 2. Check siblings and plan completion
@@ -30,19 +30,19 @@ gh pr merge $PR_NUMBER --$MERGE_STRATEGY --delete-branch
 Fetch the plan body — it contains the coverage matrix with all slice issue numbers:
 
 ```sh
-tracker.sh issue view $PLAN_ID --json body,title,labels
+tracker.sh issue view "$PLAN_ID" --json body,title,labels
 ```
 
 Extract the sibling slice IDs from the coverage matrix. For each sibling (excluding the current slice):
 
 ```sh
-SIBLING_ID = {from coverage matrix}
+SIBLING_ID="{from coverage matrix}"
 ```
 
 Fetch its labels:
 
 ```sh
-tracker.sh issue view $SIBLING_ID --json labels
+tracker.sh issue view "$SIBLING_ID" --json labels
 ```
 
 For any sibling tagged `to-await-waves`, check their `blocked-by` list. If this merged slice was the last blocker, leave them as `to-await-waves` — the next pulse will dispatch the await-waves phase to re-review their plan before promoting.
@@ -54,13 +54,13 @@ Check: are ALL slices for the plan now tagged `done`? If all slices are done, ch
 Close the slice issue. Add label `done`. Remove `to-merge`:
 
 ```sh
-tracker.sh issue close $SLICE_ID
+tracker.sh issue close "$SLICE_ID"
 ```
 
 ## 4. Update plan tag — if all slices done
 
 ```sh
-tracker.sh issue edit $PLAN_ID --remove-label in-progress --add-label to-ratify
+tracker.sh issue edit "$PLAN_ID" --remove-label in-progress --add-label to-ratify
 ```
 
 ## 5. Document judgment calls

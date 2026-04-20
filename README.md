@@ -182,7 +182,7 @@ Independently verify a slice PR. Run the full test suite, check each acceptance 
 
 </details>
 
-<p align="right">👁<br /><sub>A barreleye fish rotates its tubular eyes upward through its transparent skull, scrutinizing every shadow above for anything that doesn't belong.</sub></p>
+<p align="right">🧿<br /><sub>A barreleye fish rotates its tubular eyes upward through its transparent skull, scrutinizing every shadow above for anything that doesn't belong.</sub></p>
 
 <details>
 <summary>🌊 <b><code>to-rework</code></b> 🏷️</summary>

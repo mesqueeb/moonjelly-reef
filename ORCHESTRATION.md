@@ -19,21 +19,21 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 
 - set-variables
   ```sh
-  TRACKER_BRANCH = {from config.md} # e.g. main
+  TRACKER_BRANCH="{from config.md}" # e.g. main
   ```
 - checkout-tracker-branch — if local-tracker-committed
   ```sh
-  git fetch origin $TRACKER_BRANCH && git checkout $TRACKER_BRANCH && git pull
+  git fetch origin "$TRACKER_BRANCH" && git checkout "$TRACKER_BRANCH" && git pull
   ```
 - phase-specific
 - set-variables
   ```sh
-  ISSUE_ID = {from dispatched items}
-  ISSUE_BODY = {current issue body with metrics section appended}
+  ISSUE_ID="{from dispatched items}"
+  ISSUE_BODY="{current issue body with metrics section appended}"
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit $ISSUE_ID --body "$ISSUE_BODY"
+  tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
   ```
 - set-variables
   ```sh
@@ -53,23 +53,23 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - set-variables
   ```sh
-  ISSUE_ID = {issue-id} # pre-existing and passed or generate
+  ISSUE_ID="{issue-id}" # pre-existing and passed or generate
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view $ISSUE_ID --json body,title,labels
+  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - phase-specific
 - set-variables
   ```sh
-  PLAN_ID = $ISSUE_ID
-  BASE_BRANCH = {from base branch discussion}
-  PLAN_TYPE = {feature, refactor, or bug}
-  PLAN_CONTENT = {plan-content} # frontmatter + plan body from context
+  PLAN_ID="$ISSUE_ID"
+  BASE_BRANCH="{from base branch discussion}"
+  PLAN_TYPE="{feature, refactor, or bug}"
+  PLAN_CONTENT="{plan-content}" # frontmatter + plan body from context
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit $PLAN_ID --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
+  tracker.sh issue edit "$PLAN_ID" --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
   ```
 - set-variables
   ```sh
@@ -85,45 +85,54 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 
 - set-variables
   ```sh
-  PLAN_ID = {issue-id} # if passed
-  PR_NUMBER = {pr-number} # if passed
+  PLAN_ID="{issue-id}" # if passed
+  PR_NUMBER="{pr-number}" # if passed
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view $PLAN_ID --json body,title,labels # if PLAN_ID known
-  gh pr view $PR_NUMBER --json number,body,headRefName,baseRefName,comments,reviews # if PR_NUMBER known
+  tracker.sh issue view "$PLAN_ID" --json body,title,labels # if PLAN_ID known
+  gh pr view "$PR_NUMBER" --json number,body,headRefName,baseRefName,comments,reviews # if PR_NUMBER known
   ```
 - set-variables
   ```sh
-  PLAN_ID = {from PR body or already known}
-  PR_NUMBER = {from plan body or already known}
-  BASE_BRANCH = {from plan body}
-  PR_BODY = {the PR body content — this is the ratify report}
+  PLAN_ID="{from PR body or already known}"
+  PR_NUMBER="{from plan body or already known}"
+  BASE_BRANCH="{from plan body}"
+  PR_BODY="{the PR body content — this is the ratify report}"
   ```
 - fetch-pr-comments-and-reviews
   ```sh
-  gh pr view $PR_NUMBER --json comments,reviews # if not already fetched
+  gh pr view "$PR_NUMBER" --json comments,reviews # if not already fetched
   ```
 - phase-specific
-- update-tracker — if change-requests
+- set-variables — if change-requests
   ```sh
-  tracker.sh issue comment $PLAN_ID --body "$GAP_REPORT"
+  PR_BODY="{current PR body with gap report appended in <details><summary> block}"
+  ```
+- update-pr-body — if change-requests
+  ```sh
+  gh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker — if change-requests
   ```sh
-  tracker.sh issue edit $PLAN_ID --remove-label to-land --add-label to-rescan
+  tracker.sh issue edit "$PLAN_ID" --remove-label to-land --add-label to-rescan
+  ```
+- update-plan-body — if change-requests and plan decisions changed
+  ```sh
+  PLAN_BODY=$(tracker.sh issue view "$PLAN_ID" --json body)
+  tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
   ```
 - pre-merge-check — if approved
   ```sh
-  gh pr view $PR_NUMBER --json mergeStateStatus -q .mergeStateStatus
+  gh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
   ```
 - set-variables — if approved
   ```sh
-  MERGE_STRATEGY = {from .agents/moonjelly-reef/config.md merge-strategy field}
+  MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}"
   ```
 - pr-merge — if approved
   ```sh
-  gh pr merge $PR_NUMBER --$MERGE_STRATEGY --delete-branch
+  gh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
   ```
 - pull
   - contains: `Pull the merged changes into the current branch if it matches the base branch:`
@@ -131,16 +140,16 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   git fetch origin --prune
   CURRENT=$(git branch --show-current)
   if [ "$CURRENT" = "$BASE_BRANCH" ]; then
-    git pull --ff-only origin $BASE_BRANCH
+    git pull --ff-only origin "$BASE_BRANCH"
   fi
   ```
 - update-tracker — if approved
   ```sh
-  tracker.sh issue close $PLAN_ID
+  tracker.sh issue close "$PLAN_ID"
   ```
 - set-variables — if follow-up
   ```sh
-  FOLLOW_UP_CONTEXT = {summary of PR comments and concerns from step 2}
+  FOLLOW_UP_CONTEXT="{summary of PR comments and concerns from step 2}"
   ```
 - create-tracker — if follow-up
   ```sh
@@ -153,415 +162,418 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 
 - set-variables
   ```sh
-  ISSUE_ID = {issue-id} # pre-existing and passed or generate
+  ISSUE_ID="{issue-id}" # pre-existing and passed or generate
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view $ISSUE_ID --json body,title,labels
+  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 
 ### [slice-single.md](./reef-pulse/slice-single.md)
 
 - set-variables
   ```sh
-  PLAN_ID = $ISSUE_ID
-  PLAN_BODY = {plan body with target branch added to frontmatter and acceptance criteria appended}
+  PLAN_ID="$ISSUE_ID"
+  PLAN_BODY="{plan body with target branch added to frontmatter and acceptance criteria appended}"
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement
+  tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement
   ```
 
 ### [slice-multi.md](./reef-pulse/slice-multi.md)
 
 - set-variables
   ```sh
-  PLAN_ID = $ISSUE_ID
-  TARGET_BRANCH = {from plan body}
-  BASE_BRANCH = {from plan body}
-  PLAN_TYPE = {from plan body} # feature, refactor, or bug
-  WORKTREE_PATH = ../worktree-$PLAN_ID-slice
+  PLAN_ID="$ISSUE_ID"
+  TARGET_BRANCH="{from plan body}"
+  BASE_BRANCH="{from plan body}"
+  PLAN_TYPE="{from plan body}" # feature, refactor, or bug
+  WORKTREE_PATH="../worktree-$PLAN_ID-slice"
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH to read the codebase for informed slicing decisions`
   ```sh
-  worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+  worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - create-remote-branch
   ```sh
-  git push -u origin $TARGET_BRANCH
+  git push -u origin "$TARGET_BRANCH"
   ```
 - phase-specific
 - set-variables
   ```sh
-  SLICE_TITLE = {slice-title}
-  SLICE_BODY = {slice-body} # as per the template below
-  SLICE_LABEL = to-implement # or to-await-waves if blocked
+  SLICE_TITLE="{slice-title}"
+  SLICE_BODY="{slice-body}" # as per the template below
+  SLICE_LABEL="to-implement" # or to-await-waves if blocked
   ```
 - create-slices
   ```sh
-  tracker.sh issue create --title "$SLICE_TITLE" --body "$SLICE_BODY" --label $SLICE_LABEL
+  tracker.sh issue create --title "$SLICE_TITLE" --body "$SLICE_BODY" --label "$SLICE_LABEL"
   ```
 - set-variables
   ```sh
-  PLAN_BODY = {plan body with coverage matrix appended}
+  PLAN_BODY="{plan body with coverage matrix appended}"
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-slice --add-label in-progress
+  tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label in-progress
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path $WORKTREE_PATH
+  worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 
 ### [implement.md](./reef-pulse/implement.md)
 
 - set-variables
   ```sh
-  ISSUE_ID = {issue-id} # pre-existing and passed or generate
+  ISSUE_ID="{issue-id}" # pre-existing and passed or generate
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view $ISSUE_ID --json body,title,labels
+  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
-  SLICE_NAME = {from slice body}
-  SLICE_ID = $ISSUE_ID
-  TARGET_BRANCH = {from slice/plan body}
-  SLICE_BRANCH = {PR branch, e.g. feat/001-auth-endpoint}
-  WORKTREE_PATH = ../worktree-$SLICE_NAME-implement
+  SLICE_NAME="{from slice body}"
+  SLICE_ID="$ISSUE_ID"
+  TARGET_BRANCH="{from slice/plan body}"
+  SLICE_BRANCH="{PR branch, e.g. feat/001-auth-endpoint}"
+  WORKTREE_PATH="../worktree-$SLICE_NAME-implement"
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH so you start from a clean integration point`
   ```sh
-  worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+  worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code
   ```sh
-  commit.sh --branch $SLICE_BRANCH -m "$SLICE_NAME: implementation"
+  commit.sh --branch "$SLICE_BRANCH" -m "$SLICE_NAME: implementation"
   ```
 - set-variables
   ```sh
-  REPORT = {report-content} # from context
+  REPORT="{report-content}" # starts with: closes #$SLICE_ID $SLICE_NAME\n\n
   ```
 - pr-create
   ```sh
-  gh pr create --base $TARGET_BRANCH --title "$SLICE_NAME" --body "$REPORT"
+  gh pr create --base "$TARGET_BRANCH" --title "$SLICE_NAME" --body "$REPORT"
   ```
 - set-variables
   ```sh
-  PR_NUMBER = {from gh pr create output}
-  SLICE_BODY = {slice body with PR reference appended}
+  PR_NUMBER="{from gh pr create output}"
+  SLICE_BODY="{slice body with PR reference appended}"
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit $SLICE_ID --body "$SLICE_BODY" --remove-label to-implement --add-label to-inspect
+  tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY" --remove-label to-implement --add-label to-inspect
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path $WORKTREE_PATH
+  worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 
 ### [inspect.md](./reef-pulse/inspect.md)
 
 - set-variables
   ```sh
-  ISSUE_ID = {issue-id} # pre-existing and passed or generate
+  ISSUE_ID="{issue-id}" # pre-existing and passed or generate
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view $ISSUE_ID --json body,title,labels
+  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
-  SLICE_NAME = {from slice body}
-  SLICE_ID = $ISSUE_ID
-  SLICE_BRANCH = {from slice body}
-  WORKTREE_PATH = ../worktree-$SLICE_NAME-inspect
+  SLICE_NAME="{from slice body}"
+  SLICE_ID="$ISSUE_ID"
+  SLICE_BRANCH="{from slice body}"
+  WORKTREE_PATH="../worktree-$SLICE_NAME-inspect"
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $SLICE_BRANCH to review the implementation`
   ```sh
-  worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
+  worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code — if cleanup-needed
   ```sh
-  commit.sh --branch $SLICE_BRANCH -m "inspect: cleanup"
-  ```
-- set-variables
-  ```sh
-  PR_NUMBER = {from slice body} # if not found, try gh pr list --search
-  REPORT = {report-content} # from context
+  commit.sh --branch "$SLICE_BRANCH" -m "inspect: cleanup"
   ```
 - update-pr-body
   ```sh
-  gh pr edit $PR_NUMBER --body "$REPORT"
+  PR_NUMBER="{from slice body}" # if not found, try gh pr list --search
+  PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q .body)
+  REPORT="{inspect-report}" # <details><summary><h3>🧿 Inspect review — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+  PR_BODY="$PR_BODY\n\n$REPORT"
+  gh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker
-  - pass: `tracker.sh issue edit $SLICE_ID --remove-label to-inspect --add-label to-merge`
-  - fail: `tracker.sh issue edit $SLICE_ID --remove-label to-inspect --add-label to-rework`
+  - pass: `tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge`
+  - fail: `tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework`
 - exit-worktree
   ```sh
-  worktree-exit.sh --path $WORKTREE_PATH
+  worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 
 ### [rework.md](./reef-pulse/rework.md)
 
 - set-variables
   ```sh
-  ISSUE_ID = {issue-id} # pre-existing and passed or generate
+  ISSUE_ID="{issue-id}" # pre-existing and passed or generate
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view $ISSUE_ID --json body,title,labels
+  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
-  SLICE_NAME = {from slice body}
-  SLICE_ID = $ISSUE_ID
-  SLICE_BRANCH = {from slice body}
-  PR_NUMBER = {from slice body}
-  WORKTREE_PATH = ../worktree-$SLICE_NAME-rework
+  SLICE_NAME="{from slice body}"
+  SLICE_ID="$ISSUE_ID"
+  SLICE_BRANCH="{from slice body}"
+  PR_NUMBER="{from slice body}"
+  WORKTREE_PATH="../worktree-$SLICE_NAME-rework"
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $SLICE_BRANCH to apply fixes to the existing PR branch`
   ```sh
-  worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
+  worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code
   ```sh
-  commit.sh --branch $SLICE_BRANCH -m "rework: address inspection feedback"
-  ```
-- set-variables
-  ```sh
-  REPORT = {report-content} # from context
+  commit.sh --branch "$SLICE_BRANCH" -m "rework: address inspection feedback"
   ```
 - update-pr-body
   ```sh
-  gh pr edit $PR_NUMBER --body "$REPORT"
+  PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q .body)
+  REPORT="{rework-report}" # <details><summary><h3>🦀 Rework — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+  PR_BODY="$PR_BODY\n\n$REPORT"
+  gh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit $SLICE_ID --remove-label to-rework --add-label to-inspect
+  tracker.sh issue edit "$SLICE_ID" --remove-label to-rework --add-label to-inspect
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path $WORKTREE_PATH
+  worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 
 ### [await-waves.md](./reef-pulse/await-waves.md)
 
 - set-variables
   ```sh
-  ISSUE_ID = {issue-id} # pre-existing and passed or generate
+  ISSUE_ID="{issue-id}" # pre-existing and passed or generate
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view $ISSUE_ID --json body,title,labels
+  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
-  SLICE_NAME = {from slice body}
-  SLICE_ID = $ISSUE_ID
-  TARGET_BRANCH = {from slice/plan body}
-  WORKTREE_PATH = ../worktree-$SLICE_NAME-await-waves
+  SLICE_NAME="{from slice body}"
+  SLICE_ID="$ISSUE_ID"
+  TARGET_BRANCH="{from slice/plan body}"
+  WORKTREE_PATH="../worktree-$SLICE_NAME-await-waves"
   ```
 - set-variables
   ```sh
-  DEPENDENCY_ID = {from slice blocked-by list}
+  DEPENDENCY_ID="{from slice blocked-by list}"
   ```
 - dep-check
   ```sh
-  tracker.sh issue view $DEPENDENCY_ID --json labels
+  tracker.sh issue view "$DEPENDENCY_ID" --json labels
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH to be able to read up to date code`
   ```sh
-  worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+  worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - set-variables
   ```sh
-  SLICE_BODY = {slice body, with updated acceptance criteria if changed}
+  SLICE_BODY="{slice body, with updated acceptance criteria if changed}"
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit $SLICE_ID --body "$SLICE_BODY" --remove-label to-await-waves --add-label to-implement
+  tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY" --remove-label to-await-waves --add-label to-implement
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path $WORKTREE_PATH
+  worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 
 ### [merge.md](./reef-pulse/merge.md)
 
 - set-variables
   ```sh
-  ISSUE_ID = {issue-id} # pre-existing and passed or generate
+  ISSUE_ID="{issue-id}" # pre-existing and passed or generate
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view $ISSUE_ID --json body,title,labels
+  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
-  SLICE_NAME = {from slice body}
-  SLICE_ID = $ISSUE_ID
-  PR_NUMBER = {from slice body}
-  TARGET_BRANCH = {from slice/plan body}
-  SLICE_BRANCH = {from slice body}
-  WORKTREE_PATH = ../worktree-$SLICE_NAME-merge
+  SLICE_NAME="{from slice body}"
+  SLICE_ID="$ISSUE_ID"
+  PR_NUMBER="{from slice body}"
+  TARGET_BRANCH="{from slice/plan body}"
+  SLICE_BRANCH="{from slice body}"
+  WORKTREE_PATH="../worktree-$SLICE_NAME-merge"
   ```
 - pre-merge-check
   ```sh
-  gh pr view $PR_NUMBER --json mergeStateStatus -q .mergeStateStatus
+  gh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $SLICE_BRANCH (not $TARGET_BRANCH) so you are testing the slice code with the latest target merged in`
   ```sh
-  worktree-enter.sh --fork-from $SLICE_BRANCH --path $WORKTREE_PATH
+  worktree-enter.sh --fork-from "$SLICE_BRANCH" --path "$WORKTREE_PATH"
   ```
 - merge-target-into-slice
   ```sh
-  git merge origin/$TARGET_BRANCH
+  git merge "origin/$TARGET_BRANCH"
   ```
 - commit-code — if merge-needed
   ```sh
-  commit.sh --branch $SLICE_BRANCH -m "merge: resolve conflicts with $TARGET_BRANCH"
+  commit.sh --branch "$SLICE_BRANCH" -m "merge: resolve conflicts with $TARGET_BRANCH"
   ```
 - update-tracker — if tests-fail
   ```sh
-  tracker.sh issue edit $SLICE_ID --remove-label to-merge --add-label to-rework
+  tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label to-rework
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path $WORKTREE_PATH
+  worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 
 ### [merge-single.md](./reef-pulse/merge-single.md)
 
 - set-variables
   ```sh
-  PLAN_ID = {from slice/plan body}
+  PLAN_ID="{from slice/plan body}"
   ```
 - update-tracker
   ```sh
-  tracker.sh issue edit $PLAN_ID --remove-label to-merge --add-label to-land
+  tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-land
   ```
 
 ### [merge-multi.md](./reef-pulse/merge-multi.md)
 
 - set-variables
   ```sh
-  PLAN_ID = {from slice/plan body}
-  PR_NUMBER = {from slice body}
-  SLICE_ID = $ISSUE_ID
+  PLAN_ID="{from slice/plan body}"
+  PR_NUMBER="{from slice body}"
+  SLICE_ID="$ISSUE_ID"
   ```
 - set-variables
   ```sh
-  MERGE_STRATEGY = {from .agents/moonjelly-reef/config.md merge-strategy field}
+  MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}"
   ```
 - pr-merge
   ```sh
-  gh pr merge $PR_NUMBER --$MERGE_STRATEGY --delete-branch
+  gh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
   ```
 - check-siblings-and-completion
   ```sh
-  tracker.sh issue view $PLAN_ID --json body,title,labels
+  tracker.sh issue view "$PLAN_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
-  SIBLING_ID = {from coverage matrix}
+  SIBLING_ID="{from coverage matrix}"
   ```
 - update-tracker
   ```sh
-  tracker.sh issue close $SLICE_ID
+  tracker.sh issue close "$SLICE_ID"
   ```
 - update-tracker — if all-slices-done
   ```sh
-  tracker.sh issue edit $PLAN_ID --remove-label in-progress --add-label to-ratify
+  tracker.sh issue edit "$PLAN_ID" --remove-label in-progress --add-label to-ratify
   ```
 
 ### [ratify.md](./reef-pulse/ratify.md)
 
 - set-variables
   ```sh
-  ISSUE_ID = {issue-id} # pre-existing and passed or generate
+  ISSUE_ID="{issue-id}" # pre-existing and passed or generate
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view $ISSUE_ID --json body,title,labels
+  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
-  PLAN_ID = $ISSUE_ID
-  PLAN_TITLE = {from plan body}
-  BASE_BRANCH = {from plan body}
-  TARGET_BRANCH = {from plan body}
-  WORKTREE_PATH = ../worktree-$PLAN_ID-ratify
+  PLAN_ID="$ISSUE_ID"
+  PLAN_TITLE="{from plan body}"
+  BASE_BRANCH="{from plan body}"
+  TARGET_BRANCH="{from plan body}"
+  WORKTREE_PATH="../worktree-$PLAN_ID-ratify"
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $TARGET_BRANCH because all slice PRs are merged there`
   ```sh
-  worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+  worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code — if documentation-added
   ```sh
-  commit.sh --branch $TARGET_BRANCH -m "ratify: add documentation"
+  commit.sh --branch "$TARGET_BRANCH" -m "ratify: add documentation"
   ```
-- set-variables
+- submit-report
   ```sh
-  REPORT = {report-content} # from context
-  ```
-- pr-create — if pass
-  ```sh
-  gh pr create --base $BASE_BRANCH --head $TARGET_BRANCH --title "$PLAN_TITLE" --body "$REPORT"
+  REPORT="{ratify-report}" # <details><summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+  # if no PR exists:
+  gh pr create --base "$BASE_BRANCH" --head "$TARGET_BRANCH" --title "$PLAN_TITLE" --body "$REPORT"
+  # if PR exists, append:
+  PR_NUMBER="{from pr create output or existing PR}"
+  PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q .body)
+  PR_BODY="$PR_BODY\n\n$REPORT"
+  gh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker
-  - pass: `tracker.sh issue edit $PLAN_ID --remove-label to-ratify --add-label to-land`
-  - fail: `tracker.sh issue edit $PLAN_ID --body "$REPORT" --remove-label to-ratify --add-label to-rescan`
+  - pass: `tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land`
+  - fail: `tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rescan`
 - exit-worktree
   ```sh
-  worktree-exit.sh --path $WORKTREE_PATH
+  worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 
 ### [rescan.md](./reef-pulse/rescan.md)
 
 - set-variables
   ```sh
-  ISSUE_ID = {issue-id} # pre-existing and passed or generate
+  ISSUE_ID="{issue-id}" # pre-existing and passed or generate
   ```
 - fetch-context
   ```sh
-  tracker.sh issue view $ISSUE_ID --json body,title,labels
+  tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - set-variables
   ```sh
-  PLAN_ID = $ISSUE_ID
-  TARGET_BRANCH = {from plan body}
-  WORKTREE_PATH = ../worktree-$PLAN_ID-rescan
+  PLAN_ID="$ISSUE_ID"
+  PR_NUMBER="{from plan body frontmatter PR: #N}"
+  TARGET_BRANCH="{from plan body}"
+  WORKTREE_PATH="../worktree-$PLAN_ID-rescan"
+  ```
+- fetch-pr
+  ```sh
+  gh pr view "$PR_NUMBER" --json body
   ```
 - enter-worktree
-  - contains: `Enter a worktree forked from $TARGET_BRANCH to read the current state of the code after ratify found gaps`
+  - contains: `Enter a worktree forked from $TARGET_BRANCH to read the current state of the code`
   ```sh
-  worktree-enter.sh --fork-from $TARGET_BRANCH --path $WORKTREE_PATH
+  worktree-enter.sh --fork-from "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
-- set-variables
-  ```sh
-  PLAN_BODY = {plan body with updated criteria and coverage matrix}
-  ```
 - update-tracker
   ```sh
-  tracker.sh issue edit $PLAN_ID --body "$PLAN_BODY" --remove-label to-rescan --add-label in-progress
+  PLAN_BODY="{plan body with updated criteria and coverage matrix}"
+  tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-rescan --add-label in-progress
   ```
 - exit-worktree
   ```sh
-  worktree-exit.sh --path $WORKTREE_PATH
+  worktree-exit.sh --path "$WORKTREE_PATH"
   ```
