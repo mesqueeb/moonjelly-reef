@@ -92,20 +92,6 @@ Commit your work when implementation is complete.
 When implementation is complete, compose the PR description using this template:
 
 ```markdown
-## Slice
-
-{link to slice issue or file path}
-
-## Parent
-
-{link to plan or file path}
-
-## Acceptance criteria
-
-- [x] {AC1} — {brief note on how it's satisfied}
-- [x] {AC2} — {brief note}
-- [ ] {AC3} — NOT MET: {explanation of what happened}
-
 ## Ambiguous choices
 
 Decisions made during implementation that weren't covered by the acceptance criteria or where judgment was needed:
