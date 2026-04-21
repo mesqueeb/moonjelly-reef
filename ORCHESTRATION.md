@@ -33,7 +33,12 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   SKILL_DIR="{base directory for this skill}"
   TRACKER_BRANCH="{from config.md}" # e.g. main
+  LOCK_FILE=".agents/moonjelly-reef/pulse.lock"
   ```
+- acquire-lock
+  - contains: `pulse.lock`
+  - contains: `start timestamp`
+  - contains: `override`
 - checkout-tracker-branch — if local-tracker-committed
   ```sh
   git fetch origin "$TRACKER_BRANCH" && git checkout "$TRACKER_BRANCH" && git pull
@@ -58,6 +63,9 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   gh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
   ```
+- release-lock
+  - contains: `pulse.lock`
+  - contains: `delete`
 
 ### [/reef-scope](./reef-scope/SKILL.md)
 

@@ -19,13 +19,23 @@ Capture the skill base directory (provided by the harness as "Base directory for
 SKILL_DIR="{base directory for this skill}"
 ```
 
-## 0. Sync tracker branch (local-tracker-committed only)
+## 0a. Acquire lock
 
-If the tracker type in config is `local-tracker-committed`, the tracker files live in a git-tracked directory on a specific branch. Sync it before scanning:
+Before doing anything else, check for an existing pulse.lock file.
 
 ```sh
 TRACKER_BRANCH="{from config.md}" # e.g. main
+LOCK_FILE=".agents/moonjelly-reef/pulse.lock"
 ```
+
+If the pulse.lock file exists, another pulse may already be running (or a previous session crashed without cleaning up).
+
+- If `pulse.lock` exists, read the start timestamp from it, calculate how long the existing pulse has been running, and report this to the user: "A pulse has been running for {elapsed}. This may be from a crashed session. Override?" In AFK mode, override automatically (the lock is stale if we're in a cron). In HITL mode, ask the user.
+- If `pulse.lock` does not exist (or the user chose to override), create it with a start timestamp (ISO 8601 UTC) and continue.
+
+## 0b. Sync tracker branch (local-tracker-committed only)
+
+If the tracker type in config is `local-tracker-committed`, the tracker files live in a git-tracked directory on a specific branch. Sync it before scanning. `TRACKER_BRANCH` was already set in the previous step.
 
 ```sh
 git fetch origin "$TRACKER_BRANCH" && git checkout "$TRACKER_BRANCH" && git pull
@@ -186,6 +196,10 @@ Check if a durable cron for `/reef-pulse --afk` already exists by calling `CronL
   💡 Run this on autopilot:
      CronCreate cron="7 * * * *" prompt="/reef-pulse --afk" durable=true
 ```
+
+### Step 6. Release lock
+
+On final exit (nothing left to dispatch), delete the pulse.lock file. The lock must only be released when the pulse is truly done — not between iterations (future: the self-perpetuating loop will keep the lock across iterations).
 
 Exit.
 
