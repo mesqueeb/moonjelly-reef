@@ -34,7 +34,7 @@ Read the issue. It must contain a plan with success criteria (from reef-scope). 
 Parse the plan frontmatter. If `base-branch` or `target-branch` is missing, stop immediately:
 
 ```sh
-./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-missing-scope
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-slice --add-label blocked-missing-scope --add-label to-scope
 ```
 
 Then hand off with:
