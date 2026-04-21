@@ -182,7 +182,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - set-variables
   ```sh
   PLAN_ID="$ISSUE_ID"
-  PLAN_BODY="{plan body with target branch added to frontmatter and acceptance criteria appended}"
+  PLAN_BODY="{plan body with target branch and pr-branch added to frontmatter and acceptance criteria appended}"
   ```
 - update-tracker
   ```sh
@@ -227,7 +227,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - set-variables
   ```sh
-  PLAN_BODY="{plan body with coverage matrix appended}"
+  PLAN_BODY="{plan body with pr-branch in frontmatter and coverage matrix appended}"
   ```
 - update-tracker
   ```sh
@@ -284,7 +284,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 - set-variables
   ```sh
   PR_NUMBER="{from gh pr create output}"
-  SLICE_BODY="{slice body with PR reference appended}"
+  SLICE_BODY="{slice/plan body with PR reference and pr-branch updated}"
   ```
 - update-tracker
   ```sh
@@ -315,19 +315,19 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   SLICE_NAME="{from slice body}"
   SLICE_ID="$ISSUE_ID"
-  SLICE_BRANCH="{from slice body}"
+  PR_BRANCH="{from slice/plan body pr-branch field}"
   TARGET_BRANCH="{from slice/plan body}"
   WORKTREE_PATH=".worktrees/$SLICE_NAME-inspect"
   ```
 - enter-worktree
-  - contains: `Enter a worktree forked from $SLICE_BRANCH to review the implementation`
+  - contains: `Enter a worktree forked from $PR_BRANCH to review the implementation`
   ```sh
-  ./worktree-enter.sh --fork-from "$SLICE_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code — if cleanup-needed
   ```sh
-  ./commit.sh --branch "$SLICE_BRANCH" -m "inspect: cleanup"
+  ./commit.sh --branch "$PR_BRANCH" -m "inspect: cleanup"
   ```
 - update-pr-body
   ```sh
@@ -361,41 +361,24 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```sh
   ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
-- set-variables — if slice or single-slice plan
+- set-variables
   ```sh
-  SLICE_NAME="{from slice body}"
+  SLICE_NAME="{from issue body}"
   SLICE_ID="$ISSUE_ID"
-  SLICE_BRANCH="{from slice body}"
-  TARGET_BRANCH="{from slice/plan body}"
-  PR_NUMBER="{from slice body}"
+  PR_BRANCH="{from issue body pr-branch field}"
+  TARGET_BRANCH="{from issue body}"
+  PR_NUMBER="{from issue body}"
   WORKTREE_PATH=".worktrees/$SLICE_NAME-rework"
   ```
-- set-variables — if multi-slice plan
+- enter-worktree
+  - contains: `Enter a worktree forked from $PR_BRANCH to apply fixes to the existing PR`
   ```sh
-  PLAN_ID="$ISSUE_ID"
-  BASE_BRANCH="{from plan body}"
-  TARGET_BRANCH="{from plan body}"
-  PR_NUMBER="{from plan body or PR search}"
-  WORKTREE_PATH=".worktrees/$PLAN_ID-rework"
-  ```
-- enter-worktree — if slice or single-slice plan
-  - contains: `Enter a worktree forked from $SLICE_BRANCH to apply fixes to the existing PR branch`
-  ```sh
-  ./worktree-enter.sh --fork-from "$SLICE_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
-  ```
-- enter-worktree — if multi-slice plan
-  - contains: `Enter a worktree forked from $TARGET_BRANCH to apply fixes to the existing PR`
-  ```sh
-  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
-- commit-code — if slice or single-slice plan
+- commit-code
   ```sh
-  ./commit.sh --branch "$SLICE_BRANCH" -m "rework: address inspection feedback"
-  ```
-- commit-code — if multi-slice plan
-  ```sh
-  ./commit.sh --branch "$TARGET_BRANCH" -m "rework: address review feedback"
+  ./commit.sh --branch "$PR_BRANCH" -m "rework: address review feedback"
   ```
 - update-pr-body
   ```sh
@@ -487,7 +470,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   SLICE_ID="$ISSUE_ID"
   PR_NUMBER="{from slice body}"
   TARGET_BRANCH="{from slice/plan body}"
-  SLICE_BRANCH="{from slice body}"
+  PR_BRANCH="{from slice/plan body pr-branch field}"
   WORKTREE_PATH=".worktrees/$SLICE_NAME-merge"
   ```
 - pre-merge-check
@@ -495,13 +478,13 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   gh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
   ```
 - enter-worktree
-  - contains: `Enter a worktree forked from $SLICE_BRANCH (not $TARGET_BRANCH) so you are testing the slice code with the latest target merged in`
+  - contains: `Enter a worktree forked from $PR_BRANCH (not $TARGET_BRANCH) so you are testing the PR code with the latest target merged in`
   ```sh
-  ./worktree-enter.sh --fork-from "$SLICE_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
 - commit-code — if merge-needed
   ```sh
-  ./commit.sh --branch "$SLICE_BRANCH" -m "merge: resolve conflicts with $TARGET_BRANCH"
+  ./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts with $TARGET_BRANCH"
   ```
 - update-tracker — if tests-fail
   ```sh

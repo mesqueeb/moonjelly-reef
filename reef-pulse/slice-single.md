@@ -21,14 +21,15 @@ PLAN_ID="$ISSUE_ID"
 Take the fast path — skip the target branch, sub-issues, coverage matrix, and ratify. The plan becomes the slice:
 
 1. **Target branch = base branch.** Do not create a new branch. Add `target-branch` to the plan frontmatter, set to the same value as `base-branch`.
-2. **No sub-issues.** The plan IS the slice.
-3. **Write acceptance criteria on the plan.** Append an `## Acceptance criteria` section to the plan body with the criteria you drafted for the single slice.
-4. **No coverage matrix.** Success criteria and acceptance criteria are 1:1 — the mapping adds no information.
+2. **PR branch = placeholder.** Add `pr-branch: —` to the plan frontmatter. It will be filled in by implement.md when the branch is created.
+3. **No sub-issues.** The plan IS the slice.
+4. **Write acceptance criteria on the plan.** Append an `## Acceptance criteria` section to the plan body with the criteria you drafted for the single slice.
+5. **No coverage matrix.** Success criteria and acceptance criteria are 1:1 — the mapping adds no information.
 
 Assemble the updated plan body:
 
 ```sh
-PLAN_BODY="{plan body with target branch added to frontmatter and acceptance criteria appended}"
+PLAN_BODY="{plan body with target branch and pr-branch added to frontmatter and acceptance criteria appended}"
 ```
 
 ## 2. Tag to-implement

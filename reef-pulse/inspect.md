@@ -29,12 +29,12 @@ Set the post-fetch variables (after reading the issue body). Extract from frontm
 ```sh
 SLICE_NAME="{from slice body}"
 SLICE_ID="$ISSUE_ID"
-SLICE_BRANCH="{from slice body}"
+PR_BRANCH="{from slice/plan body pr-branch field}"
 TARGET_BRANCH="{from slice/plan body}"
 WORKTREE_PATH=".worktrees/$SLICE_NAME-inspect"
 ```
 
-For plan issues (no `parent-plan:` in frontmatter): use the PR's head branch as `SLICE_BRANCH`, and the plan's base branch as `TARGET_BRANCH`. Read success criteria from the plan body instead of acceptance criteria.
+For plan issues, read success criteria from the plan body instead of acceptance criteria.
 
 ## Mindset
 
@@ -53,13 +53,13 @@ A few things you naturally do:
 
 ### 1. Pull and verify
 
-Enter a worktree forked from $SLICE_BRANCH to review the implementation without disturbing the main checkout:
+Enter a worktree forked from $PR_BRANCH to review the implementation without disturbing the main checkout:
 
 ```sh
-WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$SLICE_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
 ```
 
-Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$SLICE_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$PR_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
 
 ```sh
 ./tracker.sh issue edit "$SLICE_ID" --add-label blocked-with-conflicts
@@ -97,7 +97,7 @@ Do these yourself — commit and push to the PR branch:
 
 ```sh
 # Only if you made cleanup commits
-./commit.sh --branch "$SLICE_BRANCH" -m "inspect: cleanup"
+./commit.sh --branch "$PR_BRANCH" -m "inspect: cleanup"
 ```
 
 ### 5. Document judgment calls

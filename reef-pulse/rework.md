@@ -24,55 +24,27 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-## Router
-
-After fetching the issue body, detect the issue type from its frontmatter:
-
-- **Slice** (has `parent-plan:` in frontmatter): follow the **slice path** below.
-- **Single-slice plan** (has `base branch:` and `type:` but no `parent-plan:`, and target branch equals base branch): follow the **slice path** below. Extract variables from plan frontmatter instead: use the PR's head branch as `SLICE_BRANCH`, and read acceptance criteria from the plan body.
-- **Multi-slice plan** (has `base branch:` and `type:` but no `parent-plan:`, and target branch differs from base branch): follow the **multi-slice plan path** below.
-
-## Set variables
-
-**IF slice or single-slice plan:**
+Set the post-fetch variables (after reading the issue body). Extract from frontmatter — works for slices, single-slice plans, and multi-slice plans:
 
 ```sh
-SLICE_NAME="{from slice body}"
+SLICE_NAME="{from issue body}"
 SLICE_ID="$ISSUE_ID"
-SLICE_BRANCH="{from slice body}"
-TARGET_BRANCH="{from slice/plan body}"
-PR_NUMBER="{from slice body}"
+PR_BRANCH="{from issue body pr-branch field}"
+TARGET_BRANCH="{from issue body}"
+PR_NUMBER="{from issue body}"
 WORKTREE_PATH=".worktrees/$SLICE_NAME-rework"
 ```
 
-**IF multi-slice plan:**
-
-```sh
-PLAN_ID="$ISSUE_ID"
-BASE_BRANCH="{from plan body}"
-TARGET_BRANCH="{from plan body}"
-PR_NUMBER="{from plan body or PR search}"
-WORKTREE_PATH=".worktrees/$PLAN_ID-rework"
-```
+For plan issues, read success criteria from the plan body instead of acceptance criteria.
 
 ## Process
 
 ### 1. Git prep
 
-**IF slice or single-slice plan:**
-
-Enter a worktree forked from $SLICE_BRANCH to apply fixes to the existing PR branch:
+Enter a worktree forked from $PR_BRANCH to apply fixes to the existing PR:
 
 ```sh
-WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$SLICE_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
-```
-
-**IF multi-slice plan:**
-
-Enter a worktree forked from $TARGET_BRANCH to apply fixes to the existing PR:
-
-```sh
-WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
 ```
 
 Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to the working branch using explicit refspec (no force), then continue. If unresolvable:
@@ -112,16 +84,8 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ### 6. Push fixes
 
-**IF slice or single-slice plan:**
-
 ```sh
-./commit.sh --branch "$SLICE_BRANCH" -m "rework: address inspection feedback"
-```
-
-**IF multi-slice plan:**
-
-```sh
-./commit.sh --branch "$TARGET_BRANCH" -m "rework: address review feedback"
+./commit.sh --branch "$PR_BRANCH" -m "rework: address review feedback"
 ```
 
 ### 7. Update the PR description
