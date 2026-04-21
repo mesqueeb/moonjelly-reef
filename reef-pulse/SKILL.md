@@ -89,6 +89,12 @@ For each item, spawn a sub-agent with: `"Read and follow $SKILL_DIR/{file}. Targ
 | `to-merge`       | `$SKILL_DIR/merge.md`       |
 | `to-ratify`      | `$SKILL_DIR/ratify.md`      |
 
+After dispatching, record the count of automated phases dispatched this iteration:
+
+```sh
+AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
+```
+
 ### Step 3. Log phase metrics
 
 After all dispatched agents complete, collect from each: task notification metadata (duration, tokens, tool uses) and the structured handoff variables (`nextPhase`, `planPr`, `summary`). Group results by plan.
@@ -146,11 +152,13 @@ Example:
 | **Total** | | **5m 30s** | **62 359** | **87** | | | |
 ```
 
-### Step 4. Present human (🤿) items (--hitl only)
+### Step 4. Present human (🤿) items (first iteration only)
 
-If running in `--afk` mode, skip this step entirely.
+Skip this step if running in `--afk` mode or if this is a recursive iteration (not the first iteration).
 
-If running in `--hitl` mode, present human-required items immediately without waiting for dispatched agents to complete. Automated agents run in the background — metrics collection (Step 3) happens after agents complete but must not block the human workflow. Present human items as soon as dispatch is done:
+Human items (`to-scope`, `to-land`) are presented only in the first iteration of the pulse, not in recursive AFK calls. This ensures that HITL items are shown once to the user and not repeated as the pulse recurses through automated work.
+
+If running in `--hitl` mode and this is the first iteration, present human-required items immediately without waiting for dispatched agents to complete. Automated agents run in the background — metrics collection (Step 3) happens after agents complete but must not block the human workflow. Present human items as soon as dispatch is done:
 
 | Tag        | Skill         | Presentation                                                              |
 | ---------- | ------------- | ------------------------------------------------------------------------- |
@@ -197,9 +205,17 @@ Check if a durable cron for `/reef-pulse --afk` already exists by calling `CronL
      CronCreate cron="7 * * * *" prompt="/reef-pulse --afk" durable=true
 ```
 
-### Step 6. Release lock
+### Step 6. Recurse or exit
 
-On final exit (nothing left to dispatch), delete the pulse.lock file. The lock must only be released when the pulse is truly done — not between iterations (future: the self-perpetuating loop will keep the lock across iterations).
+After reporting, check whether to recurse or exit.
+
+**If `AUTOMATED_DISPATCHES` > 0**: the pulse dispatched automated work this iteration. After agents return and metrics are logged, recursively invoke `/reef-pulse --afk` on the main session. The recursive call is always `--afk`, even if the first invocation was HITL. The recursive call happens on the main session, never as a sub-agent — this ensures the loop runs sequentially (scan, dispatch, wait, scan again) rather than spawning nested agents. Do NOT release the lock between iterations; the lock persists across the entire recursive chain.
+
+**If `AUTOMATED_DISPATCHES` == 0**: no automated work was dispatched this iteration. The pulse has nothing left to do. Delete the pulse.lock file and exit. The lock must only be released when the pulse is truly done — zero automated dispatches means the loop naturally terminates.
+
+### Step 7. Release lock
+
+This step only runs when `AUTOMATED_DISPATCHES` == 0 (the exit path from Step 6). To release the lock, delete the pulse.lock file.
 
 Exit.
 

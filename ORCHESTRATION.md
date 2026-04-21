@@ -47,6 +47,10 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   - contains: `$SKILL_DIR/{file}`
 - set-variables
   ```sh
+  AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
+  ```
+- set-variables
+  ```sh
   ISSUE_ID="{from dispatched items}"
   ISSUE_BODY="{current issue body with metrics rows inserted into the table}"
   ```
@@ -63,7 +67,15 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   gh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
   ```
-- release-lock
+- present-human-items — if HITL mode and first iteration
+  - contains: `to-scope`
+  - contains: `to-land`
+  - contains: `first iteration`
+- recurse — if AUTOMATED_DISPATCHES > 0
+  - contains: `/reef-pulse --afk`
+  - contains: `main session`
+  - contains: `never as a sub-agent`
+- release-lock — if AUTOMATED_DISPATCHES == 0
   - contains: `pulse.lock`
   - contains: `delete`
 
