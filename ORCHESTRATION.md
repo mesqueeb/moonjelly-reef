@@ -33,13 +33,48 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   SKILL_DIR="{base directory for this skill}"
   TRACKER_BRANCH="{from config.md}" # e.g. main
+  LOCK_FILE=".agents/moonjelly-reef/pulse.lock"
   ```
+- acquire-lock
+  - contains: `pulse.lock`
+  - contains: `start timestamp`
+  - contains: `override`
 - checkout-tracker-branch — if local-tracker-committed
   ```sh
   git fetch origin "$TRACKER_BRANCH" && git checkout "$TRACKER_BRANCH" && git pull
   ```
+- print-session-header — if first iteration
+  - contains: `MOONJELLY REEF`
+  - contains: `SESSION LOG`
+- print-pulse-header
+  - contains: `PULSE`
+  - contains: `timestamp`
 - phase-specific
   - contains: `$SKILL_DIR/{file}`
+- print-dispatched-agents
+  - contains: `phase emoji`
+  - contains: `𐃆🐋`
+  - contains: `to-slice`
+  - contains: `to-implement`
+  - contains: `to-inspect`
+  - contains: `to-rework`
+  - contains: `to-merge`
+  - contains: `to-ratify`
+  - contains: `to-await-waves`
+- set-variables
+  ```sh
+  AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
+  ```
+- print-lore-snippet
+  - contains: `lore snippet`
+  - contains: `elapsed time`
+  - contains: `prior snippets`
+  - contains: `continues the narrative`
+  - contains: `Ghibli ocean vibes`
+- print-return-results
+  - contains: `phase emoji`
+  - contains: `›`
+  - contains: `𐃆🐋`
 - set-variables
   ```sh
   ISSUE_ID="{from dispatched items}"
@@ -58,6 +93,27 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   gh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
   ```
+- present-human-items — if HITL mode and first iteration
+  - contains: `to-scope`
+  - contains: `to-land`
+  - contains: `first iteration`
+- recurse — if AUTOMATED_DISPATCHES > 0
+  - contains: `/reef-pulse --afk`
+  - contains: `main session`
+  - contains: `never as a sub-agent`
+- print-session-complete — if AUTOMATED_DISPATCHES == 0
+  - contains: `SESSION COMPLETE`
+  - contains: `Duration`
+  - contains: `Pulses`
+  - contains: `Agents`
+  - contains: `Landed`
+  - contains: `Human`
+  - contains: `Idle`
+- print-full-story — if AUTOMATED_DISPATCHES == 0
+  - contains: `full collected story`
+- release-lock — if AUTOMATED_DISPATCHES == 0
+  - contains: `pulse.lock`
+  - contains: `delete`
 
 ### [/reef-scope](./reef-scope/SKILL.md)
 

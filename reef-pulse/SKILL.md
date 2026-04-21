@@ -19,13 +19,23 @@ Capture the skill base directory (provided by the harness as "Base directory for
 SKILL_DIR="{base directory for this skill}"
 ```
 
-## 0. Sync tracker branch (local-tracker-committed only)
+## 0a. Acquire lock
 
-If the tracker type in config is `local-tracker-committed`, the tracker files live in a git-tracked directory on a specific branch. Sync it before scanning:
+Before doing anything else, check for an existing pulse.lock file.
 
 ```sh
 TRACKER_BRANCH="{from config.md}" # e.g. main
+LOCK_FILE=".agents/moonjelly-reef/pulse.lock"
 ```
+
+If the pulse.lock file exists, another pulse may already be running (or a previous session crashed without cleaning up).
+
+- If `pulse.lock` exists, read the start timestamp from it, calculate how long the existing pulse has been running, and report this to the user: "A pulse has been running for {elapsed}. This may be from a crashed session. Override?" In AFK mode, override automatically (the lock is stale if we're in a cron). In HITL mode, ask the user.
+- If `pulse.lock` does not exist (or the user chose to override), create it with a start timestamp (ISO 8601 UTC) and continue.
+
+## 0b. Sync tracker branch (local-tracker-committed only)
+
+If the tracker type in config is `local-tracker-committed`, the tracker files live in a git-tracked directory on a specific branch. Sync it before scanning. `TRACKER_BRANCH` was already set in the previous step.
 
 ```sh
 git fetch origin "$TRACKER_BRANCH" && git checkout "$TRACKER_BRANCH" && git pull
@@ -41,6 +51,26 @@ Detect the mode from how this skill was invoked:
 - `/reef-pulse --afk` → **AFK mode**: dispatch automated work only. Skip human items. Designed for cron.
 
 ## The pulse
+
+### Step 0c. Print session header (first iteration only)
+
+If this is the first iteration of the pulse (not a recursive call), print the session header:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  🪼  MOONJELLY REEF  ·  SESSION LOG                         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+Initialize an empty lore story list to collect lore snippets across the session. Initialize the pulse counter to 0.
+
+### Step 0d. Print pulse header
+
+At the start of each pulse iteration (including recursive calls), increment the pulse counter and print the pulse header with the current timestamp:
+
+```
+── PULSE {N} ──────────────────────────────────────── {HH:MM:SS} ──
+```
 
 ### Step 1. Scan
 
@@ -78,6 +108,68 @@ For each item, spawn a sub-agent with: `"Read and follow $SKILL_DIR/{file}. Targ
 | `to-rework`      | `$SKILL_DIR/rework.md`      |
 | `to-merge`       | `$SKILL_DIR/merge.md`       |
 | `to-ratify`      | `$SKILL_DIR/ratify.md`      |
+
+### Step 2b. Print dispatched agents
+
+Immediately after dispatching, print each dispatched agent with its phase emoji. Use the phase emoji from the README lore for each phase:
+
+| Tag              | Phase emoji |
+| ---------------- | ----------- |
+| `to-slice`       | `𐃆🐋`       |
+| `to-await-waves` | `🪸`        |
+| `to-implement`   | `🐙`        |
+| `to-inspect`     | `🧿`        |
+| `to-rework`      | `🦀`        |
+| `to-merge`       | `🐢`        |
+| `to-ratify`      | `🦭`        |
+
+The narwhal (slice phase) always uses both characters `𐃆🐋`, not just the emoji.
+
+```
+  𐃆🐋  #34  "auth token rotation"
+  🐙  #55  "user profile endpoint"
+  🧿  #53  "db migration safety"
+```
+
+After dispatching, record the count of automated phases dispatched this iteration:
+
+```sh
+AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
+```
+
+### Step 2c. Print lore snippet
+
+After all dispatched agents return, generate a lore snippet. This is a 1-2 sentence story fragment in playful Ghibli ocean vibes. Each lore snippet must read all prior snippets from the session and continues the narrative — the lore forms a continuous story, not isolated fragments. The story should be influenced by what actually happened in the pulse results (e.g., reworks are setbacks, successful inspects are triumphs, long waits are boring). Print it with the elapsed time since dispatch:
+
+```
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+  +8m00s  "The moonjelly sent three creatures into the dark and
+           waited, humming to itself."
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+```
+
+Append the lore snippet to the session's lore story list.
+
+### Step 2d. Print return results
+
+After agents return, print each result with its phase emoji and a `›` transition arrow showing the phase transition:
+
+```
+  𐃆🐋  #34   3m12s   18k   slice › implement
+  🐙  #55   4m45s   24k   implement › inspect
+  🦀  #53   1m08s    9k   inspect › rework
+```
+
+The narwhal (slice phase) always uses both characters `𐃆🐋`. Each line shows: phase emoji, issue number, duration, token count, and the transition (previous tag `›` next tag from handoff).
+
+Also print human and idle items:
+
+```
+  🤿  #60  to-scope
+  🤿  #48  to-land
+  ·   #57  idle — awaiting #55
+  ·   #56  idle
+```
 
 ### Step 3. Log phase metrics
 
@@ -138,11 +230,13 @@ Example:
 <!-- end metrics table -->
 ```
 
-### Step 4. Present human (🤿) items (--hitl only)
+### Step 4. Present human (🤿) items (first iteration only)
 
-If running in `--afk` mode, skip this step entirely.
+Skip this step if running in `--afk` mode or if this is a recursive iteration (not the first iteration).
 
-If running in `--hitl` mode, present human-required items immediately without waiting for dispatched agents to complete. Automated agents run in the background — metrics collection (Step 3) happens after agents complete but must not block the human workflow. Present human items as soon as dispatch is done:
+Human items (`to-scope`, `to-land`) are presented only in the first iteration of the pulse, not in recursive AFK calls. This ensures that HITL items are shown once to the user and not repeated as the pulse recurses through automated work.
+
+If running in `--hitl` mode and this is the first iteration, present human-required items immediately without waiting for dispatched agents to complete. Automated agents run in the background — metrics collection (Step 3) happens after agents complete but must not block the human workflow. Present human items as soon as dispatch is done:
 
 | Tag        | Skill         | Presentation                                                              |
 | ---------- | ------------- | ------------------------------------------------------------------------- |
@@ -151,33 +245,52 @@ If running in `--hitl` mode, present human-required items immediately without wa
 
 > Note: reef-scope and reef-land remain user-facing skills invoked via slash commands. Only the automated (🌊) phases are dispatched via file references.
 
-### Step 5. Report and exit
+### Step 5. Recurse or exit
 
-Print a summary of what was dispatched:
+After metrics are logged, check whether to recurse or exit.
 
-```
-🪼 Pulse complete.
+**If `AUTOMATED_DISPATCHES` > 0**: the pulse dispatched automated work this iteration. After agents return and metrics are logged, recursively invoke `/reef-pulse --afk` on the main session. The recursive call is always `--afk`, even if the first invocation was HITL. The recursive call happens on the main session, never as a sub-agent — this ensures the loop runs sequentially (scan, dispatch, wait, scan again) rather than spawning nested agents. Do NOT release the lock between iterations; the lock persists across the entire recursive chain. Pass the accumulated lore story list and pulse counter to the next iteration.
 
-  Dispatched:
-    🌊 implement.md #55 (auth-endpoint)
-    🌊 implement.md #56 (user-profile)
-    🌊 inspect.md #53 (db-migration)
-    🌊 merge.md #51 (schema-setup)
+**If `AUTOMATED_DISPATCHES` == 0**: no automated work was dispatched this iteration. The pulse has nothing left to do. Continue to Step 6.
 
-  Awaiting human:
-    🤿 to-scope: #60 (new-dashboard-idea)
-    🤿 to-land: #42 (token-auth-migration)
+### Step 6. Print SESSION COMPLETE and full story
 
-  Idle:
-    ⏳ to-await-waves: #57 (legacy-compat) — blocked by #55, #56
-```
+This step only runs when `AUTOMATED_DISPATCHES` == 0 (the exit path from Step 5).
 
-If nothing was actionable:
+First, generate a final lore snippet for the empty pulse (the moonjelly finding nothing left to do). Append it to the lore story list.
+
+Then print the SESSION COMPLETE box with session stats:
 
 ```
-🪼 Pulse complete. Nothing to dispatch.
+┌─────────────────────────────────────────────────────────────┐
+│  SESSION COMPLETE                                            │
+│                                                              │
+│  Duration    17m00s                                          │
+│  Pulses      4                                               │
+│  Agents      7  dispatches across 3 active pulses            │
+│  Landed      #34  #53                                        │
+│  Human       #60  #48                                        │
+│  Idle        #56  #57                                        │
+└─────────────────────────────────────────────────────────────┘
+```
 
-  Run /reef-scope to start something new.
+- **Duration**: total wall-clock time since the session started (from the lock file timestamp)
+- **Pulses**: total number of pulse iterations (including this final empty one)
+- **Agents**: total number of sub-agent dispatches across all active pulses (pulses that dispatched at least one agent)
+- **Landed**: issues that reached `to-land` or `landed` during this session
+- **Human**: issues that need human attention (`to-scope`, `to-land`)
+- **Idle**: issues that are blocked or have no actionable tag
+
+After the SESSION COMPLETE box, print the full collected story as a single block — all lore snippets from the session concatenated into a continuous narrative:
+
+```
+  The moonjelly sent three creatures into the dark and waited,
+  humming to itself. The crab came back sulking — it had dropped
+  a stitch and needed another pass. The octopus just kept working.
+  The barreleye peered through both pieces with its strange glass
+  eyes and — for once — found nothing wrong. The moonjelly found
+  nothing left to chase. It settled onto the reef floor, bells
+  dimming, and listened to the quiet.
 ```
 
 **Autopilot hint** (show only when pulse was triggered manually, not from a cron):
@@ -188,6 +301,10 @@ Check if a durable cron for `/reef-pulse --afk` already exists by calling `CronL
   💡 Run this on autopilot:
      CronCreate cron="7 * * * *" prompt="/reef-pulse --afk" durable=true
 ```
+
+### Step 7. Release lock
+
+This step only runs when `AUTOMATED_DISPATCHES` == 0 (the exit path from Step 5). To release the lock, delete the pulse.lock file.
 
 Exit.
 
