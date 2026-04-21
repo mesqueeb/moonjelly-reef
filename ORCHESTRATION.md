@@ -346,6 +346,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   REPORT="{report-content}" # starts with: closes #$SLICE_ID $SLICE_NAME\n\n
   ```
 - pr-create
+  - contains: `closes #$SLICE_ID $SLICE_NAME`
   ```sh
   gh pr create --base "$TARGET_BRANCH" --title "$SLICE_NAME" --body "$REPORT" --label to-inspect
   ```
@@ -651,8 +652,9 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ./commit.sh --branch "$TARGET_BRANCH" -m "ratify: add documentation"
   ```
 - submit-report
+  - contains: `closes #$PLAN_ID $PLAN_TITLE`
   ```sh
-  REPORT="{ratify-report}" # <details><summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+  REPORT="{ratify-report}" # starts with: closes #$PLAN_ID $PLAN_TITLE\n\n<details><summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
   # if no PR exists:
   gh pr create --base "$BASE_BRANCH" --head "$TARGET_BRANCH" --title "$PLAN_TITLE" --body "$REPORT" --label to-ratify
   # if PR exists, append:
@@ -660,6 +662,14 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q .body)
   PR_BODY="$PR_BODY\n\n$REPORT"
   gh pr edit "$PR_NUMBER" --body "$PR_BODY"
+  ```
+- set-variables
+  ```sh
+  PLAN_BODY="{plan body with PR reference and pr-branch updated}"
+  ```
+- update-plan-body
+  ```sh
+  ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
   ```
 - update-tracker
   - pass: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land` + `gh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-land`

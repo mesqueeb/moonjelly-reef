@@ -178,8 +178,10 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 Format the report as a collapsible block with local timestamp (`yyyy/MM/dd HH:mm`):
 
+The PR body must start with the "closes" reference, followed by the ratify report:
+
 ```sh
-REPORT="{ratify-report}" # <details><summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+REPORT="{ratify-report}" # starts with: closes #$PLAN_ID $PLAN_TITLE\n\n<details><summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
 # if no PR exists:
 gh pr create --base "$BASE_BRANCH" --head "$TARGET_BRANCH" --title "$PLAN_TITLE" --body "$REPORT" --label to-ratify
 # if PR exists, append:
@@ -187,6 +189,13 @@ PR_NUMBER="{from pr create output or existing PR}"
 PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q .body)
 PR_BODY="$PR_BODY\n\n$REPORT"
 gh pr edit "$PR_NUMBER" --body "$PR_BODY"
+```
+
+Persist the PR reference on the plan issue body so downstream phases can find it. Update the `pr-branch` frontmatter field to `$TARGET_BRANCH` (the branch the PR lives on).
+
+```sh
+PLAN_BODY="{plan body with PR reference and pr-branch updated}"
+./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
 ```
 
 ### 9. Tag
