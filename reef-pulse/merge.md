@@ -33,7 +33,7 @@ SLICE_NAME="{from slice body}"
 SLICE_ID="$ISSUE_ID"
 PR_NUMBER="{from slice body}"
 TARGET_BRANCH="{from slice/plan body}"
-SLICE_BRANCH="{from slice body}"
+PR_BRANCH="{from slice/plan body pr-branch field}"
 WORKTREE_PATH=".worktrees/$SLICE_NAME-merge"
 ```
 
@@ -47,13 +47,13 @@ Check the merge state of the PR:
 gh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
 ```
 
-Enter a worktree forked from $SLICE_BRANCH (not $TARGET_BRANCH) so you are testing the slice code with the latest target merged in:
+Enter a worktree forked from $PR_BRANCH (not $TARGET_BRANCH) so you are testing the PR code with the latest target merged in:
 
 ```sh
-WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$SLICE_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
 ```
 
-Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$SLICE_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$PR_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
 
 ```sh
 ./tracker.sh issue edit "$SLICE_ID" --add-label blocked-with-conflicts
@@ -64,7 +64,7 @@ Stop — do not proceed.
 Run the full test suite. If tests pass, commit and push:
 
 ```sh
-./commit.sh --branch "$SLICE_BRANCH" -m "merge: resolve conflicts with $TARGET_BRANCH"
+./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts with $TARGET_BRANCH"
 ```
 
 If the test suite fails after merging, tag the slice `to-rework` and stop:

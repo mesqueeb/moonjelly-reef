@@ -89,6 +89,7 @@ Slice body template:
 parent-plan: "#$PLAN_ID"
 base-branch: $BASE_BRANCH
 target-branch: $TARGET_BRANCH
+pr-branch: —
 type: $PLAN_TYPE
 
 ---
@@ -122,10 +123,10 @@ Label each slice: `to-implement` if no blockers, `to-await-waves` if blocked.
 
 ## 5. Update the plan
 
-Append the coverage matrix and a listing of all created sub-issues with their tags to the plan body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-ratify` once all slices are done.
+Add `pr-branch: $TARGET_BRANCH` to the plan frontmatter (for multi-slice, the plan PR lives on the target branch). Append the coverage matrix and a listing of all created sub-issues with their tags to the plan body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-ratify` once all slices are done.
 
 ```sh
-PLAN_BODY="{plan body with coverage matrix appended}"
+PLAN_BODY="{plan body with pr-branch in frontmatter and coverage matrix appended}"
 ```
 
 ```sh

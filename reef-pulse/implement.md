@@ -143,7 +143,7 @@ The PR targets the **target branch** (which equals `{base-branch}` for single-sl
 
 ```sh
 PR_NUMBER="{from gh pr create output}"
-SLICE_BODY="{slice body with PR reference appended}"
+SLICE_BODY="{slice/plan body with PR reference and pr-branch updated}"
 ```
 
 ## 6. Document judgment calls
@@ -152,9 +152,10 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ## 7. Update the slice and tag
 
-Persist the PR reference on the slice body so downstream phases (inspect, rework, merge) can find it.
+Persist the PR reference on the slice/plan body so downstream phases (inspect, rework, merge) can find it. Update the `pr-branch` frontmatter field to `$SLICE_BRANCH` (the branch the PR lives on). For single-slice plans where `pr-branch` was set to `—` by slice-single.md, this fills in the actual value.
 
 ```sh
+SLICE_BODY="{slice/plan body with PR reference and pr-branch updated}"
 ./tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY" --remove-label to-implement --add-label to-inspect
 ```
 

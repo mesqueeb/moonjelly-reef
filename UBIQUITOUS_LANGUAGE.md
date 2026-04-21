@@ -46,7 +46,6 @@
 | **rework** | Fix issues flagged by the inspector | fix, address feedback |
 | **merge** | Merge an approved slice PR (multi-slice) or hand off to the diver (single-slice) | land (that's a different phase), integrate |
 | **ratify** | Holistic review of the entire target branch — only for multi-slice | final review, sign-off |
-| **rescan** | Analyze gaps found by ratify and create new slices | remediate, patch |
 | **land** | The diver reviews the finished work and merges to the base branch | finalise, approve, ship |
 
 ## Tags

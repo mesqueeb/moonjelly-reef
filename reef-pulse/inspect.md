@@ -8,9 +8,9 @@
 
 ## Input
 
-This skill requires a specific slice: e.g. `#55` or `my-feature/001-auth-endpoint`.
+This skill requires a specific issue (slice or plan): e.g. `#55` or `my-feature/001-auth-endpoint`.
 
-Read the slice to find the PR reference.
+Read the issue to find the PR reference.
 
 Set the pre-fetch variables:
 
@@ -24,15 +24,17 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Set the post-fetch variables (after reading the slice body):
+Set the post-fetch variables (after reading the issue body):
 
 ```sh
-SLICE_NAME="{from slice body}"
+SLICE_NAME="{from slice body or plan-id}"
 SLICE_ID="$ISSUE_ID"
-SLICE_BRANCH="{from slice body}"
+PR_BRANCH="{from slice/plan body pr-branch field}"
 TARGET_BRANCH="{from slice/plan body}"
 WORKTREE_PATH=".worktrees/$SLICE_NAME-inspect"
 ```
+
+For plan issues, read success criteria from the plan body instead of acceptance criteria.
 
 ## Mindset
 
@@ -51,13 +53,13 @@ A few things you naturally do:
 
 ### 1. Pull and verify
 
-Enter a worktree forked from $SLICE_BRANCH to review the implementation without disturbing the main checkout:
+Enter a worktree forked from $PR_BRANCH to review the implementation without disturbing the main checkout:
 
 ```sh
-WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$SLICE_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
 ```
 
-Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$SLICE_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$PR_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
 
 ```sh
 ./tracker.sh issue edit "$SLICE_ID" --add-label blocked-with-conflicts
@@ -95,7 +97,7 @@ Do these yourself — commit and push to the PR branch:
 
 ```sh
 # Only if you made cleanup commits
-./commit.sh --branch "$SLICE_BRANCH" -m "inspect: cleanup"
+./commit.sh --branch "$PR_BRANCH" -m "inspect: cleanup"
 ```
 
 ### 5. Document judgment calls

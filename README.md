@@ -118,7 +118,7 @@ Design principles:
 <details>
 <summary>🤿 <b><code>/reef-land</code></b> — review and land the work</summary>
 
-Finds the open PR for the issue, summarizes the report, and checks for PR comments. If the diver has concerns or left PR comments, runs an interview to scope the change requests into concrete gaps, then tags `to-rescan`. If approved, merges and closes.
+Finds the open PR for the issue, summarizes the report, and checks for PR comments. If the diver has concerns or left PR comments, runs an interview to scope the change requests into concrete gaps, then tags `to-rework`. If approved, merges and closes.
 
 | source file | [`reef-land/SKILL.md`](reef-land/SKILL.md) |
 | :---------- | :----------------------------------------- |
@@ -209,7 +209,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 <details>
 <summary>🌊 <b><code>to-ratify</code></b> 🏷️</summary>
 
-🔷　multi-slice only. Holistic review of the entire target branch — checking the composed whole, not the parts. Verify every success criterion end-to-end, run the full suite, produce the aggregate report, tag `to-land` or `to-rescan`.
+🔷　multi-slice only. Holistic review of the entire target branch — checking the composed whole, not the parts. Verify every success criterion end-to-end, run the full suite, produce the aggregate report, tag `to-land` or `to-rework` on gaps.
 
 | source file | [`reef-pulse/ratify.md`](reef-pulse/ratify.md) |
 | :---------- | :--------------------------------------------- |
@@ -218,17 +218,6 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 
 <p align="right">🦭<br /><sub>The walrus hauls itself onto the ice floe, surveys the entire colony with slow, deliberate eyes, and counts every last pup — nothing is declared safe until the old bull has seen it all.</sub></p>
 
-<details>
-<summary>🌊 <b><code>to-rescan</code></b> 🏷️</summary>
-
-Analyze gaps found by ratify, re-review the entire plan, create new slices to address each gap, update the coverage matrix. The reef picks up the new slices on the next pulse.
-
-| source file | [`reef-pulse/rescan.md`](reef-pulse/rescan.md) |
-| :---------- | :--------------------------------------------- |
-
-</details>
-
-<p align="right">💡🐡<br /><sub>An anglerfish drifts through absolute darkness, its lure casting light on creatures no one knew were lurking in the deep.</sub></p>
 
 ## Phase metrics
 
