@@ -13,6 +13,18 @@ For MCP trackers (ClickUp, Jira, Linear): use equivalent MCP tool calls.
 Only variables referenced in an op's cmd/tracker field belong in set-variables.
 Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs in the .md, not here.
 
+## Ticket types in the slice lifecycle
+
+Three types of tickets flow through the slice lifecycle phases (implement → inspect → rework → merge):
+
+| Type                                  | base-branch | target-branch | pr-branch   |
+| ------------------------------------- | ----------- | ------------- | ----------- |
+| **A** Single-slice plan               | main        | main          | feat/042    |
+| **B** Multi-slice slice               | main        | feat/parent   | feat/part-1 |
+| **C** Multi-slice plan (after rework) | main        | feat/parent   | feat/parent |
+
+All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to fork from, commit to, and review.
+
 ## Skills
 
 ### [/reef-pulse](./reef-pulse/SKILL.md)
@@ -607,4 +619,3 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   summary="Ratify {PASS|GAPS FOUND} — {one-line summary}"
   planIssueMetrics="{metrics rows from plan issue body, or empty if none}"
   ```
-
