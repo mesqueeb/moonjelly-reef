@@ -375,7 +375,7 @@ cmd_close() {
   _tag="$(extract_tag "$_file")"
   _dir="$(dirname "$_file")"
   _basename="$(basename "$_file")"
-  _new_basename="$(echo "$_basename" | sed "s/\\[$_tag\\]/[done]/")"
+  _new_basename="$(echo "$_basename" | sed "s/\\[$_tag\\]/[landed]/")"
   mv "$_file" "$_dir/$_new_basename"
 }
 
