@@ -24,10 +24,10 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Set the post-fetch variables (after reading the issue body). Extract from frontmatter — works for both slices and plans:
+Set the post-fetch variables (after reading the issue body):
 
 ```sh
-SLICE_NAME="{from slice body}"
+SLICE_NAME="{from slice body or plan-id}"
 SLICE_ID="$ISSUE_ID"
 PR_BRANCH="{from slice/plan body pr-branch field}"
 TARGET_BRANCH="{from slice/plan body}"

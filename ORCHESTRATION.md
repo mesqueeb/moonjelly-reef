@@ -313,7 +313,7 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
   ```
 - set-variables
   ```sh
-  SLICE_NAME="{from slice body}"
+  SLICE_NAME="{from slice body or plan-id}"
   SLICE_ID="$ISSUE_ID"
   PR_BRANCH="{from slice/plan body pr-branch field}"
   TARGET_BRANCH="{from slice/plan body}"
