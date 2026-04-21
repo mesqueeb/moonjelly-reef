@@ -50,17 +50,17 @@ Fetch its labels:
 
 For any sibling tagged `to-await-waves`, check their `blocked-by` list. If this merged slice was the last blocker, leave them as `to-await-waves` — the next pulse will dispatch the await-waves phase to re-review their plan before promoting.
 
-Check: are ALL slices for the plan now tagged `done`? If all slices are done, change the plan label from `in-progress` to `to-ratify` (step 4). If not all done, do nothing — more slices are still in progress.
+Check: are ALL slices for the plan now tagged `landed`? If all slices are landed, change the plan label from `in-progress` to `to-ratify` (step 4). If not all landed, do nothing — more slices are still in progress.
 
 ## 3. Close the slice
 
-Close the slice issue. Add label `done`. Remove `to-merge`:
+Close the slice issue. Add label `landed`. Remove `to-merge`:
 
 ```sh
 ./tracker.sh issue close "$SLICE_ID"
 ```
 
-## 4. Update plan tag — if all slices done
+## 4. Update plan tag — if all slices landed
 
 ```sh
 ./tracker.sh issue edit "$PLAN_ID" --remove-label in-progress --add-label to-ratify
@@ -73,7 +73,7 @@ Document judgment calls made during this phase on the PR. Only document decision
 ## Handoff
 
 ```sh
-nextPhase="to-ratify" # or "in-progress" if not all slices done
+nextPhase="to-ratify" # or "in-progress" if not all slices landed
 planPr="—" # multi-slice: no plan PR yet
 summary="Slice {name} merged — {N} of {total} slices complete"
 ```
