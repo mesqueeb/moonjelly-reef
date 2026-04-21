@@ -121,3 +121,4 @@ summary="Rework complete — addressed review feedback"
 ```
 
 Report these three variables to the caller.
+
