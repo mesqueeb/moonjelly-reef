@@ -115,6 +115,7 @@ Metrics section format:
 | Phase | Target    | Duration  | Tokens | Tool uses | Outcome      | Date               |
 | ----- | --------- | --------- | ------ | --------- | ------------ | ------------------ |
 | scope | #$PLAN_ID | $DURATION | —      | —         | plan created | {yyyy-MM-dd HH:mm} |
+<!-- end metrics table -->
 ```
 
 ## Handoff

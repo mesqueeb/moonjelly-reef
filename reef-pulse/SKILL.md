@@ -92,6 +92,7 @@ After all dispatched agents complete, collect from each: task notification metad
 | --------- | ------ | -------- | ------ | --------- | ------------- | ---------------- |
 | implement | #55    | 42s      | 12 340 | 18        | ✅ PR created | 2026-04-20 14:30 |
 | inspect   | #53    | 25s      | 8 200  | 12        | ✅ passed     | 2026-04-20 14:31 |
+<!-- end metrics table -->
 ```
 
 No timestamp in the header. Each row gets a `Date` column (`yyyy-MM-dd HH:mm`).
@@ -105,7 +106,7 @@ No timestamp in the header. Each row gets a `Date` column (`yyyy-MM-dd HH:mm`).
 
 #### 3a. Write metrics to the plan issue
 
-Read the current plan issue body. If a `### 🪼 Pulse metrics` table exists, insert the new row(s) at the end of the table (after the last `|...|` row, before any subsequent content like `<details>` blocks). If no table exists, append it to the end of the body.
+Read the current plan issue body. If a `### 🪼 Pulse metrics` table exists, insert the new row(s) immediately above the `<!-- end metrics table -->` sentinel. If no table exists, append it to the end of the body (including the sentinel after the last row).
 
 ```sh
 ISSUE_ID="{from dispatched items}"
@@ -115,7 +116,7 @@ ISSUE_BODY="{current issue body with metrics rows inserted into the table}"
 
 #### 3b. Write metrics to the plan PR
 
-Use `planPr` from the handoff to determine the target PR. If `planPr` is `—`, no plan PR exists yet — skip this sub-step. Otherwise, read the current plan PR body and insert the same metrics rows into the existing `### 🪼 Pulse metrics` table (after the last `|...|` row, before any subsequent content). If no table exists, append it to the end.
+Use `planPr` from the handoff to determine the target PR. If `planPr` is `—`, no plan PR exists yet — skip this sub-step. Otherwise, read the current plan PR body and insert the same metrics rows immediately above the `<!-- end metrics table -->` sentinel. If no table exists, append it to the end (including the sentinel after the last row).
 
 ```sh
 PLAN_PR_NUMBER="$planPr" # from handoff — never read issue bodies for this
@@ -134,6 +135,7 @@ Example:
 | slice | #15 | 45s | 8 100 | 10 | slices created | 2026/04/18 | 09:05 |
 | ratify | — | 1m 5s | 15 200 | 20 | pass | 2026/04/20 | 14:35 |
 | **Total** | | **5m 30s** | **62 359** | **87** | | | |
+<!-- end metrics table -->
 ```
 
 ### Step 4. Present human (🤿) items (--hitl only)
