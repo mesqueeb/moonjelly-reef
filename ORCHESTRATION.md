@@ -491,7 +491,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  DEPENDENCY_ID="{from slice blocked-by list}"
+  DEPENDENCY_ID="{from frontmatter blocked-by field}"
   ```
 - dep-check
   ```sh

@@ -91,6 +91,7 @@ base-branch: $BASE_BRANCH
 target-branch: $TARGET_BRANCH
 pr-branch: —
 type: $PLAN_TYPE
+blocked-by: "#{issue-number}, #{issue-number}"  # omit if no blockers
 
 ---
 
@@ -103,10 +104,6 @@ type: $PLAN_TYPE
 - [ ] {criterion 1}
 - [ ] {criterion 2}
 - [ ] {criterion 3}
-
-## Blocked by
-
-- #{issue-number} {title} (or "None — can start immediately")
 
 ## Success criteria covered
 
