@@ -52,6 +52,26 @@ Detect the mode from how this skill was invoked:
 
 ## The pulse
 
+### Step 0c. Print session header (first iteration only)
+
+If this is the first iteration of the pulse (not a recursive call), print the session header:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  🪼  MOONJELLY REEF  ·  SESSION LOG                         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+Initialize an empty lore story list to collect lore snippets across the session. Initialize the pulse counter to 0.
+
+### Step 0d. Print pulse header
+
+At the start of each pulse iteration (including recursive calls), increment the pulse counter and print the pulse header with the current timestamp:
+
+```
+── PULSE {N} ──────────────────────────────────────── {HH:MM:SS} ──
+```
+
 ### Step 1. Scan
 
 Read the config to determine the tracker type, then scan for all tagged issues.
@@ -89,10 +109,66 @@ For each item, spawn a sub-agent with: `"Read and follow $SKILL_DIR/{file}. Targ
 | `to-merge`       | `$SKILL_DIR/merge.md`       |
 | `to-ratify`      | `$SKILL_DIR/ratify.md`      |
 
+### Step 2b. Print dispatched agents
+
+Immediately after dispatching, print each dispatched agent with its phase emoji. Use the phase emoji from the README lore for each phase:
+
+| Tag              | Phase emoji |
+| ---------------- | ----------- |
+| `to-slice`       | `𐃆🐋`       |
+| `to-await-waves` | `🪸`        |
+| `to-implement`   | `🐙`        |
+| `to-inspect`     | `🧿`        |
+| `to-rework`      | `🦀`        |
+| `to-merge`       | `🐢`        |
+| `to-ratify`      | `🦭`        |
+
+The narwhal (slice phase) always uses both characters `𐃆🐋`, not just the emoji.
+
+```
+  𐃆🐋  #34  "auth token rotation"
+  🐙  #55  "user profile endpoint"
+  🧿  #53  "db migration safety"
+```
+
 After dispatching, record the count of automated phases dispatched this iteration:
 
 ```sh
 AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
+```
+
+### Step 2c. Print lore snippet
+
+After all dispatched agents return, generate a lore snippet. This is a 1-2 sentence story fragment in playful Ghibli ocean vibes. Each lore snippet must read all prior snippets from the session and continues the narrative — the lore forms a continuous story, not isolated fragments. The story should be influenced by what actually happened in the pulse results (e.g., reworks are setbacks, successful inspects are triumphs, long waits are boring). Print it with the elapsed time since dispatch:
+
+```
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+  +8m00s  "The moonjelly sent three creatures into the dark and
+           waited, humming to itself."
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+```
+
+Append the lore snippet to the session's lore story list.
+
+### Step 2d. Print return results
+
+After agents return, print each result with its phase emoji and a `›` transition arrow showing the phase transition:
+
+```
+  𐃆🐋  #34   3m12s   18k   slice › implement
+  🐙  #55   4m45s   24k   implement › inspect
+  🦀  #53   1m08s    9k   inspect › rework
+```
+
+The narwhal (slice phase) always uses both characters `𐃆🐋`. Each line shows: phase emoji, issue number, duration, token count, and the transition (previous tag `›` next tag from handoff).
+
+Also print human and idle items:
+
+```
+  🤿  #60  to-scope
+  🤿  #48  to-land
+  ·   #57  idle — awaiting #55
+  ·   #56  idle
 ```
 
 ### Step 3. Log phase metrics
@@ -169,33 +245,52 @@ If running in `--hitl` mode and this is the first iteration, present human-requi
 
 > Note: reef-scope and reef-land remain user-facing skills invoked via slash commands. Only the automated (🌊) phases are dispatched via file references.
 
-### Step 5. Report and exit
+### Step 5. Recurse or exit
 
-Print a summary of what was dispatched:
+After metrics are logged, check whether to recurse or exit.
 
-```
-🪼 Pulse complete.
+**If `AUTOMATED_DISPATCHES` > 0**: the pulse dispatched automated work this iteration. After agents return and metrics are logged, recursively invoke `/reef-pulse --afk` on the main session. The recursive call is always `--afk`, even if the first invocation was HITL. The recursive call happens on the main session, never as a sub-agent — this ensures the loop runs sequentially (scan, dispatch, wait, scan again) rather than spawning nested agents. Do NOT release the lock between iterations; the lock persists across the entire recursive chain. Pass the accumulated lore story list and pulse counter to the next iteration.
 
-  Dispatched:
-    🌊 implement.md #55 (auth-endpoint)
-    🌊 implement.md #56 (user-profile)
-    🌊 inspect.md #53 (db-migration)
-    🌊 merge.md #51 (schema-setup)
+**If `AUTOMATED_DISPATCHES` == 0**: no automated work was dispatched this iteration. The pulse has nothing left to do. Continue to Step 6.
 
-  Awaiting human:
-    🤿 to-scope: #60 (new-dashboard-idea)
-    🤿 to-land: #42 (token-auth-migration)
+### Step 6. Print SESSION COMPLETE and full story
 
-  Idle:
-    ⏳ to-await-waves: #57 (legacy-compat) — blocked by #55, #56
-```
+This step only runs when `AUTOMATED_DISPATCHES` == 0 (the exit path from Step 5).
 
-If nothing was actionable:
+First, generate a final lore snippet for the empty pulse (the moonjelly finding nothing left to do). Append it to the lore story list.
+
+Then print the SESSION COMPLETE box with session stats:
 
 ```
-🪼 Pulse complete. Nothing to dispatch.
+┌─────────────────────────────────────────────────────────────┐
+│  SESSION COMPLETE                                            │
+│                                                              │
+│  Duration    17m00s                                          │
+│  Pulses      4                                               │
+│  Agents      7  dispatches across 3 active pulses            │
+│  Landed      #34  #53                                        │
+│  Human       #60  #48                                        │
+│  Idle        #56  #57                                        │
+└─────────────────────────────────────────────────────────────┘
+```
 
-  Run /reef-scope to start something new.
+- **Duration**: total wall-clock time since the session started (from the lock file timestamp)
+- **Pulses**: total number of pulse iterations (including this final empty one)
+- **Agents**: total number of sub-agent dispatches across all active pulses (pulses that dispatched at least one agent)
+- **Landed**: issues that reached `to-land` or `landed` during this session
+- **Human**: issues that need human attention (`to-scope`, `to-land`)
+- **Idle**: issues that are blocked or have no actionable tag
+
+After the SESSION COMPLETE box, print the full collected story as a single block — all lore snippets from the session concatenated into a continuous narrative:
+
+```
+  The moonjelly sent three creatures into the dark and waited,
+  humming to itself. The crab came back sulking — it had dropped
+  a stitch and needed another pass. The octopus just kept working.
+  The barreleye peered through both pieces with its strange glass
+  eyes and — for once — found nothing wrong. The moonjelly found
+  nothing left to chase. It settled onto the reef floor, bells
+  dimming, and listened to the quiet.
 ```
 
 **Autopilot hint** (show only when pulse was triggered manually, not from a cron):
@@ -207,17 +302,9 @@ Check if a durable cron for `/reef-pulse --afk` already exists by calling `CronL
      CronCreate cron="7 * * * *" prompt="/reef-pulse --afk" durable=true
 ```
 
-### Step 6. Recurse or exit
-
-After reporting, check whether to recurse or exit.
-
-**If `AUTOMATED_DISPATCHES` > 0**: the pulse dispatched automated work this iteration. After agents return and metrics are logged, recursively invoke `/reef-pulse --afk` on the main session. The recursive call is always `--afk`, even if the first invocation was HITL. The recursive call happens on the main session, never as a sub-agent — this ensures the loop runs sequentially (scan, dispatch, wait, scan again) rather than spawning nested agents. Do NOT release the lock between iterations; the lock persists across the entire recursive chain.
-
-**If `AUTOMATED_DISPATCHES` == 0**: no automated work was dispatched this iteration. The pulse has nothing left to do. Delete the pulse.lock file and exit. The lock must only be released when the pulse is truly done — zero automated dispatches means the loop naturally terminates.
-
 ### Step 7. Release lock
 
-This step only runs when `AUTOMATED_DISPATCHES` == 0 (the exit path from Step 6). To release the lock, delete the pulse.lock file.
+This step only runs when `AUTOMATED_DISPATCHES` == 0 (the exit path from Step 5). To release the lock, delete the pulse.lock file.
 
 Exit.
 
