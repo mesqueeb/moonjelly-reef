@@ -25,6 +25,16 @@ Three types of tickets flow through the slice lifecycle phases (implement → in
 
 All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to fork from, commit to, and review.
 
+## Terminal label: `landed`
+
+`landed` is the tracker-agnostic signal that a piece of work has reached its target branch. It is the terminal label in the lifecycle — once applied, the issue is considered complete.
+
+- **reef-land** replaces `to-land` with `landed` before closing an issue (single-slice plans and multi-slice plan PRs)
+- **merge-multi** replaces `to-merge` with `landed` on slice PRs after squash-merging into the target branch
+- **await-waves** checks each dependency for the `landed` label to determine whether a blocked slice can proceed — if all dependencies carry `landed`, the slice is promoted to `to-implement`
+
+This convention works identically across tracker types: GitHub adds a label, the local tracker renames the file tag to `[landed]`, and MCP trackers set the equivalent status field.
+
 ## Skills
 
 ### [/reef-pulse](./reef-pulse/SKILL.md)
@@ -130,6 +140,14 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 - phase-specific
+- set-variables
+  ```sh
+  BASE_BRANCH="{from branch discussion}"
+  ```
+- conflict-anticipation — scan in-flight issues on same base-branch and surface overlaps
+  ```sh
+  ./tracker.sh issue list --label to-slice,in-progress,to-implement,to-inspect,to-rework,to-merge,to-ratify,to-land,to-await-waves --json number,title,body,labels
+  ```
 - set-variables
   ```sh
   PLAN_ID="$ISSUE_ID"
@@ -493,7 +511,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   DEPENDENCY_ID="{from frontmatter blocked-by field}"
   ```
-- dep-check
+- dep-check — checks each dependency for the `landed` label; if all carry `landed`, slice is promoted
   ```sh
   ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
   ```

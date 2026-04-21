@@ -66,6 +66,28 @@ Suggest a base branch and a target branch name in a single line. Derive the targ
 
 The user confirms or adjusts. Both values are required before continuing.
 
+## 3b. Conflict anticipation
+
+After the branch discussion, scan for in-flight work that might overlap with this plan. List open issues that share the same `base-branch` and are past `to-scope` (i.e., already in-flight: `to-slice`, `in-progress`, `to-implement`, `to-inspect`, `to-rework`, `to-merge`, `to-ratify`, `to-land`, `to-await-waves`).
+
+```sh
+BASE_BRANCH="{from branch discussion}"
+```
+
+```sh
+./tracker.sh issue list --label to-slice,in-progress,to-implement,to-inspect,to-rework,to-merge,to-ratify,to-land,to-await-waves --json number,title,body,labels
+```
+
+For each returned issue, parse the `base-branch` from its frontmatter. Keep only those whose `base-branch` matches the plan's `$BASE_BRANCH`. Skim each matching issue's plan body to assess whether it touches overlapping areas (same files, same modules, same concepts).
+
+If overlapping in-flight work is found, surface it to the user:
+
+> "From a quick look at current work in progress, this scope might lead to conflicts with #77 and #83. Shall I add them as `blocked-by` in the plan frontmatter so implementation won't start until those land?"
+
+The user confirms or adjusts. If they confirm, the `blocked-by` field will be set in the frontmatter during step 4.
+
+If no overlapping work is found, continue silently.
+
 ## 4. Persist the plan
 
 Set variables from the discussion:
