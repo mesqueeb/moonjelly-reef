@@ -64,7 +64,7 @@ Enter a worktree forked from $PR_BRANCH — for multi-slice this is the target b
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
 ```
 
-Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$TARGET_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$PR_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
 
 ```sh
 ./tracker.sh issue edit "$PLAN_ID" --add-label blocked-with-conflicts
@@ -134,7 +134,7 @@ When you find non-obvious behavior worth documenting during your holistic review
 1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and push directly to the target branch:
 
 ```sh
-./commit.sh --branch "$TARGET_BRANCH" -m "ratify: add documentation"
+./commit.sh --branch "$PR_BRANCH" -m "ratify: add documentation"
 ```
 
 2. **Outside-of-code docs if warranted.** If the behavior is significant enough to document beyond a code comment, check the repo's `AGENTS.md`/`CLAUDE.md` for a documentation locations section. If it exists, follow it. If it doesn't, create a brief entry.

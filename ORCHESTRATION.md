@@ -649,7 +649,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 - phase-specific
 - commit-code — if documentation-added
   ```sh
-  ./commit.sh --branch "$TARGET_BRANCH" -m "ratify: add documentation"
+  ./commit.sh --branch "$PR_BRANCH" -m "ratify: add documentation"
   ```
 - submit-report
   ```sh
