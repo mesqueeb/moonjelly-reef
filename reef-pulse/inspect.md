@@ -47,7 +47,7 @@ What you do:
 - **Check the implementation against each acceptance criterion.** Read the code. Does it actually do what the criterion says? Don't just read the PR description — it may be optimistic.
 - **Spot drift from the plan.** The implementation may differ from the plan. That might be fine (the implementer found a better way) or it might be a gap. Surface it either way.
 - **Run the full test suite yourself.** Don't trust "all tests pass" in the report.
-- **Do trivial cleanups.** Stale TODOs, leftover debug prints, dead code from debugging, formatting, dead code — fix these yourself and commit. Don't ask permission.
+- **Do trivial cleanups.** Stale TODOs, leftover debug prints, dead code from debugging, formatting — fix these yourself and commit. Don't ask permission.
 - **Flag substantive gaps.** Missing tests, incomplete behavior, skipped acceptance criteria — these go in review comments, not silent fixes.
 - **Read the ambiguous choices.** The implementer documented decisions they made. Flag anything that drifted too far from the success criteria or that the human should know about.
 
