@@ -220,7 +220,7 @@ gh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-scope
 
 ## Handoff
 
-Read the plan issue body for any existing `### 🪼 Pulse metrics` rows (scope and slice metrics). Extract them as `planIssueMetrics`.
+Read the plan issue body for any existing `### 🪼 Pulse metrics` rows (between the table header and `<!-- end metrics table -->`). Extract them as `planIssueMetrics`.
 
 ```sh
 nextPhase="to-land" # or "to-rework" if gaps found, "to-scope" if safety valve
