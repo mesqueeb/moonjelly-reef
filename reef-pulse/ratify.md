@@ -2,7 +2,7 @@
 
 > **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
 >
-> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
+> **Tracker note**: Commands below use `./tracker.sh` syntax for both issue and PR operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -190,12 +190,12 @@ Format the report as a collapsible block with local timestamp (`yyyy/MM/dd HH:mm
 ```sh
 REPORT="{ratify-report}" # <details><summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
 # if no PR exists:
-gh pr create --base "$BASE_BRANCH" --head "$TARGET_BRANCH" --title "$PLAN_TITLE" --body "$REPORT" --label to-ratify
+./tracker.sh pr create --base "$BASE_BRANCH" --head "$TARGET_BRANCH" --title "$PLAN_TITLE" --body "$REPORT" --label to-ratify
 # if PR exists, append:
 PR_NUMBER="{from pr create output or existing PR}"
-PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q .body)
+PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
 PR_BODY="$PR_BODY\n\n$REPORT"
-gh pr edit "$PR_NUMBER" --body "$PR_BODY"
+./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
 ```
 
 ### 9. Label
@@ -204,21 +204,21 @@ gh pr edit "$PR_NUMBER" --body "$PR_BODY"
 
 ```sh
 ./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land
-gh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-land
+./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-land
 ```
 
 **If gaps found (fixable within success criteria):**
 
 ```sh
 ./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rework
-gh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-rework
+./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-rework
 ```
 
 **If gaps need decisions beyond success criteria (safety valve):**
 
 ```sh
 ./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-scope
-gh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-scope
+./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-scope
 ```
 
 ## Clean up

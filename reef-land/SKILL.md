@@ -7,7 +7,7 @@ description: Present the final report to the human for review. Human approves (m
 
 > **Shell blocks are literal commands** — `./tracker.sh` is a real script next to this file. Execute it as written; do not substitute with raw git commands.
 >
-> **Tracker note**: Commands below use `./tracker.sh` syntax for issue operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls. PR operations always use `gh` directly regardless of tracker.
+> **Tracker note**: Commands below use `./tracker.sh` syntax for both issue and PR operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 ## Input
 
@@ -30,7 +30,7 @@ Use whichever identifier you have to look up the other:
   ```
 - If you have `PR_NUMBER`: read the PR to find the plan issue reference.
   ```sh
-  gh pr view "$PR_NUMBER" --json number,body,headRefName,baseRefName,comments,reviews # if PR_NUMBER known
+  ./tracker.sh pr view "$PR_NUMBER" --json number,body,headRefName,baseRefName,comments,reviews # if PR_NUMBER known
   ```
 
 Now set all variables:
@@ -111,7 +111,7 @@ Ask the human:
 If (2): open the PR in the browser:
 
 ```sh
-gh pr view "$PR_NUMBER" --web
+./tracker.sh pr view "$PR_NUMBER" --web
 ```
 
 Then say: "Take your time reviewing. Leave any comments on the PR, then let me know when you're ready to continue." Wait for the human. When they return, re-check for comments and return to the top of step 2.
@@ -177,7 +177,7 @@ PR_BODY="{current PR body with gap report appended in <details><summary> block}"
 ```
 
 ```sh
-gh pr edit "$PR_NUMBER" --body "$PR_BODY"
+./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
 ./tracker.sh issue edit "$PLAN_ID" --remove-label to-land --add-label to-rework
 ```
 
@@ -186,7 +186,7 @@ If the discussion changed any plan-level Decisions, Stories, or Success Criteria
 ```sh
 PLAN_BODY=$(./tracker.sh issue view "$PLAN_ID" --json body)
 ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
-gh pr edit "$PR_NUMBER" --remove-label to-land --add-label to-rework
+./tracker.sh pr edit "$PR_NUMBER" --remove-label to-land --add-label to-rework
 ```
 
 Tell the human:
@@ -212,7 +212,7 @@ Tell the human: "Created follow-up issue #{N}." Then continue to **step 5 (Appro
 Check merge status first:
 
 ```sh
-gh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
+./tracker.sh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
 ```
 
 If the PR cannot be merged (conflicts, failing checks, branch protection), tell the human what's blocking and exit. Do not force-merge.
@@ -224,8 +224,8 @@ MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}"
 ```
 
 ```sh
-gh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
-gh pr edit "$PR_NUMBER" --remove-label to-land --add-label landed
+./tracker.sh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
+./tracker.sh pr edit "$PR_NUMBER" --remove-label to-land --add-label landed
 ```
 
 Pull the merged changes into the current branch if it matches the base branch:

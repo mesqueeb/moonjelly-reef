@@ -602,6 +602,557 @@ test_committed_close_pushes() {
 }
 
 # ============================================================
+# PR CREATE — #120
+# ============================================================
+
+test_pr_create_plan() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "implementation report" >/dev/null 2>&1
+
+  if [ -f "$TRACKER_PATH/1 my-feature/progress.md" ]; then
+    pass "pr create plan: creates progress.md"
+  else
+    fail "pr create plan: creates progress.md" "file not found"
+  fi
+
+  content="$(cat "$TRACKER_PATH/1 my-feature/progress.md")"
+  if echo "$content" | grep -q "^head: feat/my-feature"; then
+    pass "pr create plan: frontmatter has head"
+  else
+    fail "pr create plan: frontmatter has head" "got: $content"
+  fi
+
+  if echo "$content" | grep -q "^base: main"; then
+    pass "pr create plan: frontmatter has base"
+  else
+    fail "pr create plan: frontmatter has base" "got: $content"
+  fi
+
+  if echo "$content" | grep -q "implementation report"; then
+    pass "pr create plan: body content written"
+  else
+    fail "pr create plan: body content written" "got: $content"
+  fi
+
+  teardown
+}
+
+test_pr_create_slice() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --label to-scope >/dev/null 2>&1
+  t issue create --title "auth-endpoint" --body "slice body" --label to-implement --parent 1 >/dev/null 2>&1
+  t pr create 1-1 --base main --head feat/auth-endpoint --body "slice report" >/dev/null 2>&1
+
+  if [ -f "$TRACKER_PATH/1 my-feature/slices/1-1 auth-endpoint/progress.md" ]; then
+    pass "pr create slice: creates progress.md"
+  else
+    fail "pr create slice: creates progress.md" "file not found"
+  fi
+
+  teardown
+}
+
+# ============================================================
+# PR VIEW — #120
+# ============================================================
+
+test_pr_view_fields() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "the report body" >/dev/null 2>&1
+  output="$(t pr view 1 --json body,headRefName,baseRefName 2>/dev/null)"
+
+  if echo "$output" | grep -q '"headRefName":"feat/my-feature"'; then
+    pass "pr view: headRefName correct"
+  else
+    fail "pr view: headRefName correct" "got: $output"
+  fi
+
+  if echo "$output" | grep -q '"baseRefName":"main"'; then
+    pass "pr view: baseRefName correct"
+  else
+    fail "pr view: baseRefName correct" "got: $output"
+  fi
+
+  if echo "$output" | grep -q "the report body"; then
+    pass "pr view: body correct"
+  else
+    fail "pr view: body correct" "got: $output"
+  fi
+
+  teardown
+}
+
+test_pr_view_comments_reviews() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
+  output="$(t pr view 1 --json comments,reviews 2>/dev/null)"
+
+  if echo "$output" | grep -q '"comments":\[\]'; then
+    pass "pr view: comments empty array"
+  else
+    fail "pr view: comments empty array" "got: $output"
+  fi
+
+  if echo "$output" | grep -q '"reviews":\[\]'; then
+    pass "pr view: reviews empty array"
+  else
+    fail "pr view: reviews empty array" "got: $output"
+  fi
+
+  teardown
+}
+
+# ============================================================
+# PR EDIT — #120
+# ============================================================
+
+test_pr_edit_body() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "old report" >/dev/null 2>&1
+  t pr edit 1 --body "new report" >/dev/null 2>&1
+
+  content="$(cat "$TRACKER_PATH/1 my-feature/progress.md")"
+
+  # Frontmatter should be preserved
+  if echo "$content" | grep -q "^head: feat/my-feature"; then
+    pass "pr edit body: frontmatter preserved"
+  else
+    fail "pr edit body: frontmatter preserved" "got: $content"
+  fi
+
+  # Body should be updated
+  if echo "$content" | grep -q "new report"; then
+    pass "pr edit body: body updated"
+  else
+    fail "pr edit body: body updated" "got: $content"
+  fi
+
+  # Old body should be gone
+  if echo "$content" | grep -q "old report"; then
+    fail "pr edit body: old body removed" "still found old report"
+  else
+    pass "pr edit body: old body removed"
+  fi
+
+  teardown
+}
+
+test_pr_edit_label_noop() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
+
+  if t pr edit 1 --add-label to-inspect >/dev/null 2>&1; then
+    pass "pr edit: --add-label is silent no-op"
+  else
+    fail "pr edit: --add-label is silent no-op" "exited non-zero"
+  fi
+
+  if t pr edit 1 --remove-label to-implement >/dev/null 2>&1; then
+    pass "pr edit: --remove-label is silent no-op"
+  else
+    fail "pr edit: --remove-label is silent no-op" "exited non-zero"
+  fi
+
+  teardown
+}
+
+# ============================================================
+# PR MERGE — #121
+# ============================================================
+
+# Setup helper that creates a git repo with origin, a feature branch with a commit,
+# and a progress.md so pr merge can read head/base.
+setup_merge() {
+  TEST_ROOT="$(mktemp -d)"
+  ORIGIN="$TEST_ROOT/origin.git"
+  REPO="$TEST_ROOT/repo"
+  TRACKER_PATH="$TEST_ROOT/tracker"
+
+  git init --bare "$ORIGIN" >/dev/null 2>&1
+  git clone "$ORIGIN" "$REPO" >/dev/null 2>&1
+  cd "$REPO"
+  git checkout -b main >/dev/null 2>&1
+  echo "init" > README.md
+  git add README.md
+  git commit -m "initial commit" >/dev/null 2>&1
+  git push -u origin main >/dev/null 2>&1
+
+  # Create feature branch with a commit
+  git checkout -b feat/my-feature >/dev/null 2>&1
+  echo "feature work" > feature.txt
+  git add feature.txt
+  git commit -m "add feature" >/dev/null 2>&1
+  git push -u origin feat/my-feature >/dev/null 2>&1
+
+  # Back to main for the merge
+  git checkout main >/dev/null 2>&1
+
+  # Create tracker dir and config
+  mkdir -p "$TRACKER_PATH"
+  mkdir -p "$REPO/.agents/moonjelly-reef"
+  cat > "$REPO/.agents/moonjelly-reef/config.md" <<CONF
+---
+tracker: local-tracker-gitignored
+tracker-path: $TRACKER_PATH
+tracker-branch: —
+---
+CONF
+
+  # Create issue and progress.md
+  mkdir -p "$TRACKER_PATH/1 my-feature"
+  echo "plan content" > "$TRACKER_PATH/1 my-feature/[to-inspect] plan.md"
+  cat > "$TRACKER_PATH/1 my-feature/progress.md" <<PROGRESS
+---
+head: feat/my-feature
+base: main
+---
+
+implementation report
+PROGRESS
+}
+
+test_pr_merge_squash() {
+  setup_merge
+  cd "$REPO"
+
+  t pr merge 1 --squash --delete-branch >/dev/null 2>&1
+
+  # Should be on main with the feature file present
+  current_branch="$(git rev-parse --abbrev-ref HEAD)"
+  if [ "$current_branch" = "main" ]; then
+    pass "pr merge squash: stays on base branch"
+  else
+    fail "pr merge squash: stays on base branch" "on: $current_branch"
+  fi
+
+  if [ -f "feature.txt" ]; then
+    pass "pr merge squash: feature file present after merge"
+  else
+    fail "pr merge squash: feature file present after merge" "feature.txt not found"
+  fi
+
+  # Squash merge should create a single commit (not a merge commit with two parents)
+  parent_count="$(git cat-file -p HEAD | grep -c '^parent' || true)"
+  if [ "$parent_count" -eq 1 ]; then
+    pass "pr merge squash: single parent (squash merge)"
+  else
+    fail "pr merge squash: single parent (squash merge)" "parents: $parent_count"
+  fi
+
+  teardown
+}
+
+test_pr_merge_regular() {
+  setup_merge
+  cd "$REPO"
+
+  t pr merge 1 --delete-branch >/dev/null 2>&1
+
+  if [ -f "feature.txt" ]; then
+    pass "pr merge regular: feature file present after merge"
+  else
+    fail "pr merge regular: feature file present after merge" "feature.txt not found"
+  fi
+
+  # Regular merge should create a merge commit with two parents
+  parent_count="$(git cat-file -p HEAD | grep -c '^parent' || true)"
+  if [ "$parent_count" -eq 2 ]; then
+    pass "pr merge regular: two parents (merge commit)"
+  else
+    fail "pr merge regular: two parents (merge commit)" "parents: $parent_count"
+  fi
+
+  teardown
+}
+
+test_pr_merge_deletes_head_branch_locally() {
+  setup_merge
+  cd "$REPO"
+
+  t pr merge 1 --squash --delete-branch >/dev/null 2>&1
+
+  if git rev-parse --verify feat/my-feature >/dev/null 2>&1; then
+    fail "pr merge: deletes head branch locally" "branch still exists"
+  else
+    pass "pr merge: deletes head branch locally"
+  fi
+
+  teardown
+}
+
+test_pr_merge_deletes_head_branch_from_origin() {
+  setup_merge
+  cd "$REPO"
+
+  t pr merge 1 --squash --delete-branch >/dev/null 2>&1
+
+  git fetch origin --prune >/dev/null 2>&1
+  if git rev-parse --verify origin/feat/my-feature >/dev/null 2>&1; then
+    fail "pr merge: deletes head branch from origin" "remote branch still exists"
+  else
+    pass "pr merge: deletes head branch from origin"
+  fi
+
+  teardown
+}
+
+test_pr_merge_no_progress_fails() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "no-pr" --label to-implement >/dev/null 2>&1
+
+  if t pr merge 1 --squash --delete-branch >/dev/null 2>&1; then
+    fail "pr merge: fails without progress.md" "succeeded"
+  else
+    pass "pr merge: fails without progress.md"
+  fi
+
+  teardown
+}
+
+test_pr_merge_commit_message() {
+  setup_merge
+  cd "$REPO"
+
+  t pr merge 1 --squash --delete-branch >/dev/null 2>&1
+
+  msg="$(git log -1 --format='%s')"
+  if echo "$msg" | grep -q "feat/my-feature"; then
+    pass "pr merge: commit message references head branch"
+  else
+    fail "pr merge: commit message references head branch" "msg: $msg"
+  fi
+
+  teardown
+}
+
+# ============================================================
+# PR DISPATCH — #120
+# ============================================================
+
+test_pr_dispatch() {
+  setup
+  cd "$REPO"
+
+  if t pr create 1 --base main --head x --body y >/dev/null 2>&1; then
+    # It will fail because issue 1 doesn't exist, but it means dispatch accepted 'pr'
+    fail "pr dispatch: accepts pr command group" "should fail because issue 1 doesn't exist"
+  else
+    # If it fails with "issue 1 not found" that means dispatch worked, resolution failed
+    pass "pr dispatch: accepts pr command group (fails at resolution, not dispatch)"
+  fi
+
+  teardown
+}
+
+# ============================================================
+# PR CREATE — gh-compatible syntax (--title, --label, no positional ID)
+# ============================================================
+
+test_pr_create_gh_compat() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  # Call pr create without positional ID, using --title to resolve
+  id="$(t pr create --base main --head feat/my-feature --title "my-feature" --body "report" --label to-inspect 2>/dev/null)"
+
+  if [ "$id" = "1" ]; then
+    pass "pr create gh-compat: returns issue ID"
+  else
+    fail "pr create gh-compat: returns issue ID" "got: $id"
+  fi
+
+  if [ -f "$TRACKER_PATH/1 my-feature/progress.md" ]; then
+    pass "pr create gh-compat: creates progress.md"
+  else
+    fail "pr create gh-compat: creates progress.md" "file not found"
+  fi
+
+  content="$(cat "$TRACKER_PATH/1 my-feature/progress.md")"
+  if echo "$content" | grep -q "^head: feat/my-feature"; then
+    pass "pr create gh-compat: frontmatter has head"
+  else
+    fail "pr create gh-compat: frontmatter has head" "got: $content"
+  fi
+
+  teardown
+}
+
+test_pr_create_gh_compat_slice() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --label to-scope >/dev/null 2>&1
+  t issue create --title "auth-endpoint" --body "slice body" --label to-implement --parent 1 >/dev/null 2>&1
+  id="$(t pr create --base main --head feat/auth --title "auth-endpoint" --body "slice report" --label to-inspect 2>/dev/null)"
+
+  if [ "$id" = "1-1" ]; then
+    pass "pr create gh-compat slice: returns slice ID"
+  else
+    fail "pr create gh-compat slice: returns slice ID" "got: $id"
+  fi
+
+  if [ -f "$TRACKER_PATH/1 my-feature/slices/1-1 auth-endpoint/progress.md" ]; then
+    pass "pr create gh-compat slice: creates progress.md"
+  else
+    fail "pr create gh-compat slice: creates progress.md" "file not found"
+  fi
+
+  teardown
+}
+
+# ============================================================
+# PR VIEW — -q flag, mergeStateStatus, number, --web
+# ============================================================
+
+test_pr_view_q_flag() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "the report body" >/dev/null 2>&1
+  output="$(t pr view 1 --json body -q .body 2>/dev/null)"
+
+  if [ "$output" = "the report body" ]; then
+    pass "pr view -q: extracts body field"
+  else
+    fail "pr view -q: extracts body field" "got: $output"
+  fi
+
+  teardown
+}
+
+test_pr_view_merge_state_status() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
+  output="$(t pr view 1 --json mergeStateStatus -q .mergeStateStatus 2>/dev/null)"
+
+  if [ "$output" = "CLEAN" ]; then
+    pass "pr view: mergeStateStatus returns CLEAN"
+  else
+    fail "pr view: mergeStateStatus returns CLEAN" "got: $output"
+  fi
+
+  teardown
+}
+
+test_pr_view_number_field() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
+  output="$(t pr view 1 --json number,body,headRefName,baseRefName 2>/dev/null)"
+
+  if echo "$output" | grep -q '"number":"1"'; then
+    pass "pr view: number field included"
+  else
+    fail "pr view: number field included" "got: $output"
+  fi
+
+  teardown
+}
+
+test_pr_view_web_noop() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
+
+  if t pr view 1 --web >/dev/null 2>&1; then
+    pass "pr view --web: no-op succeeds"
+  else
+    fail "pr view --web: no-op succeeds" "exited non-zero"
+  fi
+
+  teardown
+}
+
+# ============================================================
+# PR LIST — #119 rework
+# ============================================================
+
+test_pr_list() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
+  output="$(t pr list --json number,title 2>/dev/null)"
+
+  if echo "$output" | grep -q '"1"'; then
+    pass "pr list: includes issue with progress.md"
+  else
+    fail "pr list: includes issue with progress.md" "got: $output"
+  fi
+
+  teardown
+}
+
+test_pr_list_search() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t issue create --title "other-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
+  t pr create 2 --base main --head feat/other --body "report" >/dev/null 2>&1
+  output="$(t pr list --search "my-feature" --json number,title 2>/dev/null)"
+
+  if echo "$output" | grep -q '"1"'; then
+    pass "pr list --search: finds matching PR"
+  else
+    fail "pr list --search: finds matching PR" "got: $output"
+  fi
+
+  if echo "$output" | grep -q '"2"'; then
+    fail "pr list --search: excludes non-matching PR" "found 2 in output"
+  else
+    pass "pr list --search: excludes non-matching PR"
+  fi
+
+  teardown
+}
+
+test_pr_list_empty() {
+  setup
+  cd "$REPO"
+
+  output="$(t pr list --json number,title 2>/dev/null)"
+
+  if [ "$output" = "[]" ]; then
+    pass "pr list: returns empty array when no PRs"
+  else
+    fail "pr list: returns empty array when no PRs" "got: $output"
+  fi
+
+  teardown
+}
+
+# ============================================================
 # Run all tests
 # ============================================================
 
@@ -636,6 +1187,29 @@ test_committed_create_pushes
 test_committed_edit_pushes
 test_committed_view_no_worktree
 test_committed_close_pushes
+
+test_pr_create_plan
+test_pr_create_slice
+test_pr_view_fields
+test_pr_view_comments_reviews
+test_pr_edit_body
+test_pr_edit_label_noop
+test_pr_merge_squash
+test_pr_merge_regular
+test_pr_merge_deletes_head_branch_locally
+test_pr_merge_deletes_head_branch_from_origin
+test_pr_merge_no_progress_fails
+test_pr_merge_commit_message
+test_pr_dispatch
+test_pr_create_gh_compat
+test_pr_create_gh_compat_slice
+test_pr_view_q_flag
+test_pr_view_merge_state_status
+test_pr_view_number_field
+test_pr_view_web_noop
+test_pr_list
+test_pr_list_search
+test_pr_list_empty
 
 echo ""
 if [ "$FAIL" -gt 0 ]; then

@@ -1,7 +1,7 @@
 #!/bin/sh
 # tracker.sh — local issue tracker CLI for Moonjelly Reef
 #
-# Mirrors the `gh issue` interface for local file-based tracking.
+# Mirrors the `gh issue` and `gh pr` interfaces for local file-based tracking.
 # Reads config from .agents/moonjelly-reef/config.md (found via git repo root).
 #
 # Usage:
@@ -10,6 +10,11 @@
 #   tracker.sh issue create [--title "..."] [--body "..."] [--label X] [--parent <id>]
 #   tracker.sh issue close  <id>
 #   tracker.sh issue list   [--label X] [--json number,title] [--limit N]
+#   tracker.sh pr create    [<id>] --base X [--head Y] --body B [--title T] [--label L]
+#   tracker.sh pr view      <id> --json body,headRefName,baseRefName [--web] [-q .field]
+#   tracker.sh pr edit      <id> [--body "..."] [--add-label X] [--remove-label X]
+#   tracker.sh pr merge     <id> [--squash] [--delete-branch]
+#   tracker.sh pr list      [--search Q] [--json fields] [--limit N]
 set -eu
 
 # ============================================================
@@ -158,6 +163,29 @@ resolve_file() {
   else
     resolve_plan_file "$1"
   fi
+}
+
+# Resolve any ID to its directory (for progress.md)
+resolve_dir() {
+  if is_slice_id "$1"; then
+    resolve_slice_dir "$1"
+  else
+    resolve_plan_dir "$1"
+  fi
+}
+
+# Resolve progress.md path for a given ID
+resolve_progress_file() {
+  _dir="$(resolve_dir "$1")"
+  if [ -z "$_dir" ]; then
+    return 1
+  fi
+  _pf="$_dir/progress.md"
+  if [ -f "$_pf" ]; then
+    echo "$_pf"
+    return 0
+  fi
+  return 1
 }
 
 # Extract label from filename like "[to-scope] plan.md" → "to-scope"
@@ -427,46 +455,394 @@ cmd_list() {
 }
 
 # ============================================================
+# PR commands
+# ============================================================
+
+pr_create() {
+  _id=""
+  _base=""
+  _head=""
+  _body=""
+  _title=""  # accepted for gh compatibility, ignored
+  _label=""  # accepted for gh compatibility, ignored
+
+  # First positional arg (if not a flag) is the ID
+  if [ $# -gt 0 ]; then
+    case "$1" in
+      --*) ;;  # not a positional arg
+      *)  _id="$1"; shift ;;
+    esac
+  fi
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --base)  [ $# -lt 2 ] && { echo "Error: --base requires a value" >&2; exit 1; }; _base="$2"; shift 2 ;;
+      --head)  [ $# -lt 2 ] && { echo "Error: --head requires a value" >&2; exit 1; }; _head="$2"; shift 2 ;;
+      --body)  [ $# -lt 2 ] && { echo "Error: --body requires a value" >&2; exit 1; }; _body="$2"; shift 2 ;;
+      --title) [ $# -lt 2 ] && { echo "Error: --title requires a value" >&2; exit 1; }; _title="$2"; shift 2 ;;
+      --label) [ $# -lt 2 ] && { echo "Error: --label requires a value" >&2; exit 1; }; _label="$2"; shift 2 ;;
+      *) echo "Error: unknown argument: $1" >&2; exit 1 ;;
+    esac
+  done
+
+  if [ -z "$_base" ]; then
+    echo "Error: --base is required" >&2
+    exit 1
+  fi
+
+  # --head defaults to current branch if omitted
+  if [ -z "$_head" ]; then
+    _head="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" || {
+      echo "Error: --head is required (could not detect current branch)" >&2
+      exit 1
+    }
+  fi
+
+  # If no positional ID, resolve from --title by finding a matching issue folder
+  if [ -z "$_id" ] && [ -n "$_title" ]; then
+    # Search plans
+    for _d in "$TRACKER_PATH"/*/; do
+      [ -d "$_d" ] || continue
+      _dname="$(basename "$_d")"
+      _dtitle="$(echo "$_dname" | sed 's/^[0-9]* *//')"
+      if [ "$_dtitle" = "$_title" ]; then
+        _id="$(echo "$_dname" | sed 's/ .*//')"
+        break
+      fi
+    done
+    # Search slices
+    if [ -z "$_id" ]; then
+      for _d in "$TRACKER_PATH"/*/slices/*/; do
+        [ -d "$_d" ] || continue
+        _dname="$(basename "$_d")"
+        _dtitle="$(echo "$_dname" | sed 's/^[0-9]*\(-[0-9]*\)* *//')"
+        if [ "$_dtitle" = "$_title" ]; then
+          _id="$(echo "$_dname" | sed 's/ .*//')"
+          break
+        fi
+      done
+    fi
+  fi
+
+  if [ -z "$_id" ]; then
+    echo "Error: could not determine issue ID (provide positional ID or --title)" >&2
+    exit 1
+  fi
+
+  _dir="$(resolve_dir "$_id")"
+  if [ -z "$_dir" ]; then
+    echo "Error: issue $_id not found" >&2
+    exit 1
+  fi
+
+  _progress="$_dir/progress.md"
+  printf '%s\n%s\n%s\n%s\n%s' "---" "head: $_head" "base: $_base" "---" "" > "$_progress"
+  if [ -n "$_body" ]; then
+    printf '\n%s' "$_body" >> "$_progress"
+  fi
+
+  # Output the issue ID (analogous to gh pr create returning the PR number)
+  echo "$_id"
+}
+
+pr_view() {
+  _id="$1"; shift
+  _json_flag=""
+  _query=""  # -q flag: accepted for gh compatibility, used to extract a single field
+  _web=false
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --json) [ $# -lt 2 ] && { echo "Error: --json requires fields" >&2; exit 1; }; _json_flag="$2"; shift 2 ;;
+      -q)     [ $# -lt 2 ] && { echo "Error: -q requires a value" >&2; exit 1; }; _query="$2"; shift 2 ;;
+      --web)  _web=true; shift ;;
+      *) echo "Error: unknown argument: $1" >&2; exit 1 ;;
+    esac
+  done
+
+  # --web is a no-op for local mode (no browser to open)
+  if [ "$_web" = true ]; then
+    return 0
+  fi
+
+  if [ -z "$_json_flag" ]; then
+    echo "Error: --json flag is required" >&2
+    exit 1
+  fi
+
+  _progress="$(resolve_progress_file "$_id")" || { echo "Error: progress.md not found for $_id" >&2; exit 1; }
+  if [ -z "$_progress" ]; then
+    echo "Error: progress.md not found for $_id" >&2
+    exit 1
+  fi
+
+  # Check if requesting comments/reviews (return empty arrays)
+  case "$_json_flag" in
+    *comments*|*reviews*)
+      printf '{"comments":[],"reviews":[]}'
+      return 0
+      ;;
+  esac
+
+  # Parse frontmatter
+  _head="$(sed -n 's/^head: *//p' "$_progress" | head -1)"
+  _base="$(sed -n 's/^base: *//p' "$_progress" | head -1)"
+
+  # Parse body (everything after the closing ---)
+  _body="$(awk 'BEGIN{n=0} /^---$/{n++; next} n>=2{print}' "$_progress")"
+  # Trim leading blank line
+  _body="$(echo "$_body" | sed '/./,$!d')"
+
+  # Build JSON output with all requested fields
+  _json="{"
+  _first_field=1
+  # Split comma-separated field list and output each requested field
+  _remaining="$_json_flag"
+  while [ -n "$_remaining" ]; do
+    _field="${_remaining%%,*}"
+    if [ "$_field" = "$_remaining" ]; then
+      _remaining=""
+    else
+      _remaining="${_remaining#*,}"
+    fi
+    if [ "$_first_field" -eq 1 ]; then _first_field=0; else _json="$_json,"; fi
+    case "$_field" in
+      body)             _json="$_json\"body\":\"$(json_escape "$_body")\"" ;;
+      headRefName)      _json="$_json\"headRefName\":\"$(json_escape "$_head")\"" ;;
+      baseRefName)      _json="$_json\"baseRefName\":\"$(json_escape "$_base")\"" ;;
+      number)           _json="$_json\"number\":\"$(json_escape "$_id")\"" ;;
+      mergeStateStatus) _json="$_json\"mergeStateStatus\":\"CLEAN\"" ;;
+      *)                _json="$_json\"$_field\":null" ;;
+    esac
+  done
+  _json="$_json}"
+
+  # If -q flag was given, extract the requested field value
+  if [ -n "$_query" ]; then
+    # Simple jq-style .field extraction (e.g. ".body", ".mergeStateStatus")
+    _qfield="$(echo "$_query" | sed 's/^\.//')"
+    case "$_qfield" in
+      body)             printf '%s' "$_body" ;;
+      headRefName)      printf '%s' "$_head" ;;
+      baseRefName)      printf '%s' "$_base" ;;
+      number)           printf '%s' "$_id" ;;
+      mergeStateStatus) printf '%s' "CLEAN" ;;
+      *)                printf 'null' ;;
+    esac
+  else
+    printf '%s' "$_json"
+  fi
+}
+
+pr_edit() {
+  _id="$1"; shift
+  _body=""
+  _add_label=""
+  _remove_label=""
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --body)         [ $# -lt 2 ] && { echo "Error: --body requires a value" >&2; exit 1; }; _body="$2"; shift 2 ;;
+      --add-label)    [ $# -lt 2 ] && { echo "Error: --add-label requires a value" >&2; exit 1; }; _add_label="$2"; shift 2 ;;
+      --remove-label) [ $# -lt 2 ] && { echo "Error: --remove-label requires a value" >&2; exit 1; }; _remove_label="$2"; shift 2 ;;
+      *) echo "Error: unknown argument: $1" >&2; exit 1 ;;
+    esac
+  done
+
+  # --add-label and --remove-label are silent no-ops for local PRs
+  if [ -z "$_body" ]; then
+    return 0
+  fi
+
+  _progress="$(resolve_progress_file "$_id")" || { echo "Error: progress.md not found for $_id" >&2; exit 1; }
+  if [ -z "$_progress" ]; then
+    echo "Error: progress.md not found for $_id" >&2
+    exit 1
+  fi
+
+  # Preserve frontmatter, replace body
+  _head="$(sed -n 's/^head: *//p' "$_progress" | head -1)"
+  _base="$(sed -n 's/^base: *//p' "$_progress" | head -1)"
+
+  printf '%s\n%s\n%s\n%s\n%s' "---" "head: $_head" "base: $_base" "---" "" > "$_progress"
+  printf '\n%s' "$_body" >> "$_progress"
+}
+
+pr_merge() {
+  _id="$1"; shift
+  _squash=false
+  _delete_branch=false
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --squash) _squash=true; shift ;;
+      --delete-branch) _delete_branch=true; shift ;;
+      *) echo "Error: unknown argument: $1" >&2; exit 1 ;;
+    esac
+  done
+
+  _progress="$(resolve_progress_file "$_id")" || { echo "Error: progress.md not found for $_id" >&2; exit 1; }
+  if [ -z "$_progress" ]; then
+    echo "Error: progress.md not found for $_id" >&2
+    exit 1
+  fi
+
+  # Read head and base from frontmatter
+  _head="$(sed -n 's/^head: *//p' "$_progress" | head -1)"
+  _base="$(sed -n 's/^base: *//p' "$_progress" | head -1)"
+
+  if [ -z "$_head" ] || [ -z "$_base" ]; then
+    echo "Error: progress.md missing head or base frontmatter" >&2
+    exit 1
+  fi
+
+  # Checkout the base branch
+  git checkout "$_base" >/dev/null 2>&1
+
+  # Perform the merge
+  if [ "$_squash" = true ]; then
+    git merge --squash "$_head" >/dev/null 2>&1
+    git commit -m "Squash merge $_head into $_base" >/dev/null 2>&1
+  else
+    git merge --no-ff "$_head" -m "Merge $_head into $_base" >/dev/null 2>&1
+  fi
+
+  # Delete the head branch if requested
+  if [ "$_delete_branch" = true ]; then
+    git branch -D "$_head" >/dev/null 2>&1 || true
+    git push origin --delete "$_head" >/dev/null 2>&1 || true
+  fi
+}
+
+pr_list() {
+  _search=""
+  _json_flag=""
+  _limit=""
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --search) [ $# -lt 2 ] && { echo "Error: --search requires a value" >&2; exit 1; }; _search="$2"; shift 2 ;;
+      --json)   [ $# -lt 2 ] && { echo "Error: --json requires fields" >&2; exit 1; }; _json_flag="$2"; shift 2 ;;
+      --limit)  [ $# -lt 2 ] && { echo "Error: --limit requires a value" >&2; exit 1; }; _limit="$2"; shift 2 ;;
+      *) echo "Error: unknown argument: $1" >&2; exit 1 ;;
+    esac
+  done
+
+  # List all issues that have a progress.md file
+  _first=1
+  _count=0
+  printf '['
+
+  # Search plans
+  for _pf in "$TRACKER_PATH"/*/progress.md; do
+    [ -f "$_pf" ] || continue
+    if [ -n "$_limit" ] && [ "$_count" -ge "$_limit" ]; then break; fi
+    _dir="$(dirname "$_pf")"
+    _dirname="$(basename "$_dir")"
+    _num="$(echo "$_dirname" | sed 's/ .*//')"
+    _title="$(extract_title "$_dir")"
+    _head="$(sed -n 's/^head: *//p' "$_pf" | head -1)"
+    # If --search is given, filter by head branch or title match
+    if [ -n "$_search" ]; then
+      case "$_head $_title" in
+        *${_search}*) ;; # match
+        *) continue ;;
+      esac
+    fi
+    if [ "$_first" -eq 1 ]; then _first=0; else printf ','; fi
+    json_list_item "$_num" "$_title"
+    _count=$((_count + 1))
+  done
+
+  # Search slices
+  for _pf in "$TRACKER_PATH"/*/slices/*/progress.md; do
+    [ -f "$_pf" ] || continue
+    if [ -n "$_limit" ] && [ "$_count" -ge "$_limit" ]; then break; fi
+    _dir="$(dirname "$_pf")"
+    _dirname="$(basename "$_dir")"
+    _num="$(echo "$_dirname" | sed 's/ .*//')"
+    _title="$(extract_title "$_dir")"
+    _head="$(sed -n 's/^head: *//p' "$_pf" | head -1)"
+    if [ -n "$_search" ]; then
+      case "$_head $_title" in
+        *${_search}*) ;; # match
+        *) continue ;;
+      esac
+    fi
+    if [ "$_first" -eq 1 ]; then _first=0; else printf ','; fi
+    json_list_item "$_num" "$_title"
+    _count=$((_count + 1))
+  done
+
+  printf ']'
+}
+
+# ============================================================
 # Main dispatch
 # ============================================================
 
 if [ $# -lt 2 ]; then
-  echo "Usage: tracker.sh issue <command> [args]" >&2
+  echo "Usage: tracker.sh <issue|pr> <command> [args]" >&2
   exit 1
 fi
 
-if [ "$1" != "issue" ]; then
-  echo "Error: unknown command group: $1 (only 'issue' is supported)" >&2
-  exit 1
-fi
-
+CMD_GROUP="$1"
 SUBCMD="$2"
 shift 2
 
 read_config
 
-case "$SUBCMD" in
-  create)
-    if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
-    _output="$(cmd_create "$@")"
-    if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: create $_output"; fi
-    echo "$_output"
+case "$CMD_GROUP" in
+  issue)
+    case "$SUBCMD" in
+      create)
+        if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
+        _output="$(cmd_create "$@")"
+        if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: create $_output"; fi
+        echo "$_output"
+        ;;
+      view)
+        if [ $# -lt 1 ]; then echo "Error: issue view requires an ID" >&2; exit 1; fi
+        cmd_view "$@" ;;
+      edit)
+        if [ $# -lt 1 ]; then echo "Error: issue edit requires an ID" >&2; exit 1; fi
+        if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
+        cmd_edit "$@"
+        if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: edit $1"; fi
+        ;;
+      close)
+        if [ $# -lt 1 ]; then echo "Error: issue close requires an ID" >&2; exit 1; fi
+        if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
+        cmd_close "$@"
+        if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: close $1"; fi
+        ;;
+      list) cmd_list "$@" ;;
+      *) echo "Error: unknown issue subcommand: $SUBCMD" >&2; exit 1 ;;
+    esac
     ;;
-  view)
-    if [ $# -lt 1 ]; then echo "Error: issue view requires an ID" >&2; exit 1; fi
-    cmd_view "$@" ;;
-  edit)
-    if [ $# -lt 1 ]; then echo "Error: issue edit requires an ID" >&2; exit 1; fi
-    if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
-    cmd_edit "$@"
-    if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: edit $1"; fi
+  pr)
+    case "$SUBCMD" in
+      create)
+        if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
+        pr_create "$@"
+        if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: pr create"; fi
+        ;;
+      view)
+        if [ $# -lt 1 ]; then echo "Error: pr view requires an ID" >&2; exit 1; fi
+        pr_view "$@" ;;
+      edit)
+        if [ $# -lt 1 ]; then echo "Error: pr edit requires an ID" >&2; exit 1; fi
+        if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
+        pr_edit "$@"
+        if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: pr edit $1"; fi
+        ;;
+      merge)
+        if [ $# -lt 1 ]; then echo "Error: pr merge requires an ID" >&2; exit 1; fi
+        pr_merge "$@"
+        ;;
+      list) pr_list "$@" ;;
+      *) echo "Error: unknown pr subcommand: $SUBCMD" >&2; exit 1 ;;
+    esac
     ;;
-  close)
-    if [ $# -lt 1 ]; then echo "Error: issue close requires an ID" >&2; exit 1; fi
-    if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
-    cmd_close "$@"
-    if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: close $1"; fi
-    ;;
-  list) cmd_list "$@" ;;
-  *) echo "Error: unknown subcommand: $SUBCMD" >&2; exit 1 ;;
+  *) echo "Error: unknown command group: $CMD_GROUP (expected 'issue' or 'pr')" >&2; exit 1 ;;
 esac
