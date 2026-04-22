@@ -2,11 +2,11 @@
 # test-orchestration.sh — verify phase .md files match ORCHESTRATION.md
 #
 # Reads ORCHESTRATION.md as the source of truth.
-# For each phase/skill, checks that every command string exists in the .md file,
-# that commands appear in the declared order, and that ensure-body-contains strings are present.
+# For each phase/skill, checks that every explicit artifact from ORCHESTRATION.md
+# exists in the .md file and appears in the declared order.
 #
 # Commands set to false are skipped.
-# The order check uses the LAST occurrence of each command's key substring in the .md.
+# The order check uses the first occurrence of each artifact after the previous one.
 set -u
 
 TESTS_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -74,17 +74,30 @@ make_pattern() {
     "git push"*)      echo "git push" ;;
     "git merge"*)     echo "git merge" ;;
     "rename "*)       echo "rename" ;;
-    *)                echo "$cmd" | cut -c1-30 ;;
+    *)                printf '%s' "$cmd" | cut -c1-30 ;;
   esac
 }
 
-last_line_of() {
-  grep -nF -e "$2" "$1" | tail -1 | cut -d: -f1
+next_match_of() {
+  file="$1"
+  pattern="$2"
+  after_offset="${3:--1}"
+  python3 - "$file" "$pattern" "$after_offset" <<'PY'
+import sys
+path, pattern, after_offset = sys.argv[1], sys.argv[2], int(sys.argv[3])
+with open(path, encoding="utf-8") as f:
+    text = f.read()
+idx = text.find(pattern, after_offset + 1)
+if idx == -1:
+    sys.exit(0)
+line = text.count("\n", 0, idx) + 1
+print(f"{idx}|{line}")
+PY
 }
 
 # ============================================================
 # Parse ORCHESTRATION.md into testable lines
-# Format: source_file|op_name|check_type|value
+# Format: source_file|line_no|check_type|value
 # ============================================================
 
 python3 -c "
@@ -94,18 +107,20 @@ with open('$ORCHESTRATION') as f:
     lines = f.readlines()
 
 source_file = None
-op_name = None
+current_op = None
 in_code = False
 section_type = None
 
-def check_type_for(op):
+def check_type_for(op, code):
     if op == 'set-variables':
         return 'sh'
-    if op in ('fetch-context', 'update-tracker'):
+    if op == 'fetch-context':
+        return 'tracker'
+    if code.startswith('./tracker.sh ') or code.startswith('gh '):
         return 'tracker'
     return 'cmd'
 
-for raw in lines:
+for line_no, raw in enumerate(lines, start=1):
     line = raw.rstrip('\\n')
 
     # Track section
@@ -127,19 +142,19 @@ for raw in lines:
             source_file = heading.lstrip('/') + '/SKILL.md'
         else:
             source_file = 'reef-pulse/' + heading
-        op_name = None
+        current_op = None
         continue
 
     if source_file is None:
         continue
 
-    # Operation bullet (top-level: '- op-name')
-    m = re.match(r'^- (\S+)', line)
+    # Operation bullet (top-level bullets are visual grouping only)
+    m = re.match(r'^- (.+)', line)
     if m:
-        op_name = m.group(1)
+        current_op = m.group(1)
         continue
 
-    if op_name is None:
+    if current_op is None:
         continue
 
     # Code block start
@@ -155,24 +170,17 @@ for raw in lines:
     # Code block content
     if in_code:
         code = line.strip()
-        if code:
-            ct = check_type_for(op_name)
-            print(f'{source_file}|{op_name}|{ct}|{code}')
-        continue
-
-    # Sub-items: '  - pass: \`...\`' or '  - fail: \`...\`'
-    m = re.match(r'^\s+- (pass|fail):\s*\`([^\`]+)\`', line)
-    if m:
-        sub = m.group(1)
-        cmd = m.group(2)
-        print(f'{source_file}|{op_name}|tracker-{sub}|{cmd}')
+        if code and code != 'false':
+            ct = check_type_for(current_op, code)
+            print(f'{source_file}|{line_no}|{ct}|{code}')
         continue
 
     # Contains directive: '  - contains: \`...\`'
     m = re.match(r'^\s+- contains:\s*\`([^\`]+)\`', line)
     if m:
         text = m.group(1)
-        print(f'{source_file}|{op_name}|contains|{text}')
+        for part in text.split(' + '):
+            print(f'{source_file}|{line_no}|contains|{part}')
         continue
 " > "$TMPFILE"
 
@@ -220,19 +228,17 @@ fi
 # ============================================================
 
 current_source=""
+prev_offset=-1
 prev_line=0
-prev_op=""
-prev_check_type=""
 
-while IFS='|' read -r source_file op_name check_type value; do
+while IFS='|' read -r source_file orchestration_line check_type value; do
   md_path="$REPO_ROOT/$source_file"
 
   # Print header on first encounter
   if [ "$source_file" != "$current_source" ]; then
     current_source="$source_file"
+    prev_offset=-1
     prev_line=0
-    prev_op=""
-    prev_check_type=""
     OUTPUT_BUF="${OUTPUT_BUF}
 === $source_file ===
 "
@@ -242,31 +248,10 @@ while IFS='|' read -r source_file op_name check_type value; do
     fi
   fi
 
-  # Reset ordering when entering a new op or check_type so tracker-local
-  # arrays (which contain enter/commit/exit patterns) don't interfere with
-  # the main flow's ordering, and different tracker types within the same op
-  # don't interfere with each other.
-  if [ "$op_name" != "$prev_op" ] || [ "$check_type" != "$prev_check_type" ]; then
-    prev_line=0
-    prev_op="$op_name"
-    prev_check_type="$check_type"
-  fi
-
   # Build label
-  label="$source_file > $op_name"
+  label="$source_file > ORCHESTRATION.md:$orchestration_line"
   if [ "$check_type" != "cmd" ]; then
     label="$label ($check_type)"
-  fi
-
-  # Contains directives: just check the string exists, no ordering.
-  if [ "$check_type" = "contains" ]; then
-    label="$source_file > $op_name (contains)"
-    if grep -qF -e "$value" "$md_path"; then
-      pass "$label"
-    else
-      fail "$label" "expected body to contain: $value"
-    fi
-    continue
   fi
 
   # For sh lines and tracker arrays, use the value literally.
@@ -278,16 +263,16 @@ while IFS='|' read -r source_file op_name check_type value; do
   fi
 
   if grep -qF -e "$pattern" "$md_path"; then
-    line=$(last_line_of "$md_path" "$pattern")
+    match=$(next_match_of "$md_path" "$pattern" "$prev_offset")
+    if [ -z "$match" ]; then
+      fail "$label" "found only before previous checkpoint: $value"
+      continue
+    fi
+    offset="${match%%|*}"
+    line="${match##*|}"
     pass "$label"
-
-    # Order check: should not appear before the previous found command
-    if [ "$prev_line" -gt 0 ] && [ -n "$line" ] && [ "$line" -lt "$prev_line" ]; then
-      fail "$label: ordering — line $line is before previous at line $prev_line"
-    fi
-    if [ -n "$line" ]; then
-      prev_line="$line"
-    fi
+    prev_offset="$offset"
+    prev_line="$line"
   else
     fail "$label" "expected pattern: $pattern"
   fi
