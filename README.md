@@ -100,8 +100,6 @@ The single entry point for turning ideas into plans. Determines whether the work
 
 Scans all labelled issues, dispatches the appropriate phase for each as a sub-agent, and exits. Holds no state — labels are the state. Run with `--hitl` (manual, includes 🤿 items) or `--afk` (cron, 🌊 only).
 
-Each pulse also loads the persistent saga from `world.md`, asks `reef-pulse/saga-writer.md` for the next beat, and at session end archives the session into `chapter-NNN.md` while keeping `world.md` as the handoff to the next pulse.
-
 Design principles:
 
 - **Testing at source**: each transition includes verification before tagging.
