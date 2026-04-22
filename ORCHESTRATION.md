@@ -35,46 +35,14 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   TRACKER_BRANCH="{from config.md}" # e.g. main
   LOCK_FILE=".agents/moonjelly-reef/pulse.lock"
   ```
-- acquire-lock
-  - contains: `pulse.lock`
-  - contains: `start timestamp`
-  - contains: `override`
 - checkout-tracker-branch — if local-tracker-committed
   ```sh
   git fetch origin "$TRACKER_BRANCH" && git checkout "$TRACKER_BRANCH" && git pull
   ```
-- print-session-header — if first iteration
-  - contains: `MOONJELLY REEF`
-  - contains: `SESSION LOG`
-- print-pulse-header
-  - contains: `PULSE`
-  - contains: `timestamp`
-- phase-specific
-  - contains: `$SKILL_DIR/{file}`
-- print-dispatched-agents
-  - contains: `phase emoji`
-  - contains: `𐃆🐋`
-  - contains: `to-slice`
-  - contains: `to-implement`
-  - contains: `to-inspect`
-  - contains: `to-rework`
-  - contains: `to-merge`
-  - contains: `to-ratify`
-  - contains: `to-await-waves`
 - set-variables
   ```sh
   AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
   ```
-- print-lore-snippet
-  - contains: `lore snippet`
-  - contains: `elapsed time`
-  - contains: `prior snippets`
-  - contains: `continues the narrative`
-  - contains: `Ghibli ocean vibes`
-- print-return-results
-  - contains: `phase emoji`
-  - contains: `›`
-  - contains: `𐃆🐋`
 - set-variables
   ```sh
   ISSUE_ID="{from dispatched items}"
@@ -93,27 +61,8 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   ./tracker.sh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
   ```
-- present-human-items — if HITL mode and first iteration
-  - contains: `to-scope`
-  - contains: `to-land`
-  - contains: `first iteration`
-- recurse — if AUTOMATED_DISPATCHES > 0
-  - contains: `/reef-pulse --afk`
-  - contains: `main session`
-  - contains: `never as a sub-agent`
-- print-session-complete — if AUTOMATED_DISPATCHES == 0
-  - contains: `SESSION COMPLETE`
-  - contains: `Duration`
-  - contains: `Pulses`
-  - contains: `Agents`
-  - contains: `Landed`
-  - contains: `Human`
-  - contains: `Idle`
-- print-full-story — if AUTOMATED_DISPATCHES == 0
-  - contains: `full collected story`
 - release-lock — if AUTOMATED_DISPATCHES == 0
-  - contains: `pulse.lock`
-  - contains: `delete`
+  - contains: `delete the pulse.lock file`
 
 ### [/reef-scope](./reef-scope/SKILL.md)
 
@@ -207,6 +156,14 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-land --add-label to-rework
   ```
+- set-variables — if follow-up
+  ```sh
+  FOLLOW_UP_CONTEXT="{summary of PR comments and concerns from step 2}"
+  ```
+- create-tracker — if follow-up
+  ```sh
+  ./tracker.sh issue create --title "Follow-up: {summary of concerns}" --body "$FOLLOW_UP_CONTEXT" --label to-scope
+  ```
 - pre-merge-check — if approved
   ```sh
   ./tracker.sh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
@@ -232,14 +189,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 - update-tracker — if approved
   ```sh
   ./tracker.sh issue close "$PLAN_ID"
-  ```
-- set-variables — if follow-up
-  ```sh
-  FOLLOW_UP_CONTEXT="{summary of PR comments and concerns from step 2}"
-  ```
-- create-tracker — if follow-up
-  ```sh
-  ./tracker.sh issue create --title "Follow-up: {summary of concerns}" --body "$FOLLOW_UP_CONTEXT" --label to-scope
   ```
 
 ## Phases
@@ -284,7 +233,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   WORKTREE_PATH=".worktrees/$PLAN_ID-slice"
   ```
 - enter-worktree
-  - contains: `Enter a worktree forked from $TARGET_BRANCH to read the codebase for informed slicing decisions`
   ```sh
   ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
   ```
@@ -319,7 +267,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   nextPhase="in-progress"
   planPr="—"
-  summary="Slices created with acceptance criteria, dependency graph, and coverage matrix"
   ```
 
 ### [implement.md](./reef-pulse/implement.md)
@@ -342,7 +289,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   WORKTREE_PATH=".worktrees/$SLICE_NAME-implement"
   ```
 - enter-worktree
-  - contains: `Enter a worktree forked from $TARGET_BRANCH so you start from a clean integration point`
   ```sh
   ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
   ```
@@ -376,7 +322,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   nextPhase="to-inspect"
   planPr="$PR_NUMBER"
-  summary="Implementation complete for $SLICE_NAME"
   ```
 
 ### [inspect.md](./reef-pulse/inspect.md)
@@ -398,7 +343,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   WORKTREE_PATH=".worktrees/$SLICE_NAME-inspect"
   ```
 - enter-worktree
-  - contains: `Enter a worktree forked from $PR_BRANCH to review the implementation`
   ```sh
   ./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
@@ -415,9 +359,10 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   PR_BODY="$PR_BODY\n\n$REPORT"
   ./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
-- update-tracker
-  - pass: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-merge`
-  - fail: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-rework`
+- update-tracker pass case
+  - contains: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-merge`
+- update-tracker fail case
+  - contains: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-rework`
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
@@ -426,7 +371,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   nextPhase="to-merge" # or "to-rework" if gaps found
   planPr="$PR_NUMBER"
-  summary="{verdict}: {one-line summary of findings}"
   ```
 
 ### [rework.md](./reef-pulse/rework.md)
@@ -449,7 +393,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   WORKTREE_PATH=".worktrees/$SLICE_NAME-rework"
   ```
 - enter-worktree
-  - contains: `Enter a worktree forked from $PR_BRANCH to apply fixes to the existing PR`
   ```sh
   ./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
@@ -478,7 +421,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   nextPhase="to-inspect"
   planPr="$PR_NUMBER"
-  summary="Rework complete — addressed review feedback"
   ```
 
 ### [await-waves.md](./reef-pulse/await-waves.md)
@@ -508,7 +450,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
   ```
 - enter-worktree
-  - contains: `Enter a worktree forked from $TARGET_BRANCH to be able to read up to date code`
   ```sh
   ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
   ```
@@ -529,7 +470,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   nextPhase="to-implement" # or "to-await-waves" if still blocked
   planPr="—"
-  summary="Slice {name} is unblocked and ready for implementation" # or "still blocked by #N, #M"
   ```
 
 ### [merge.md](./reef-pulse/merge.md)
@@ -556,7 +496,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ./tracker.sh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
   ```
 - enter-worktree
-  - contains: `Enter a worktree forked from $PR_BRANCH (not $TARGET_BRANCH) so you are testing the PR code with the latest target merged in`
   ```sh
   ./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
   ```
@@ -589,7 +528,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   nextPhase="to-ratify"
   planPr="$PR_NUMBER" # inherited from router context
-  summary="Single slice verified — forwarding to ratify for holistic review"
   ```
 
 ### [merge-multi.md](./reef-pulse/merge-multi.md)
@@ -630,7 +568,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   nextPhase="to-ratify" # or "in-progress" if not all slices tagged 'landed'
   planPr="—" # multi-slice: no plan PR yet
-  summary="Slice {name} merged — {N} of {total} slices complete"
   ```
 
 ### [ratify.md](./reef-pulse/ratify.md)
@@ -653,7 +590,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   WORKTREE_PATH=".worktrees/$PLAN_ID-ratify"
   ```
 - enter-worktree
-  - contains: `Enter a worktree forked from $PR_BRANCH`
   ```sh
   ./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
   ```
@@ -673,9 +609,10 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   PR_BODY="$PR_BODY\n\n$REPORT"
   ./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
-- update-tracker
-  - pass: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-land`
-  - fail: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rework` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-rework`
+- update-tracker pass case
+  - contains: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-land`
+- update-tracker fail case
+  - contains: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rework` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-rework`
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
@@ -684,6 +621,5 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   nextPhase="to-land" # or "to-rework" if gaps found, "to-scope" if safety valve
   planPr="$PR_NUMBER"
-  summary="Ratify {PASS|GAPS FOUND} — {one-line summary}"
   planIssueMetrics="{metrics rows from plan issue body, or empty if none}"
   ```
