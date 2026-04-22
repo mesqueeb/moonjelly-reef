@@ -98,7 +98,9 @@ The single entry point for turning ideas into plans. Determines whether the work
 <details>
 <summary>🤿 / 🌊 <b><code>/reef-pulse</code></b> — the orchestrator</summary>
 
-Scans all labelled issues, dispatches the appropriate phase for each as a sub-agent, and exits. Holds no state — labels are the state. Run with `--hitl` (manual, includes 🤿 items) or `--afk` (cron, 🌊 only).
+Scans all labelled issues, dispatches the appropriate phase for each as a sub-agent, and exits. Holds no state — labels are the state. Run it manually or from cron; the skill handles the same pulse flow either way.
+
+If you've queue'd up enough issues that you've scoped with the `reef-scope` skill, simply calling `reef-pulse` will make the reef start the work, continuously recursively pulsing, taking every ticket through all phases, until the work is done!
 
 Design principles:
 
@@ -129,7 +131,7 @@ Finds the open PR for the issue, summarizes the report, and checks for PR commen
 
 ## Pulse phase details
 
-These are the 🌊 automated phases dispatched by `/reef-pulse`. Each phase reads its instructions from a file under `reef-pulse/`.
+These are the 🌊 automated phases dispatched by the `reef-pulse` skill. Each phase reads its instructions from a file under `reef-pulse/`.
 
 <details>
 <summary>🌊 <b><code>to-slice</code></b> 🏷️</summary>
@@ -218,7 +220,6 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 
 <p align="right">🦭<br /><sub>The walrus hauls itself onto the ice floe, surveys the entire colony with slow, deliberate eyes, and counts every last pup — nothing is declared safe until the old bull has seen it all.</sub></p>
 
-
 ## Phase metrics
 
 Every phase tracks its duration and token usage. Metrics are written exclusively by reef-pulse after each dispatched sub-agent completes — individual phase files do not self-report metrics. Metrics accumulate in a single table on the plan issue (and the plan PR once one exists), giving the reviewer a complete cost/time breakdown from scoping through landing. reef-scope is the only exception: because it runs in the user's session (not as a sub-agent), it records its own wall-clock duration on the plan issue. When all work is done, a bold **Total** row sums durations and tokens across the entire lifecycle.
@@ -240,19 +241,15 @@ To further ensure no sub-agent messes up worktree creation, branch targeting, or
 
 ## Autopilot
 
-Run the reef on autopilot so it pulses while you're away. In any Claude Code session:
+Run the reef on autopilot so it pulses while you're away. If you've queue'd up enough issues that you've scoped with the `reef-scope` skill, simply calling `reef-pulse` will make the reef start the work, continuously recursively pulsing, taking every ticket through all phases, until the work is done!
 
-```
-/reef-pulse --afk
-```
+## Remote Machine Cron
 
-This runs a single AFK pulse (automated work only, no human prompts). To make it recurring, create a durable cron:
+You could also set up a remote machine with eg. a Claude Code cron that continuously runs pulses. When a pulse is running already, when the cron pulses, we have a lock to prevent double work.
 
+```sh
+CronCreate cron="7 * * * *" prompt="Run the reef-pulse skill." durable=true
 ```
-CronCreate cron="7 * * * *" prompt="/reef-pulse --afk" durable=true
-```
-
-This persists to `.claude/scheduled_tasks.json` and survives session restarts. It runs locally, so your git and GitHub credentials just work. Adjust the cron expression to your preferred interval (e.g. `"*/30 * * * *"` for every 30 minutes).
 
 ## Companion skill
 

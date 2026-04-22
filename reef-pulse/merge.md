@@ -86,5 +86,5 @@ If tests failed, stop here. Do not proceed to single-slice or multi-slice steps.
 
 After the pre-merge check passes, check: **is this single-slice or multi-slice?**
 
-- **Single-slice** (target branch = base branch) — read and execute [merge-single.md](merge-single.md) (fast path: label plan `to-land`, human merges via `/reef-land`)
+- **Single-slice** (target branch = base branch) — read and execute [merge-single.md](merge-single.md) (fast path: label plan `to-land`, human merges via the `reef-land` skill)
 - **Multi-slice** (target branch forks from base branch) — read and execute [merge-multi.md](merge-multi.md) (full flow: squash merge PR, check siblings, check completion)

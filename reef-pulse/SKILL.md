@@ -19,7 +19,9 @@ Capture the skill base directory (provided by the harness as "Base directory for
 SKILL_DIR="{base directory for this skill}"
 ```
 
-## 0a. Acquire lock
+## Session setup
+
+### Acquire lock
 
 Before doing anything else, check for an existing pulse.lock file.
 
@@ -30,10 +32,12 @@ LOCK_FILE=".agents/moonjelly-reef/pulse.lock"
 
 If the pulse.lock file exists, another pulse may already be running (or a previous session crashed without cleaning up).
 
-- If `pulse.lock` exists, read the start timestamp from it, calculate how long the existing pulse has been running, and report this to the user: "A pulse has been running for {elapsed}. This may be from a crashed session. Override?" In AFK mode, override automatically (the lock is stale if we're in a cron). In HITL mode, ask the user.
+- If `pulse.lock` exists, read the start timestamp from it, calculate how long the existing pulse has been running, and report this to the user: "A pulse has been running for {elapsed}. This may be from a crashed session. Override?" In interactive use, ask the user. In cron/autopilot use, override automatically.
 - If `pulse.lock` does not exist (or the user chose to override), create it with a start timestamp (ISO 8601 UTC) and continue.
 
-## 0b. Sync tracker branch (local-tracker-committed only)
+### Sync tracker branch (local-tracker-committed only)
+
+RUN IF the tracker is `github`, `local-tracker-gitignored`, or any MCP-based tracker, skip this step.
 
 If the tracker type in config is `local-tracker-committed`, the tracker files live in a git-tracked directory on a specific branch. Sync it before scanning. `TRACKER_BRANCH` was already set in the previous step.
 
@@ -41,18 +45,9 @@ If the tracker type in config is `local-tracker-committed`, the tracker files li
 git fetch origin "$TRACKER_BRANCH" && git checkout "$TRACKER_BRANCH" && git pull
 ```
 
-If the tracker is `github`, `local-tracker-gitignored`, or any MCP-based tracker, skip this step.
+### Print session header (first iteration only)
 
-## Mode
-
-Detect the mode from how this skill was invoked:
-
-- `/reef-pulse` or `/reef-pulse --hitl` → **HITL mode**: dispatch automated work + present human items.
-- `/reef-pulse --afk` → **AFK mode**: dispatch automated work only. Skip human items. Designed for cron.
-
-## The pulse
-
-### Step 0c. Print session header (first iteration only)
+RUN ONCE PER SESSION.
 
 If this is the first iteration of the pulse (not a recursive call), print the session header:
 
@@ -64,7 +59,13 @@ If this is the first iteration of the pulse (not a recursive call), print the se
 
 Initialize the pulse counter to 0.
 
-### Step 0d. Print pulse header
+## Pulse loop
+
+Every recursive call is still a full pulse iteration. Do not collapse a recursive call into a quick rescan or tracker-only follow-up. Each iteration must emit the same pulse transcript structure: pulse header, dispatch lines when applicable, lore beat, return results when applicable, then recurse or complete.
+
+### 1. Print pulse header
+
+RUN EVERY PULSE.
 
 At the start of each pulse iteration (including recursive calls), increment the pulse counter and print the pulse header with the current timestamp:
 
@@ -72,7 +73,9 @@ At the start of each pulse iteration (including recursive calls), increment the 
 ── PULSE {N} ──────────────────────────────────────── {HH:MM:SS} ──
 ```
 
-### Step 1. Scan
+### 2. Scan
+
+RUN EVERY PULSE.
 
 Read the config to determine the tracker type, then scan for all tagged issues.
 
@@ -82,7 +85,9 @@ Read the config to determine the tracker type, then scan for all tagged issues.
   --search 'label:to-scope OR label:to-slice OR label:to-await-waves OR label:to-implement OR label:to-inspect OR label:to-rework OR label:to-merge OR label:to-ratify OR label:to-land'
 ```
 
-### Step 2. Dispatch automated (🌊) work — Flow wave
+### 3. Dispatch automated (🌊) work — Flow wave
+
+RUN EVERY PULSE.
 
 **Do NOT ask the user for confirmation. Dispatch immediately.** The labels are the authorization — if an item is labelled for automated work, dispatch it without hesitation.
 
@@ -101,7 +106,9 @@ For each item, spawn a sub-agent with: `"Read and follow $SKILL_DIR/{file}. Targ
 | `to-merge`     | `$SKILL_DIR/merge.md`     |
 | `to-ratify`    | `$SKILL_DIR/ratify.md`    |
 
-### Step 2a. Ebb wave — gated dispatch of to-await-waves items
+### 3a. Ebb wave — gated dispatch of to-await-waves items
+
+RUN EVERY PULSE after the flow wave completes.
 
 After all flow agents complete, rescan `to-await-waves` items. For each item, parse the `[await: ...]` suffix from its title to find blocker IDs, then check each blocker's label:
 
@@ -118,7 +125,9 @@ DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. #42
 
 If the `[await: ...]` suffix is missing or malformed, dispatch anyway — `await-waves` itself catches problems before promoting.
 
-### Step 2b. Print dispatched agents
+### 3b. Print dispatched agents
+
+RUN EVERY PULSE if anything was dispatched in the flow or ebb wave.
 
 Immediately after dispatching, print each dispatched agent with its phase emoji. Use the phase emoji from the README lore for each phase:
 
@@ -146,9 +155,11 @@ After both flow and ebb waves complete, record the combined count of automated p
 AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
 ```
 
-### Step 2c. Print lore snippet
+### 4. Print lore snippet
 
-This step runs on every pulse, including empty ones. Generate a lore snippet by spawning a storytelling sub-agent (use `$SKILL_DIR/saga-writer.md`). Do not generate lore inline inside the pulse.
+RUN EVERY PULSE, including empty ones.
+
+It is required even when the iteration feels like "just a follow-up scan" or "just the final empty pulse." Generate a lore snippet by spawning a storytelling sub-agent (use `$SKILL_DIR/saga-writer.md`). Do not generate lore inline inside the pulse.
 
 Choose a random number as-if you make a 2d6 roll (2-12) with slight wave progress influence:
 
@@ -177,7 +188,9 @@ After the sub-agent returns, print the beat in the existing dashed lore box form
 
 Leave dispatch lines, metrics tables, and return-result output unchanged.
 
-### Step 2d. Print return results
+### 5. Print return results
+
+RUN EVERY PULSE if anything was dispatched in this iteration.
 
 After agents return, print each result with its phase emoji and a `›` transition arrow showing the phase transition:
 
@@ -198,7 +211,9 @@ Also print human and idle items:
   ·   #56  idle
 ```
 
-### Step 3. Log phase metrics
+### 6. Log phase metrics
+
+RUN EVERY PULSE if anything was dispatched in this iteration.
 
 After all dispatched agents complete, collect from each: task notification metadata (duration, tokens, tool uses) and the structured handoff variables (`nextPhase`, `planPr`, `summary`). Group results by plan.
 
@@ -224,7 +239,7 @@ No timestamp in the header. Each row gets a `Date` column (`yyyy-MM-dd HH:mm`).
 - Duration: human-readable (`42s`, `1m 12s`). Tokens: space-separated thousands.
 - Do NOT read issue bodies to discover PR numbers. Use `planPr` from the handoff.
 
-#### 3a. Write metrics to the plan issue
+#### 6a. Write metrics to the plan issue
 
 Read the current plan issue body. If a `### 🪼 Pulse metrics` table exists, insert the new row(s) immediately above the `<!-- end metrics table -->` sentinel. If no table exists, append it to the end of the body (including the sentinel after the last row).
 
@@ -234,7 +249,7 @@ ISSUE_BODY="{current issue body with metrics rows inserted into the table}"
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
 ```
 
-#### 3b. Write metrics to the plan PR
+#### 6b. Write metrics to the plan PR
 
 Use `planPr` from the handoff to determine the target PR. If `planPr` is `—`, no plan PR exists yet — skip this sub-step. Otherwise, read the current plan PR body and insert the same metrics rows immediately above the `<!-- end metrics table -->` sentinel. If no table exists, append it to the end (including the sentinel after the last row).
 
@@ -259,32 +274,21 @@ Example:
 <!-- end metrics table -->
 ```
 
-### Step 4. Present human (🤿) items (first iteration only)
+### 7. Recurse or exit
 
-Skip this step if running in `--afk` mode or if this is a recursive iteration (not the first iteration).
-
-Human items (`to-scope`, `to-land`) are presented only in the first iteration of the pulse, not in recursive AFK calls. This ensures that HITL items are shown once to the user and not repeated as the pulse recurses through automated work.
-
-If running in `--hitl` mode and this is the first iteration, present human-required items immediately without waiting for dispatched agents to complete. Automated agents run in the background — metrics collection (Step 3) happens after agents complete but must not block the human workflow. Present human items as soon as dispatch is done:
-
-| Label      | Skill         | Presentation                                                              |
-| ---------- | ------------- | ------------------------------------------------------------------------- |
-| `to-scope` | `/reef-scope` | "**{title}** needs scoping. Run `/reef-scope #{number}`."                 |
-| `to-land`  | `/reef-land`  | "**{title}** is ready for your final review. Run `/reef-land #{number}`." |
-
-> Note: reef-scope and reef-land remain user-facing skills invoked via slash commands. Only the automated (🌊) phases are dispatched via file references.
-
-### Step 5. Recurse or exit
+RUN EVERY PULSE.
 
 After metrics are logged, check whether to recurse or exit.
 
-**If `$AUTOMATED_DISPATCHES > 0`**: the pulse dispatched automated work this iteration. After agents return and metrics are logged, recursively invoke `/reef-pulse --afk` on the main session. The recursive call is always `--afk`, even if the first invocation was HITL. The recursive call happens on the main session, never as a sub-agent — this ensures the loop runs sequentially (scan, dispatch, wait, scan again) rather than spawning nested agents. Do NOT release the lock between iterations; the lock persists across the entire recursive chain. Pass the pulse counter to the next iteration.
+**If `$AUTOMATED_DISPATCHES > 0`**: the pulse dispatched automated work this iteration. After agents return and metrics are logged, recursively invoke the `reef-pulse` skill again on the main session without asking confirmation. The recursive call happens on the main session, never as a sub-agent — this ensures the loop runs sequentially (scan, dispatch, wait, scan again) rather than spawning nested agents. Do NOT release the lock between iterations; the lock persists across the entire recursive chain. Pass the pulse counter to the next iteration. Re-triggering the pulse means literally re-running this skill and following it again from top to bottom for the next pulse iteration, not doing a shorthand check.
 
-**If `$AUTOMATED_DISPATCHES == 0`**: no automated work was dispatched this iteration. The pulse has nothing left to do. Continue to Step 6.
+**If `$AUTOMATED_DISPATCHES == 0`**: no automated work was dispatched this iteration. The pulse has nothing left to do. Continue to the completion steps below.
 
-### Step 6. Print SESSION COMPLETE and full story
+### Print SESSION COMPLETE and full story
 
-This step only runs when `$AUTOMATED_DISPATCHES == 0` (the exit path from Step 5).
+RUN ONLY ON THE FINAL EMPTY PULSE.
+
+This step only runs when `$AUTOMATED_DISPATCHES == 0` (the exit path from Step 7).
 
 Then print the SESSION COMPLETE box with session stats:
 
@@ -314,9 +318,17 @@ After the SESSION COMPLETE box, read the most recent `chapter-NNN.md` in `.agent
   $CHAPTER_CONTENTS
 ```
 
-### Step 7. Release lock
+If the session dispatched no automated work at all, say so plainly and point the user at the next useful action:
 
-This step only runs when `$AUTOMATED_DISPATCHES == 0` (the exit path from Step 5). To release the lock, delete the `pulse.lock` file.
+```
+No automated work is ready right now. Run `reef-scope` to start scoping new items for the reef to pick up.
+```
+
+### Release lock
+
+RUN ONLY ON THE FINAL EMPTY PULSE.
+
+This step only runs when `$AUTOMATED_DISPATCHES == 0` (the exit path from Step 7). To release the lock, delete the `pulse.lock` file.
 
 Exit.
 

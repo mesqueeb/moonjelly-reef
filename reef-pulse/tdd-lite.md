@@ -1,6 +1,6 @@
 # TDD lite
 
-Lightweight TDD discipline for when the `/tdd` skill is not installed.
+Lightweight TDD discipline for when the `tdd` skill is not installed.
 
 ## Workflow
 
@@ -18,4 +18,3 @@ Lightweight TDD discipline for when the `/tdd` skill is not installed.
 - Test would survive an internal refactor
 - Code is minimal for this test
 - No speculative features added
-

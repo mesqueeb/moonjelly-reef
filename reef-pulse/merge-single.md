@@ -10,7 +10,7 @@ Single-slice merge path — delegated from [merge.md](merge.md).
 
 ## Input (from router)
 
-The router has already fetched context, set variables, and completed the pre-merge check. The PR targets the base branch. The human will merge it during `/reef-land` — do NOT merge it here.
+The router has already fetched context, set variables, and completed the pre-merge check. The PR targets the base branch. The human will merge it during the `reef-land` skill — do NOT merge it here.
 
 Set the variables needed for this path:
 
