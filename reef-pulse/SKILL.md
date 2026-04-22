@@ -296,6 +296,12 @@ This step only runs when `AUTOMATED_DISPATCHES` == 0 (the exit path from Step 5)
 First, generate a final lore snippet for the empty pulse (the moonjelly finding nothing left to do). Append it to the lore story list.
 Then the session's lore story list is compiled into `chapter-NNN.md` with sequential numbering so the archive matches the beats that were printed during the session.
 
+Then compile all beats from the current session into a new `chapter-NNN.md` in `$SAGA_DIR`, using the next sequential chapter number and the full collected lore story list.
+The final empty-pulse or wrap-up beat is added to the session story before the chapter is written so the chapter and terminal output tell the same session story.
+
+After the chapter is written, update `world.md` with the resolved current act state and a one-line hook for the next session.
+world.md receives its final session update with the resolved current act state and a one-line hook for the next session, then the updated world is persisted back to `$WORLD_FILE`.
+
 Then print the SESSION COMPLETE box with session stats:
 
 ```
