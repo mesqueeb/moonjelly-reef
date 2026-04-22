@@ -143,7 +143,7 @@ General rules:
   PLAN_ID="{from PR body or already known}"
   PR_NUMBER="{from plan issue body or already known}"
   BASE_BRANCH="{from plan issue body}"
-  PR_BODY="{the PR body content — this is the seal report}"
+  PR_BODY="{the PR body content — this contains the seal report}"
   ```
 - phase-specific
 - set-variables — if change-requests
@@ -310,6 +310,7 @@ General rules:
   ```sh
   REPORT="{closes line and implementation report}" # e.g.: closes #$ISSUE_ID $ISSUE_TITLE\n\n...
   ```
+  - contains: `closes #$ISSUE_ID $ISSUE_TITLE`
 - pr-create
   ```sh
   ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-inspect
@@ -607,7 +608,7 @@ General rules:
   ```
 - submit-report
   ```sh
-  REPORT="{seal-report}" # <details><summary><h3>🦭 Seal report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+  REPORT="{closes line and seal-report}" # e.g.: closes #$ISSUE_ID $ISSUE_TITLE\n\n<details><summary><h3>🦭 Seal report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
   # if no PR exists:
   ./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-seal
   # if PR exists, append:
@@ -615,6 +616,15 @@ General rules:
   PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
   PR_BODY="$PR_BODY\n\n$REPORT"
   ./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
+  ```
+- set-variables
+  ```sh
+  PR_NUMBER="{from pr create output or existing PR}"
+  ISSUE_BODY="{original issue body with added frontmatter values}"
+  ```
+- update-tracker
+  ```sh
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
   ```
 - update-tracker pass case
   ```sh

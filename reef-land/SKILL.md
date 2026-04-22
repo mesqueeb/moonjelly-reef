@@ -37,9 +37,9 @@ Now set all variables:
 
 ```sh
 PLAN_ID="{from PR body or already known}"
-PR_NUMBER="{from plan body or already known}"
-BASE_BRANCH="{from plan body}"
-PR_BODY="{the PR body content — this is the seal report}"
+PR_NUMBER="{from plan issue body or already known}"
+BASE_BRANCH="{from plan issue body}"
+PR_BODY="{the PR body content — this contains the seal report}"
 ```
 
 Fetch PR review threads and filter to only active (unresolved + current) comments:

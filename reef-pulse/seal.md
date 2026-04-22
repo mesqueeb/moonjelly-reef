@@ -177,7 +177,7 @@ The report should be concise and focused on what the human needs to know. Do NOT
 Format the report as a collapsible block with local timestamp (`yyyy/MM/dd HH:mm`):
 
 ```sh
-REPORT="{seal-report}" # <details><summary><h3>🦭 Seal report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+REPORT="{closes line and seal-report}" # e.g.: closes #$ISSUE_ID $ISSUE_TITLE\n\n<details><summary><h3>🦭 Seal report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
 # if no PR exists:
 ./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-seal
 # if PR exists, append:
@@ -185,6 +185,17 @@ PR_NUMBER="{from pr create output or existing PR}"
 PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
 PR_BODY="$PR_BODY\n\n$REPORT"
 ./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
+```
+
+If this creates the final PR, the PR body must start with the `closes` reference, followed by the seal report.
+
+Persist the PR metadata on the plan issue so downstream human review can always find it:
+
+```sh
+PR_NUMBER="{from pr create output or existing PR}"
+ISSUE_BODY="{original issue body with added frontmatter values}"
+# add to frontmatter: pr-number: $PR_NUMBER
+./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
 ```
 
 ### 9. Label
