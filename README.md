@@ -20,7 +20,7 @@ On first run, reef-pulse will prompt you to mention which issue tracker you want
 
 > _Through Moonjelly's pulse, the reef is orchestrated, creatures are set in motion, and Moonjelly recedes._
 
-The moonjelly is the orchestrator. A short-lived session (cron or manual) that scans labels, dispatches skills, and exits. It holds no state — labels are the state. Each pulse: scan → dispatch → exit.
+The moonjelly is the orchestrator. A skill you execute which will scan all the issues and their labels in your project and dispatches sub-agents to do work dependent on the label. It holds no state — labels are the state. Within one session, it may run multiple pulse iterations. Every time an issues gets a new tag, it will automatically be picked up again and handled until until no automated work remains.
 
 ## State machine
 
@@ -43,15 +43,15 @@ stateDiagram-v2
         state "🤿　to-land" as to_land
 
         [*] --> to_scope
-        to_scope --> to_slice : /reef-scope<br />scope the work, define success criteria
-        to_slice --> slice_lifecycle : slice.md<br />🔷　sliced in multiple sub-issues:<br />create pr-branch, sub-issues, coverage matrix
-       to_slice --> slice_lifecycle : slice.md<br />🔶　no sub-issues needed:<br />labels the plan to-implement
+        to_scope --> to_slice : reef-scope skill<br />scope the work, define success criteria
+        to_slice --> slice_lifecycle : slice.md<br />🔷　creates sub-issues:<br />keep current pr-branch, create sub-issues, coverage matrix
+       to_slice --> slice_lifecycle : slice.md<br />🔶　no sub-issues needed:<br />labels the current issue to-implement
         slice_lifecycle --> to_ratify
         slice_lifecycle --> to_land
-        to_ratify --> to_land : ratify.md<br />holistic review on target branch
+        to_ratify --> to_land : ratify.md<br />holistic review on current issue pr-branch
         to_ratify --> slice_lifecycle : ratify.md<br />gaps found, add to-rework
-        to_land --> [*] : /reef-land<br />human approves, merges into main
-        to_land --> slice_lifecycle : /reef-land<br />human requests changes<br />add to-rework
+        to_land --> [*] : reef-land skill<br />human approves, merges into main
+        to_land --> slice_lifecycle : reef-land skill<br />human requests changes<br />add to-rework
     }
 
     state "SLICE LIFECYCLE (per slice)" as slice_lifecycle {
@@ -61,8 +61,8 @@ stateDiagram-v2
         state "🌊　to-inspect" as to_inspect
         state "🌊　to-rework" as to_rework
         state "🌊　to-merge" as to_merge
-        state "merge.md<br />🔷　has parent-plan:<br />merge PR, when all done → to-ratify" as merge_multi
-        state "merge.md<br />🔶　no parent-plan:<br />PR stays open → to-ratify" as merge_single
+        state "merge.md<br />🔷　has parent issue:<br />merge PR, when all done → to-ratify" as merge_multi
+        state "merge.md<br />🔶　no parent issue:<br />PR stays open → to-ratify" as merge_single
         [*] --> to_implement : no deps
         [*] --> to_await : has deps
         to_await --> to_implement : await-waves.md<br />check if deps are done, re-review plan
@@ -79,12 +79,12 @@ stateDiagram-v2
     class merge_multi,merge_single arrow
 ```
 
-> While sub-issues are being worked, the plan issue sits in `in-progress`. It is promoted to `to-ratify` by `merge.md` once all sub-issues are landed.
+> While sub-issues are being worked, the parent issue sits in `in-progress`. It is promoted to `to-ratify` by `merge.md` once all sub-issues are landed.
 
 ## Skills
 
 <details>
-<summary>🤿 <b><code>/reef-scope</code></b> — scope an issue</summary>
+<summary>🤿 <b><code>reef-scope</code></b> — scope an issue</summary>
 
 The single entry point for turning ideas into plans. Determines whether the work is a feature, refactor, or bug, interviews the diver if needed, writes a plan with **success criteria**, and labels `to-slice`.
 
@@ -96,11 +96,11 @@ The single entry point for turning ideas into plans. Determines whether the work
 <p align="right">🪼<br /><sub>Moonjelly bumps the diver's mask and points into the dark. Together they scope what lies ahead — the moonjelly illuminates, the diver makes sense of it.</sub></p>
 
 <details>
-<summary>🤿 / 🌊 <b><code>/reef-pulse</code></b> — the orchestrator</summary>
+<summary>🤿 / 🌊 <b><code>reef-pulse</code></b> — the orchestrator</summary>
 
-Scans all labelled issues, dispatches the appropriate phase for each as a sub-agent, and exits. Holds no state — labels are the state. Run it manually or from cron; the skill handles the same pulse flow either way.
+Runs pulse iterations inside one short-lived session: scan labels, dispatch the appropriate phase for each issue as a sub-agent, recurse while automated work remains, then exit. Holds no state — labels are the state. Run it manually or from cron; the skill handles the same pulse flow either way.
 
-If you've queue'd up enough issues that you've scoped with the `reef-scope` skill, simply calling `reef-pulse` will make the reef start the work, continuously recursively pulsing, taking every ticket through all phases, until the work is done!
+If you've queued up enough issues with the `reef-scope` skill, running the `reef-pulse` skill will make the reef start the work, recursively pulsing through all automated phases until the work is done.
 
 Design principles:
 
@@ -118,7 +118,7 @@ Design principles:
 <p align="right">🪼<br /><sub>Through Moonjelly's pulse, the reef is orchestrated, creatures are set in motion, and Moonjelly recedes.</sub></p>
 
 <details>
-<summary>🤿 <b><code>/reef-land</code></b> — review and land the work</summary>
+<summary>🤿 <b><code>reef-land</code></b> — review and land the work</summary>
 
 Finds the open PR for the issue, summarizes the report, and checks for PR comments. If the diver has concerns or left PR comments, runs an interview to scope the change requests into concrete gaps, then labels `to-rework`. If approved, merges and closes.
 
@@ -136,10 +136,10 @@ These are the 🌊 automated phases dispatched by the `reef-pulse` skill. Each p
 <details>
 <summary>🌊 <b><code>to-slice</code></b> 🏷️</summary>
 
-Automatically breaks the plan into vertical slices, or determines a single slice is enough to tackle the plan.
+Automatically breaks the plan into vertical slices, or determines that the current issue can be implemented directly without sub-issues.
 
-- 🔷　sliced in multiple sub-issues: create pr-branch, sub-issues, coverage matrix
-- 🔶　no sub-issues needed: labels the plan `to-implement`
+- 🔷　creates sub-issues: keep the current issue `pr-branch`, create sub-issues, build the coverage matrix
+- 🔶　no sub-issues needed: label the current issue `to-implement`
 
 | source file | [`reef-pulse/slice.md`](reef-pulse/slice.md) |
 | :---------- | :------------------------------------------- |
@@ -151,7 +151,7 @@ Automatically breaks the plan into vertical slices, or determines a single slice
 <details>
 <summary>🌊 <b><code>to-await-waves</code></b> 🏷️</summary>
 
-Check if a blocked sub-issue's dependencies are all done. If yes, re-review the plan against current code and label `to-implement`. If not, exit — next pulse will check again.
+Check if a blocked issue's dependencies are all done. If yes, re-review the plan against current code and label `to-implement`. If not, exit — next pulse will check again.
 
 | source file | [`reef-pulse/await-waves.md`](reef-pulse/await-waves.md) |
 | :---------- | :------------------------------------------------------- |
@@ -163,7 +163,7 @@ Check if a blocked sub-issue's dependencies are all done. If yes, re-review the 
 <details>
 <summary>🌊 <b><code>to-implement</code></b> 🏷️</summary>
 
-Implement a sub-issue using TDD in a git worktree. Create worktree → read context → red-green-refactor for each acceptance criterion → write report → open PR → label `to-inspect`.
+Implement an issue using TDD in a git worktree. Create worktree → read context → red-green-refactor for each acceptance criterion → write report → open PR → label `to-inspect`.
 
 | source file | [`reef-pulse/implement.md`](reef-pulse/implement.md) |
 | :---------- | :--------------------------------------------------- |
@@ -175,7 +175,7 @@ Implement a sub-issue using TDD in a git worktree. Create worktree → read cont
 <details>
 <summary>🌊 <b><code>to-inspect</code></b> 🏷️</summary>
 
-Independently verify a sub-issue's PR. Run the full test suite, check each acceptance criterion against actual code, do trivial cleanups. Label `to-merge` if approved, `to-rework` if gaps found.
+Independently verify an issue's PR. Run the full test suite, check each acceptance criterion against actual code, do trivial cleanups. Label `to-merge` if approved, `to-rework` if gaps found.
 
 | source file | [`reef-pulse/inspect.md`](reef-pulse/inspect.md) |
 | :---------- | :----------------------------------------------- |
@@ -199,7 +199,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 <details>
 <summary>🌊 <b><code>to-merge</code></b> 🏷️</summary>
 
-🔶　no parent-plan: leave the PR open for the diver, label `to-land`. 🔷　has parent-plan: merge the PR into the plan's `pr-branch`, verify suite, close the sub-issue, label plan `to-ratify` when all sub-issues are landed.
+🔶　no parent issue: leave the PR open, verify suite, and label the issue `to-ratify`. 🔷　has parent issue: merge the PR into the parent issue's `pr-branch`, verify suite, close the sub-issue, and label the parent issue `to-ratify` when all sub-issues are landed.
 
 | source file | [`reef-pulse/merge.md`](reef-pulse/merge.md) |
 | :---------- | :------------------------------------------- |
@@ -211,7 +211,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 <details>
 <summary>🌊 <b><code>to-ratify</code></b> 🏷️</summary>
 
-Holistic review of the plan's `pr-branch` — checking the composed whole, not the parts. Verify every success criterion end-to-end, run the full suite, produce the aggregate report, label `to-land` or `to-rework` on gaps.
+Holistic review of the current issue's `pr-branch` — checking the composed whole, not the parts. Verify every success criterion end-to-end, run the full suite, produce the aggregate report, label `to-land` or `to-rework` on gaps.
 
 | source file | [`reef-pulse/ratify.md`](reef-pulse/ratify.md) |
 | :---------- | :--------------------------------------------- |
@@ -237,11 +237,11 @@ The reason this orchestration framework works is explicit boundaries. Each phase
 
 [`tests/test-orchestration.sh`](tests/test-orchestration.sh) verifies that each phase's `.md` instructions include these deterministic parts of the orchestration in the correct order. If a phase drifts — missing a variable declaration, reordering a commit and PR create, or dropping a tracker update — the test catches it.
 
-To further ensure no sub-agent messes up worktree creation, branch targeting, or commit flow, all git operations are wrapped in shell scripts (`worktree-enter.sh`, `worktree-exit.sh`, `commit.sh`) with extra sanitisation. Reef keeps its temporary worktrees under `.worktrees/` inside the repo, and target branch names and paths are passed via shell variables so that sub-agents never have to reason about git orchestration themselves.
+To further ensure no sub-agent messes up worktree creation, branch targeting, or commit flow, all git operations are wrapped in shell scripts (`worktree-enter.sh`, `worktree-exit.sh`, `commit.sh`) with extra sanitisation. Reef keeps its temporary worktrees under `.worktrees/` inside the repo, and `base-branch` values and paths are passed via shell variables so that sub-agents never have to reason about git orchestration themselves.
 
 ## Autopilot
 
-Run the reef on autopilot so it pulses while you're away. If you've queue'd up enough issues that you've scoped with the `reef-scope` skill, simply calling `reef-pulse` will make the reef start the work, continuously recursively pulsing, taking every ticket through all phases, until the work is done!
+Run the reef on autopilot so it pulses while you're away. If you've queued up enough issues with the `reef-scope` skill, running the `reef-pulse` skill will keep the reef pulsing recursively until no automated work remains.
 
 ## Remote Machine Cron
 
