@@ -10,7 +10,7 @@
 
 This skill requires a specific slice: e.g. `#55` or `my-feature/002-token-storage`.
 
-Read the slice. It must have a `blocked-by` list referencing other slices.
+Read the slice. It must have a `blocked-by` frontmatter field referencing other slices (comma-separated issue IDs, e.g. `blocked-by: "#55, #56"`).
 
 Set the pre-fetch variables:
 
@@ -36,19 +36,19 @@ WORKTREE_PATH=".worktrees/$SLICE_NAME-await-waves"
 
 ## 1. Check dependencies
 
-For each dependency in the `blocked-by` list, check if the blocking slice is tagged `done`:
+Parse the `blocked-by` field from the slice's frontmatter. For each dependency ID, check if the blocking slice is tagged `landed`:
 
 ```sh
-DEPENDENCY_ID="{from slice blocked-by list}"
+DEPENDENCY_ID="{from frontmatter blocked-by field}"
 ```
 
 ```sh
 ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
 ```
 
-**If any dependency is NOT done**: this slice stays `to-await-waves`. Skip to the handoff with `nextPhase: "to-await-waves"` and `summary: "still blocked by #N, #M"`.
+**If any dependency does NOT have the `landed` label**: this slice stays `to-await-waves`. Skip to the handoff with `nextPhase: "to-await-waves"` and `summary: "still blocked by #N, #M"`.
 
-**If ALL dependencies are done**: continue to step 2.
+**If ALL dependencies have the `landed` label**: continue to step 2.
 
 ## 2. Re-review the plan
 
