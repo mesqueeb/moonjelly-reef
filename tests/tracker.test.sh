@@ -307,15 +307,15 @@ test_edit_label() {
   t issue edit 1 --remove-label to-scope --add-label to-slice >/dev/null 2>&1
 
   if [ -f "$TRACKER_PATH/1 my-feature/[to-slice] plan.md" ]; then
-    pass "edit label: renames tag on plan"
+    pass "edit label: renames label on plan"
   else
-    fail "edit label: renames tag on plan" "file not found"
+    fail "edit label: renames label on plan" "file not found"
   fi
 
   if [ ! -f "$TRACKER_PATH/1 my-feature/[to-scope] plan.md" ]; then
-    pass "edit label: old tag file removed"
+    pass "edit label: old label file removed"
   else
-    fail "edit label: old tag file removed" "old file still exists"
+    fail "edit label: old label file removed" "old file still exists"
   fi
 
   teardown
@@ -330,9 +330,9 @@ test_edit_label_slice() {
   t issue edit 1-1 --remove-label to-implement --add-label to-inspect >/dev/null 2>&1
 
   if [ -f "$TRACKER_PATH/1 my-feature/slices/1-1 auth/[to-inspect] slice.md" ]; then
-    pass "edit label: renames tag on slice"
+    pass "edit label: renames label on slice"
   else
-    fail "edit label: renames tag on slice" "file not found"
+    fail "edit label: renames label on slice" "file not found"
   fi
 
   teardown
@@ -401,9 +401,9 @@ test_close_plan() {
   t issue close 1 >/dev/null 2>&1
 
   if [ -f "$TRACKER_PATH/1 my-feature/[landed] plan.md" ]; then
-    pass "close plan: renames tag to landed"
+    pass "close plan: renames label to landed"
   else
-    fail "close plan: renames tag to landed" "file not found"
+    fail "close plan: renames label to landed" "file not found"
   fi
 
   teardown
@@ -418,9 +418,9 @@ test_close_slice() {
   t issue close 1-1 >/dev/null 2>&1
 
   if [ -f "$TRACKER_PATH/1 my-feature/slices/1-1 auth/[landed] slice.md" ]; then
-    pass "close slice: renames tag to landed"
+    pass "close slice: renames label to landed"
   else
-    fail "close slice: renames tag to landed" "file not found"
+    fail "close slice: renames label to landed" "file not found"
   fi
 
   teardown

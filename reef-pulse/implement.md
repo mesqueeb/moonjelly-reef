@@ -68,7 +68,7 @@ Verify:
 - [ ] The project builds / compiles cleanly before you touch anything
 - [ ] The full test suite passes before you touch anything (this is your baseline)
 
-If the baseline is already broken, **stop and report this**. Do not try to fix pre-existing failures. Tag the slice `to-rework` with a note explaining what's broken. (Prevents painpoint D1 — solving problems in the wrong order.)
+If the baseline is already broken, **stop and report this**. Do not try to fix pre-existing failures. Label the slice `to-rework` with a note explaining what's broken. (Prevents painpoint D1 — solving problems in the wrong order.)
 
 ## 2. Read context
 
@@ -136,7 +136,7 @@ SLICE_BODY="{slice/plan body with PR reference and pr-branch updated}"
 
 Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
-## 7. Update the slice and tag
+## 7. Update the slice and label
 
 Persist the PR reference on the slice/plan body so downstream phases (inspect, rework, merge) can find it. Update the `pr-branch` frontmatter field to `$SLICE_BRANCH` (the branch the PR lives on). For single-slice plans where `pr-branch` was set to `—` by slice-single.md, this fills in the actual value.
 

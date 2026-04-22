@@ -160,7 +160,7 @@ resolve_file() {
   fi
 }
 
-# Extract tag from filename like "[to-scope] plan.md" → "to-scope"
+# Extract label from filename like "[to-scope] plan.md" → "to-scope"
 extract_tag() {
   _basename="$(basename "$1")"
   echo "$_basename" | sed 's/^\[\([^]]*\)\].*/\1/'

@@ -110,7 +110,7 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ### 6. Update the PR
 
-Set the PR number from the slice body. If not found there, try `gh pr list --search`. If PR_NUMBER is nowhere to be found, tag the issue `pr-missing` and stop.
+Set the PR number from the slice body. If not found there, try `gh pr list --search`. If PR_NUMBER is nowhere to be found, label the issue `pr-missing` and stop.
 
 Read the current PR body, then append the inspect report as a collapsible block:
 

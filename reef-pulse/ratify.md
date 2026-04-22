@@ -125,7 +125,7 @@ PLAN_BODY="{plan body with updated success criteria}"
 ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
 ```
 
-If any gaps need decisions beyond what success criteria cover (e.g. the plan itself is ambiguous about a design direction), this is a **safety valve** — tag `to-scope` instead of `to-rework` so a new scoping session can resolve the ambiguity.
+If any gaps need decisions beyond what success criteria cover (e.g. the plan itself is ambiguous about a design direction), this is a **safety valve** — label `to-scope` instead of `to-rework` so a new scoping session can resolve the ambiguity.
 
 ### 7. Documentation
 
@@ -198,7 +198,7 @@ PR_BODY="$PR_BODY\n\n$REPORT"
 gh pr edit "$PR_NUMBER" --body "$PR_BODY"
 ```
 
-### 9. Tag
+### 9. Label
 
 **If all criteria met (PASS):**
 

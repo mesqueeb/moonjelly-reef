@@ -61,7 +61,7 @@ Close the slice issue and update its labels:
 ./tracker.sh issue close "$SLICE_ID"
 ```
 
-## 4. Update plan tag — if all slices tagged 'landed'
+## 4. Update plan label — if all slices labelled 'landed'
 
 ```sh
 ./tracker.sh issue edit "$PLAN_ID" --remove-label in-progress --add-label to-ratify

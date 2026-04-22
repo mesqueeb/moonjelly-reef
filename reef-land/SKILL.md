@@ -170,7 +170,7 @@ Append the gap report to the current PR body. Include original PR review comment
 </details>
 ```
 
-Write this to the PR and update the tag:
+Write this to the PR and update the label:
 
 ```sh
 PR_BODY="{current PR body with gap report appended in <details><summary> block}"

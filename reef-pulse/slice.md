@@ -67,5 +67,5 @@ For small bugs (scope = quick fix in the plan): produce a single slice. The plan
 
 After drafting, check: **did you produce exactly 1 slice?**
 
-- **1 slice** — read and execute [slice-single.md](slice-single.md) (fast path: no worktree, no branch, tag `to-implement`)
-- **2+ slices** — read and execute [slice-multi.md](slice-multi.md) (full flow: worktree, branch, coverage matrix, sub-issues, tag `in-progress`)
+- **1 slice** — read and execute [slice-single.md](slice-single.md) (fast path: no worktree, no branch, label `to-implement`)
+- **2+ slices** — read and execute [slice-multi.md](slice-multi.md) (full flow: worktree, branch, coverage matrix, sub-issues, label `in-progress`)

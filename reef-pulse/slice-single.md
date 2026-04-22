@@ -32,7 +32,7 @@ Assemble the updated plan body:
 PLAN_BODY="{plan body with target branch and pr-branch added to frontmatter and acceptance criteria appended}"
 ```
 
-## 2. Tag to-implement
+## 2. Label to-implement
 
 ```sh
 ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement

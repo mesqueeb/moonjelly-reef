@@ -4,7 +4,7 @@
 
 # Moonjelly Reef
 
-An orchestration framework for AI agent workflows. A short-lived pulse scans for work, dispatches skills, and goes back to sleep. State lives in tags. The reef does the rest.
+An orchestration framework for AI agent workflows. A short-lived pulse scans for work, dispatches skills, and goes back to sleep. State lives in labels. The reef does the rest.
 
 This framework is **Issue tracker agnostic**. GitHub Issues or simply local MD files. It can also handle others like Jira, ClickUp, Linear, as long as you have an MCP installed for those.
 
@@ -20,7 +20,7 @@ On first run, reef-pulse will prompt you to mention which issue tracker you want
 
 > _Through Moonjelly's pulse, the reef is orchestrated, creatures are set in motion, and Moonjelly recedes._
 
-The moonjelly is the orchestrator. A short-lived session (cron or manual) that scans tags, dispatches skills, and exits. It holds no state — tags are the state. Each pulse: scan → dispatch → exit.
+The moonjelly is the orchestrator. A short-lived session (cron or manual) that scans labels, dispatches skills, and exits. It holds no state — labels are the state. Each pulse: scan → dispatch → exit.
 
 ## State machine
 
@@ -45,7 +45,7 @@ stateDiagram-v2
         [*] --> to_scope
         to_scope --> to_slice : /reef-scope<br />scope the work, define success criteria
         to_slice --> slice_lifecycle : slice.md<br />🔷　multi-slice:<br />create target branch, sub-issues, coverage matrix
-        to_slice --> slice_lifecycle : slice.md<br />🔶　single-slice:<br />plan becomes the slice, tags to-implement
+        to_slice --> slice_lifecycle : slice.md<br />🔶　single-slice:<br />plan becomes the slice, labels to-implement
         slice_lifecycle --> to_ratify
         slice_lifecycle --> to_land
         to_ratify --> to_land : ratify.md<br />holistic review on target branch
@@ -86,7 +86,7 @@ stateDiagram-v2
 <details>
 <summary>🤿 <b><code>/reef-scope</code></b> — scope an issue</summary>
 
-The single entry point for turning ideas into plans. Determines whether the work is a feature, refactor, or bug, interviews the diver if needed, writes a plan with **success criteria**, and tags `to-slice`.
+The single entry point for turning ideas into plans. Determines whether the work is a feature, refactor, or bug, interviews the diver if needed, writes a plan with **success criteria**, and labels `to-slice`.
 
 | source file | [`reef-scope/SKILL.md`](reef-scope/SKILL.md) |
 | :---------- | :------------------------------------------- |
@@ -98,7 +98,7 @@ The single entry point for turning ideas into plans. Determines whether the work
 <details>
 <summary>🤿 / 🌊 <b><code>/reef-pulse</code></b> — the orchestrator</summary>
 
-Scans all tagged issues, dispatches the appropriate phase for each as a sub-agent, and exits. Holds no state — tags are the state. Run with `--hitl` (manual, includes 🤿 items) or `--afk` (cron, 🌊 only).
+Scans all labelled issues, dispatches the appropriate phase for each as a sub-agent, and exits. Holds no state — labels are the state. Run with `--hitl` (manual, includes 🤿 items) or `--afk` (cron, 🌊 only).
 
 Design principles:
 
@@ -106,7 +106,7 @@ Design principles:
 - **Small batches**: slices flow independently and concurrently.
 - **Human = bottleneck**: minimize 🤿 states. Only two: scope, land.
 - **No heroics**: agents that are stuck flag + move on, never spiral.
-- **Make work visible**: the tags ARE the visibility.
+- **Make work visible**: the labels ARE the visibility.
 
 | source file | [`reef-pulse/SKILL.md`](reef-pulse/SKILL.md) |
 | :---------- | :------------------------------------------- |
@@ -118,7 +118,7 @@ Design principles:
 <details>
 <summary>🤿 <b><code>/reef-land</code></b> — review and land the work</summary>
 
-Finds the open PR for the issue, summarizes the report, and checks for PR comments. If the diver has concerns or left PR comments, runs an interview to scope the change requests into concrete gaps, then tags `to-rework`. If approved, merges and closes.
+Finds the open PR for the issue, summarizes the report, and checks for PR comments. If the diver has concerns or left PR comments, runs an interview to scope the change requests into concrete gaps, then labels `to-rework`. If approved, merges and closes.
 
 | source file | [`reef-land/SKILL.md`](reef-land/SKILL.md) |
 | :---------- | :----------------------------------------- |
@@ -136,8 +136,8 @@ These are the 🌊 automated phases dispatched by `/reef-pulse`. Each phase read
 
 Automatically breaks the plan into vertical slices, or determines a single slice is enough to tackle the plan.
 
-- 🔶　single-slice: plan becomes the slice, tags `to-implement`, no target branch.
-- 🔷　multi-slice: create target branch, sub-issues, coverage matrix, tag slices `to-implement` or `to-await-waves`.
+- 🔶　single-slice: plan becomes the slice, labels `to-implement`, no target branch.
+- 🔷　multi-slice: create target branch, sub-issues, coverage matrix, label slices `to-implement` or `to-await-waves`.
 
 | source file | [`reef-pulse/slice.md`](reef-pulse/slice.md) |
 | :---------- | :------------------------------------------- |
@@ -149,7 +149,7 @@ Automatically breaks the plan into vertical slices, or determines a single slice
 <details>
 <summary>🌊 <b><code>to-await-waves</code></b> 🏷️</summary>
 
-Check if a blocked slice's dependencies are all done. If yes, re-review the plan against current code and tag `to-implement`. If not, exit — next pulse will check again.
+Check if a blocked slice's dependencies are all done. If yes, re-review the plan against current code and label `to-implement`. If not, exit — next pulse will check again.
 
 | source file | [`reef-pulse/await-waves.md`](reef-pulse/await-waves.md) |
 | :---------- | :------------------------------------------------------- |
@@ -161,7 +161,7 @@ Check if a blocked slice's dependencies are all done. If yes, re-review the plan
 <details>
 <summary>🌊 <b><code>to-implement</code></b> 🏷️</summary>
 
-Implement a slice using TDD in a git worktree. Create worktree → read context → red-green-refactor for each acceptance criterion → write report → open PR → tag `to-inspect`.
+Implement a slice using TDD in a git worktree. Create worktree → read context → red-green-refactor for each acceptance criterion → write report → open PR → label `to-inspect`.
 
 | source file | [`reef-pulse/implement.md`](reef-pulse/implement.md) |
 | :---------- | :--------------------------------------------------- |
@@ -173,7 +173,7 @@ Implement a slice using TDD in a git worktree. Create worktree → read context 
 <details>
 <summary>🌊 <b><code>to-inspect</code></b> 🏷️</summary>
 
-Independently verify a slice PR. Run the full test suite, check each acceptance criterion against actual code, do trivial cleanups. Tag `to-merge` if approved, `to-rework` if gaps found.
+Independently verify a slice PR. Run the full test suite, check each acceptance criterion against actual code, do trivial cleanups. Label `to-merge` if approved, `to-rework` if gaps found.
 
 | source file | [`reef-pulse/inspect.md`](reef-pulse/inspect.md) |
 | :---------- | :----------------------------------------------- |
@@ -185,7 +185,7 @@ Independently verify a slice PR. Run the full test suite, check each acceptance 
 <details>
 <summary>🌊 <b><code>to-rework</code></b> 🏷️</summary>
 
-Fix every issue flagged by the inspector. Address all PR comments, run the full suite, update the report, tag `to-inspect` for re-review.
+Fix every issue flagged by the inspector. Address all PR comments, run the full suite, update the report, label `to-inspect` for re-review.
 
 | source file | [`reef-pulse/rework.md`](reef-pulse/rework.md) |
 | :---------- | :--------------------------------------------- |
@@ -197,7 +197,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 <details>
 <summary>🌊 <b><code>to-merge</code></b> 🏷️</summary>
 
-🔶　single-slice: leave the PR open for the diver, tag `to-land`. 🔷　multi-slice: merge the PR into the target branch, verify suite, close the slice, check for newly unblocked siblings, tag plan `to-ratify` when all slices are done.
+🔶　single-slice: leave the PR open for the diver, label `to-land`. 🔷　multi-slice: merge the PR into the target branch, verify suite, close the slice, check for newly unblocked siblings, label plan `to-ratify` when all slices are done.
 
 | source file | [`reef-pulse/merge.md`](reef-pulse/merge.md) |
 | :---------- | :------------------------------------------- |
@@ -209,7 +209,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 <details>
 <summary>🌊 <b><code>to-ratify</code></b> 🏷️</summary>
 
-🔷　multi-slice only. Holistic review of the entire target branch — checking the composed whole, not the parts. Verify every success criterion end-to-end, run the full suite, produce the aggregate report, tag `to-land` or `to-rework` on gaps.
+🔷　multi-slice only. Holistic review of the entire target branch — checking the composed whole, not the parts. Verify every success criterion end-to-end, run the full suite, produce the aggregate report, label `to-land` or `to-rework` on gaps.
 
 | source file | [`reef-pulse/ratify.md`](reef-pulse/ratify.md) |
 | :---------- | :--------------------------------------------- |
@@ -230,7 +230,7 @@ The reason this orchestration framework works is explicit boundaries. Each phase
 1. **Variables** — what each phase needs is declared up front.
 2. **Context source** — where each phase reads its input (tracker issue, PR, plan body) is well-defined.
 3. **Code persistence** — where code changes get committed and pushed is well-defined.
-4. **Progress metadata** — where tags, issue bodies, and PR bodies get updated is well-defined.
+4. **Progress metadata** — where labels, issue bodies, and PR bodies get updated is well-defined.
 
 [`ORCHESTRATION.md`](ORCHESTRATION.md) is the single source of truth for these four concerns across all phases. It outlines purely the deterministic orchestration boundaries in a holistic view — not the phase logic itself, just the variables, context fetches, commits, PR operations, and tracker updates in their correct order.
 

@@ -99,7 +99,7 @@ PR_BODY="$PR_BODY\n\n$REPORT"
 gh pr edit "$PR_NUMBER" --body "$PR_BODY"
 ```
 
-### 8. Tag
+### 8. Label
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-rework --add-label to-inspect

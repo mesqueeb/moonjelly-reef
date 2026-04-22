@@ -18,7 +18,7 @@ Set the variables needed for this path:
 PLAN_ID="{from slice/plan body}"
 ```
 
-## 1. Tag plan to-ratify
+## 1. Label plan to-ratify
 
 Remove `to-merge`, add `to-ratify`:
 

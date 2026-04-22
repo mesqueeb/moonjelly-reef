@@ -1,6 +1,6 @@
 ---
 name: reef-pulse
-description: The Moonjelly Reef orchestrator. A single pulse that scans all issues by tag, dispatches reef skills as sub-agents, and exits. Run manually or as a cron.
+description: The Moonjelly Reef orchestrator. A single pulse that scans all issues by label, dispatches reef skills as sub-agents, and exits. Run manually or as a cron.
 ---
 
 # reef-pulse
@@ -11,7 +11,7 @@ Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the is
 >
 > **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
-You are the orchestrator. You scan, dispatch, and exit. You hold no state — tags are the state.
+You are the orchestrator. You scan, dispatch, and exit. You hold no state — labels are the state.
 
 Capture the skill base directory (provided by the harness as "Base directory for this skill: {path}" at invocation time):
 
@@ -93,13 +93,13 @@ Run these queries in parallel where possible for performance.
 
 ### Step 2. Dispatch automated (🌊) work
 
-**Do NOT ask the user for confirmation. Dispatch immediately.** The tags are the authorization — if an item is tagged for automated work, dispatch it without hesitation. Dispatch all items in parallel via sub-agents. When agent teams are supported in the environment, they can be used to parallelise items linked to the same plan.
+**Do NOT ask the user for confirmation. Dispatch immediately.** The labels are the authorization — if an item is labelled for automated work, dispatch it without hesitation. Dispatch all items in parallel via sub-agents. When agent teams are supported in the environment, they can be used to parallelise items linked to the same plan.
 
 **CRITICAL: Do NOT use `isolation: "worktree"` when spawning sub-agents.** Each phase manages its own worktree via `worktree-enter.sh` (fetches from origin, forks from the correct remote branch). Platform isolation bypasses this and causes merge conflicts.
 
 For each item, spawn a sub-agent with: `"Read and follow $SKILL_DIR/{file}. Target: #{number}."`
 
-| Tag              | File                        |
+| Label            | File                        |
 | ---------------- | --------------------------- |
 | `to-slice`       | `$SKILL_DIR/slice.md`       |
 | `to-await-waves` | `$SKILL_DIR/await-waves.md` |
@@ -113,7 +113,7 @@ For each item, spawn a sub-agent with: `"Read and follow $SKILL_DIR/{file}. Targ
 
 Immediately after dispatching, print each dispatched agent with its phase emoji. Use the phase emoji from the README lore for each phase:
 
-| Tag              | Phase emoji |
+| Label            | Phase emoji |
 | ---------------- | ----------- |
 | `to-slice`       | `𐃆🐋`       |
 | `to-await-waves` | `🪸`        |
@@ -160,7 +160,7 @@ After agents return, print each result with its phase emoji and a `›` transiti
   🦀  #53   1m08s    9k   inspect › rework
 ```
 
-The narwhal (slice phase) always uses both characters `𐃆🐋`. Each line shows: phase emoji, issue number, duration, token count, and the transition (previous tag `›` next tag from handoff).
+The narwhal (slice phase) always uses both characters `𐃆🐋`. Each line shows: phase emoji, issue number, duration, token count, and the transition (previous label `›` next label from handoff).
 
 Also print human and idle items:
 
@@ -238,7 +238,7 @@ Human items (`to-scope`, `to-land`) are presented only in the first iteration of
 
 If running in `--hitl` mode and this is the first iteration, present human-required items immediately without waiting for dispatched agents to complete. Automated agents run in the background — metrics collection (Step 3) happens after agents complete but must not block the human workflow. Present human items as soon as dispatch is done:
 
-| Tag        | Skill         | Presentation                                                              |
+| Label      | Skill         | Presentation                                                              |
 | ---------- | ------------- | ------------------------------------------------------------------------- |
 | `to-scope` | `/reef-scope` | "**{title}** needs scoping. Run `/reef-scope #{number}`."                 |
 | `to-land`  | `/reef-land`  | "**{title}** is ready for your final review. Run `/reef-land #{number}`." |
@@ -279,7 +279,7 @@ Then print the SESSION COMPLETE box with session stats:
 - **Agents**: total number of sub-agent dispatches across all active pulses (pulses that dispatched at least one agent)
 - **Landed**: issues that reached `to-land` or `landed` during this session
 - **Human**: issues that need human attention (`to-scope`, `to-land`)
-- **Idle**: issues that are blocked or have no actionable tag
+- **Idle**: issues that are blocked or have no actionable label
 
 After the SESSION COMPLETE box, print the full collected story as a single block — all lore snippets from the session concatenated into a continuous narrative:
 
@@ -312,6 +312,6 @@ Exit.
 
 These are reminders for the LLM executing this skill, not documentation:
 
-- **You are stateless.** You scan tags, dispatch skills, and exit. You do not track what you dispatched last time. Tags are the state.
+- **You are stateless.** You scan labels, dispatch skills, and exit. You do not track what you dispatched last time. Labels are the state.
 - **Don't do the work yourself.** You dispatch skills. You never implement, review, or merge directly.
-- **If a dispatch fails, don't retry.** Report the failure in the summary and move on. The next pulse will pick it up if the tag is still set.
+- **If a dispatch fails, don't retry.** Report the failure in the summary and move on. The next pulse will pick it up if the label is still set.

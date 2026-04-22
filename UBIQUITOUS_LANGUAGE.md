@@ -5,7 +5,7 @@
 | Term             | Definition                                                  | Aliases to avoid                                               |
 | ---------------- | ----------------------------------------------------------- | -------------------------------------------------------------- |
 | 🤿 **diver**     | The human operating the reef — scopes work, reviews results | user, developer, human                                         |
-| 🪼 **moonjelly** | The orchestrator that scans tags and dispatches work        | jellyfish, pulse (when referring to the actor, not the action) |
+| 🪼 **moonjelly** | The orchestrator that scans labels and dispatches work      | jellyfish, pulse (when referring to the actor, not the action) |
 | 🌊 **reef**      | The collection of automated phases that do the work         | pipeline, system, framework                                    |
 
 ## Work hierarchy
@@ -59,12 +59,12 @@ Three types of tickets flow through the slice lifecycle phases (implement → in
 | **ratify**           | Holistic review of the entire target branch — only for multi-slice                         | final review, sign-off                     |
 | **land**             | The diver reviews the finished work and merges to the base branch                          | finalise, approve, ship                    |
 
-## Tags
+## Labels
 
-| Term       | Definition                                                                                                                                                   | Aliases to avoid                                                   |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
-| **tag**    | A label on an issue that represents its current state in the lifecycle                                                                                       | status, state, label (though "label" is the GitHub implementation) |
-| **landed** | The terminal tag — tracker-agnostic signal that a piece of work has reached its target branch. Once applied, the issue is considered complete and is closed. | done, completed, merged, finished                                  |
+| Term       | Definition                                                                                                                                     | Aliases to avoid                  |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| **label**  | A marker on an issue that represents its current state in the lifecycle                                                                        | status, state, tag                |
+| **landed** | The terminal label — a signal that a piece of work has reached its target branch. Once applied, the issue is considered complete and is closed. | done, completed, merged, finished |
 
 ## Relationships
 
@@ -83,7 +83,7 @@ Three types of tickets flow through the slice lifecycle phases (implement → in
 >
 > **Dev:** "And if it's two slices?"
 >
-> **Domain expert:** "Then it creates a dedicated **target branch**, creates the **slices** as separate items with their own **acceptance criteria**, builds the **coverage matrix**, and tags them `to-implement` or `to-await-waves`."
+> **Domain expert:** "Then it creates a dedicated **target branch**, creates the **slices** as separate items with their own **acceptance criteria**, builds the **coverage matrix**, and labels them `to-implement` or `to-await-waves`."
 >
 > **Dev:** "When does the diver see it?"
 >
