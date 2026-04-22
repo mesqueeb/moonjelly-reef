@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Moonjelly Reef — AFK pulse cron script
-# Runs a single reef-pulse in --afk mode, then exits.
+# Moonjelly Reef — pulse cron script
+# Runs a single reef-pulse, then exits.
 # Uses a lock file to prevent overlapping runs.
 #
 # Usage:
@@ -57,8 +57,8 @@ cleanup() {
 }
 trap cleanup EXIT
 
-echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) reef-pulse --afk starting in $PROJECT_DIR"
+echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) reef-pulse starting in $PROJECT_DIR"
 
-claude --dangerously-skip-permissions -p "/reef-pulse --afk"
+claude --dangerously-skip-permissions -p "/reef-pulse"
 
-echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) reef-pulse --afk complete"
+echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) reef-pulse complete"

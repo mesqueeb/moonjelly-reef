@@ -85,5 +85,5 @@ If tests failed, stop here. Do not proceed to the delegate step.
 
 After the pre-merge check passes, check: **does the issue have a `parent-plan` field in frontmatter?**
 
-- **No `parent-plan`** — read and execute [merge-no-parent.md](merge-no-parent.md) (fast path: label `to-ratify`, human merges via `/reef-land`)
+- **No `parent-plan`** — read and execute [merge-no-parent.md](merge-no-parent.md) (fast path: label `to-ratify`, human merges via the `reef-land` skill)
 - **Has `parent-plan`** — read and execute [merge-has-parent.md](merge-has-parent.md) (full flow: squash merge PR, check siblings, check completion)

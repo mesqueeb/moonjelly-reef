@@ -159,26 +159,11 @@ mkdir -p .agents/moonjelly-reef/saga
 cp "$SKILL_DIR/world-template.md" .agents/moonjelly-reef/saga/world.md
 ```
 
-### 8. Offer autopilot
-
-> "Want the reef to pulse on its own while you're away? I can set up a recurring cron that runs `/reef-pulse --afk` every hour (or any interval you prefer)."
-
-If the user says yes, create a durable cron:
-
-```
-CronCreate cron="7 * * * *" prompt="/reef-pulse --afk" durable=true
-```
-
-Let the user pick the interval. Common choices:
-
-- `"7 * * * *"` — hourly
-- `"*/30 * * * *"` — every 30 minutes
-- `"3 9 * * 1-5"` — weekday mornings
-
-If the user declines, skip — they can always set it up later.
-
-### 9. Confirm
+### 7. Confirm
 
 > "You're all set. The reef is alive. 🪼"
 >
-> Run `/reef-scope` to start working on something, or `/reef-pulse` to scan for existing work.
+> Run the `reef-scope` skill to start working on something, or run the `reef-pulse` skill to scan for existing work.
+>
+> - On Claude Code: `/reef-scope`
+> - On Codex: `$reef-scope`

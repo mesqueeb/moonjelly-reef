@@ -5,7 +5,7 @@ description: Scope an issue into a plan with success criteria. Routes between fe
 
 # reef-scope
 
-Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, run `/reef-pulse` and follow `reef-pulse/setup.md` first, then return here after.
+Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, run the `reef-pulse` skill and follow `reef-pulse/setup.md` first, then return here after.
 
 > **Shell blocks are literal commands** — `./tracker.sh` is a real script next to this file. Execute it as written; do not substitute with raw git commands.
 >
@@ -23,7 +23,7 @@ START_TIME="{current UTC timestamp}"
 
 This skill accepts:
 
-- a specific issue: `/reef-scope #42` or `/reef-scope my-feature`
+- a specific issue: for example `reef-scope #42` or `reef-scope my-feature`
 - Nothing: look for items tagged `to-scope`. If multiple, ask the user to pick. If none, ask: "Did you want to scope something new?"
 
 Set the initial variables:
@@ -144,4 +144,4 @@ Metrics section format:
 
 Tell the user:
 
-> "Plan with success criteria saved. Run `/reef-pulse` to let the reef take it from here."
+> "Plan with success criteria saved. Run the `reef-pulse` skill to let the reef take it from here."

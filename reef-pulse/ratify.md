@@ -102,7 +102,7 @@ Look for problems that only appear when slices are composed:
 - Inconsistent patterns between slices (one slice does auth one way, another does it differently)
 - Shared resources that multiple slices touch — are they coherent?
 - Are there any test gaps at the integration boundaries? (Prevents painpoint C3 — mocked-away bugs.)
-- **Terminology inconsistencies**: did different slices use different words for the same concept? If terminology drifted across slices, run `/ubiquitous-language` against the target branch to flag ambiguities and include findings in the report.
+- **Terminology inconsistencies**: did different slices use different words for the same concept? If terminology drifted across slices, run the `ubiquitous-language` skill against the target branch to flag ambiguities and include findings in the report.
 
 ### 6. Plan re-review
 

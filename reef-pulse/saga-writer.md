@@ -74,5 +74,5 @@ Persist to disk:
 Return exactly:
 
 ```
-beat: $BEAT
+BEAT: $BEAT
 ```

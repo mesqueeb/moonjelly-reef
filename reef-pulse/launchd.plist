@@ -3,7 +3,7 @@
 <plist version="1.0">
 <!--
   Moonjelly Reef — macOS launchd agent
-  Runs reef-pulse --afk every 30 minutes.
+  Runs reef-pulse every 30 minutes.
 
   Install:
     1. Edit ProgramArguments to point to your cron.sh and project path

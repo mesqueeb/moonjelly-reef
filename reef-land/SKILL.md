@@ -11,7 +11,7 @@ description: Present the final report to the human for review. Human approves (m
 
 ## Input
 
-This skill accepts either a plan issue or a PR: `/reef-land #42` or `/reef-land my-feature`.
+Run the `reef-land` skill with either a plan issue or a PR, for example `reef-land #42` or `reef-land my-feature`.
 
 Determine which you received — a plan issue ID or a PR number/URL. Set whichever is known:
 
@@ -253,4 +253,4 @@ Summarize what happened:
 
 If a follow-up issue was created and tagged `to-scope`, suggest:
 
-> "Follow-up issue #{N} is ready for scoping. Want to start `/reef-scope #{N}` now?"
+> "Follow-up issue #{N} is ready for scoping. Want to run the `reef-scope` skill for it now?"
