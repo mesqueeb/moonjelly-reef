@@ -72,6 +72,7 @@ This is also where the saga bootstrap behavior lives. Before printing the first 
 - Read the current `world.md` contents into a `WORLD_STATE` variable before the session continues. Carry that state through the session by replacing `WORLD_STATE` each time a later lore beat returns an updated world.
 - Treat `world.md` as the persistent world state for later storytelling steps. It must already contain the persistent reef setting, active characters, ongoing threads, overall mood, current act, and a one-line hook for the next beat.
 - Treat `$SKILL_DIR/saga-writer.md` as the storytelling contract that later storytelling steps must use when they generate new beats.
+- Treat `chapter-NNN.md` as the session archive: the pulse compiles the accumulated lore story list into a numbered chapter at session end, while `world.md` keeps the persistent handoff for the next pulse.
 
 Initialize an empty lore story list to collect lore snippets across the session. This list is the per-session beat buffer while `world.md` holds the persistent world state. Initialize the pulse counter to 0.
 
@@ -293,6 +294,7 @@ After metrics are logged, check whether to recurse or exit.
 This step only runs when `AUTOMATED_DISPATCHES` == 0 (the exit path from Step 5).
 
 First, generate a final lore snippet for the empty pulse (the moonjelly finding nothing left to do). Append it to the lore story list.
+Then the session's lore story list is compiled into `chapter-NNN.md` with sequential numbering so the archive matches the beats that were printed during the session.
 
 Then compile all beats from the current session into a new `chapter-NNN.md` in `$SAGA_DIR`, using the next sequential chapter number and the full collected lore story list.
 The final empty-pulse or wrap-up beat is added to the session story before the chapter is written so the chapter and terminal output tell the same session story.
