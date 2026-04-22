@@ -17,6 +17,9 @@ Capture the skill base directory (provided by the harness as "Base directory for
 
 ```sh
 SKILL_DIR="{base directory for this skill}"
+SAGA_DIR=".agents/moonjelly-reef/saga/"
+WORLD_FILE="$SAGA_DIR/world.md"
+SAGA_WRITER_PROMPT="$SKILL_DIR/saga-writer.md"
 ```
 
 ## 0a. Acquire lock
@@ -62,7 +65,14 @@ If this is the first iteration of the pulse (not a recursive call), print the se
 └─────────────────────────────────────────────────────────────┘
 ```
 
-Initialize an empty lore story list to collect lore snippets across the session. Initialize the pulse counter to 0.
+This is also where the saga bootstrap behavior lives. Before printing the first pulse header:
+
+- Create `.agents/moonjelly-reef/saga/` when it does not already exist.
+- Initialize `world.md` from `$SKILL_DIR/world-template.md` when it does not already exist.
+- Treat `world.md` as the persistent world state for later storytelling steps. It must already contain the persistent reef setting, active characters, ongoing threads, overall mood, current act, and a one-line hook for the next beat.
+- Treat `$SKILL_DIR/saga-writer.md` as the storytelling contract that later storytelling steps must use when they generate new beats.
+
+Initialize an empty lore story list to collect lore snippets across the session. This list is the per-session beat buffer while `world.md` holds the persistent world state. Initialize the pulse counter to 0.
 
 ### Step 0d. Print pulse header
 
