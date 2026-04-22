@@ -18,21 +18,21 @@ Set the variables needed for this path:
 PLAN_ID="{from slice/plan body}"
 ```
 
-## 1. Tag plan to-land
+## 1. Tag plan to-ratify
 
-Remove `to-merge`, add `to-land`:
+Remove `to-merge`, add `to-ratify`:
 
 ```sh
-./tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-land
-gh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-land
+./tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-ratify
+gh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-ratify
 ```
 
 ## Handoff
 
 ```sh
-nextPhase="to-land"
+nextPhase="to-ratify"
 planPr="$PR_NUMBER" # inherited from router context
-summary="Single slice verified — PR stays open for human review"
+summary="Single slice verified — forwarding to ratify for holistic review"
 ```
 
 Report these three variables to the caller.
