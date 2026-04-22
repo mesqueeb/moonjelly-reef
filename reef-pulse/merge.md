@@ -12,7 +12,7 @@ Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the is
 
 An issue tagged `to-merge` with an open PR.
 
-Read the item to find the PR reference. Check the Plan context to determine whether this is **single-slice** (target branch = base branch) or **multi-slice** (target branch forks from base branch).
+Read the item to find the PR reference. Check whether the issue has a `parent-plan` field in frontmatter — this determines which merge path to take.
 
 Set the pre-fetch variables:
 
@@ -26,20 +26,19 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Set the post-fetch variables (after reading the slice body):
+Set the post-fetch variables (after reading the issue body):
 
 ```sh
-SLICE_NAME="{from slice body}"
-SLICE_ID="$ISSUE_ID"
-PR_NUMBER="{from slice body}"
-TARGET_BRANCH="{from slice/plan body}"
-PR_BRANCH="{from slice/plan body pr-branch field}"
-WORKTREE_PATH=".worktrees/$SLICE_NAME-merge"
+ISSUE_TITLE="{from issue title}"
+BASE_BRANCH="{from issue frontmatter base-branch field}"
+PR_NUMBER="{from issue frontmatter pr-number field}"
+PR_BRANCH="{from issue frontmatter pr-branch field}"
+WORKTREE_PATH=".worktrees/$ISSUE_TITLE-merge"
 ```
 
 ## Pre-merge check
 
-Unconditional for both single-slice and multi-slice. Ensures the slice branch integrates cleanly with the target branch before proceeding.
+Unconditional. Ensures the PR branch integrates cleanly with the base branch before proceeding.
 
 Check the merge state of the PR:
 
@@ -47,16 +46,16 @@ Check the merge state of the PR:
 ./tracker.sh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
 ```
 
-Enter a worktree forked from $PR_BRANCH (not $TARGET_BRANCH) so you are testing the PR code with the latest target merged in:
+Enter a worktree forked from $PR_BRANCH so you are testing the PR code with the latest base merged in:
 
 ```sh
-WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
 ```
 
 Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$PR_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
 
 ```sh
-./tracker.sh issue edit "$SLICE_ID" --add-label blocked-with-conflicts
+./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
 ```
 
 Stop — do not proceed.
@@ -64,13 +63,13 @@ Stop — do not proceed.
 Run the full test suite. If tests pass, commit and push:
 
 ```sh
-./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts with $TARGET_BRANCH"
+./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts with $BASE_BRANCH"
 ```
 
-If the test suite fails after merging, label the slice `to-rework` and stop:
+If the test suite fails after merging, label the issue `to-rework` and stop:
 
 ```sh
-./tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label to-rework
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label to-rework
 ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-rework
 ```
 
@@ -80,11 +79,11 @@ Clean up the worktree:
 ./worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
-If tests failed, stop here. Do not proceed to single-slice or multi-slice steps.
+If tests failed, stop here. Do not proceed to the delegate step.
 
 ## Delegate
 
-After the pre-merge check passes, check: **is this single-slice or multi-slice?**
+After the pre-merge check passes, check: **does the issue have a `parent-plan` field in frontmatter?**
 
-- **Single-slice** (target branch = base branch) — read and execute [merge-single.md](merge-single.md) (fast path: label plan `to-land`, human merges via the `reef-land` skill)
-- **Multi-slice** (target branch forks from base branch) — read and execute [merge-multi.md](merge-multi.md) (full flow: squash merge PR, check siblings, check completion)
+- **No `parent-plan`** — read and execute [merge-no-parent.md](merge-no-parent.md) (fast path: label `to-ratify`, human merges via the `reef-land` skill)
+- **Has `parent-plan`** — read and execute [merge-has-parent.md](merge-has-parent.md) (full flow: squash merge PR, check siblings, check completion)

@@ -13,8 +13,8 @@ This skill requires a specific issue: e.g. `#42` or `my-feature`.
 Read the plan. It must have:
 
 - Success criteria
-- Coverage matrix
-- Target branch name (in metadata)
+- Coverage matrix (if multi-slice)
+- `pr-branch` in frontmatter
 - Slice PRs with "Ambiguous choices" sections
 
 Set the pre-fetch variables:
@@ -32,12 +32,10 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 Set the post-fetch variables (after reading the plan body):
 
 ```sh
-PLAN_ID="$ISSUE_ID"
-PLAN_TITLE="{from plan body}"
-BASE_BRANCH="{from plan body}"
-TARGET_BRANCH="{from plan body}"
-PR_BRANCH="{from plan body pr-branch field}"
-WORKTREE_PATH=".worktrees/$PLAN_ID-ratify"
+ISSUE_TITLE="{from issue title}"
+BASE_BRANCH="{from issue frontmatter base-branch field}"
+PR_BRANCH="{from issue frontmatter pr-branch field}"
+WORKTREE_PATH=".worktrees/$ISSUE_ID-ratify"
 ```
 
 ## Mindset — Ratty the Walrus
@@ -58,7 +56,7 @@ Think like a CTO doing a final walkthrough before shipping. Product-focused, big
 
 ### 1. Get on the PR branch
 
-Enter a worktree forked from $PR_BRANCH — for multi-slice this is the target branch where all slice PRs are merged; for single-slice this is the slice's own branch:
+Enter a worktree forked from $PR_BRANCH:
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
@@ -67,7 +65,7 @@ WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$B
 Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$PR_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
 
 ```sh
-./tracker.sh issue edit "$PLAN_ID" --add-label blocked-with-conflicts
+./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
 ```
 
 Stop — do not proceed.
@@ -84,7 +82,7 @@ For each success criterion in the plan:
 
 - Read the actual code on the target branch that satisfies it. Trace the full path — don't check module by module, check end-to-end.
 - Verify from the **consumer's perspective**. If the criterion says "the legacy UI must render identically", don't just check that the data is correct — check that it's in the format the legacy UI expects. (Prevents painpoint A4.)
-- Cross-reference the coverage matrix: which slices were supposed to cover this criterion? Did they actually cover it when composed together?
+- Cross-reference the coverage matrix: which issues were supposed to cover this criterion? Did they actually cover it when composed together?
 
 Mark each criterion: ✓ met, ✗ not met (with explanation).
 
@@ -121,8 +119,8 @@ Before deciding PASS vs GAPS, re-review the entire plan through the lens of your
 If you updated the plan's success criteria:
 
 ```sh
-PLAN_BODY="{plan body with updated success criteria}"
-./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
+ISSUE_BODY="{plan body with updated success criteria}"
+./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
 ```
 
 If any gaps need decisions beyond what success criteria cover (e.g. the plan itself is ambiguous about a design direction), this is a **safety valve** — label `to-scope` instead of `to-rework` so a new scoping session can resolve the ambiguity.
@@ -190,7 +188,7 @@ Format the report as a collapsible block with local timestamp (`yyyy/MM/dd HH:mm
 ```sh
 REPORT="{ratify-report}" # <details><summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
 # if no PR exists:
-./tracker.sh pr create --base "$BASE_BRANCH" --head "$TARGET_BRANCH" --title "$PLAN_TITLE" --body "$REPORT" --label to-ratify
+./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-ratify
 # if PR exists, append:
 PR_NUMBER="{from pr create output or existing PR}"
 PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
@@ -203,21 +201,21 @@ PR_BODY="$PR_BODY\n\n$REPORT"
 **If all criteria met (PASS):**
 
 ```sh
-./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-ratify --add-label to-land
 ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-land
 ```
 
 **If gaps found (fixable within success criteria):**
 
 ```sh
-./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rework
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-ratify --add-label to-rework
 ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-rework
 ```
 
 **If gaps need decisions beyond success criteria (safety valve):**
 
 ```sh
-./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-scope
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-ratify --add-label to-scope
 ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-scope
 ```
 

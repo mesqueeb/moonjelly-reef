@@ -24,15 +24,14 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Set the post-fetch variables (after reading the issue body). Extract from frontmatter — works for slices, single-slice plans, and multi-slice plans:
+Set the post-fetch variables (after reading the issue body). Extract from frontmatter — works for single-slice plans and multi-slice sub-issues:
 
 ```sh
-SLICE_NAME="{from issue body}"
-SLICE_ID="$ISSUE_ID"
-PR_BRANCH="{from issue body pr-branch field}"
-TARGET_BRANCH="{from issue body}"
-PR_NUMBER="{from issue body}"
-WORKTREE_PATH=".worktrees/$SLICE_NAME-rework"
+ISSUE_TITLE="{from issue title}"
+BASE_BRANCH="{from issue frontmatter base-branch field}"
+PR_BRANCH="{from issue frontmatter pr-branch field}"
+PR_NUMBER="{from issue frontmatter pr-number field}"
+WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
 ```
 
 For plan issues, read success criteria from the plan body instead of acceptance criteria.
@@ -44,7 +43,7 @@ For plan issues, read success criteria from the plan body instead of acceptance 
 Enter a worktree forked from $PR_BRANCH to apply fixes to the existing PR:
 
 ```sh
-WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
 ```
 
 Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to the working branch using explicit refspec (no force), then continue. If unresolvable:
@@ -62,7 +61,7 @@ Read every review comment on the PR. Read the full conversation — don't just s
 Also read the gap report from the PR body (`<details><summary>` blocks written by ratify or reef-land) if present.
 
 Also re-read:
-- The slice's acceptance criteria or plan's success criteria
+- The issue's acceptance criteria or plan's success criteria
 - The gap classification from the ratify report if present (missing coverage, incomplete implementation, integration gap, planning gap)
 
 ### 3. Fix
@@ -121,4 +120,3 @@ summary="Rework complete — addressed review feedback"
 ```
 
 Report these three variables to the caller.
-

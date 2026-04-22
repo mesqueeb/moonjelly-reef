@@ -10,54 +10,42 @@
 
 ## Work hierarchy
 
-| Term                | Definition                                                                                           | Aliases to avoid                                    |
-| ------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| **issue**           | A scoped unit of work tracked by the issue tracker — a bug, feature, or refactor                     | ticket, work item, task, epic, parent, parent issue |
-| **plan**            | The content written into an issue by reef-scope — success criteria, metadata, coverage matrix        | spec, design, RFC                                   |
-| **slice**           | A thin vertical cut through all layers, implementing part of an issue end-to-end                     | sub-task, sub-issue, child issue, chunk             |
-| 🔶 **single-slice** | An issue small enough that the issue itself IS the slice — no sub-items, target branch = base branch | quick fix, small, fast path                         |
-| 🔷 **multi-slice**  | An issue broken into 2+ slices with a dedicated target branch composing them                         | standard, normal, full                              |
+| Term             | Definition                                                                                    | Aliases to avoid                      |
+| ---------------- | --------------------------------------------------------------------------------------------- | ------------------------------------- |
+| **issue**        | A scoped unit of work tracked by the issue tracker — a bug, feature, or refactor              | ticket, work item, task, epic, parent |
+| **plan**         | The content written into an issue by reef-scope — success criteria, metadata, coverage matrix | spec, design, RFC                     |
+| **slice**        | A thin vertical cut through all layers, implementing part of an issue end-to-end              | sub-task, chunk                       |
+| **parent issue** | An issue that creates sub-issues and owns the integration branch they merge into              | epic, umbrella issue                  |
+| **sub-issue**    | An issue created by the slice phase to implement one slice under a parent issue               | child task, child ticket              |
 
 ## Branches
 
-| Term              | Definition                                                                                                                                                                                              | Aliases to avoid                                            |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| **base branch**   | The branch where everything ultimately lands (usually `main`)                                                                                                                                           | trunk, main branch                                          |
-| **target branch** | The branch that slice PRs merge into. For multi-slice: a dedicated branch (e.g. `reef/my-thing`) created from the base branch. For single-slice: equals the base branch.                                | work branch, feature branch, integration branch, dev branch |
-| **slice branch**  | A per-slice branch created in a worktree, PR'd against the target branch                                                                                                                                | implementation branch                                       |
-| **pr-branch**     | The branch the PR lives on — stored in issue frontmatter. All slice lifecycle phases fork from `$PR_BRANCH`. For type A: the slice branch. For type B: the slice branch. For type C: the target branch. | PR branch, feature branch, work branch                      |
-
-## Ticket types in the slice lifecycle
-
-Three types of tickets flow through the slice lifecycle phases (implement → inspect → rework → merge):
-
-| Type  | Description                     | base-branch | target-branch | pr-branch   |
-| ----- | ------------------------------- | ----------- | ------------- | ----------- |
-| **A** | Single-slice plan               | main        | main          | feat/042    |
-| **B** | Multi-slice slice               | main        | feat/parent   | feat/part-1 |
-| **C** | Multi-slice plan (after rework) | main        | feat/parent   | feat/parent |
+| Term            | Definition                                                                                                                                                                                            | Aliases to avoid                                     |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| **base branch** | The branch the PR merges into — stored in issue frontmatter as `base-branch`. For issues with no parent issue: usually `main`. For sub-issues: the parent issue's `pr-branch`.                        | trunk, main branch, target branch                    |
+| **pr-branch**   | The branch the PR lives on — stored in issue frontmatter as `pr-branch`. Every issue owns its own `pr-branch`. If an issue creates sub-issues, its `pr-branch` also acts as their integration branch. | PR branch, feature branch, work branch, slice branch |
 
 ## Planning
 
-| Term                    | Definition                                                                                                            | Aliases to avoid                                  |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| **success criteria**    | Plan-level testable conditions that define when the entire issue is done                                              | requirements, specs, definition of done           |
-| **acceptance criteria** | Slice-level testable conditions that define when a single slice is done                                               | checklist, slice criteria, ACs (never abbreviate) |
-| **coverage matrix**     | A table mapping each success criterion to which slice(s) and acceptance criteria cover it — only used for multi-slice | traceability matrix, mapping                      |
+| Term                    | Definition                                                                                                                                 | Aliases to avoid                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| **success criteria**    | Plan-level testable conditions that define when the entire issue is done                                                                   | requirements, specs, definition of done           |
+| **acceptance criteria** | Issue-level testable conditions that define when one implementation unit is done; on a parent issue they are written onto each sub-issue   | checklist, slice criteria, ACs (never abbreviate) |
+| **coverage matrix**     | A table mapping each success criterion to which sub-issue(s) and acceptance criteria cover it — only used when an issue creates sub-issues | traceability matrix, mapping                      |
 
 ## Phases
 
-| Term                 | Definition                                                                                 | Aliases to avoid                           |
-| -------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------ |
-| **phase**            | A step in the issue lifecycle, executed by reading an instruction file under `reef-pulse/` | skill (for internal phases), step, stage   |
-| **scope**            | The diver scopes an issue — determines type, writes plan with success criteria             | design, spec                               |
-| **slice** (as phase) | Analyze a plan and break it into slices — or detect single-slice and fast-path             | decompose, break down                      |
-| **implement**        | Build a slice using TDD in a worktree, open a PR                                           | code, develop, build                       |
-| **inspect**          | Independently verify a slice PR against acceptance criteria                                | review, QA, check                          |
-| **rework**           | Fix issues flagged by the inspector                                                        | fix, address feedback                      |
-| **merge**            | Merge an approved slice PR (multi-slice) or hand off to the diver (single-slice)           | land (that's a different phase), integrate |
-| **ratify**           | Holistic review of the entire target branch — only for multi-slice                         | final review, sign-off                     |
-| **land**             | The diver reviews the finished work and merges to the base branch                          | finalise, approve, ship                    |
+| Term                 | Definition                                                                                                                 | Aliases to avoid                           |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| **phase**            | A step in the issue lifecycle, executed by reading an instruction file under `reef-pulse/`                                 | skill (for internal phases), step, stage   |
+| **scope**            | The diver scopes an issue — determines type, writes plan with success criteria                                             | design, spec                               |
+| **slice** (as phase) | Analyze a plan and either keep the work on the current issue or break it into sub-issues                                   | decompose, break down                      |
+| **implement**        | Build a slice using TDD in a worktree, open a PR                                                                           | code, develop, build                       |
+| **inspect**          | Independently verify a slice PR against acceptance criteria                                                                | review, QA, check                          |
+| **rework**           | Fix issues flagged by the inspector                                                                                        | fix, address feedback                      |
+| **merge**            | Merge an approved sub-issue PR into its parent issue's `pr-branch`, or hand off an issue with no parent issue to the diver | land (that's a different phase), integrate |
+| **ratify**           | Holistic review of an issue whose work was composed through sub-issues on its `pr-branch`                                  | final review, sign-off                     |
+| **land**             | The diver reviews the finished work and merges to the base branch                                                          | finalise, approve, ship                    |
 
 ## Labels
 
@@ -91,11 +79,11 @@ Three types of tickets flow through the slice lifecycle phases (implement → in
 ## Relationships
 
 - An **issue** has a **plan** with one set of **success criteria**
-- A **slice** has its own **acceptance criteria**, derived from the plan's **success criteria**
-- For **single-slice**, the **issue** IS the **slice** — **success criteria** and **acceptance criteria** are the same
-- For **multi-slice**, the **coverage matrix** maps every **success criterion** to one or more **slices**
-- A **target branch** always exists — for **multi-slice** it's a dedicated branch; for **single-slice** it equals the **base branch**
-- A **slice branch** always exists — it targets the **target branch**
+- A sub-issue has its own **acceptance criteria**, derived from the plan's **success criteria**
+- If an issue has no sub-issues, its **success criteria** and **acceptance criteria** describe the same work directly
+- If an issue creates sub-issues, the **coverage matrix** maps every **success criterion** to one or more sub-issues
+- Every issue has a **pr-branch** (the branch the PR lives on) and a **base-branch** (where it merges into)
+- For sub-issues, `base-branch` is the parent issue's `pr-branch`; for issues with no parent issue, `base-branch` is usually `main`
 - A **session** produces exactly one **chapter**
 - A **chapter** contains one **beat** per **pulse** that dispatched work, plus a final **beat** for the empty pulse
 - The **world state** persists between **sessions**; the **chapter** is immutable after the **session** ends
@@ -119,15 +107,15 @@ Three types of tickets flow through the slice lifecycle phases (implement → in
 
 > **Dev:** "This bug is tagged `to-slice`. How does the reef handle it?"
 >
-> **Domain expert:** "The slice phase reads the plan. If it drafts one **slice**, it takes the single-slice path — **target branch** = **base branch**, no sub-items. The **issue** itself becomes the **slice**, and its **success criteria** become the **acceptance criteria**. It gets tagged `to-implement` directly."
+> **Domain expert:** "The slice phase reads the plan. If the work stays on the current issue, no sub-issues are created. The issue's **success criteria** become its **acceptance criteria**, and it gets tagged `to-implement` directly."
 >
-> **Dev:** "And if it's two slices?"
+> **Dev:** "And if it needs two sub-issues?"
 >
-> **Domain expert:** "Then it creates a dedicated **target branch**, creates the **slices** as separate items with their own **acceptance criteria**, builds the **coverage matrix**, and labels them `to-implement` or `to-await-waves`."
+> **Domain expert:** "Then the current issue becomes a **parent issue**. Its `pr-branch` becomes the integration branch, it creates sub-issues with their own `pr-branch` and **acceptance criteria**, builds the **coverage matrix**, and labels them `to-implement` or `to-await-waves`."
 >
 > **Dev:** "When does the diver see it?"
 >
-> **Domain expert:** "At **land**. For single-slice, the PR is still open — the diver merges it. For multi-slice, **ratify** already composed everything on the **target branch** and opened a PR to the **base branch** — the diver merges that."
+> **Domain expert:** "At **land**. If the work stayed on one issue, that PR is still open and the diver merges it. If the issue created sub-issues, **ratify** already composed everything on the parent issue's `pr-branch` and opened a PR to the **base branch** — the diver merges that."
 
 ## Flagged ambiguities (saga)
 
@@ -139,8 +127,8 @@ Three types of tickets flow through the slice lifecycle phases (implement → in
 ## Flagged ambiguities
 
 - **"slice"** is both a noun (a unit of work) and a phase name (the act of breaking a plan into slices). Context usually makes it clear, but when ambiguous, say "the slice phase" for the action and "a slice" for the work unit.
-- **"merge"** is both a phase name and a git operation. The phase may or may not perform a git merge — for single-slice it doesn't. When referring to the git operation specifically, say "merge the PR."
-- **"feature branch"** or **"work branch"** — do not use. The correct term is **target branch**. Not all issues are features, and "work" is ambiguous (agents work in slice branches, not the target).
+- **"merge"** is both a phase name and a git operation. The phase may or may not perform a git merge. When referring to the git operation specifically, say "merge the PR."
+- **"feature branch"**, **"work branch"**, or **"target branch"** — do not use. The correct terms are **pr-branch** (the branch the PR lives on) and **base-branch** (where it merges into). Not all issues are features, and "target" is ambiguous once you realize base-branch serves that role for sub-issues.
 - **"AC"** or **"SC"** — do not abbreviate. Always write **acceptance criteria** and **success criteria** in full. Abbreviations create ambiguity across contexts and hurt readability.
-- **"parent"** or **"parent issue"** — do not use. Say **plan** (for the content) or **issue** (for the tracked entity). "Parent" implies a hierarchy that doesn't always exist (single-slice has no parent/child relationship).
+- **"plan"** vs **"parent issue"** — use **plan** for the content written into an issue, and **parent issue** only when you need to describe the relationship between one issue and its sub-issues.
 - **"work item"** — do not use. The correct term is **issue**. "Work item" is generic project-management speak; **issue** is concrete and tracker-agnostic (GitHub Issues, Jira issues, Linear issues, local markdown files are all "issues").

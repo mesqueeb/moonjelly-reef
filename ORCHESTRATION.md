@@ -13,17 +13,18 @@ For MCP trackers (ClickUp, Jira, Linear): use equivalent MCP tool calls.
 Only variables referenced in an op's cmd/tracker field belong in set-variables.
 Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs in the .md, not here.
 
-## Ticket types in the slice lifecycle
+## Branch contract
 
-Three types of tickets flow through the slice lifecycle phases (implement → inspect → rework → merge):
+Every issue in the slice lifecycle carries both:
 
-| Type                                  | base-branch | target-branch | pr-branch   |
-| ------------------------------------- | ----------- | ------------- | ----------- |
-| **A** Single-slice plan               | main        | main          | feat/042    |
-| **B** Multi-slice slice               | main        | feat/parent   | feat/part-1 |
-| **C** Multi-slice plan (after rework) | main        | feat/parent   | feat/parent |
+- `$PR_BRANCH` — the branch the PR lives on; phases fork from it, commit to it, and review it
+- `$BASE_BRANCH` — the branch the PR merges into
 
-All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to fork from, commit to, and review.
+General rules:
+
+- If an issue has no `parent-plan`, `$BASE_BRANCH` is usually `main`
+- If an issue has `parent-plan`, `$BASE_BRANCH` is the parent issue's `$PR_BRANCH`
+- If the current issue creates sub-issues, each sub-issue gets its own `$PR_BRANCH`, while the current issue keeps its own `$PR_BRANCH` as the integration branch
 
 ## Skills
 
@@ -99,24 +100,22 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  PLAN_ID="$ISSUE_ID"
-  BASE_BRANCH="{from base branch discussion}"
-  TARGET_BRANCH="{from branch discussion}"
-  PLAN_TYPE="{feature, refactor, or bug}"
+  BASE_BRANCH="{from branch discussion}"
+  PR_BRANCH="{from branch discussion}"
   ```
 - update-tracker
   ```sh
-  PLAN_CONTENT="{plan-content}" # frontmatter + plan body from context
-  ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
+  ISSUE_BODY="{plan-content}" # frontmatter + plan body from context
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-scope --add-label to-slice
   ```
 - set-variables
   ```sh
   DURATION="{human-readable duration since START_TIME}" # e.g. "42s", "1m 12s"
-  PLAN_BODY="{current plan issue body with metrics section appended}"
+  ISSUE_BODY="{current plan issue body with metrics section appended}"
   ```
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
   ```
 
 ### [/reef-land](./reef-land/SKILL.md)
@@ -208,47 +207,47 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 
-### [slice-single.md](./reef-pulse/slice-single.md)
+### [slice-one-issue.md](./reef-pulse/slice-one-issue.md)
 
 - set-variables
-  ```sh
-  PLAN_ID="$ISSUE_ID"
-  PLAN_BODY="{plan body with target branch and pr-branch added to frontmatter and acceptance criteria appended}"
-  ```
+
+```sh
+ISSUE_BODY="{plan body with scoped pr-branch preserved and acceptance criteria appended}"
+```
+
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label to-implement
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-slice --add-label to-implement
   ```
 - handoff
   ```sh
   nextPhase="to-implement"
   planPr="—"
-  summary="Single slice — fast path, targeting $BASE_BRANCH directly"
+  summary="No sub-issues needed — current issue moves to to-implement"
   ```
 
-### [slice-multi.md](./reef-pulse/slice-multi.md)
+### [slice-subissues.md](./reef-pulse/slice-subissues.md)
 
 - set-variables
   ```sh
-  PLAN_ID="$ISSUE_ID"
-  TARGET_BRANCH="{from plan body}"
+  PR_BRANCH="{from plan body pr-branch field}"
   BASE_BRANCH="{from plan body}"
-  PLAN_TYPE="{from plan body}" # feature, refactor, or bug
-  WORKTREE_PATH=".worktrees/$PLAN_ID-slice"
+  WORKTREE_PATH=".worktrees/$ISSUE_ID-slice"
   ```
 - enter-worktree
   ```sh
-  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - create-remote-branch
   ```sh
-  git push -u origin "$TARGET_BRANCH"
+  git push -u origin "$PR_BRANCH"
   ```
 - phase-specific
 - set-variables
   ```sh
   SLICE_TITLE="{slice-title} [await: #{blocker-id}]"  # omit [await: ...] if unblocked
-  SLICE_BODY="{slice-body}" # as per the template below
+  SLICE_PR_BRANCH="{derived from current issue pr-branch + slice title slug}"
+  SLICE_BODY="{slice-body}" # as per the template below, with pr-branch: $SLICE_PR_BRANCH
   SLICE_LABEL="to-implement" # or to-await-waves if blocked
   ```
 - create-slices
@@ -257,11 +256,11 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  PLAN_BODY="{plan body with pr-branch in frontmatter and coverage matrix appended}"
+  ISSUE_BODY="{plan body with pr-branch in frontmatter and coverage matrix appended}"
   ```
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label in-progress
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-slice --add-label in-progress
   ```
 - exit-worktree
   ```sh
@@ -285,38 +284,36 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  SLICE_NAME="{from slice body}"
-  SLICE_ID="$ISSUE_ID"
-  BASE_BRANCH="{from slice/plan body}"
-  TARGET_BRANCH="{from slice/plan body}"
-  SLICE_BRANCH="{PR branch, e.g. feat/001-auth-endpoint}"
-  WORKTREE_PATH=".worktrees/$SLICE_NAME-implement"
+  ISSUE_TITLE="{from issue title}"
+  BASE_BRANCH="{from issue frontmatter base-branch field}"
+  PR_BRANCH="{from issue frontmatter pr-branch field}"
+  WORKTREE_PATH=".worktrees/$ISSUE_TITLE-implement"
   ```
 - enter-worktree
   ```sh
-  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - commit-code
   ```sh
-  ./commit.sh --branch "$SLICE_BRANCH" -m "$SLICE_NAME: implementation"
+  ./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: implementation"
   ```
 - set-variables
   ```sh
-  REPORT="{report-content}" # starts with: closes #$SLICE_ID $SLICE_NAME\n\n
+  REPORT="{closes line and implementation report}" # e.g.: closes #$ISSUE_ID $ISSUE_TITLE\n\n...
   ```
 - pr-create
   ```sh
-  ./tracker.sh pr create --base "$TARGET_BRANCH" --title "$SLICE_NAME" --body "$REPORT" --label to-inspect
+  ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-inspect
   ```
 - set-variables
   ```sh
   PR_NUMBER="{from pr create output}"
-  SLICE_BODY="{slice/plan body with PR reference and pr-branch updated}"
+  ISSUE_BODY="{original issue body with added frontmatter values}"
   ```
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY" --remove-label to-implement --add-label to-inspect
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-implement --add-label to-inspect
   ```
 - exit-worktree
   ```sh
@@ -340,15 +337,14 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  SLICE_NAME="{from slice body or plan-id}"
-  SLICE_ID="$ISSUE_ID"
-  PR_BRANCH="{from slice/plan body pr-branch field}"
-  TARGET_BRANCH="{from slice/plan body}"
-  WORKTREE_PATH=".worktrees/$SLICE_NAME-inspect"
+  ISSUE_TITLE="{from issue title}"
+  BASE_BRANCH="{from issue frontmatter base-branch field}"
+  PR_BRANCH="{from issue frontmatter pr-branch field}"
+  WORKTREE_PATH=".worktrees/$ISSUE_TITLE-inspect"
   ```
 - enter-worktree
   ```sh
-  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - commit-code — if cleanup-needed
@@ -357,16 +353,16 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - update-pr-body
   ```sh
-  PR_NUMBER="{from slice body}" # if not found, try ./tracker.sh pr list --search
+  PR_NUMBER="{from issue frontmatter pr-number field}" # if not found, try ./tracker.sh pr list --search
   PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
   REPORT="{inspect-report}" # <details><summary><h3>🧿 Inspect review — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
   PR_BODY="$PR_BODY\n\n$REPORT"
   ./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker pass case
-  - contains: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-merge`
+  - contains: `./tracker.sh issue edit "$ISSUE_ID" --remove-label to-inspect --add-label to-merge` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-merge`
 - update-tracker fail case
-  - contains: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-rework`
+  - contains: `./tracker.sh issue edit "$ISSUE_ID" --remove-label to-inspect --add-label to-rework` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-rework`
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
@@ -389,16 +385,15 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  SLICE_NAME="{from issue body}"
-  SLICE_ID="$ISSUE_ID"
-  PR_BRANCH="{from issue body pr-branch field}"
-  TARGET_BRANCH="{from issue body}"
-  PR_NUMBER="{from issue body}"
-  WORKTREE_PATH=".worktrees/$SLICE_NAME-rework"
+  ISSUE_TITLE="{from issue title}"
+  BASE_BRANCH="{from issue frontmatter base-branch field}"
+  PR_BRANCH="{from issue frontmatter pr-branch field}"
+  PR_NUMBER="{from issue frontmatter pr-number field}"
+  WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
   ```
 - enter-worktree
   ```sh
-  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - commit-code
@@ -439,11 +434,9 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  SLICE_NAME="{from slice title, stripping [await: ...] suffix}"
-  SLICE_ID="$ISSUE_ID"
-  BASE_BRANCH="{from slice/plan body}"
-  TARGET_BRANCH="{from slice/plan body}"
-  WORKTREE_PATH=".worktrees/$SLICE_NAME-await-waves"
+  ISSUE_TITLE="{from issue title, stripping [await: ...] suffix}"
+  BASE_BRANCH="{from issue frontmatter base-branch field}"
+  WORKTREE_PATH=".worktrees/$ISSUE_TITLE-await-waves"
   ```
 - set-variables
   ```sh
@@ -455,20 +448,20 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$SLICE_ID" --remove-label to-await-waves --add-label to-implement --title "$SLICE_NAME"
+  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-await-waves --add-label to-implement --title "$ISSUE_TITLE"
   ```
 - enter-worktree
   ```sh
-  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - set-variables
   ```sh
-  SLICE_BODY="{slice body, with updated acceptance criteria if changed}"
+  ISSUE_BODY="{issue body, with updated acceptance criteria if changed}"
   ```
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY"
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
   ```
 - exit-worktree
   ```sh
@@ -492,12 +485,11 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  SLICE_NAME="{from slice body}"
-  SLICE_ID="$ISSUE_ID"
-  PR_NUMBER="{from slice body}"
-  TARGET_BRANCH="{from slice/plan body}"
-  PR_BRANCH="{from slice/plan body pr-branch field}"
-  WORKTREE_PATH=".worktrees/$SLICE_NAME-merge"
+  ISSUE_TITLE="{from issue title}"
+  BASE_BRANCH="{from issue frontmatter base-branch field}"
+  PR_NUMBER="{from issue frontmatter pr-number field}"
+  PR_BRANCH="{from issue frontmatter pr-branch field}"
+  WORKTREE_PATH=".worktrees/$ISSUE_TITLE-merge"
   ```
 - pre-merge-check
   ```sh
@@ -505,15 +497,15 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - enter-worktree
   ```sh
-  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - commit-code — if merge-needed
   ```sh
-  ./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts with $TARGET_BRANCH"
+  ./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts with $BASE_BRANCH"
   ```
 - update-tracker — if tests-fail
   ```sh
-  ./tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label to-rework
+  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label to-rework
   ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-rework
   ```
 - exit-worktree
@@ -521,15 +513,11 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 
-### [merge-single.md](./reef-pulse/merge-single.md)
+### [merge-no-parent.md](./reef-pulse/merge-no-parent.md)
 
-- set-variables
-  ```sh
-  PLAN_ID="{from slice/plan body}"
-  ```
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-ratify
+  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label to-ratify
   ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-ratify
   ```
 - handoff
@@ -538,13 +526,12 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   planPr="$PR_NUMBER" # inherited from router context
   ```
 
-### [merge-multi.md](./reef-pulse/merge-multi.md)
+### [merge-has-parent.md](./reef-pulse/merge-has-parent.md)
 
 - set-variables
   ```sh
-  PLAN_ID="{from slice/plan body}"
-  PR_NUMBER="{from slice body}"
-  SLICE_ID="$ISSUE_ID"
+  PARENT_ID="{from issue frontmatter parent-plan field}"
+  PR_NUMBER="{from issue frontmatter pr-number field}"
   ```
 - set-variables
   ```sh
@@ -555,27 +542,27 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ./tracker.sh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
   ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label landed
   ```
-- check-siblings-and-completion
-  ```sh
-  ./tracker.sh issue view "$PLAN_ID" --json body,title,labels
-  ```
 - set-variables
   ```sh
-  SIBLING_ID="{from coverage matrix}"
+  BASE_BRANCH="{from issue frontmatter base-branch field}"
+  ```
+- check-siblings-and-completion
+  ```sh
+  ./tracker.sh issue list --json number,labels,body
   ```
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label landed
-  ./tracker.sh issue close "$SLICE_ID"
+  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label landed
+  ./tracker.sh issue close "$ISSUE_ID"
   ```
-- update-tracker — if all-slices-done
+- update-tracker — if all-siblings-landed
   ```sh
-  ./tracker.sh issue edit "$PLAN_ID" --remove-label in-progress --add-label to-ratify
+  ./tracker.sh issue edit "$PARENT_ID" --remove-label in-progress --add-label to-ratify
   ```
 - handoff
   ```sh
-  nextPhase="to-ratify" # or "in-progress" if not all slices tagged 'landed'
-  planPr="—" # multi-slice: no plan PR yet
+  nextPhase="to-ratify" # or "in-progress" if not all issues tagged 'landed'
+  planPr="—" # child-issue merge does not open the parent issue PR
   ```
 
 ### [ratify.md](./reef-pulse/ratify.md)
@@ -590,12 +577,10 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  PLAN_ID="$ISSUE_ID"
-  PLAN_TITLE="{from plan body}"
-  BASE_BRANCH="{from plan body}"
-  TARGET_BRANCH="{from plan body}"
-  PR_BRANCH="{from plan body pr-branch field}"
-  WORKTREE_PATH=".worktrees/$PLAN_ID-ratify"
+  ISSUE_TITLE="{from issue title}"
+  BASE_BRANCH="{from issue frontmatter base-branch field}"
+  PR_BRANCH="{from issue frontmatter pr-branch field}"
+  WORKTREE_PATH=".worktrees/$ISSUE_ID-ratify"
   ```
 - enter-worktree
   ```sh
@@ -610,7 +595,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   REPORT="{ratify-report}" # <details><summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
   # if no PR exists:
-  ./tracker.sh pr create --base "$BASE_BRANCH" --head "$TARGET_BRANCH" --title "$PLAN_TITLE" --body "$REPORT" --label to-ratify
+  ./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-ratify
   # if PR exists, append:
   PR_NUMBER="{from pr create output or existing PR}"
   PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
@@ -618,9 +603,9 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker pass case
-  - contains: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-land`
+  - contains: `./tracker.sh issue edit "$ISSUE_ID" --remove-label to-ratify --add-label to-land` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-land`
 - update-tracker fail case
-  - contains: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rework` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-rework`
+  - contains: `./tracker.sh issue edit "$ISSUE_ID" --remove-label to-ratify --add-label to-rework` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-rework`
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"

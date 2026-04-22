@@ -27,11 +27,11 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Read the issue. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The frontmatter block tells you the work type, base branch, and target branch name.
+Read the issue. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The frontmatter block tells you the work type, base branch, and PR branch name.
 
 ### Guard: verify branch frontmatter
 
-Parse the plan frontmatter. If `base-branch` or `target-branch` is missing, stop immediately:
+Parse the plan frontmatter. If `base-branch` or `pr-branch` is missing, stop immediately:
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-slice --add-label blocked-missing-scope --add-label to-scope
@@ -42,7 +42,7 @@ Then hand off with:
 ```sh
 nextPhase="blocked-missing-scope"
 planPr="—"
-summary="Stopped: plan frontmatter is missing base-branch or target-branch. Re-run /reef-scope to fix."
+summary="Stopped: plan frontmatter is missing base-branch or pr-branch. Re-run /reef-scope to fix."
 ```
 
 Report these three variables to the caller and **do not continue**.
@@ -67,5 +67,5 @@ For small bugs (scope = quick fix in the plan): produce a single slice. The plan
 
 After drafting, check: **did you produce exactly 1 slice?**
 
-- **1 slice** — read and execute [slice-single.md](slice-single.md) (fast path: no worktree, no branch, label `to-implement`)
-- **2+ slices** — read and execute [slice-multi.md](slice-multi.md) (full flow: worktree, branch, coverage matrix, sub-issues, label `in-progress`)
+- **1 slice** — read and execute [slice-one-issue.md](slice-one-issue.md) (no sub-issues: no worktree, no branch creation, label `to-implement`)
+- **2+ slices** — read and execute [slice-subissues.md](slice-subissues.md) (creates sub-issues: worktree, branch, coverage matrix, label `in-progress`)

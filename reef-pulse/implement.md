@@ -10,17 +10,14 @@ Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the is
 
 ## Input
 
-This skill requires a specific slice: e.g. `#55` or `my-feature/001-auth-endpoint`.
+This skill requires a specific issue: e.g. `#55` or `my-feature/001-auth-endpoint`.
 
-If no slice is given, look for slices tagged `to-implement`. If multiple, pick the first unblocked one. If none, exit silently.
-
-Read the slice (issue or file). It must contain:
+Read the issue. It must contain:
 
 - Acceptance criteria
-- Target branch name (in "Plan context" section)
-- Parent plan reference
-
-If the target branch is missing from the slice, check the plan frontmatter. The target branch is always set — for single-slice it equals the base branch, for multi-slice it's a dedicated branch.
+- `base-branch` in frontmatter (where the PR merges into)
+- `pr-branch` in frontmatter (the branch the PR lives on — chosen during scope for an issue with no `parent-plan`, or assigned during slice creation for an issue with `parent-plan`)
+- Parent plan reference (if this is a sub-issue)
 
 Set the pre-fetch variables:
 
@@ -34,31 +31,29 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Set the post-fetch variables (after reading the slice body):
+Set the post-fetch variables (after reading the issue body):
 
 ```sh
-SLICE_NAME="{from slice body}"
-SLICE_ID="$ISSUE_ID"
-BASE_BRANCH="{from slice/plan body}"
-TARGET_BRANCH="{from slice/plan body}"
-SLICE_BRANCH="{PR branch, e.g. feat/001-auth-endpoint}"
-WORKTREE_PATH=".worktrees/$SLICE_NAME-implement"
+ISSUE_TITLE="{from issue title}"
+BASE_BRANCH="{from issue frontmatter base-branch field}"
+PR_BRANCH="{from issue frontmatter pr-branch field}"
+WORKTREE_PATH=".worktrees/$ISSUE_TITLE-implement"
 ```
 
 ## 1. Git prep
 
 This is non-negotiable. Every step must pass before writing any code.
 
-Enter a worktree forked from $TARGET_BRANCH so you start from a clean integration point (earlier slices' work is already merged there):
+Enter a worktree forked from $BASE_BRANCH so you start from a clean integration point:
 
 ```sh
-WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
 ```
 
-Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$TARGET_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$BASE_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
 
 ```sh
-./tracker.sh issue edit "$SLICE_ID" --add-label blocked-with-conflicts
+./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
 ```
 
 Stop — do not proceed.
@@ -68,15 +63,15 @@ Verify:
 - [ ] The project builds / compiles cleanly before you touch anything
 - [ ] The full test suite passes before you touch anything (this is your baseline)
 
-If the baseline is already broken, **stop and report this**. Do not try to fix pre-existing failures. Label the slice `to-rework` with a note explaining what's broken. (Prevents painpoint D1 — solving problems in the wrong order.)
+If the baseline is already broken, **stop and report this**. Do not try to fix pre-existing failures. Label the issue `to-rework` with a note explaining what's broken. (Prevents painpoint D1 — solving problems in the wrong order.)
 
 ## 2. Read context
 
 Before writing any code, read and understand:
 
-- **This slice's acceptance criteria** — this is your checklist. Every criterion must be addressed.
-- **The plan + success criteria** — understand the "why" behind this slice.
-- **Sibling slices** — awareness of what others are doing or have done. Don't duplicate, don't conflict.
+- **This issue's acceptance criteria** — this is your checklist. Every criterion must be addressed.
+- **The plan + success criteria** — understand the "why" behind this issue.
+- **Sibling issues** — awareness of what others are doing or have done. Don't duplicate, don't conflict.
 - **The decision record** — the original decisions that led here.
 
 ## 3. Implement with TDD
@@ -112,40 +107,42 @@ Decisions made during implementation that weren't covered by the acceptance crit
 ## 5. Open the PR
 
 ```sh
-./commit.sh --branch "$SLICE_BRANCH" -m "$SLICE_NAME: implementation"
+./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: implementation"
 ```
 
 The PR body must start with the "closes" reference, followed by the implementation report:
 
+Document judgment calls in that implementation report. Only include decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
+
 ```sh
-REPORT="{report-content}" # starts with: closes #$SLICE_ID $SLICE_NAME\n\n
+REPORT="{closes line and implementation report}" # e.g.: closes #$ISSUE_ID $ISSUE_TITLE\n\n...
 ```
 
 ```sh
-./tracker.sh pr create --base "$TARGET_BRANCH" --title "$SLICE_NAME" --body "$REPORT" --label to-inspect
+./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-inspect
 ```
 
-The PR targets the **target branch** (which equals `{base-branch}` for single-slice work).
+The PR targets `$BASE_BRANCH` — the branch it merges into.
+
+## 6. Update the issue and label
+
+Persist the PR metadata for the newly created PR on the issue body so downstream phases (inspect, rework, merge) can find it.
+
+Add to `$ISSUE_BODY` frontmatter:
 
 ```sh
 PR_NUMBER="{from pr create output}"
-SLICE_BODY="{slice/plan body with PR reference and pr-branch updated}"
+ISSUE_BODY="{original issue body with added frontmatter values}"
+# add to frontmatter (if not already): pr-branch: $PR_BRANCH
+# add to frontmatter:  pr-number: $PR_NUMBER
 ```
-
-## 6. Document judgment calls
-
-Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
-
-## 7. Update the slice and label
-
-Persist the PR reference on the slice/plan body so downstream phases (inspect, rework, merge) can find it. Update the `pr-branch` frontmatter field to `$SLICE_BRANCH` (the branch the PR lives on). For single-slice plans where `pr-branch` was set to `—` by slice-single.md, this fills in the actual value.
 
 ```sh
-SLICE_BODY="{slice/plan body with PR reference and pr-branch updated}"
-./tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY" --remove-label to-implement --add-label to-inspect
+ISSUE_BODY="{issue body with PR metadata updated}"
+./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-implement --add-label to-inspect
 ```
 
-## 8. Clean up
+## 7. Clean up
 
 ```sh
 ./worktree-exit.sh --path "$WORKTREE_PATH"
@@ -156,7 +153,7 @@ SLICE_BODY="{slice/plan body with PR reference and pr-branch updated}"
 ```sh
 nextPhase="to-inspect"
 planPr="$PR_NUMBER"
-summary="Implementation complete for $SLICE_NAME"
+summary="Implementation complete for $ISSUE_TITLE"
 ```
 
 Report these three variables to the caller.
