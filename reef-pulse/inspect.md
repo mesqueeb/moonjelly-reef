@@ -2,7 +2,7 @@
 
 > **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
 >
-> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
+> **Tracker note**: Commands below use `./tracker.sh` syntax for both issue and PR operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -110,16 +110,16 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ### 6. Update the PR
 
-Set the PR number from the slice body. If not found there, try `gh pr list --search`. If PR_NUMBER is nowhere to be found, label the issue `pr-missing` and stop.
+Set the PR number from the slice body. If not found there, try `./tracker.sh pr list --search`. If PR_NUMBER is nowhere to be found, label the issue `pr-missing` and stop.
 
 Read the current PR body, then append the inspect report as a collapsible block:
 
 ```sh
-PR_NUMBER="{from slice body}" # if not found, try gh pr list --search
-PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q .body)
+PR_NUMBER="{from slice body}" # if not found, try ./tracker.sh pr list --search
+PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
 REPORT="{inspect-report}" # <details><summary><h3>🧿 Inspect review — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
 PR_BODY="$PR_BODY\n\n$REPORT"
-gh pr edit "$PR_NUMBER" --body "$PR_BODY"
+./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
 ```
 
 ### 7. Verdict
@@ -128,14 +128,14 @@ gh pr edit "$PR_NUMBER" --body "$PR_BODY"
 
 ```sh
 ./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge
-gh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-merge
+./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-merge
 ```
 
 **If gaps are found:**
 
 ```sh
 ./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework
-gh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-rework
+./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-rework
 ```
 
 Leave specific review comments on the PR for each gap. Be precise — tell the implementer exactly what's wrong and what "fixed" looks like.

@@ -9,7 +9,7 @@ Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the is
 
 > **Shell blocks are literal commands** — `./tracker.sh` is a real script next to this file. Execute it as written; do not substitute with raw git commands.
 >
-> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
+> **Tracker note**: Commands below use `./tracker.sh` syntax for both issue and PR operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 You are the orchestrator. You scan, dispatch, and exit. You hold no state — labels are the state.
 
@@ -213,7 +213,7 @@ Use `planPr` from the handoff to determine the target PR. If `planPr` is `—`, 
 ```sh
 PLAN_PR_NUMBER="$planPr" # from handoff — never read issue bodies for this
 PLAN_PR_BODY="{current plan PR body with metrics rows inserted into the table}"
-gh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
+./tracker.sh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
 ```
 
 #### Total row on ratify-to-land

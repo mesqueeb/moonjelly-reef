@@ -6,7 +6,7 @@ The test runner checks: (1) each command string exists in the .md file, (2) they
 
 `if` means the operation is conditional — it must exist in the .md but only runs when the condition holds.
 
-Tracker commands use `./tracker.sh issue ...` syntax.
+Tracker commands use `./tracker.sh issue ...` and `./tracker.sh pr ...` syntax.
 For GitHub: replace `./tracker.sh` with `gh`.
 For MCP trackers (ClickUp, Jira, Linear): use equivalent MCP tool calls.
 
@@ -91,7 +91,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - update-pr-body — if planPr is not "—"
   ```sh
-  gh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
+  ./tracker.sh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
   ```
 - present-human-items — if HITL mode and first iteration
   - contains: `to-scope`
@@ -172,7 +172,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 - fetch-context
   ```sh
   ./tracker.sh issue view "$PLAN_ID" --json body,title,labels # if PLAN_ID known
-  gh pr view "$PR_NUMBER" --json number,body,headRefName,baseRefName,comments,reviews # if PR_NUMBER known
+  ./tracker.sh pr view "$PR_NUMBER" --json number,body,headRefName,baseRefName,comments,reviews # if PR_NUMBER known
   ```
 - set-variables
   ```sh
@@ -183,7 +183,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - fetch-pr-comments-and-reviews
   ```sh
-  gh pr view "$PR_NUMBER" --json comments,reviews # if not already fetched
+  ./tracker.sh pr view "$PR_NUMBER" --json comments,reviews # if not already fetched
   ```
 - phase-specific
 - set-variables — if change-requests
@@ -192,7 +192,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - update-pr-body — if change-requests
   ```sh
-  gh pr edit "$PR_NUMBER" --body "$PR_BODY"
+  ./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker — if change-requests
   ```sh
@@ -205,11 +205,11 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - sync-pr-label — if change-requests
   ```sh
-  gh pr edit "$PR_NUMBER" --remove-label to-land --add-label to-rework
+  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-land --add-label to-rework
   ```
 - pre-merge-check — if approved
   ```sh
-  gh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
+  ./tracker.sh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
   ```
 - set-variables — if approved
   ```sh
@@ -217,8 +217,8 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - pr-merge — if approved
   ```sh
-  gh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
-  gh pr edit "$PR_NUMBER" --remove-label to-land --add-label landed
+  ./tracker.sh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
+  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-land --add-label landed
   ```
 - pull
   - contains: `Pull the merged changes into the current branch if it matches the base branch:`
@@ -357,11 +357,11 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - pr-create
   ```sh
-  gh pr create --base "$TARGET_BRANCH" --title "$SLICE_NAME" --body "$REPORT" --label to-inspect
+  ./tracker.sh pr create --base "$TARGET_BRANCH" --title "$SLICE_NAME" --body "$REPORT" --label to-inspect
   ```
 - set-variables
   ```sh
-  PR_NUMBER="{from gh pr create output}"
+  PR_NUMBER="{from pr create output}"
   SLICE_BODY="{slice/plan body with PR reference and pr-branch updated}"
   ```
 - update-tracker
@@ -409,15 +409,15 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - update-pr-body
   ```sh
-  PR_NUMBER="{from slice body}" # if not found, try gh pr list --search
-  PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q .body)
+  PR_NUMBER="{from slice body}" # if not found, try ./tracker.sh pr list --search
+  PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
   REPORT="{inspect-report}" # <details><summary><h3>🧿 Inspect review — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
   PR_BODY="$PR_BODY\n\n$REPORT"
-  gh pr edit "$PR_NUMBER" --body "$PR_BODY"
+  ./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker
-  - pass: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge` + `gh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-merge`
-  - fail: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework` + `gh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-rework`
+  - pass: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-merge`
+  - fail: `./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-rework`
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
@@ -460,15 +460,15 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - update-pr-body
   ```sh
-  PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q .body)
+  PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
   REPORT="{rework-report}" # <details><summary><h3>🦀 Rework — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
   PR_BODY="$PR_BODY\n\n$REPORT"
-  gh pr edit "$PR_NUMBER" --body "$PR_BODY"
+  ./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker
   ```sh
   ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-rework --add-label to-inspect
-  gh pr edit "$PR_NUMBER" --remove-label to-rework --add-label to-inspect
+  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-rework --add-label to-inspect
   ```
 - exit-worktree
   ```sh
@@ -553,7 +553,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - pre-merge-check
   ```sh
-  gh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
+  ./tracker.sh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
   ```
 - enter-worktree
   - contains: `Enter a worktree forked from $PR_BRANCH (not $TARGET_BRANCH) so you are testing the PR code with the latest target merged in`
@@ -567,7 +567,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 - update-tracker — if tests-fail
   ```sh
   ./tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label to-rework
-  gh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-rework
+  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-rework
   ```
 - exit-worktree
   ```sh
@@ -583,7 +583,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 - update-tracker
   ```sh
   ./tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-ratify
-  gh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-ratify
+  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-ratify
   ```
 - handoff
   ```sh
@@ -606,8 +606,8 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - pr-merge
   ```sh
-  gh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
-  gh pr edit "$PR_NUMBER" --remove-label to-merge --add-label landed
+  ./tracker.sh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
+  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label landed
   ```
 - check-siblings-and-completion
   ```sh
@@ -666,16 +666,16 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   REPORT="{ratify-report}" # <details><summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
   # if no PR exists:
-  gh pr create --base "$BASE_BRANCH" --head "$TARGET_BRANCH" --title "$PLAN_TITLE" --body "$REPORT" --label to-ratify
+  ./tracker.sh pr create --base "$BASE_BRANCH" --head "$TARGET_BRANCH" --title "$PLAN_TITLE" --body "$REPORT" --label to-ratify
   # if PR exists, append:
   PR_NUMBER="{from pr create output or existing PR}"
-  PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q .body)
+  PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
   PR_BODY="$PR_BODY\n\n$REPORT"
-  gh pr edit "$PR_NUMBER" --body "$PR_BODY"
+  ./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker
-  - pass: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land` + `gh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-land`
-  - fail: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rework` + `gh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-rework`
+  - pass: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-land` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-land`
+  - fail: `./tracker.sh issue edit "$PLAN_ID" --remove-label to-ratify --add-label to-rework` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-rework`
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
