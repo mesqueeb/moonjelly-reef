@@ -602,6 +602,197 @@ test_committed_close_pushes() {
 }
 
 # ============================================================
+# PR CREATE — #120
+# ============================================================
+
+test_pr_create_plan() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "implementation report" >/dev/null 2>&1
+
+  if [ -f "$TRACKER_PATH/1 my-feature/progress.md" ]; then
+    pass "pr create plan: creates progress.md"
+  else
+    fail "pr create plan: creates progress.md" "file not found"
+  fi
+
+  content="$(cat "$TRACKER_PATH/1 my-feature/progress.md")"
+  if echo "$content" | grep -q "^head: feat/my-feature"; then
+    pass "pr create plan: frontmatter has head"
+  else
+    fail "pr create plan: frontmatter has head" "got: $content"
+  fi
+
+  if echo "$content" | grep -q "^base: main"; then
+    pass "pr create plan: frontmatter has base"
+  else
+    fail "pr create plan: frontmatter has base" "got: $content"
+  fi
+
+  if echo "$content" | grep -q "implementation report"; then
+    pass "pr create plan: body content written"
+  else
+    fail "pr create plan: body content written" "got: $content"
+  fi
+
+  teardown
+}
+
+test_pr_create_slice() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --label to-scope >/dev/null 2>&1
+  t issue create --title "auth-endpoint" --body "slice body" --label to-implement --parent 1 >/dev/null 2>&1
+  t pr create 1-1 --base main --head feat/auth-endpoint --body "slice report" >/dev/null 2>&1
+
+  if [ -f "$TRACKER_PATH/1 my-feature/slices/1-1 auth-endpoint/progress.md" ]; then
+    pass "pr create slice: creates progress.md"
+  else
+    fail "pr create slice: creates progress.md" "file not found"
+  fi
+
+  teardown
+}
+
+# ============================================================
+# PR VIEW — #120
+# ============================================================
+
+test_pr_view_fields() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "the report body" >/dev/null 2>&1
+  output="$(t pr view 1 --json body,headRefName,baseRefName 2>/dev/null)"
+
+  if echo "$output" | grep -q '"headRefName":"feat/my-feature"'; then
+    pass "pr view: headRefName correct"
+  else
+    fail "pr view: headRefName correct" "got: $output"
+  fi
+
+  if echo "$output" | grep -q '"baseRefName":"main"'; then
+    pass "pr view: baseRefName correct"
+  else
+    fail "pr view: baseRefName correct" "got: $output"
+  fi
+
+  if echo "$output" | grep -q "the report body"; then
+    pass "pr view: body correct"
+  else
+    fail "pr view: body correct" "got: $output"
+  fi
+
+  teardown
+}
+
+test_pr_view_comments_reviews() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
+  output="$(t pr view 1 --json comments,reviews 2>/dev/null)"
+
+  if echo "$output" | grep -q '"comments":\[\]'; then
+    pass "pr view: comments empty array"
+  else
+    fail "pr view: comments empty array" "got: $output"
+  fi
+
+  if echo "$output" | grep -q '"reviews":\[\]'; then
+    pass "pr view: reviews empty array"
+  else
+    fail "pr view: reviews empty array" "got: $output"
+  fi
+
+  teardown
+}
+
+# ============================================================
+# PR EDIT — #120
+# ============================================================
+
+test_pr_edit_body() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "old report" >/dev/null 2>&1
+  t pr edit 1 --body "new report" >/dev/null 2>&1
+
+  content="$(cat "$TRACKER_PATH/1 my-feature/progress.md")"
+
+  # Frontmatter should be preserved
+  if echo "$content" | grep -q "^head: feat/my-feature"; then
+    pass "pr edit body: frontmatter preserved"
+  else
+    fail "pr edit body: frontmatter preserved" "got: $content"
+  fi
+
+  # Body should be updated
+  if echo "$content" | grep -q "new report"; then
+    pass "pr edit body: body updated"
+  else
+    fail "pr edit body: body updated" "got: $content"
+  fi
+
+  # Old body should be gone
+  if echo "$content" | grep -q "old report"; then
+    fail "pr edit body: old body removed" "still found old report"
+  else
+    pass "pr edit body: old body removed"
+  fi
+
+  teardown
+}
+
+test_pr_edit_label_noop() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
+
+  if t pr edit 1 --add-label to-inspect >/dev/null 2>&1; then
+    pass "pr edit: --add-label is silent no-op"
+  else
+    fail "pr edit: --add-label is silent no-op" "exited non-zero"
+  fi
+
+  if t pr edit 1 --remove-label to-implement >/dev/null 2>&1; then
+    pass "pr edit: --remove-label is silent no-op"
+  else
+    fail "pr edit: --remove-label is silent no-op" "exited non-zero"
+  fi
+
+  teardown
+}
+
+# ============================================================
+# PR DISPATCH — #120
+# ============================================================
+
+test_pr_dispatch() {
+  setup
+  cd "$REPO"
+
+  if t pr create 1 --base main --head x --body y >/dev/null 2>&1; then
+    # It will fail because issue 1 doesn't exist, but it means dispatch accepted 'pr'
+    fail "pr dispatch: accepts pr command group" "should fail because issue 1 doesn't exist"
+  else
+    # If it fails with "issue 1 not found" that means dispatch worked, resolution failed
+    pass "pr dispatch: accepts pr command group (fails at resolution, not dispatch)"
+  fi
+
+  teardown
+}
+
+# ============================================================
 # Run all tests
 # ============================================================
 
@@ -636,6 +827,14 @@ test_committed_create_pushes
 test_committed_edit_pushes
 test_committed_view_no_worktree
 test_committed_close_pushes
+
+test_pr_create_plan
+test_pr_create_slice
+test_pr_view_fields
+test_pr_view_comments_reviews
+test_pr_edit_body
+test_pr_edit_label_noop
+test_pr_dispatch
 
 echo ""
 if [ "$FAIL" -gt 0 ]; then

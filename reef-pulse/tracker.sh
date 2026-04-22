@@ -1,7 +1,7 @@
 #!/bin/sh
 # tracker.sh — local issue tracker CLI for Moonjelly Reef
 #
-# Mirrors the `gh issue` interface for local file-based tracking.
+# Mirrors the `gh issue` and `gh pr` interfaces for local file-based tracking.
 # Reads config from .agents/moonjelly-reef/config.md (found via git repo root).
 #
 # Usage:
@@ -10,6 +10,9 @@
 #   tracker.sh issue create [--title "..."] [--body "..."] [--label X] [--parent <id>]
 #   tracker.sh issue close  <id>
 #   tracker.sh issue list   [--label X] [--json number,title] [--limit N]
+#   tracker.sh pr create    <id> --base X --head Y --body B
+#   tracker.sh pr view      <id> --json body,headRefName,baseRefName
+#   tracker.sh pr edit      <id> [--body "..."] [--add-label X] [--remove-label X]
 set -eu
 
 # ============================================================
@@ -158,6 +161,29 @@ resolve_file() {
   else
     resolve_plan_file "$1"
   fi
+}
+
+# Resolve any ID to its directory (for progress.md)
+resolve_dir() {
+  if is_slice_id "$1"; then
+    resolve_slice_dir "$1"
+  else
+    resolve_plan_dir "$1"
+  fi
+}
+
+# Resolve progress.md path for a given ID
+resolve_progress_file() {
+  _dir="$(resolve_dir "$1")"
+  if [ -z "$_dir" ]; then
+    return 1
+  fi
+  _pf="$_dir/progress.md"
+  if [ -f "$_pf" ]; then
+    echo "$_pf"
+    return 0
+  fi
+  return 1
 }
 
 # Extract label from filename like "[to-scope] plan.md" → "to-scope"
@@ -427,46 +453,183 @@ cmd_list() {
 }
 
 # ============================================================
+# PR commands
+# ============================================================
+
+pr_create() {
+  _id="$1"; shift
+  _base=""
+  _head=""
+  _body=""
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --base) [ $# -lt 2 ] && { echo "Error: --base requires a value" >&2; exit 1; }; _base="$2"; shift 2 ;;
+      --head) [ $# -lt 2 ] && { echo "Error: --head requires a value" >&2; exit 1; }; _head="$2"; shift 2 ;;
+      --body) [ $# -lt 2 ] && { echo "Error: --body requires a value" >&2; exit 1; }; _body="$2"; shift 2 ;;
+      *) echo "Error: unknown argument: $1" >&2; exit 1 ;;
+    esac
+  done
+
+  if [ -z "$_base" ] || [ -z "$_head" ]; then
+    echo "Error: --base and --head are required" >&2
+    exit 1
+  fi
+
+  _dir="$(resolve_dir "$_id")"
+  if [ -z "$_dir" ]; then
+    echo "Error: issue $_id not found" >&2
+    exit 1
+  fi
+
+  _progress="$_dir/progress.md"
+  printf '%s\n%s\n%s\n%s\n%s' "---" "head: $_head" "base: $_base" "---" "" > "$_progress"
+  if [ -n "$_body" ]; then
+    printf '\n%s' "$_body" >> "$_progress"
+  fi
+}
+
+pr_view() {
+  _id="$1"; shift
+  _json_flag=""
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --json) [ $# -lt 2 ] && { echo "Error: --json requires fields" >&2; exit 1; }; _json_flag="$2"; shift 2 ;;
+      *) echo "Error: unknown argument: $1" >&2; exit 1 ;;
+    esac
+  done
+
+  if [ -z "$_json_flag" ]; then
+    echo "Error: --json flag is required" >&2
+    exit 1
+  fi
+
+  _progress="$(resolve_progress_file "$_id")" || { echo "Error: progress.md not found for $_id" >&2; exit 1; }
+  if [ -z "$_progress" ]; then
+    echo "Error: progress.md not found for $_id" >&2
+    exit 1
+  fi
+
+  # Check if requesting comments/reviews (return empty arrays)
+  case "$_json_flag" in
+    *comments*|*reviews*)
+      printf '{"comments":[],"reviews":[]}'
+      return 0
+      ;;
+  esac
+
+  # Parse frontmatter
+  _head="$(sed -n 's/^head: *//p' "$_progress" | head -1)"
+  _base="$(sed -n 's/^base: *//p' "$_progress" | head -1)"
+
+  # Parse body (everything after the closing ---)
+  _body="$(awk 'BEGIN{n=0} /^---$/{n++; next} n>=2{print}' "$_progress")"
+  # Trim leading blank line
+  _body="$(echo "$_body" | sed '/./,$!d')"
+
+  printf '{"body":"%s","headRefName":"%s","baseRefName":"%s"}' \
+    "$(json_escape "$_body")" \
+    "$(json_escape "$_head")" \
+    "$(json_escape "$_base")"
+}
+
+pr_edit() {
+  _id="$1"; shift
+  _body=""
+  _add_label=""
+  _remove_label=""
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --body)         [ $# -lt 2 ] && { echo "Error: --body requires a value" >&2; exit 1; }; _body="$2"; shift 2 ;;
+      --add-label)    [ $# -lt 2 ] && { echo "Error: --add-label requires a value" >&2; exit 1; }; _add_label="$2"; shift 2 ;;
+      --remove-label) [ $# -lt 2 ] && { echo "Error: --remove-label requires a value" >&2; exit 1; }; _remove_label="$2"; shift 2 ;;
+      *) echo "Error: unknown argument: $1" >&2; exit 1 ;;
+    esac
+  done
+
+  # --add-label and --remove-label are silent no-ops for local PRs
+  if [ -z "$_body" ]; then
+    return 0
+  fi
+
+  _progress="$(resolve_progress_file "$_id")" || { echo "Error: progress.md not found for $_id" >&2; exit 1; }
+  if [ -z "$_progress" ]; then
+    echo "Error: progress.md not found for $_id" >&2
+    exit 1
+  fi
+
+  # Preserve frontmatter, replace body
+  _head="$(sed -n 's/^head: *//p' "$_progress" | head -1)"
+  _base="$(sed -n 's/^base: *//p' "$_progress" | head -1)"
+
+  printf '%s\n%s\n%s\n%s\n%s' "---" "head: $_head" "base: $_base" "---" "" > "$_progress"
+  printf '\n%s' "$_body" >> "$_progress"
+}
+
+# ============================================================
 # Main dispatch
 # ============================================================
 
 if [ $# -lt 2 ]; then
-  echo "Usage: tracker.sh issue <command> [args]" >&2
+  echo "Usage: tracker.sh <issue|pr> <command> [args]" >&2
   exit 1
 fi
 
-if [ "$1" != "issue" ]; then
-  echo "Error: unknown command group: $1 (only 'issue' is supported)" >&2
-  exit 1
-fi
-
+CMD_GROUP="$1"
 SUBCMD="$2"
 shift 2
 
 read_config
 
-case "$SUBCMD" in
-  create)
-    if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
-    _output="$(cmd_create "$@")"
-    if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: create $_output"; fi
-    echo "$_output"
+case "$CMD_GROUP" in
+  issue)
+    case "$SUBCMD" in
+      create)
+        if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
+        _output="$(cmd_create "$@")"
+        if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: create $_output"; fi
+        echo "$_output"
+        ;;
+      view)
+        if [ $# -lt 1 ]; then echo "Error: issue view requires an ID" >&2; exit 1; fi
+        cmd_view "$@" ;;
+      edit)
+        if [ $# -lt 1 ]; then echo "Error: issue edit requires an ID" >&2; exit 1; fi
+        if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
+        cmd_edit "$@"
+        if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: edit $1"; fi
+        ;;
+      close)
+        if [ $# -lt 1 ]; then echo "Error: issue close requires an ID" >&2; exit 1; fi
+        if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
+        cmd_close "$@"
+        if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: close $1"; fi
+        ;;
+      list) cmd_list "$@" ;;
+      *) echo "Error: unknown issue subcommand: $SUBCMD" >&2; exit 1 ;;
+    esac
     ;;
-  view)
-    if [ $# -lt 1 ]; then echo "Error: issue view requires an ID" >&2; exit 1; fi
-    cmd_view "$@" ;;
-  edit)
-    if [ $# -lt 1 ]; then echo "Error: issue edit requires an ID" >&2; exit 1; fi
-    if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
-    cmd_edit "$@"
-    if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: edit $1"; fi
+  pr)
+    case "$SUBCMD" in
+      create)
+        if [ $# -lt 1 ]; then echo "Error: pr create requires an ID" >&2; exit 1; fi
+        if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
+        pr_create "$@"
+        if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: pr create $1"; fi
+        ;;
+      view)
+        if [ $# -lt 1 ]; then echo "Error: pr view requires an ID" >&2; exit 1; fi
+        pr_view "$@" ;;
+      edit)
+        if [ $# -lt 1 ]; then echo "Error: pr edit requires an ID" >&2; exit 1; fi
+        if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
+        pr_edit "$@"
+        if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: pr edit $1"; fi
+        ;;
+      *) echo "Error: unknown pr subcommand: $SUBCMD" >&2; exit 1 ;;
+    esac
     ;;
-  close)
-    if [ $# -lt 1 ]; then echo "Error: issue close requires an ID" >&2; exit 1; fi
-    if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
-    cmd_close "$@"
-    if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: close $1"; fi
-    ;;
-  list) cmd_list "$@" ;;
-  *) echo "Error: unknown subcommand: $SUBCMD" >&2; exit 1 ;;
+  *) echo "Error: unknown command group: $CMD_GROUP (expected 'issue' or 'pr')" >&2; exit 1 ;;
 esac
