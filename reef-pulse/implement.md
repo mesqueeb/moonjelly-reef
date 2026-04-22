@@ -12,8 +12,6 @@ Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the is
 
 This skill requires a specific issue: e.g. `#55` or `my-feature/001-auth-endpoint`.
 
-If no issue is given, look for issues tagged `to-implement`. If multiple, pick the first unblocked one. If none, exit silently.
-
 Read the issue. It must contain:
 
 - Acceptance criteria
