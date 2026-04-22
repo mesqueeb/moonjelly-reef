@@ -41,43 +41,6 @@ fail() {
   fi
 }
 
-# Extract a searchable fixed-string pattern from a command string.
-make_pattern() {
-  cmd="$1"
-  case "$cmd" in
-    *worktree-enter.sh*)
-      echo "worktree-enter.sh --fork-from"
-      ;;
-    *commit.sh*)
-      echo "commit.sh --branch"
-      ;;
-    *worktree-exit.sh*)
-      echo "worktree-exit.sh"
-      ;;
-    "gh pr create"*)  echo "gh pr create" ;;
-    "gh pr merge"*)   echo "gh pr merge" ;;
-    "gh pr view"*)    echo "gh pr view" ;;
-    "gh pr edit"*)    echo "gh pr edit" ;;
-    "gh issue edit"*) echo "gh issue edit" ;;
-    "gh issue close"*) echo "gh issue close" ;;
-    "gh issue view"*) echo "gh issue view" ;;
-    "tracker.sh pr create"*)  echo "tracker.sh pr create" ;;
-    "tracker.sh pr merge"*)   echo "tracker.sh pr merge" ;;
-    "tracker.sh pr view"*)    echo "tracker.sh pr view" ;;
-    "tracker.sh pr edit"*)    echo "tracker.sh pr edit" ;;
-    "tracker.sh issue view"*)  echo "tracker.sh issue view" ;;
-    "tracker.sh issue edit"*)  echo "tracker.sh issue edit" ;;
-    "tracker.sh issue close"*) echo "tracker.sh issue close" ;;
-    "tracker.sh issue create"*) echo "tracker.sh issue create" ;;
-    "tracker.sh issue list"*)  echo "tracker.sh issue list" ;;
-    "git fetch"*)     echo "git fetch" ;;
-    "git push"*)      echo "git push" ;;
-    "git merge"*)     echo "git merge" ;;
-    "rename "*)       echo "rename" ;;
-    *)                printf '%s' "$cmd" | cut -c1-30 ;;
-  esac
-}
-
 next_match_of() {
   file="$1"
   pattern="$2"
@@ -254,13 +217,8 @@ while IFS='|' read -r source_file orchestration_line check_type value; do
     label="$label ($check_type)"
   fi
 
-  # For sh lines and tracker arrays, use the value literally.
-  # For commands, extract a key substring via make_pattern.
-  if [ "$check_type" = "sh" ]; then
-    pattern="$value"
-  else
-    pattern=$(make_pattern "$value")
-  fi
+  # Strict spec: every extracted artifact line must appear literally, in order.
+  pattern="$value"
 
   if grep -qF -e "$pattern" "$md_path"; then
     match=$(next_match_of "$md_path" "$pattern" "$prev_offset")

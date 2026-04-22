@@ -130,10 +130,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   BASE_BRANCH="{from plan body}"
   PR_BODY="{the PR body content — this is the ratify report}"
   ```
-- fetch-pr-comments-and-reviews
-  ```sh
-  ./tracker.sh pr view "$PR_NUMBER" --json comments,reviews # if not already fetched
-  ```
 - phase-specific
 - set-variables — if change-requests
   ```sh
@@ -234,7 +230,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - enter-worktree
   ```sh
-  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - create-remote-branch
   ```sh
@@ -290,7 +286,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - enter-worktree
   ```sh
-  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - commit-code
@@ -344,7 +340,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - enter-worktree
   ```sh
-  ./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - commit-code — if cleanup-needed
@@ -394,7 +390,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - enter-worktree
   ```sh
-  ./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - commit-code
@@ -451,7 +447,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - enter-worktree
   ```sh
-  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - set-variables
@@ -460,7 +456,8 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY" --remove-label to-await-waves --add-label to-implement
+  ./tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY"
+  ./tracker.sh issue edit "$SLICE_ID" --remove-label to-await-waves --add-label to-implement
   ```
 - exit-worktree
   ```sh
@@ -497,7 +494,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - enter-worktree
   ```sh
-  ./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
   ```
 - commit-code — if merge-needed
   ```sh
@@ -591,7 +588,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - enter-worktree
   ```sh
-  ./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - commit-code — if documentation-added
