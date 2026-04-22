@@ -135,7 +135,7 @@ Immediately after dispatching, print each dispatched agent with its phase emoji.
 The narwhal (slice phase) always uses both characters `𐃆🐋`, not just the emoji.
 
 ```
-  𐃆🐋  #34  "auth token rotation"
+𐃆🐋  #34  "auth token rotation"
   🐙  #55  "user profile endpoint"
   🧿  #53  "db migration safety"
 ```
