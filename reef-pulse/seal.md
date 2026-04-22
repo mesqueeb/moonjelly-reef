@@ -29,7 +29,7 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Set the post-fetch variables (after reading the plan body):
+Set the post-fetch variables (after reading the plan issue body):
 
 ```sh
 ISSUE_TITLE="{from issue title}"
@@ -54,7 +54,7 @@ Think like a CTO doing a final walkthrough before shipping. Product-focused, big
 
 ## Process
 
-### 1. Get on the PR branch
+### 1. Get on the `pr-branch`
 
 Enter a worktree forked from $PR_BRANCH:
 
@@ -70,7 +70,7 @@ Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to re
 
 Stop — do not proceed.
 
-Verify you have the latest — all slice PRs should be merged into this branch.
+Verify you have the latest — all slice PRs should be merged into this `pr-branch`.
 
 ### 2. Run the full test suite
 
@@ -80,7 +80,7 @@ Not negotiable. Record the result.
 
 For each success criterion in the plan:
 
-- Read the actual code on the target branch that satisfies it. Trace the full path — don't check module by module, check end-to-end.
+- Read the actual code on the `pr-branch` that satisfies it. Trace the full path — don't check module by module, check end-to-end.
 - Verify from the **consumer's perspective**. If the criterion says "the legacy UI must render identically", don't just check that the data is correct — check that it's in the format the legacy UI expects. (Prevents painpoint A4.)
 - Cross-reference the coverage matrix: which issues were supposed to cover this criterion? Did they actually cover it when composed together?
 
@@ -102,7 +102,7 @@ Look for problems that only appear when slices are composed:
 - Inconsistent patterns between slices (one slice does auth one way, another does it differently)
 - Shared resources that multiple slices touch — are they coherent?
 - Are there any test gaps at the integration boundaries? (Prevents painpoint C3 — mocked-away bugs.)
-- **Terminology inconsistencies**: did different slices use different words for the same concept? If terminology drifted across slices, run the `ubiquitous-language` skill against the target branch to flag ambiguities and include findings in the report.
+- **Terminology inconsistencies**: did different slices use different words for the same concept? If terminology drifted across slices, run the `ubiquitous-language` skill against the `pr-branch` to flag ambiguities and include findings in the report.
 
 ### 6. Tighten the plan and classify findings
 
@@ -118,7 +118,7 @@ Use your findings from steps 3-5 to tighten the plan before deciding PASS vs GAP
 If you updated the plan's success criteria:
 
 ```sh
-ISSUE_BODY="{plan body with updated success criteria}"
+ISSUE_BODY="{plan issue body with updated success criteria}"
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
 ```
 
@@ -128,7 +128,7 @@ If any gaps need decisions beyond what success criteria cover (e.g. the plan its
 
 When you find non-obvious behavior worth documenting during your holistic review:
 
-1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and push directly to the target branch:
+1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and push directly to the `pr-branch`:
 
 ```sh
 ./commit.sh --branch "$PR_BRANCH" -m "seal: add documentation"
@@ -140,7 +140,7 @@ Don't document what's obvious from reading the code.
 
 ### 8. Produce the report
 
-The report goes on a **PR from the target branch to the base branch** (usually `main`). This PR is what the human will ultimately merge or reject.
+The report goes on a **PR from the `pr-branch` to the `base-branch`** (usually `main` for issues with no parent issue). This PR is what the human will ultimately merge or reject.
 
 The report should be concise and focused on what the human needs to know. Do NOT dump the entire plan — the human can read the plan. Focus on:
 

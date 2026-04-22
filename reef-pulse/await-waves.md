@@ -4,7 +4,7 @@
 >
 > **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
-> **AFK skill**: this skill runs without human interaction. No judgment calls expected — if blocked, exit silently. If deps are done, promote. Never block waiting for human input.
+> **AFK skill**: this skill runs without human interaction. No judgment calls expected — if blocked, exit silently. If dependencies are landed, promote. Never block waiting for human input.
 
 ## Input
 

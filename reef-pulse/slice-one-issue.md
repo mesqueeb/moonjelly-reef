@@ -12,19 +12,19 @@ Single-slice fast path — delegated from [slice.md](slice.md).
 
 The router has already fetched context and drafted exactly 1 slice. No sub-issues are needed — the plan becomes the slice.
 
-## 1. Update the plan body
+## 1. Update the plan issue body
 
 Take the fast path — skip sub-issues, coverage matrix, and seal. The plan becomes the slice:
 
-1. **Keep the scoped PR branch.** Preserve the `pr-branch` already written by reef-scope in the plan frontmatter.
+1. **Keep the scoped `pr-branch`.** Preserve the `pr-branch` already written by reef-scope in the plan frontmatter.
 2. **No sub-issues.** The plan IS the slice.
-3. **Write acceptance criteria on the plan.** Append an `## Acceptance criteria` section to the plan body with the criteria you drafted for the single slice.
+3. **Write acceptance criteria on the plan issue.** Append an `## Acceptance criteria` section to the plan issue body with the criteria you drafted for the single slice.
 4. **No coverage matrix.** Success criteria and acceptance criteria are 1:1 — the mapping adds no information.
 
-Assemble the updated plan body:
+Assemble the updated plan issue body:
 
 ```sh
-ISSUE_BODY="{plan body with scoped pr-branch preserved and acceptance criteria appended}"
+ISSUE_BODY="{plan issue body with scoped pr-branch preserved and acceptance criteria appended}"
 ```
 
 ## 2. Label to-implement
@@ -38,7 +38,7 @@ ISSUE_BODY="{plan body with scoped pr-branch preserved and acceptance criteria a
 ```sh
 nextPhase="to-implement"
 planPr="—"
-summary="No sub-issues needed — current issue moves to to-implement"
+summary="No sub-issues needed — plan issue moves to to-implement"
 ```
 
 Report these three variables to the caller.

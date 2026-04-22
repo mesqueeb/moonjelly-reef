@@ -13,8 +13,8 @@ Multi-slice flow — delegated from [slice.md](slice.md).
 The router has already fetched context and drafted 2+ slices. Set post-fetch variables:
 
 ```sh
-PR_BRANCH="{from plan body pr-branch field}"
-BASE_BRANCH="{from plan body}"
+PR_BRANCH="{from plan issue body pr-branch field}"
+BASE_BRANCH="{from plan issue body}"
 WORKTREE_PATH=".worktrees/$ISSUE_ID-slice"
 ```
 
@@ -34,13 +34,13 @@ Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to re
 
 Stop — do not proceed.
 
-If the PR branch does not exist on origin yet, create it:
+If the `pr-branch` does not exist on origin yet, create it:
 
 ```sh
 git push -u origin "$PR_BRANCH"
 ```
 
-If the plan says to work on the current branch (no new PR branch), skip the branch creation but still create a worktree to read the codebase.
+If the plan says to work on the current branch (no new `pr-branch`), skip the branch creation but still create a worktree to read the codebase.
 
 ## 2. Build the coverage matrix
 
@@ -76,20 +76,20 @@ Assemble each slice body:
 
 ```sh
 SLICE_TITLE="{slice-title} [await: #{blocker-id}]"  # omit [await: ...] if unblocked
-SLICE_PR_BRANCH="{derived from current issue pr-branch + slice title slug}"
+SLICE_PR_BRANCH="{derived from plan issue pr-branch + slice title slug}"
 SLICE_BODY="{slice-body}" # as per the template below, with pr-branch: $SLICE_PR_BRANCH
 SLICE_LABEL="to-implement" # or to-await-waves if blocked
 ```
 
 For blocked slices, append `[await: #{id}, #{id}]` to the title. Unblocked slices get a plain title.
-Give each child issue its own `pr-branch`. Derive `SLICE_PR_BRANCH` from the current issue's `pr-branch` plus a stable slug from the slice title.
+Give each sub-issue its own `pr-branch`. Derive `SLICE_PR_BRANCH` from the plan issue's `pr-branch` plus a stable slug from the slice title.
 
 Slice body template:
 
 ```markdown
 ---
 
-parent-plan: "#$ISSUE_ID"
+parent-issue: "#$ISSUE_ID"
 base-branch: $PR_BRANCH
 pr-branch: $SLICE_PR_BRANCH
 
@@ -120,10 +120,10 @@ Label each slice: `to-implement` if no blockers, `to-await-waves` if blocked.
 
 ## 5. Update the plan
 
-Set `pr-branch: $PR_BRANCH` in the current issue frontmatter (already set by reef-scope, but update if changed). Append the coverage matrix and a listing of all created sub-issues with their labels to the plan body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-seal` once all sub-issues are done.
+Set `pr-branch: $PR_BRANCH` in the plan issue frontmatter (already set by reef-scope, but update if changed). Append the coverage matrix and a listing of all created sub-issues with their labels to the plan issue body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-seal` once all sub-issues are landed.
 
 ```sh
-ISSUE_BODY="{plan body with pr-branch in frontmatter and coverage matrix appended}"
+ISSUE_BODY="{plan issue body with pr-branch in frontmatter and coverage matrix appended}"
 ```
 
 ```sh

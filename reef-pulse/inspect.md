@@ -33,7 +33,7 @@ PR_BRANCH="{from issue frontmatter pr-branch field}"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-inspect"
 ```
 
-For plan issues, read success criteria from the plan body instead of acceptance criteria.
+For plan issues, read success criteria from the plan issue body instead of acceptance criteria.
 
 ## Mindset — Inspector Barreleye
 
@@ -91,7 +91,7 @@ Read the PR description's "Ambiguous choices" section. For each choice:
 
 ### 4. Trivial cleanups
 
-Do these yourself — commit and push to the PR branch:
+Do these yourself — commit and push to the `pr-branch`:
 
 - Remove debug prints, console.logs, commented-out code
 - Fix formatting, remove trailing whitespace

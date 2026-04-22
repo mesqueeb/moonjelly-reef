@@ -12,7 +12,7 @@ Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the is
 
 An issue tagged `to-merge` with an open PR.
 
-Read the item to find the PR reference. Check whether the issue has a `parent-plan` field in frontmatter — this determines which merge path to take.
+Read the item to find the PR reference. Check whether the issue has a `parent-issue` field in frontmatter — this determines which merge path to take.
 
 Set the pre-fetch variables:
 
@@ -38,7 +38,7 @@ WORKTREE_PATH=".worktrees/$ISSUE_TITLE-merge"
 
 ## Pre-merge check
 
-Unconditional. Ensures the PR branch integrates cleanly with the base branch before proceeding.
+Unconditional. Ensures the `pr-branch` integrates cleanly with the `base-branch` before proceeding.
 
 Check the merge state of the PR:
 
@@ -46,7 +46,7 @@ Check the merge state of the PR:
 ./tracker.sh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
 ```
 
-Enter a worktree forked from $PR_BRANCH so you are testing the PR code with the latest base merged in:
+Enter a worktree forked from $PR_BRANCH so you are testing the issue's `pr-branch` with the latest `base-branch` merged in:
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
@@ -83,7 +83,7 @@ If tests failed, stop here. Do not proceed to the delegate step.
 
 ## Delegate
 
-After the pre-merge check passes, check: **does the issue have a `parent-plan` field in frontmatter?**
+After the pre-merge check passes, check: **does the issue have a `parent-issue` field in frontmatter?**
 
-- **No `parent-plan`** — read and execute [merge-no-parent.md](merge-no-parent.md) (fast path: label `to-seal`, human merges via the `reef-land` skill)
-- **Has `parent-plan`** — read and execute [merge-has-parent.md](merge-has-parent.md) (full flow: squash merge PR, check siblings, check completion)
+- **No `parent-issue`** — read and execute [merge-no-parent.md](merge-no-parent.md) (fast path: label `to-seal`, human merges via the `reef-land` skill)
+- **Has `parent-issue`** — read and execute [merge-has-parent.md](merge-has-parent.md) (full flow: squash merge PR, check siblings, check completion)

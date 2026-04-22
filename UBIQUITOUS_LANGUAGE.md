@@ -18,20 +18,37 @@
 | **parent issue** | An issue that creates sub-issues and owns the integration branch they merge into              | epic, umbrella issue                  |
 | **sub-issue**    | An issue created by the slice phase to implement one slice under a parent issue               | child task, child ticket              |
 
-## Branches
+## Frontmatter fields
 
-| Term            | Definition                                                                                                                                                                                            | Aliases to avoid                                     |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| **base branch** | The branch the PR merges into — stored in issue frontmatter as `base-branch`. For issues with no parent issue: usually `main`. For sub-issues: the parent issue's `pr-branch`.                        | trunk, main branch, target branch                    |
-| **pr-branch**   | The branch the PR lives on — stored in issue frontmatter as `pr-branch`. Every issue owns its own `pr-branch`. If an issue creates sub-issues, its `pr-branch` also acts as their integration branch. | PR branch, feature branch, work branch, slice branch |
+| Term             | Definition                                                                                                                                               | Aliases to avoid                                     |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| **base-branch**  | The branch the PR merges into. For issues with no parent issue: usually `main`. For sub-issues: the parent issue's `pr-branch`.                          | trunk, main branch, target branch                    |
+| **parent-issue** | The frontmatter field on a sub-issue that points to the parent issue it belongs to                                                                       | parent issue ref, parent ticket, `parent-plan`       |
+| **pr-branch**    | The branch the PR lives on. Every issue owns its own `pr-branch`. If an issue creates sub-issues, its `pr-branch` also acts as their integration branch. | PR branch, feature branch, work branch, slice branch |
+| **pr-number**    | The frontmatter field storing the pull request number associated with an issue's current `pr-branch`                                                     | PR id, pull request id                               |
+
+## Title suffixes
+
+| Term               | Definition                                                                                                             | Aliases to avoid                 |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| **`[await: ...]`** | The issue-title suffix that encodes blockers for work that must wait on other issues to land before it can be promoted | blocked-by field, dependency tag |
 
 ## Planning
 
 | Term                    | Definition                                                                                                                                 | Aliases to avoid                                  |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| **problem statement**   | The plan section that describes the issue from the user's perspective                                                                      | bug write-up, design brief                        |
+| **user story**          | A concise statement of user intent and benefit used to validate whether the planned solution solves the user's problem                     | requirement, use case (when referring to the row) |
+| **decision record**     | The plan section that captures scoping decisions and constraints that downstream phases may need to revisit                                | notes, design log                                 |
 | **success criteria**    | Plan-level testable conditions that define when the entire issue is done                                                                   | requirements, specs, definition of done           |
 | **acceptance criteria** | Issue-level testable conditions that define when one implementation unit is done; on a parent issue they are written onto each sub-issue   | checklist, slice criteria, ACs (never abbreviate) |
 | **coverage matrix**     | A table mapping each success criterion to which sub-issue(s) and acceptance criteria cover it — only used when an issue creates sub-issues | traceability matrix, mapping                      |
+
+## Report sections
+
+| Term                  | Definition                                                                                                            | Aliases to avoid          |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| **Ambiguous choices** | The PR-report section where an agent records judgment calls not explicitly covered by the plan or acceptance criteria | assumptions, random notes |
 
 ## Phases
 
@@ -49,10 +66,11 @@
 
 ## Labels
 
-| Term       | Definition                                                                                                                                      | Aliases to avoid                  |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| **label**  | A marker on an issue that represents its current state in the lifecycle                                                                         | status, state, tag                |
-| **landed** | The terminal label — a signal that a piece of work has reached its target branch. Once applied, the issue is considered complete and is closed. | done, completed, merged, finished |
+| Term            | Definition                                                                                                                                    | Aliases to avoid                  |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| **label**       | A marker on an issue that represents its current state in the lifecycle                                                                       | status, state, tag                |
+| **in-progress** | The parent-issue label meaning slice work is underway on sub-issues and the parent issue is waiting for them to land                          | active, ongoing, underway         |
+| **landed**      | The terminal label — a signal that a piece of work has reached its base branch. Once applied, the issue is considered complete and is closed. | done, completed, merged, finished |
 
 ## Orchestration lifecycle
 
@@ -117,7 +135,12 @@
 
 - **"slice"** is both a noun (a unit of work) and a phase name (the act of breaking a plan into slices). Context usually makes it clear, but when ambiguous, say "the slice phase" for the action and "a slice" for the work unit.
 - **"merge"** is both a phase name and a git operation. The phase may or may not perform a git merge. When referring to the git operation specifically, say "merge the PR."
+- **"PR branch"** — do not use. The canonical term is **pr-branch**, matching the frontmatter field and keeping it distinct from generic git-branch talk.
 - **"feature branch"**, **"work branch"**, or **"target branch"** — do not use. The correct terms are **pr-branch** (the branch the PR lives on) and **base-branch** (where it merges into). Not all issues are features, and "target" is ambiguous once you realize base-branch serves that role for sub-issues.
+- **"merge to main"** — do not use as the generic description of landing. The correct term is **merge to the base branch**. Some repos do not use `main`, and for sub-issues the relevant destination is the issue's `base-branch`, which may be a parent issue's `pr-branch`.
+- **"blocked-by"** — do not use as a dependency mechanism. The canonical dependency encoding is the **`[await: ...]`** issue-title suffix used with `to-await-waves`.
+- **"user story"** vs **"success criterion"** — a **user story** captures user intent and benefit; a **success criterion** is the mechanically verifiable condition used to decide whether the issue is done. Do not use them interchangeably.
+- **"decision record"** vs **"Ambiguous choices"** — the **decision record** lives in the plan and captures scoping decisions; **Ambiguous choices** lives in a PR report and captures implementation-time judgment calls. Do not collapse them into one concept.
 - **"AC"** or **"SC"** — do not abbreviate. Always write **acceptance criteria** and **success criteria** in full. Abbreviations create ambiguity across contexts and hurt readability.
 - **"plan"** vs **"parent issue"** — use **plan** for the content written into an issue, and **parent issue** only when you need to describe the relationship between one issue and its sub-issues.
 - **"work item"** — do not use. The correct term is **issue**. "Work item" is generic project-management speak; **issue** is concrete and tracker-agnostic (GitHub Issues, Jira issues, Linear issues, local markdown files are all "issues").

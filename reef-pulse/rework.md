@@ -34,7 +34,7 @@ PR_NUMBER="{from issue frontmatter pr-number field}"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
 ```
 
-For plan issues, read success criteria from the plan body instead of acceptance criteria.
+For plan issues, read success criteria from the plan issue body instead of acceptance criteria.
 
 ## Process
 

@@ -12,7 +12,7 @@ Do NOT ask follow-up questions yet. Start investigating immediately.
 
 ### 2. Explore and diagnose
 
-Use the Agent tool with `subagent_type=Explore` to deeply investigate the codebase. Your goal is to find:
+Deeply investigate the codebase. If your environment supports explorer-style sub-agents, use one; otherwise do the exploration yourself. Your goal is to find:
 
 - **Where** the bug manifests (entry points, UI, API responses)
 - **What** code path is involved (trace the flow)

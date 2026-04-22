@@ -22,8 +22,8 @@ Every issue in the slice lifecycle carries both:
 
 General rules:
 
-- If an issue has no `parent-plan`, `$BASE_BRANCH` is usually `main`
-- If an issue has `parent-plan`, `$BASE_BRANCH` is the parent issue's `$PR_BRANCH`
+- If an issue has no `parent-issue`, `$BASE_BRANCH` is usually `main`
+- If an issue has `parent-issue`, `$BASE_BRANCH` is the parent issue's `$PR_BRANCH`
 - If the current issue creates sub-issues, each sub-issue gets its own `$PR_BRANCH`, while the current issue keeps its own `$PR_BRANCH` as the integration branch
 
 ## Skills
@@ -105,8 +105,16 @@ General rules:
   ```
 - update-tracker
   ```sh
-  ISSUE_BODY="{plan-content}" # frontmatter + plan body from context
+  ISSUE_BODY="{plan-content}" # frontmatter + plan issue body from context
   ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-scope --add-label to-slice
+  ```
+- set-variables — if overlap should block the scoped issue
+  ```sh
+  ISSUE_TITLE="{current issue title} [await: #77, #83]"
+  ```
+- update-tracker — if overlap should block the scoped issue
+  ```sh
+  ./tracker.sh issue edit "$ISSUE_ID" --title "$ISSUE_TITLE" --remove-label to-slice --add-label to-await-waves
   ```
 - set-variables
   ```sh
@@ -133,8 +141,8 @@ General rules:
 - set-variables
   ```sh
   PLAN_ID="{from PR body or already known}"
-  PR_NUMBER="{from plan body or already known}"
-  BASE_BRANCH="{from plan body}"
+  PR_NUMBER="{from plan issue body or already known}"
+  BASE_BRANCH="{from plan issue body}"
   PR_BODY="{the PR body content — this is the seal report}"
   ```
 - phase-specific
@@ -212,7 +220,7 @@ General rules:
 - set-variables
 
   ```sh
-  ISSUE_BODY="{plan body with scoped pr-branch preserved and acceptance criteria appended}"
+  ISSUE_BODY="{plan issue body with scoped pr-branch preserved and acceptance criteria appended}"
   ```
 
 - update-tracker
@@ -223,15 +231,15 @@ General rules:
   ```sh
   nextPhase="to-implement"
   planPr="—"
-  summary="No sub-issues needed — current issue moves to to-implement"
+  summary="No sub-issues needed — plan issue moves to to-implement"
   ```
 
 ### [slice-subissues.md](./reef-pulse/slice-subissues.md)
 
 - set-variables
   ```sh
-  PR_BRANCH="{from plan body pr-branch field}"
-  BASE_BRANCH="{from plan body}"
+  PR_BRANCH="{from plan issue body pr-branch field}"
+  BASE_BRANCH="{from plan issue body}"
   WORKTREE_PATH=".worktrees/$ISSUE_ID-slice"
   ```
 - enter-worktree
@@ -246,7 +254,7 @@ General rules:
 - set-variables
   ```sh
   SLICE_TITLE="{slice-title} [await: #{blocker-id}]"  # omit [await: ...] if unblocked
-  SLICE_PR_BRANCH="{derived from current issue pr-branch + slice title slug}"
+  SLICE_PR_BRANCH="{derived from plan issue pr-branch + slice title slug}"
   SLICE_BODY="{slice-body}" # as per the template below, with pr-branch: $SLICE_PR_BRANCH
   SLICE_LABEL="to-implement" # or to-await-waves if blocked
   ```
@@ -256,7 +264,7 @@ General rules:
   ```
 - set-variables
   ```sh
-  ISSUE_BODY="{plan body with pr-branch in frontmatter and coverage matrix appended}"
+  ISSUE_BODY="{plan issue body with pr-branch in frontmatter and coverage matrix appended}"
   ```
 - update-tracker
   ```sh
@@ -536,7 +544,7 @@ General rules:
 
 - set-variables
   ```sh
-  PARENT_ID="{from issue frontmatter parent-plan field}"
+  PARENT_ID="{from issue frontmatter parent-issue field}"
   PR_NUMBER="{from issue frontmatter pr-number field}"
   ```
 - set-variables
@@ -568,7 +576,7 @@ General rules:
 - handoff
   ```sh
   nextPhase="to-seal" # or "in-progress" if not all issues tagged 'landed'
-  planPr="—" # child-issue merge does not open the parent issue PR
+  planPr="—" # sub-issue merge does not open the parent issue PR
   ```
 
 ### [seal.md](./reef-pulse/seal.md)

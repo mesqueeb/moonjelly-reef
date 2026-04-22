@@ -20,7 +20,7 @@ On first run, reef-pulse will prompt you to mention which issue tracker you want
 
 > _Through Moonjelly's pulse, the reef is orchestrated, creatures are set in motion, and Moonjelly recedes._
 
-The moonjelly is the orchestrator. Label-driven orchestrator that routes work to different sub-agents based on labels and keeps looping until all automated work is done. It holds no state — labels are the state.
+The moonjelly is the orchestrator. Label-driven orchestrator that routes work to different sub-agents based on labels and keeps looping until no automated work remains. It holds no state — labels are the state.
 
 ## State machine
 
@@ -35,7 +35,7 @@ stateDiagram-v2
     classDef agent fill:#81ecec,stroke:#00cec9,color:#2d3436
     classDef arrow fill:#ececec,stroke:#ffffff00,color:#2d3436
 
-    state "TICKET LIFECYCLE" as work {
+    state "DELIVERY CYCLE" as work {
 
         state "🤿　to-scope" as to_scope
         state "🌊　to-slice" as to_slice
@@ -44,28 +44,29 @@ stateDiagram-v2
 
         [*] --> to_scope
         to_scope --> to_slice : reef-scope skill<br />scope the work, define success criteria
-        to_slice --> slice_lifecycle : slice.md<br />🔷　creates sub-issues:<br />keep current pr-branch, create sub-issues, coverage matrix
-       to_slice --> slice_lifecycle : slice.md<br />🔶　no sub-issues needed:<br />labels the current issue to-implement
+        to_slice --> slice_lifecycle : slice.md<br />🔷　creates sub-issues:<br />labels each sub-issue to-implement
+<br />adds coverage matrix to parent issue
+        to_slice --> slice_lifecycle : slice.md<br />🔶　no sub-issues needed:<br />labels the current issue to-implement
         slice_lifecycle --> to_seal
         slice_lifecycle --> to_land
         to_seal --> to_land : seal.md<br />holistic review on current issue pr-branch
         to_seal --> slice_lifecycle : seal.md<br />gaps found, add to-rework
-        to_land --> [*] : reef-land skill<br />human approves, merges into main
+        to_land --> [*] : reef-land skill<br />human approves, merges into base branch
         to_land --> slice_lifecycle : reef-land skill<br />human requests changes<br />add to-rework
     }
 
-    state "SLICE LIFECYCLE (per slice)" as slice_lifecycle {
+    state "IMPLEMENTATION CYCLE" as slice_lifecycle {
 
         state "🌊　to-await-waves" as to_await
         state "🌊　to-implement" as to_implement
         state "🌊　to-inspect" as to_inspect
         state "🌊　to-rework" as to_rework
         state "🌊　to-merge" as to_merge
-        state "merge.md<br />🔷　has parent issue:<br />merge PR, when all done → to-seal" as merge_multi
+        state "merge.md<br />🔷　has parent issue:<br />merge PR, when all sub-issues are landed → to-seal" as merge_multi
         state "merge.md<br />🔶　no parent issue:<br />PR stays open → to-seal" as merge_single
         [*] --> to_implement : no deps
         [*] --> to_await : has deps
-        to_await --> to_implement : await-waves.md<br />check if deps are done, re-review plan
+        to_await --> to_implement : await-waves.md<br />check if deps are landed, re-review plan
         to_implement --> to_inspect : implement.md<br />TDD per slice, full suite green
         to_inspect --> to_merge : inspect.md<br />acceptance criteria met, PR clean
         to_inspect --> to_rework : inspect.md<br />gaps flagged
@@ -80,6 +81,8 @@ stateDiagram-v2
 ```
 
 > While sub-issues are being worked, the parent issue sits in `in-progress`. It is promoted to `to-seal` by `merge.md` once all sub-issues are landed.
+>
+> Each issue has one `DELIVERY CYCLE`. It may contain one or many `IMPLEMENTATION CYCLE`s: one on the issue itself when no sub-issues are needed, or one per sub-issue when the work is split.
 
 ## Skills
 
@@ -100,7 +103,7 @@ The single entry point for turning ideas into plans. Determines whether the work
 
 Runs pulse iterations inside one short-lived session: scan labels, route work to the appropriate sub-agent, recurse while automated work remains, then exit. Holds no state — labels are the state. Run it manually or from cron; the skill handles the same pulse flow either way.
 
-If you've queued up enough issues with the `reef-scope` skill, running the `reef-pulse` skill will make the reef start the work, recursively pulsing through all automated phases until the work is done.
+If you've queued up enough issues with the `reef-scope` skill, running the `reef-pulse` skill will make the reef start the work, recursively pulsing through all automated phases until no automated work remains.
 
 Design principles:
 
@@ -138,8 +141,8 @@ These are the 🌊 automated phases dispatched by the `reef-pulse` skill. Each p
 
 Automatically breaks the plan into vertical slices, or determines that the current issue can be implemented directly without sub-issues.
 
-- 🔷　creates sub-issues: keep the current issue `pr-branch`, create sub-issues, build the coverage matrix
-- 🔶　no sub-issues needed: label the current issue `to-implement`
+- 🔷　creates sub-issues: labels each sub-issue `to-implement`, adds coverage matrix to the parent issue
+- 🔶　no sub-issues needed: labels the current issue `to-implement`
 
 | source file | [`reef-pulse/slice.md`](reef-pulse/slice.md) |
 | :---------- | :------------------------------------------- |
@@ -151,7 +154,7 @@ Automatically breaks the plan into vertical slices, or determines that the curre
 <details>
 <summary>🌊 <b><code>to-await-waves</code></b> 🏷️</summary>
 
-Check if a blocked issue's dependencies are all done. If yes, re-review the plan against current code and label `to-implement`. If not, exit — next pulse will check again.
+Check if a blocked issue's dependencies are all landed. If yes, re-review the plan against current code and label `to-implement`. If not, exit — next pulse will check again.
 
 | source file | [`reef-pulse/await-waves.md`](reef-pulse/await-waves.md) |
 | :---------- | :------------------------------------------------------- |
@@ -222,14 +225,14 @@ Holistic review of the current issue's `pr-branch` — checking the composed who
 
 ## Phase metrics
 
-Every phase tracks its duration and token usage. Metrics are written exclusively by reef-pulse after each dispatched sub-agent completes — individual phase files do not self-report metrics. Metrics accumulate in a single table on the plan issue (and the plan PR once one exists), giving the reviewer a complete cost/time breakdown from scoping through landing. reef-scope is the only exception: because it runs in the user's session (not as a sub-agent), it records its own wall-clock duration on the plan issue. When all work is done, a bold **Total** row sums durations and tokens across the entire lifecycle.
+Every phase tracks its duration and token usage. Metrics are written exclusively by reef-pulse after each dispatched sub-agent completes — individual phase files do not self-report metrics. Metrics accumulate in a single table on the plan issue (and the plan PR once one exists), giving the reviewer a complete cost/time breakdown from scoping through landing. reef-scope is the only exception: because it runs in the user's session (not as a sub-agent), it records its own wall-clock duration on the plan issue. Once the issue is landed, a bold **Total** row sums durations and tokens across the entire lifecycle.
 
 ## Orchestration accuracy
 
 The reason this orchestration framework works is explicit boundaries. Each phase has four well-defined concerns:
 
 1. **Variables** — what each phase needs is declared up front.
-2. **Context source** — where each phase reads its input (tracker issue, PR, plan body) is well-defined.
+2. **Context source** — where each phase reads its input (tracker issue, PR, plan issue body) is well-defined.
 3. **Code persistence** — where code changes get committed and pushed is well-defined.
 4. **Progress metadata** — where labels, issue bodies, and PR bodies get updated is well-defined.
 

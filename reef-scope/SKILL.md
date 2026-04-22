@@ -32,13 +32,13 @@ Set the initial variables:
 ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ```
 
-## 0. Fetch context
+## 1. Fetch context
 
 ```sh
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-## 1. Git prep
+## 2. Git prep
 
 ```sh
 git fetch origin --prune
@@ -50,7 +50,7 @@ Check if the current branch is behind its remote counterpart. If it is, notify t
 
 Wait for the user's response before continuing.
 
-## 2. Write the plan
+## 3. Write the plan
 
 Read the issue and any existing decision record. Assess: is this a **feature**, **refactor**, or **bug**? Then follow the type-specific guide.
 
@@ -58,15 +58,15 @@ Read the issue and any existing decision record. Assess: is this a **feature**, 
 - **Refactor**: see [scope-refactor.md](scope-refactor.md)
 - **Bug**: see [triage-issue.md](triage-issue.md)
 
-## 3. Branches
+## 4. Branches
 
-Suggest a base branch and a PR branch name in a single line. Derive the PR branch name from the issue title (kebab-case, short). For example:
+Suggest a base branch and a `pr-branch` name in a single line. Derive the `pr-branch` name from the issue title (kebab-case, short). For example:
 
 > "Shall we branch off `main` and call the branch `guard-branch-locking`?"
 
 The user confirms or adjusts. Both values are required before continuing.
 
-## 3b. Conflict anticipation
+## 5. Conflict anticipation
 
 After the branch discussion, scan for in-flight work that might overlap with this plan. List open issues that share the same `base-branch` and are past `to-scope` (i.e., already in-flight: `to-slice`, `in-progress`, `to-implement`, `to-inspect`, `to-rework`, `to-merge`, `to-seal`, `to-land`, `to-await-waves`).
 
@@ -80,17 +80,9 @@ for LABEL in to-slice in-progress to-implement to-inspect to-rework to-merge to-
 done
 ```
 
-For each returned issue, parse the `base-branch` from its frontmatter. Keep only those whose `base-branch` matches the plan's `$BASE_BRANCH`. Skim each matching issue's plan body to assess whether it touches overlapping areas (same files, same modules, same concepts).
+For each returned issue, parse the `base-branch` from its frontmatter. Keep only those whose `base-branch` matches the plan's `$BASE_BRANCH`. Skim each matching issue's plan issue body to assess whether it touches overlapping areas (same files, same modules, same concepts).
 
-If overlapping in-flight work is found, surface it to the user:
-
-> "From a quick look at current work in progress, this scope might lead to conflicts with #77 and #83. Shall I add them as `blocked-by` in the plan frontmatter so implementation won't start until those land?"
-
-The user confirms or adjusts. If they confirm, the `blocked-by` field will be set in the frontmatter during step 4.
-
-If no overlapping work is found, continue silently.
-
-## 4. Persist the plan
+## 6. Persist the plan
 
 Set variables from the discussion:
 
@@ -101,7 +93,7 @@ PR_BRANCH="{from branch discussion}"
 
 The plan gets **prepended** to the evolving file (pushing the decision record down) which becomes our ISSUE_BODY variable. The decision record remains at the bottom for reference.
 
-The plan body starts with frontmatter that downstream phases will read:
+The plan issue body starts with frontmatter that downstream phases will read:
 
 ```markdown
 ---
@@ -111,11 +103,28 @@ pr-branch: $PR_BRANCH
 ```
 
 ```sh
-ISSUE_BODY="{plan-content}" # frontmatter + plan body from context
+ISSUE_BODY="{plan-content}" # frontmatter + plan issue body from context
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-scope --add-label to-slice
 ```
 
-## 5. Append metrics
+## 7. Check for potential overlap in other issues
+
+If overlapping in-flight work is found, surface it to the user:
+
+> "From a quick look at current work in progress, this scope might lead to conflicts with #77 and #83. Should this issue wait for them to land?"
+
+If the user says **yes**, mark the dependency using the same issue-title syntax used elsewhere:
+
+```sh
+ISSUE_TITLE="{current issue title} [await: #77, #83]"
+./tracker.sh issue edit "$ISSUE_ID" --title "$ISSUE_TITLE" --remove-label to-slice --add-label to-await-waves
+```
+
+If the user says **no**, leave the issue as `to-slice`.
+
+If no overlapping work is found, continue silently.
+
+## 8. Append metrics
 
 Compute the duration from `$START_TIME` to now. Read the current plan issue body, then append a metrics section at the bottom:
 
@@ -133,8 +142,8 @@ Metrics section format:
 ```markdown
 ### 🪼 Pulse metrics
 
-| Phase | Target    | Duration  | Tokens | Tool uses | Outcome      | Date               |
-| ----- | --------- | --------- | ------ | --------- | ------------ | ------------------ |
+| Phase | Target     | Duration  | Tokens | Tool uses | Outcome      | Date               |
+| ----- | ---------- | --------- | ------ | --------- | ------------ | ------------------ |
 | scope | #$ISSUE_ID | $DURATION | —      | —         | plan created | {yyyy-MM-dd HH:mm} |
 
 <!-- end metrics table -->
