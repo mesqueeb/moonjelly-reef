@@ -26,20 +26,19 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Set the post-fetch variables (after reading the slice body):
+Set the post-fetch variables (after reading the issue body):
 
 ```sh
-SLICE_NAME="{from slice body}"
-SLICE_ID="$ISSUE_ID"
-PR_NUMBER="{from slice body}"
-TARGET_BRANCH="{from slice/plan body}"
-PR_BRANCH="{from slice/plan body pr-branch field}"
-WORKTREE_PATH=".worktrees/$SLICE_NAME-merge"
+ISSUE_TITLE="{from issue body}"
+PR_NUMBER="{from issue body}"
+TARGET_BRANCH="{from issue body}"
+PR_BRANCH="{from issue body pr-branch field}"
+WORKTREE_PATH=".worktrees/$ISSUE_TITLE-merge"
 ```
 
 ## Pre-merge check
 
-Unconditional for both single-slice and multi-slice. Ensures the slice branch integrates cleanly with the target branch before proceeding.
+Unconditional. Ensures the PR branch integrates cleanly with the target branch before proceeding.
 
 Check the merge state of the PR:
 
@@ -56,7 +55,7 @@ WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$T
 Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$PR_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
 
 ```sh
-./tracker.sh issue edit "$SLICE_ID" --add-label blocked-with-conflicts
+./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
 ```
 
 Stop — do not proceed.
@@ -67,10 +66,10 @@ Run the full test suite. If tests pass, commit and push:
 ./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts with $TARGET_BRANCH"
 ```
 
-If the test suite fails after merging, label the slice `to-rework` and stop:
+If the test suite fails after merging, label the issue `to-rework` and stop:
 
 ```sh
-./tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label to-rework
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label to-rework
 ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-rework
 ```
 

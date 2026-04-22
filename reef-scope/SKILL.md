@@ -95,12 +95,11 @@ If no overlapping work is found, continue silently.
 Set variables from the discussion:
 
 ```sh
-PLAN_ID="$ISSUE_ID"
 BASE_BRANCH="{from base branch discussion}"
 TARGET_BRANCH="{from branch discussion}"
 ```
 
-The plan gets **prepended** to the evolving file (pushing the decision record down) which becomes our PLAN_CONTENT variable. The decision record remains at the bottom for reference.
+The plan gets **prepended** to the evolving file (pushing the decision record down) which becomes our ISSUE_BODY variable. The decision record remains at the bottom for reference.
 
 The plan body starts with frontmatter that downstream phases will read:
 
@@ -112,8 +111,8 @@ target-branch: $TARGET_BRANCH
 ```
 
 ```sh
-PLAN_CONTENT="{plan-content}" # frontmatter + plan body from context
-./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_CONTENT" --remove-label to-scope --add-label to-slice
+ISSUE_BODY="{plan-content}" # frontmatter + plan body from context
+./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-scope --add-label to-slice
 ```
 
 ## 5. Append metrics
@@ -122,11 +121,11 @@ Compute the duration from `$START_TIME` to now. Read the current plan issue body
 
 ```sh
 DURATION="{human-readable duration since START_TIME}" # e.g. "42s", "1m 12s"
-PLAN_BODY="{current plan issue body with metrics section appended}"
+ISSUE_BODY="{current plan issue body with metrics section appended}"
 ```
 
 ```sh
-./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
+./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
 ```
 
 Metrics section format:

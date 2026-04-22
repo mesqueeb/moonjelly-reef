@@ -24,15 +24,14 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Set the post-fetch variables (after reading the issue body). Extract from frontmatter — works for slices, single-slice plans, and multi-slice plans:
+Set the post-fetch variables (after reading the issue body). Extract from frontmatter — works for single-slice plans and multi-slice sub-issues:
 
 ```sh
-SLICE_NAME="{from issue body}"
-SLICE_ID="$ISSUE_ID"
+ISSUE_TITLE="{from issue body}"
 PR_BRANCH="{from issue body pr-branch field}"
 TARGET_BRANCH="{from issue body}"
 PR_NUMBER="{from issue body}"
-WORKTREE_PATH=".worktrees/$SLICE_NAME-rework"
+WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
 ```
 
 For plan issues, read success criteria from the plan body instead of acceptance criteria.
@@ -62,7 +61,7 @@ Read every review comment on the PR. Read the full conversation — don't just s
 Also read the gap report from the PR body (`<details><summary>` blocks written by ratify or reef-land) if present.
 
 Also re-read:
-- The slice's acceptance criteria or plan's success criteria
+- The issue's acceptance criteria or plan's success criteria
 - The gap classification from the ratify report if present (missing coverage, incomplete implementation, integration gap, planning gap)
 
 ### 3. Fix

@@ -350,7 +350,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - update-pr-body
   ```sh
-  PR_NUMBER="{from slice body}" # if not found, try ./tracker.sh pr list --search
+  PR_NUMBER="{from issue body}" # if not found, try ./tracker.sh pr list --search
   PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
   REPORT="{inspect-report}" # <details><summary><h3>🧿 Inspect review — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
   PR_BODY="$PR_BODY\n\n$REPORT"
@@ -559,7 +559,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - handoff
   ```sh
-  nextPhase="to-ratify" # or "in-progress" if not all slices tagged 'landed'
+  nextPhase="to-ratify" # or "in-progress" if not all issues tagged 'landed'
   planPr="—" # multi-slice: no plan PR yet
   ```
 

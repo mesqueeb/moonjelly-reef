@@ -12,18 +12,12 @@ Single-slice merge path — delegated from [merge.md](merge.md).
 
 The router has already fetched context, set variables, and completed the pre-merge check. The PR targets the base branch. The human will merge it during `/reef-land` — do NOT merge it here.
 
-Set the variables needed for this path:
-
-```sh
-PLAN_ID="{from slice/plan body}"
-```
-
-## 1. Label plan to-ratify
+## 1. Label to-ratify
 
 Remove `to-merge`, add `to-ratify`:
 
 ```sh
-./tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-ratify
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label to-ratify
 ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-ratify
 ```
 

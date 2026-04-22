@@ -13,10 +13,9 @@ Multi-slice flow — delegated from [slice.md](slice.md).
 The router has already fetched context and drafted 2+ slices. Set post-fetch variables:
 
 ```sh
-PLAN_ID="$ISSUE_ID"
 TARGET_BRANCH="{from plan body}"
 BASE_BRANCH="{from plan body}"
-WORKTREE_PATH=".worktrees/$PLAN_ID-slice"
+WORKTREE_PATH=".worktrees/$ISSUE_ID-slice"
 ```
 
 ## 1. Enter worktree
@@ -122,11 +121,11 @@ Label each slice: `to-implement` if no blockers, `to-await-waves` if blocked.
 Add `pr-branch: $TARGET_BRANCH` to the plan frontmatter (for multi-slice, the plan PR lives on the target branch). Append the coverage matrix and a listing of all created sub-issues with their labels to the plan body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-ratify` once all slices are done.
 
 ```sh
-PLAN_BODY="{plan body with pr-branch in frontmatter and coverage matrix appended}"
+ISSUE_BODY="{plan body with pr-branch in frontmatter and coverage matrix appended}"
 ```
 
 ```sh
-./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY" --remove-label to-slice --add-label in-progress
+./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-slice --add-label in-progress
 ```
 
 ## 6. Document judgment calls

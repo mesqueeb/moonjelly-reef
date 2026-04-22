@@ -15,9 +15,8 @@ The router has already fetched context, set variables, and completed the pre-mer
 Set the variables needed for this path:
 
 ```sh
-PLAN_ID="{from slice/plan body}"
-PR_NUMBER="{from slice body}"
-SLICE_ID="$ISSUE_ID"
+PARENT_ID="{from issue body parent-plan field}"
+PR_NUMBER="{from issue body}"
 ```
 
 ## 1. Merge
@@ -30,13 +29,13 @@ MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}"
 
 ## 2. Check siblings and plan completion
 
-Fetch the plan body — it contains the coverage matrix with all slice issue numbers:
+Fetch the parent plan body — it contains the coverage matrix with all sibling issue numbers:
 
 ```sh
-./tracker.sh issue view "$PLAN_ID" --json body,title,labels
+./tracker.sh issue view "$PARENT_ID" --json body,title,labels
 ```
 
-Extract the sibling slice IDs from the coverage matrix. For each sibling (excluding the current slice):
+Extract the sibling issue IDs from the coverage matrix. For each sibling (excluding the current issue):
 
 ```sh
 SIBLING_ID="{from coverage matrix}"
@@ -48,23 +47,23 @@ Fetch its labels:
 ./tracker.sh issue view "$SIBLING_ID" --json labels
 ```
 
-For any sibling tagged `to-await-waves`, check their `blocked-by` list. If this merged slice was the last blocker, leave them as `to-await-waves` — the next pulse will dispatch the await-waves phase to re-review their plan before promoting.
+For any sibling tagged `to-await-waves`, check their `blocked-by` list. If this merged issue was the last blocker, leave them as `to-await-waves` — the next pulse will dispatch the await-waves phase to re-review their plan before promoting.
 
-Check: are ALL slices for the plan now tagged `landed`? If all slices are landed, change the plan label from `in-progress` to `to-ratify` (step 4). If not all landed, do nothing — more slices are still in progress.
+Check: are ALL issues for the plan now tagged `landed`? If all are landed, change the plan label from `in-progress` to `to-ratify` (step 4). If not all landed, do nothing — more work is still in progress.
 
-## 3. Close the slice
+## 3. Close the issue
 
-Close the slice issue and update its labels:
+Close the current issue and update its labels:
 
 ```sh
-./tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label landed
-./tracker.sh issue close "$SLICE_ID"
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label landed
+./tracker.sh issue close "$ISSUE_ID"
 ```
 
-## 4. Update plan label — if all slices labelled 'landed'
+## 4. Update plan label — if all issues labelled 'landed'
 
 ```sh
-./tracker.sh issue edit "$PLAN_ID" --remove-label in-progress --add-label to-ratify
+./tracker.sh issue edit "$PARENT_ID" --remove-label in-progress --add-label to-ratify
 ```
 
 ## 5. Document judgment calls
@@ -74,9 +73,9 @@ Document judgment calls made during this phase on the PR. Only document decision
 ## Handoff
 
 ```sh
-nextPhase="to-ratify" # or "in-progress" if not all slices tagged 'landed'
+nextPhase="to-ratify" # or "in-progress" if not all issues tagged 'landed'
 planPr="—" # multi-slice: no plan PR yet
-summary="Slice {name} merged — {N} of {total} slices complete"
+summary="{ISSUE_TITLE} merged — {N} of {total} issues complete"
 ```
 
 Report these three variables to the caller.

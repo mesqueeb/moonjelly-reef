@@ -27,11 +27,10 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 Set the post-fetch variables (after reading the issue body):
 
 ```sh
-SLICE_NAME="{from slice body or plan-id}"
-SLICE_ID="$ISSUE_ID"
-PR_BRANCH="{from slice/plan body pr-branch field}"
-TARGET_BRANCH="{from slice/plan body}"
-WORKTREE_PATH=".worktrees/$SLICE_NAME-inspect"
+ISSUE_TITLE="{from issue body}"
+PR_BRANCH="{from issue body pr-branch field}"
+TARGET_BRANCH="{from issue body}"
+WORKTREE_PATH=".worktrees/$ISSUE_TITLE-inspect"
 ```
 
 For plan issues, read success criteria from the plan body instead of acceptance criteria.
@@ -66,7 +65,7 @@ WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$T
 Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$PR_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
 
 ```sh
-./tracker.sh issue edit "$SLICE_ID" --add-label blocked-with-conflicts
+./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
 ```
 
 Stop — do not proceed.
@@ -75,7 +74,7 @@ Run the full project test suite. Record the result.
 
 ### 2. Check each acceptance criterion
 
-For each acceptance criterion on the slice:
+For each acceptance criterion on the issue:
 
 - Read the actual code that implements it. Trace the code path.
 - Confirm the behavior is correct by reading the test that covers it.
@@ -110,12 +109,12 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ### 6. Update the PR
 
-Set the PR number from the slice body. If not found there, try `./tracker.sh pr list --search`. If PR_NUMBER is nowhere to be found, label the issue `pr-missing` and stop.
+Set the PR number from the issue body. If not found there, try `./tracker.sh pr list --search`. If PR_NUMBER is nowhere to be found, label the issue `pr-missing` and stop.
 
 Read the current PR body, then append the inspect report as a collapsible block:
 
 ```sh
-PR_NUMBER="{from slice body}" # if not found, try ./tracker.sh pr list --search
+PR_NUMBER="{from issue body}" # if not found, try ./tracker.sh pr list --search
 PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
 REPORT="{inspect-report}" # <details><summary><h3>🧿 Inspect review — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
 PR_BODY="$PR_BODY\n\n$REPORT"
@@ -127,14 +126,14 @@ PR_BODY="$PR_BODY\n\n$REPORT"
 **If all acceptance criteria are met and the suite is green:**
 
 ```sh
-./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-merge
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-inspect --add-label to-merge
 ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-merge
 ```
 
 **If gaps are found:**
 
 ```sh
-./tracker.sh issue edit "$SLICE_ID" --remove-label to-inspect --add-label to-rework
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-inspect --add-label to-rework
 ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-rework
 ```
 
