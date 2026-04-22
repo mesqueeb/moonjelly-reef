@@ -70,7 +70,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ./tracker.sh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
   ```
 - release-lock — if AUTOMATED_DISPATCHES == 0
-  - contains: `delete the pulse.lock file`
+  - contains: `delete the `pulse.lock` file`
 
 ### [/reef-scope](./reef-scope/SKILL.md)
 
