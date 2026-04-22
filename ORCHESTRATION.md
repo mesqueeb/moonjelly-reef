@@ -510,7 +510,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 
-### [merge-single.md](./reef-pulse/merge-single.md)
+### [merge-no-parent.md](./reef-pulse/merge-no-parent.md)
 
 - update-tracker
   ```sh
@@ -523,7 +523,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   planPr="$PR_NUMBER" # inherited from router context
   ```
 
-### [merge-multi.md](./reef-pulse/merge-multi.md)
+### [merge-has-parent.md](./reef-pulse/merge-has-parent.md)
 
 - set-variables
   ```sh
