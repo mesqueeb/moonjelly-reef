@@ -115,11 +115,10 @@ The PR body must start with the "closes" reference, followed by the implementati
 Document judgment calls in that implementation report. Only include decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
 ```sh
-REPORT="{closes line and implementation report}" # e.g.: closes #$ISSUE_ID $ISSUE_TITLE\n\n...
-```
-
-```sh
-./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-inspect
+CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g.: #42
+REPORT="{implementation report}"
+PR_BODY_NEW="$CLOSES\n\n$REPORT"
+./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
 ```
 
 The PR targets `$BASE_BRANCH` — the branch it merges into.
@@ -128,18 +127,12 @@ The PR targets `$BASE_BRANCH` — the branch it merges into.
 
 Persist the PR metadata for the newly created PR on the issue body so downstream phases (inspect, rework, merge) can find it.
 
-Add to `$ISSUE_BODY` frontmatter:
-
 ```sh
-PR_NUMBER="{from pr create output}"
-ISSUE_BODY="{original issue body with added frontmatter values}"
+PR_ID="{from pr create output}" # e.g.: #43
+ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
 # add to frontmatter (if not already): pr-branch: $PR_BRANCH
-# add to frontmatter:  pr-number: $PR_NUMBER
-```
-
-```sh
-ISSUE_BODY="{issue body with PR metadata updated}"
-./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-implement --add-label to-inspect
+# add to frontmatter:  pr-id: $PR_ID
+./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED" --remove-label to-implement --add-label to-inspect
 ```
 
 ## 7. Clean up

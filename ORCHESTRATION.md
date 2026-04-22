@@ -63,12 +63,12 @@ General rules:
   ```
 - set-variables
   ```sh
-  PLAN_PR_NUMBER="$planPr" # from handoff — never read issue bodies for this
+  PLAN_PR_ID="$planPr" # from handoff — never read issue bodies for this
   PLAN_PR_BODY="{current plan PR body with metrics rows inserted into the table}"
   ```
 - update-pr-body — if planPr is not "—"
   ```sh
-  ./tracker.sh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
+  ./tracker.sh pr edit "$PLAN_PR_ID" --body "$PLAN_PR_BODY"
   ```
 - release-lock — if AUTOMATED_DISPATCHES == 0
   - contains: `delete the `pulse.lock` file`
@@ -81,7 +81,7 @@ General rules:
   ```
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id}" # pre-existing and passed or generate
+  ISSUE_ID="{issue-id}" # pre-existing and passed or generate, eg.: #42
   ```
 - fetch-context
   ```sh
@@ -130,18 +130,18 @@ General rules:
 
 - set-variables
   ```sh
-  PLAN_ID="{issue-id}" # if passed
-  PR_NUMBER="{pr-number}" # if passed
+  ISSUE_ID="{issue-id}" # if passed directly or extracted from passed URL
+  PR_ID="{pr-id}" # if passed directly or extracted from passed URL
   ```
 - fetch-context
   ```sh
-  ./tracker.sh issue view "$PLAN_ID" --json body,title,labels # if PLAN_ID known
-  ./tracker.sh pr view "$PR_NUMBER" --json number,body,headRefName,baseRefName,comments,reviews # if PR_NUMBER known
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels # if ISSUE_ID known
+  ./tracker.sh pr view "$PR_ID" --json number,body,headRefName,baseRefName,comments,reviews # if PR_ID known
   ```
 - set-variables
   ```sh
-  PLAN_ID="{from PR body or already known}"
-  PR_NUMBER="{from plan issue body or already known}"
+  ISSUE_ID="{from PR body or already known}"
+  PR_ID="{from plan issue body or already known}"
   BASE_BRANCH="{from plan issue body}"
   PR_BODY="{the PR body content — this contains the seal report}"
   ```
@@ -152,20 +152,20 @@ General rules:
   ```
 - update-pr-body — if change-requests
   ```sh
-  ./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
+  ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY"
   ```
 - update-tracker — if change-requests
   ```sh
-  ./tracker.sh issue edit "$PLAN_ID" --remove-label to-land --add-label to-rework
+  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-land --add-label to-rework
   ```
 - update-plan-body — if change-requests and plan decisions changed
   ```sh
-  PLAN_BODY=$(./tracker.sh issue view "$PLAN_ID" --json body)
-  ./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
+  PLAN_BODY=$(./tracker.sh issue view "$ISSUE_ID" --json body)
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$PLAN_BODY"
   ```
 - sync-pr-label — if change-requests
   ```sh
-  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-land --add-label to-rework
+  ./tracker.sh pr edit "$PR_ID" --remove-label to-land --add-label to-rework
   ```
 - set-variables — if follow-up
   ```sh
@@ -177,7 +177,7 @@ General rules:
   ```
 - pre-merge-check — if approved
   ```sh
-  ./tracker.sh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
+  ./tracker.sh pr view "$PR_ID" --json mergeStateStatus -q .mergeStateStatus
   ```
 - set-variables — if approved
   ```sh
@@ -185,8 +185,8 @@ General rules:
   ```
 - pr-merge — if approved
   ```sh
-  ./tracker.sh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
-  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-land --add-label landed
+  ./tracker.sh pr merge "$PR_ID" --"$MERGE_STRATEGY" --delete-branch
+  ./tracker.sh pr edit "$PR_ID" --remove-label to-land --add-label landed
   ```
 - pull
   - contains: `Pull the merged changes into the current branch if it matches the base branch:`
@@ -199,7 +199,7 @@ General rules:
   ```
 - update-tracker — if approved
   ```sh
-  ./tracker.sh issue close "$PLAN_ID"
+  ./tracker.sh issue close "$ISSUE_ID"
   ```
 
 ## Phases
@@ -208,7 +208,7 @@ General rules:
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id}" # pre-existing and passed or generate
+  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
   ```
 - fetch-context
   ```sh
@@ -229,9 +229,9 @@ General rules:
   ```
 - handoff
   ```sh
-  nextPhase="to-implement"
-  planPr="—"
-  summary="No sub-issues needed — plan issue moves to to-implement"
+  NEXT_PHASE="to-implement"
+  PR_ID="—"
+  SUMMARY="No sub-issues needed — plan issue moves to to-implement"
   ```
 
 ### [slice-subissues.md](./reef-pulse/slice-subissues.md)
@@ -276,15 +276,15 @@ General rules:
   ```
 - handoff
   ```sh
-  nextPhase="in-progress"
-  planPr="—"
+  NEXT_PHASE="in-progress"
+  PR_ID="—"
   ```
 
 ### [implement.md](./reef-pulse/implement.md)
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id}" # pre-existing and passed or generate
+  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
   ```
 - fetch-context
   ```sh
@@ -308,21 +308,18 @@ General rules:
   ```
 - set-variables
   ```sh
-  REPORT="{closes line and implementation report}" # e.g.: closes #$ISSUE_ID $ISSUE_TITLE\n\n...
-  ```
-  - contains: `closes #$ISSUE_ID $ISSUE_TITLE`
-- pr-create
-  ```sh
-  ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-inspect
+  CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g.: #42
+  REPORT="{implementation report}"
+  PR_BODY_NEW="$CLOSES\n\n$REPORT"
+  ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
   ```
 - set-variables
   ```sh
-  PR_NUMBER="{from pr create output}"
-  ISSUE_BODY="{original issue body with added frontmatter values}"
-  ```
-- update-tracker
-  ```sh
-  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-implement --add-label to-inspect
+  PR_ID="{from pr create output}" # e.g.: #43
+  ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
+  # add to frontmatter (if not already): pr-branch: $PR_BRANCH
+  # add to frontmatter:  pr-id: $PR_ID
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED" --remove-label to-implement --add-label to-inspect
   ```
 - exit-worktree
   ```sh
@@ -330,15 +327,15 @@ General rules:
   ```
 - handoff
   ```sh
-  nextPhase="to-inspect"
-  planPr="$PR_NUMBER"
+  NEXT_PHASE="to-inspect"
+  PR_ID="$PR_ID"
   ```
 
 ### [inspect.md](./reef-pulse/inspect.md)
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id}" # pre-existing and passed or generate
+  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
   ```
 - fetch-context
   ```sh
@@ -362,21 +359,21 @@ General rules:
   ```
 - update-pr-body
   ```sh
-  PR_NUMBER="{from issue frontmatter pr-number field}" # if not found, try ./tracker.sh pr list --search
-  PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
+  PR_ID="{from issue frontmatter pr-id field}" # if not found, try ./tracker.sh pr list --search
+  PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
   REPORT="{inspect-report}" # <details><summary><h3>🧿 Inspect review — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
-  PR_BODY="$PR_BODY\n\n$REPORT"
-  ./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
+  PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
+  ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
   ```
 - update-tracker pass case
   ```sh
   ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-inspect --add-label to-merge
-  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-merge
+  ./tracker.sh pr edit "$PR_ID" --remove-label to-inspect --add-label to-merge
   ```
 - update-tracker fail case
   ```sh
   ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-inspect --add-label to-rework
-  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-rework
+  ./tracker.sh pr edit "$PR_ID" --remove-label to-inspect --add-label to-rework
   ```
 - exit-worktree
   ```sh
@@ -384,15 +381,15 @@ General rules:
   ```
 - handoff
   ```sh
-  nextPhase="to-merge" # or "to-rework" if gaps found
-  planPr="$PR_NUMBER"
+  NEXT_PHASE="to-merge" # or "to-rework" if gaps found
+  PR_ID="$PR_ID"
   ```
 
 ### [rework.md](./reef-pulse/rework.md)
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id}" # pre-existing and passed or generate
+  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
   ```
 - fetch-context
   ```sh
@@ -403,7 +400,7 @@ General rules:
   ISSUE_TITLE="{from issue title}"
   BASE_BRANCH="{from issue frontmatter base-branch field}"
   PR_BRANCH="{from issue frontmatter pr-branch field}"
-  PR_NUMBER="{from issue frontmatter pr-number field}"
+  PR_ID="{from issue frontmatter pr-id field}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
   ```
 - enter-worktree
@@ -417,15 +414,15 @@ General rules:
   ```
 - update-pr-body
   ```sh
-  PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
+  PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
   REPORT="{rework-report}" # <details><summary><h3>🦀 Rework — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
-  PR_BODY="$PR_BODY\n\n$REPORT"
-  ./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
+  PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
+  ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
   ```
 - update-tracker
   ```sh
   ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-rework --add-label to-inspect
-  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-rework --add-label to-inspect
+  ./tracker.sh pr edit "$PR_ID" --remove-label to-rework --add-label to-inspect
   ```
 - exit-worktree
   ```sh
@@ -433,15 +430,15 @@ General rules:
   ```
 - handoff
   ```sh
-  nextPhase="to-inspect"
-  planPr="$PR_NUMBER"
+  NEXT_PHASE="to-inspect"
+  PR_ID="$PR_ID"
   ```
 
 ### [await-waves.md](./reef-pulse/await-waves.md)
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id}" # pre-existing and passed or generate
+  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
   ```
 - fetch-context
   ```sh
@@ -472,11 +469,11 @@ General rules:
 - phase-specific
 - set-variables
   ```sh
-  ISSUE_BODY="{issue body, with updated acceptance criteria if changed}"
+  ISSUE_BODY_UPDATED="{issue body, with updated acceptance criteria if changed}"
   ```
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED"
   ```
 - exit-worktree
   ```sh
@@ -484,15 +481,15 @@ General rules:
   ```
 - handoff
   ```sh
-  nextPhase="to-implement" # or "to-await-waves" if still blocked
-  planPr="—"
+  NEXT_PHASE="to-implement" # or "to-await-waves" if still blocked
+  PR_ID="—"
   ```
 
 ### [merge.md](./reef-pulse/merge.md)
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id}" # pre-existing and passed or generate
+  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
   ```
 - fetch-context
   ```sh
@@ -502,13 +499,13 @@ General rules:
   ```sh
   ISSUE_TITLE="{from issue title}"
   BASE_BRANCH="{from issue frontmatter base-branch field}"
-  PR_NUMBER="{from issue frontmatter pr-number field}"
+  PR_ID="{from issue frontmatter pr-id field}"
   PR_BRANCH="{from issue frontmatter pr-branch field}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-merge"
   ```
 - pre-merge-check
   ```sh
-  ./tracker.sh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
+  ./tracker.sh pr view "$PR_ID" --json mergeStateStatus -q .mergeStateStatus
   ```
 - enter-worktree
   ```sh
@@ -521,7 +518,7 @@ General rules:
 - update-tracker — if tests-fail
   ```sh
   ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label to-rework
-  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-rework
+  ./tracker.sh pr edit "$PR_ID" --remove-label to-merge --add-label to-rework
   ```
 - exit-worktree
   ```sh
@@ -533,12 +530,12 @@ General rules:
 - update-tracker
   ```sh
   ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label to-seal
-  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-seal
+  ./tracker.sh pr edit "$PR_ID" --remove-label to-merge --add-label to-seal
   ```
 - handoff
   ```sh
-  nextPhase="to-seal"
-  planPr="$PR_NUMBER" # inherited from router context
+  NEXT_PHASE="to-seal"
+  PR_ID="$PR_ID" # inherited from router context
   ```
 
 ### [merge-has-parent.md](./reef-pulse/merge-has-parent.md)
@@ -546,7 +543,7 @@ General rules:
 - set-variables
   ```sh
   PARENT_ID="{from issue frontmatter parent-issue field}"
-  PR_NUMBER="{from issue frontmatter pr-number field}"
+  PR_ID="{from issue frontmatter pr-id field}"
   ```
 - set-variables
   ```sh
@@ -554,8 +551,8 @@ General rules:
   ```
 - pr-merge
   ```sh
-  ./tracker.sh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
-  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label landed
+  ./tracker.sh pr merge "$PR_ID" --"$MERGE_STRATEGY" --delete-branch
+  ./tracker.sh pr edit "$PR_ID" --remove-label to-merge --add-label landed
   ```
 - set-variables
   ```sh
@@ -576,15 +573,15 @@ General rules:
   ```
 - handoff
   ```sh
-  nextPhase="to-seal" # or "in-progress" if not all issues tagged 'landed'
-  planPr="—" # sub-issue merge does not open the parent issue PR
+  NEXT_PHASE="to-seal" # or "in-progress" if not all issues tagged 'landed'
+  PR_ID="—" # sub-issue merge does not open the parent issue PR
   ```
 
 ### [seal.md](./reef-pulse/seal.md)
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id}" # pre-existing and passed or generate
+  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
   ```
 - fetch-context
   ```sh
@@ -608,38 +605,40 @@ General rules:
   ```
 - submit-report
   ```sh
-  REPORT="{closes line and seal-report}" # e.g.: closes #$ISSUE_ID $ISSUE_TITLE\n\n<details><summary><h3>🦭 Seal report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
-  # if no PR exists:
-  ./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-seal
-  # if PR exists, append:
-  PR_NUMBER="{from pr create output or existing PR}"
-  PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
+  REPORT="{seal-report}" # <details><summary><h3>🦭 Seal report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+  ```
+- if PR exists
+  ```sh
+  PR_ID="{from pr create output or existing PR}"
+  PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
   PR_BODY="$PR_BODY\n\n$REPORT"
-  ./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
+  ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY"
   ```
-- set-variables
+- if PR needs creation
   ```sh
-  PR_NUMBER="{from pr create output or existing PR}"
+  CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g.: #42
+  PR_BODY_NEW="$CLOSES\n\n$REPORT"
+  ./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-seal
+  # Persist the PR metadata on the plan issue so downstream human review can always find it:
+  PR_ID="{from pr create output or existing PR}"
   ISSUE_BODY="{original issue body with added frontmatter values}"
-  ```
-- update-tracker
-  ```sh
+  # add to frontmatter: pr-id: $PR_ID
   ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
   ```
 - update-tracker pass case
   ```sh
   ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-land
-  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-seal --add-label to-land
+  ./tracker.sh pr edit "$PR_ID" --remove-label to-seal --add-label to-land
   ```
 - update-tracker human-decision-needed case
   ```sh
   ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-land --add-label blocked-need-human-input
-  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-seal --add-label to-land --add-label blocked-need-human-input
+  ./tracker.sh pr edit "$PR_ID" --remove-label to-seal --add-label to-land --add-label blocked-need-human-input
   ```
 - update-tracker fail case
   ```sh
   ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-rework
-  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-seal --add-label to-rework
+  ./tracker.sh pr edit "$PR_ID" --remove-label to-seal --add-label to-rework
   ```
 - exit-worktree
   ```sh
@@ -647,8 +646,8 @@ General rules:
   ```
 - handoff
   ```sh
-  nextPhase="to-land" # or "to-rework" if gaps found; use to-land for human-decision-needed warnings
-  planPr="$PR_NUMBER"
-  summary="Seal {PASS|GAPS FOUND|HUMAN DECISION NEEDED} — {one-line summary}"
-  planIssueMetrics="{metrics rows from plan issue body, or empty if none}"
+  NEXT_PHASE="to-land" # or "to-rework" if gaps found; use to-land for human-decision-needed warnings
+  PR_ID="$PR_ID"
+  SUMMARY="Seal {PASS|GAPS FOUND|HUMAN DECISION NEEDED} — {one-line summary}"
+  PLAN_ISSUE_METRICS="{metrics rows from plan issue body, or empty if none}"
   ```
