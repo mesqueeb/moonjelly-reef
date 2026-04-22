@@ -34,14 +34,18 @@ You will receive:
 - The current `world.md` contents
 - The prior lore beats from this session, in order
 - Pipeline state that summarizes what happened in the pulse and what changed
+  It includes dispatched phases, returned transitions, human items, idle items, and labels that remain after the pulse
+  Treat these details as inspiration only, not as a checklist to narrate one-by-one
 - The elapsed time associated with the beat being written
 
 ## Output contract
 
 Return exactly two parts:
 
-1. `beat` — 1 to 2 sentences of lore prose suitable for the existing dashed lore box
-2. `world` — the full updated `world.md` content, preserving the same section structure while updating only what changed
+1. `beat:` on its own label, followed by 1 to 2 sentences of lore prose suitable for the existing dashed lore box
+2. `world:` on its own label, followed by the full updated `world.md` content, preserving the same section structure while updating only what changed
+
+Do not wrap either part in code fences. The caller needs to parse the response and persist `world:` back to disk after every beat.
 
 ## Anti-patterns
 
