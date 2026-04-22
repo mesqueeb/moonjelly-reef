@@ -61,10 +61,32 @@ Three types of tickets flow through the slice lifecycle phases (implement → in
 
 ## Labels
 
-| Term       | Definition                                                                                                                                     | Aliases to avoid                  |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| **label**  | A marker on an issue that represents its current state in the lifecycle                                                                        | status, state, tag                |
+| Term       | Definition                                                                                                                                      | Aliases to avoid                  |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| **label**  | A marker on an issue that represents its current state in the lifecycle                                                                         | status, state, tag                |
 | **landed** | The terminal label — a signal that a piece of work has reached its target branch. Once applied, the issue is considered complete and is closed. | done, completed, merged, finished |
+
+## Orchestration lifecycle
+
+| Term        | Definition                                                                                 | Aliases to avoid                    |
+| ----------- | ------------------------------------------------------------------------------------------ | ----------------------------------- |
+| **session** | A complete orchestration run — from the first pulse to lock release. May span many pulses. | run, execution                      |
+| **pulse**   | One iteration within a session: scan → dispatch → lore → metrics → recurse-or-exit         | tick, cycle, run (that's a session) |
+
+## Saga system
+
+| Term            | Definition                                                                                                    | Aliases to avoid                            |
+| --------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| **saga**        | The persistent story that accumulates across sessions — the reef's ongoing narrative memory                   | story (too vague), lore (that's the format) |
+| **beat**        | A single 1–3 sentence prose fragment written by the saga writer during one pulse; the atomic unit of the saga | snippet, entry, lore snippet                |
+| **chapter**     | The compiled archive of all beats from one session, written to `chapter-NNN.md` at session end                | session story, log                          |
+| **world state** | The persistent narrative memory between sessions: characters, threads, mood, current act, and next-beat hook  | world, context, state                       |
+| **act**         | The Kishōtenketsu stage (Ki / Sho / Ten / Ketsu) tracked in `world.md` — distinct from a lifecycle phase      | phase (reserved for issue lifecycle), step  |
+| **thread**      | An ongoing narrative element in `world.md` that persists across sessions and accumulates over time            | plot, arc, storyline                        |
+| **hook**        | The one-line forward-pointer at the end of `world.md` that seeds the next session's opening beat              | prompt, hint, seed                          |
+| **roll**        | A 2d6 value (2–12) calculated by the orchestrator from wave progress; sets the emotional key of a beat        | score, result, outcome                      |
+| **lore box**    | The dashed terminal format in which a beat is displayed during a session                                      | lore snippet, story box                     |
+| **saga writer** | The sub-agent invoked each pulse to write a beat, update `world.md`, and append to the chapter file           | story agent, lore agent                     |
 
 ## Relationships
 
@@ -74,8 +96,26 @@ Three types of tickets flow through the slice lifecycle phases (implement → in
 - For **multi-slice**, the **coverage matrix** maps every **success criterion** to one or more **slices**
 - A **target branch** always exists — for **multi-slice** it's a dedicated branch; for **single-slice** it equals the **base branch**
 - A **slice branch** always exists — it targets the **target branch**
+- A **session** produces exactly one **chapter**
+- A **chapter** contains one **beat** per **pulse** that dispatched work, plus a final **beat** for the empty pulse
+- The **world state** persists between **sessions**; the **chapter** is immutable after the **session** ends
+- The **roll** is recalculated each **pulse** by the orchestrator; it influences but does not dictate the **beat**
 
-## Example dialogue
+## Example dialogue (saga)
+
+> **Dev:** "The saga writer got called twice this pulse — which **beat** ends up in the **chapter**?"
+>
+> **Domain expert:** "Each **pulse** produces exactly one **beat**. The saga writer appends it to the current **chapter** file and updates the **world state** before returning. The **chapter** grows one **beat** at a time."
+>
+> **Dev:** "What's the difference between the **saga** and the **chapter**?"
+>
+> **Domain expert:** "The **chapter** is the archive for one **session** — immutable once written. The **saga** is all chapters together; it's the reef's memory across sessions. The **world state** is what carries the **saga** forward."
+>
+> **Dev:** "And the **roll** — does the writer narrate it?"
+>
+> **Domain expert:** "No. The **roll** is the emotional key. A 2 means something should feel like loss or friction. The writer uses that to choose the _tone_ of the beat — not to announce 'things went badly.'"
+
+## Example dialogue (phases)
 
 > **Dev:** "This bug is tagged `to-slice`. How does the reef handle it?"
 >
@@ -88,6 +128,13 @@ Three types of tickets flow through the slice lifecycle phases (implement → in
 > **Dev:** "When does the diver see it?"
 >
 > **Domain expert:** "At **land**. For single-slice, the PR is still open — the diver merges it. For multi-slice, **ratify** already composed everything on the **target branch** and opened a PR to the **base branch** — the diver merges that."
+
+## Flagged ambiguities (saga)
+
+- **"lore"** vs **"beat"** vs **"saga"** — lore is the output aesthetic (dashed box format); a **beat** is a discrete prose entry; the **saga** is the long-running narrative accumulating across sessions. Don't use "lore" as a noun for the content itself.
+- **"act"** vs **"phase"** — these are completely different. **Act** is a Kishōtenketsu stage (Ki/Sho/Ten/Ketsu) tracked in `world.md`. **Phase** is a step in the issue lifecycle (implement, inspect, etc.). Never use them interchangeably.
+- **"session"** vs **"pulse"** — a **session** spans from lock acquisition to lock release and contains multiple **pulses**. A **pulse** is one scan-dispatch-lore-metrics iteration. Don't say "pulse" when you mean "session."
+- **"chapter"** vs **"session"** — a **chapter** is the narrative archive of one session. They are 1:1 but distinct: one is a story artifact, the other is an orchestration run.
 
 ## Flagged ambiguities
 

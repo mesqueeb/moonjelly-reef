@@ -62,7 +62,7 @@ If this is the first iteration of the pulse (not a recursive call), print the se
 └─────────────────────────────────────────────────────────────┘
 ```
 
-Initialize an empty lore story list to collect lore snippets across the session. Initialize the pulse counter to 0.
+Initialize the pulse counter to 0.
 
 ### Step 0d. Print pulse header
 
@@ -148,23 +148,41 @@ AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
 
 ### Step 2c. Print lore snippet
 
-After all dispatched agents return, generate a lore snippet. This is a 1-2 sentence story fragment in playful Ghibli ocean vibes. Each lore snippet must read all prior snippets from the session and continues the narrative — the lore forms a continuous story, not isolated fragments. The story should be influenced by what actually happened in the pulse results (e.g., reworks are setbacks, successful inspects are triumphs, long waits are boring). Print it with the elapsed time since dispatch:
+This step runs on every pulse, including empty ones. Generate a lore snippet by spawning a storytelling sub-agent (use `$SKILL_DIR/saga-writer.md`). Do not generate lore inline inside the pulse.
+
+Choose a random number as-if you make a 2d6 roll (2-12) with slight wave progress influence:
+
+- 6–8 for neutral or mixed results
+- 2–5 when agents failed, were blocked, or nothing moved forward
+- 9–12 when agents landed cleanly or a milestone was reached
+
+Pass the storytelling sub-agent:
+
+- `IS_FIRST_BEAT`: true if `N == 1`
+- `IS_FINAL_BEAT`: true if `$AUTOMATED_DISPATCHES == 0`
+- `BEAT_NUMBER`: `N`
+- The 2d6 roll
+
+The storytelling sub-agent returns:
+
+- `BEAT:` followed by the lore prose
+
+After the sub-agent returns, print the beat in the existing dashed lore box format:
 
 ```
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-  +8m00s  "The moonjelly sent three creatures into the dark and
-           waited, humming to itself."
+  +8m00s  $BEAT
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 ```
 
-Append the lore snippet to the session's lore story list.
+Leave dispatch lines, metrics tables, and return-result output unchanged.
 
 ### Step 2d. Print return results
 
 After agents return, print each result with its phase emoji and a `›` transition arrow showing the phase transition:
 
 ```
-  𐃆🐋  #34   3m12s   18k   slice › implement
+𐃆🐋  #34   3m12s   18k   slice › implement
   🐙  #55   4m45s   24k   implement › inspect
   🦀  #53   1m08s    9k   inspect › rework
 ```
@@ -260,15 +278,13 @@ If running in `--hitl` mode and this is the first iteration, present human-requi
 
 After metrics are logged, check whether to recurse or exit.
 
-**If `AUTOMATED_DISPATCHES` > 0**: the pulse dispatched automated work this iteration. After agents return and metrics are logged, recursively invoke `/reef-pulse --afk` on the main session. The recursive call is always `--afk`, even if the first invocation was HITL. The recursive call happens on the main session, never as a sub-agent — this ensures the loop runs sequentially (scan, dispatch, wait, scan again) rather than spawning nested agents. Do NOT release the lock between iterations; the lock persists across the entire recursive chain. Pass the accumulated lore story list and pulse counter to the next iteration.
+**If `$AUTOMATED_DISPATCHES > 0`**: the pulse dispatched automated work this iteration. After agents return and metrics are logged, recursively invoke `/reef-pulse --afk` on the main session. The recursive call is always `--afk`, even if the first invocation was HITL. The recursive call happens on the main session, never as a sub-agent — this ensures the loop runs sequentially (scan, dispatch, wait, scan again) rather than spawning nested agents. Do NOT release the lock between iterations; the lock persists across the entire recursive chain. Pass the pulse counter to the next iteration.
 
-**If `AUTOMATED_DISPATCHES` == 0**: no automated work was dispatched this iteration. The pulse has nothing left to do. Continue to Step 6.
+**If `$AUTOMATED_DISPATCHES == 0`**: no automated work was dispatched this iteration. The pulse has nothing left to do. Continue to Step 6.
 
 ### Step 6. Print SESSION COMPLETE and full story
 
-This step only runs when `AUTOMATED_DISPATCHES` == 0 (the exit path from Step 5).
-
-First, generate a final lore snippet for the empty pulse (the moonjelly finding nothing left to do). Append it to the lore story list.
+This step only runs when `$AUTOMATED_DISPATCHES == 0` (the exit path from Step 5).
 
 Then print the SESSION COMPLETE box with session stats:
 
@@ -277,45 +293,30 @@ Then print the SESSION COMPLETE box with session stats:
 │  SESSION COMPLETE                                            │
 │                                                              │
 │  Duration    17m00s                                          │
-│  Pulses      4                                               │
+│  Pulses      $N                                              │
 │  Agents      7  dispatches across 3 active pulses            │
-│  Landed      #34  #53                                        │
-│  Human       #60  #48                                        │
-│  Idle        #56  #57                                        │
+│  To Land     #34  #53                                        │
+│  Landed      #33  #52                                        │
+│  Blocked     #56  #57                                        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 - **Duration**: total wall-clock time since the session started (from the lock file timestamp)
 - **Pulses**: total number of pulse iterations (including this final empty one)
 - **Agents**: total number of sub-agent dispatches across all active pulses (pulses that dispatched at least one agent)
-- **Landed**: issues that reached `to-land` or `landed` during this session
-- **Human**: issues that need human attention (`to-scope`, `to-land`)
-- **Idle**: issues that are blocked or have no actionable label
+- **To Land**: issues that reached `to-land` during this session
+- **Landed**: issues that reached `landed` during this session
+- **Blocked**: issues that are blocked or have no actionable label
 
-After the SESSION COMPLETE box, print the full collected story as a single block — all lore snippets from the session concatenated into a continuous narrative:
-
-```
-  The moonjelly sent three creatures into the dark and waited,
-  humming to itself. The crab came back sulking — it had dropped
-  a stitch and needed another pass. The octopus just kept working.
-  The barreleye peered through both pieces with its strange glass
-  eyes and — for once — found nothing wrong. The moonjelly found
-  nothing left to chase. It settled onto the reef floor, bells
-  dimming, and listened to the quiet.
-```
-
-**Autopilot hint** (show only when pulse was triggered manually, not from a cron):
-
-Check if a durable cron for `/reef-pulse --afk` already exists by calling `CronList`. If none exists, append to the summary:
+After the SESSION COMPLETE box, read the most recent `chapter-NNN.md` in `.agents/moonjelly-reef/saga/` and print its contents as a single block:
 
 ```
-  💡 Run this on autopilot:
-     CronCreate cron="7 * * * *" prompt="/reef-pulse --afk" durable=true
+  $CHAPTER_CONTENTS
 ```
 
 ### Step 7. Release lock
 
-This step only runs when `AUTOMATED_DISPATCHES` == 0 (the exit path from Step 5). To release the lock, delete the pulse.lock file.
+This step only runs when `$AUTOMATED_DISPATCHES == 0` (the exit path from Step 5). To release the lock, delete the `pulse.lock` file.
 
 Exit.
 

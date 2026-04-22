@@ -150,7 +150,16 @@ Values for `tracker`: `github`, `local-tracker-gitignored`, `local-tracker-commi
 
 `tracker-branch` is set when tracker is `local-tracker-committed` (e.g. `main`). Otherwise `—`.
 
-### 6. Offer autopilot
+### 6. Initialize saga
+
+Create the saga directory and bootstrap the world state:
+
+```sh
+mkdir -p .agents/moonjelly-reef/saga
+cp "$SKILL_DIR/world-template.md" .agents/moonjelly-reef/saga/world.md
+```
+
+### 8. Offer autopilot
 
 > "Want the reef to pulse on its own while you're away? I can set up a recurring cron that runs `/reef-pulse --afk` every hour (or any interval you prefer)."
 
@@ -168,7 +177,7 @@ Let the user pick the interval. Common choices:
 
 If the user declines, skip — they can always set it up later.
 
-### 7. Confirm
+### 9. Confirm
 
 > "You're all set. The reef is alive. 🪼"
 >
