@@ -93,7 +93,7 @@ The single entry point for turning ideas into plans. Determines whether the work
 
 </details>
 
-<p align="right">🪼<br /><sub>Moonjelly bumps the diver's mask and points into the dark. Together they scope what lies ahead — the moonjelly illuminates, the diver makes sense of it.</sub></p>
+<p align="right">🪼<br /><sub>Moonjelly drifts beside the diver like a hand-lantern in blue water. Together they peer into the dimness until the shape of the work comes gently into view.</sub></p>
 
 <details>
 <summary>🤿 / 🌊 <b><code>reef-pulse</code></b> — the orchestrator</summary>
@@ -115,7 +115,7 @@ Design principles:
 
 </details>
 
-<p align="right">🪼<br /><sub>Through Moonjelly's pulse, the reef is orchestrated, creatures are set in motion, and Moonjelly recedes.</sub></p>
+<p align="right">🪼<br /><sub>When Moonjelly pulses, the reef wakes softly. Little lights blink on in hidden corners, and each creature knows which bit of the work to carry.</sub></p>
 
 <details>
 <summary>🤿 <b><code>reef-land</code></b> — review and land the work</summary>
@@ -127,7 +127,7 @@ Finds the open PR for the issue, summarizes the report, and checks for PR commen
 
 </details>
 
-<p align="right">🪼<br /><sub>Moonjelly drifts to the diver one last time, the reef's work cradled in its bell. The diver returns to shore with what the reef has made.</sub></p>
+<p align="right">🪼<br /><sub>At the end of the tide, Moonjelly returns with the reef's work tucked safely beneath its bell. The diver takes it ashore, to relish in what the reef has made.</sub></p>
 
 ## Pulse phase details
 
@@ -170,7 +170,7 @@ Implement an issue using TDD in a git worktree. Create worktree → read context
 
 </details>
 
-<p align="right">🐙<br /><sub>Eight arms working in fierce, silent concert, the octopus reshapes the reef floor — architecting, testing, sealing every chamber with cold intelligence.</sub></p>
+<p align="right">🐙<br /><sub>An octopus in a little workshop arranges shells, pebbles, and ribbons of kelp with patient hands. By dusk, a once-empty corner of the reef has become something useful and alive.</sub></p>
 
 <details>
 <summary>🌊 <b><code>to-inspect</code></b> 🏷️</summary>
@@ -182,7 +182,7 @@ Independently verify an issue's PR. Run the full test suite, check each acceptan
 
 </details>
 
-<p align="right">🧿<br /><sub>A barreleye fish rotates its tubular eyes upward through its transparent skull, scrutinizing every shadow above for anything that doesn't belong.</sub></p>
+<p align="right">🧿<br /><sub>The barreleye hovers like a tiny lantern with watchful eyes, turning this way and that until even the smallest crooked shadow has nowhere left to hide.</sub></p>
 
 <details>
 <summary>🌊 <b><code>to-rework</code></b> 🏷️</summary>
@@ -194,7 +194,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 
 </details>
 
-<p align="right">🦀<br /><sub>A crab molts its old shell — exposed and soft, it reworks itself from the inside out, emerging harder and better-fitted than before.</sub></p>
+<p align="right">🦀<br /><sub>A crab drags home a shell that pinches in all the wrong places, then spends the afternoon nudging, sanding, and trying again. By evening it has made a snugger little house and walks more easily in it.</sub></p>
 
 <details>
 <summary>🌊 <b><code>to-merge</code></b> 🏷️</summary>
@@ -206,7 +206,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 
 </details>
 
-<p align="right">🐢<br /><sub>A sea turtle tucks the last loose piece under its flipper and glides steadily toward shore — unhurried, certain, folding everything into the current behind it.</sub></p>
+<p align="right">🐢<br /><sub>A sea turtle gathers the stragglers beneath her flipper and takes the long safe route home. What was scattered across the reef arrives together at the same quiet shore.</sub></p>
 
 <details>
 <summary>🌊 <b><code>to-seal</code></b> 🏷️</summary>
@@ -218,7 +218,7 @@ Holistic review of the current issue's `pr-branch` — checking the composed who
 
 </details>
 
-<p align="right">🦭<br /><sub>The walrus hauls itself onto the ice floe, surveys the entire colony with slow, deliberate eyes, and counts every last pup — nothing is declared safe until the old bull has seen it all.</sub></p>
+<p align="right">🦭<br /><sub>An elephant seal heaves up beside the finished work and presses his warm weight along every seam. He listens, waits, and listens again. Only when the whole thing holds together does he let it drift on.</sub></p>
 
 ## Phase metrics
 

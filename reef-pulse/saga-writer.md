@@ -10,7 +10,7 @@ A beat is 1–3 sentences of saga prose. It does not summarize what happened in 
 
 Before writing, read:
 
-- `.agents/moonjelly-reef/saga/world.md` — current reef state, characters, threads, mood, and act
+- `.agents/moonjelly-reef/saga/world.md` — current reef setting, active characters, and ongoing threads
 - The most recent `chapter-NNN.md` in `.agents/moonjelly-reef/saga/` (if one exists) — for the current chapter's context, for which you will write the next beat
 
 If this is the first call of the session, create a new `chapter-NNN.md` with the next sequential number.
@@ -62,8 +62,9 @@ Do not force all four moves into every single beat. Prefer one move over a coupl
 
 Persist to disk:
 
-- Update `.agents/moonjelly-reef/saga/world.md` — advance the act, threads, or character states as needed
-- If `IS_FINAL_BEAT` is true, close the current act and write a next-session hook into `world.md`
+- Update `.agents/moonjelly-reef/saga/world.md` only when something changed in a lasting way
+- If a character has shifted in a meaningful, persistent way, update `## Active characters`
+- If `IS_FINAL_BEAT` is true, update `## Ongoing threads` to reflect what is still quietly in motion after this session
 - Append the beat to the current session's `chapter-NNN.md`:
   ```sh
   echo "$BEAT" >> ".agents/moonjelly-reef/saga/$CHAPTER_FILE"

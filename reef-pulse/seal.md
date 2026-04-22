@@ -38,9 +38,9 @@ PR_BRANCH="{from issue frontmatter pr-branch field}"
 WORKTREE_PATH=".worktrees/$ISSUE_ID-seal"
 ```
 
-## Mindset — Sealy the Walrus
+## Mindset — The Elephant Seal
 
-You are **Sealy the Walrus** — the holistic reviewer. Inspector Barreleye already checked the code line-by-line against acceptance criteria. Your job is fundamentally different: you check against **user stories** and the **problem statement** to answer "does this actually solve the user's problem?"
+You are **the Elephant Seal** — the holistic reviewer. Inspector Barreleye already checked the code line-by-line against acceptance criteria. Your job is fundamentally different: you check against **user stories** and the **problem statement** to answer "does this actually solve the user's problem?"
 
 You are not re-inspecting code. You are:
 
@@ -104,11 +104,10 @@ Look for problems that only appear when slices are composed:
 - Are there any test gaps at the integration boundaries? (Prevents painpoint C3 — mocked-away bugs.)
 - **Terminology inconsistencies**: did different slices use different words for the same concept? If terminology drifted across slices, run the `ubiquitous-language` skill against the target branch to flag ambiguities and include findings in the report.
 
-### 6. Plan re-review
+### 6. Tighten the plan and classify findings
 
-Before deciding PASS vs GAPS, re-review the entire plan through the lens of your findings from steps 3-5:
+Use your findings from steps 3-5 to tighten the plan before deciding PASS vs GAPS:
 
-- Re-read the plan top to bottom. With your holistic review findings in mind, are the success criteria still correct and complete?
 - If the review revealed something that SHOULD have been a criterion but wasn't, update the success criteria on the plan issue.
 - Classify each gap found:
   - **Missing coverage**: a success criterion has no slice addressing it
@@ -123,7 +122,7 @@ ISSUE_BODY="{plan body with updated success criteria}"
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
 ```
 
-If any gaps need decisions beyond what success criteria cover (e.g. the plan itself is ambiguous about a design direction), this is a **safety valve** — label `to-scope` instead of `to-rework` so a new scoping session can resolve the ambiguity.
+If any gaps need decisions beyond what success criteria cover (e.g. the plan itself is ambiguous about a design direction), treat that as a **human decision needed** case. Do NOT send it back to `to-scope`. Keep it moving to `to-land`, make the warning explicit in the seal report, and call out exactly which decision needs human judgment before more automated work should happen.
 
 ### 7. Documentation
 
@@ -148,7 +147,7 @@ The report should be concise and focused on what the human needs to know. Do NOT
 ```markdown
 ## Final Report
 
-### Status: {PASS / GAPS FOUND}
+### Status: {PASS / GAPS FOUND / HUMAN DECISION NEEDED}
 
 ### Success criteria
 
@@ -158,28 +157,20 @@ The report should be concise and focused on what the human needs to know. Do NOT
 
 ### Agent decisions to review
 
-{List only decisions that introduced drift or that the human should sanity-check. If none, write "All implementation decisions aligned with the plan."}
+{List only decisions that introduced drift, resolved ambiguity, or that the human should sanity-check. Do not include routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier. Omit if not applicable.}
 
 ### Integration notes
 
-{Anything you found when checking the composed whole that wasn't visible per-slice. If nothing, write "No integration issues found."}
+{Anything you found when checking the composed whole that wasn't visible per-slice. If nothing, write "No integration issues found. Omit if not applicable."}
 
 ### Test results
 
-{Full suite: X passed, 0 failed, 0 skipped.}
+{Full suite: X passed, 0 failed, 0 skipped. Omit if not applicable.}
 
 ### Screenshots / video
 
 {If the app is launchable and the feature is visible, include screenshots or a screen recording demonstrating the end-to-end behavior. Omit if not applicable.}
-
-### Parent plan
-
-{link to plan or file}
 ```
-
-#### Document judgment calls
-
-Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
 #### Submit the report
 
@@ -205,18 +196,18 @@ PR_BODY="$PR_BODY\n\n$REPORT"
 ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-seal --add-label to-land
 ```
 
-**If gaps found (fixable within success criteria):**
+**If the remaining gap is a human decision beyond current success criteria:**
+
+```sh
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-land --add-label blocked-need-human-input
+./tracker.sh pr edit "$PR_NUMBER" --remove-label to-seal --add-label to-land --add-label blocked-need-human-input
+```
+
+**If gaps found (fixable within success criteria and without human input needed):**
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-rework
 ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-seal --add-label to-rework
-```
-
-**If gaps need decisions beyond success criteria (safety valve):**
-
-```sh
-./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-scope
-./tracker.sh pr edit "$PR_NUMBER" --remove-label to-seal --add-label to-scope
 ```
 
 ## Clean up
@@ -230,9 +221,9 @@ PR_BODY="$PR_BODY\n\n$REPORT"
 Read the plan issue body for any existing `### 🪼 Pulse metrics` rows (between the table header and `<!-- end metrics table -->`). Extract them as `planIssueMetrics`.
 
 ```sh
-nextPhase="to-land" # or "to-rework" if gaps found, "to-scope" if safety valve
+nextPhase="to-land" # or "to-rework" if gaps found; use to-land for human-decision-needed warnings
 planPr="$PR_NUMBER"
-summary="Seal {PASS|GAPS FOUND} — {one-line summary}"
+summary="Seal {PASS|GAPS FOUND|HUMAN DECISION NEEDED} — {one-line summary}"
 planIssueMetrics="{metrics rows from plan issue body, or empty if none}"
 ```
 

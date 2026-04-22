@@ -210,6 +210,7 @@ General rules:
 ### [slice-one-issue.md](./reef-pulse/slice-one-issue.md)
 
 - set-variables
+
   ```sh
   ISSUE_BODY="{plan body with scoped pr-branch preserved and acceptance criteria appended}"
   ```
@@ -359,9 +360,15 @@ General rules:
   ./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker pass case
-  - contains: `./tracker.sh issue edit "$ISSUE_ID" --remove-label to-inspect --add-label to-merge` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-merge`
+  ```sh
+  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-inspect --add-label to-merge
+  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-merge
+  ```
 - update-tracker fail case
-  - contains: `./tracker.sh issue edit "$ISSUE_ID" --remove-label to-inspect --add-label to-rework` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-rework`
+  ```sh
+  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-inspect --add-label to-rework
+  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-rework
+  ```
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
@@ -602,16 +609,28 @@ General rules:
   ./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker pass case
-  - contains: `./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-land` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-seal --add-label to-land`
+  ```sh
+  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-land
+  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-seal --add-label to-land
+  ```
+- update-tracker human-decision-needed case
+  ```sh
+  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-land --add-label blocked-need-human-input
+  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-seal --add-label to-land --add-label blocked-need-human-input
+  ```
 - update-tracker fail case
-  - contains: `./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-rework` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-seal --add-label to-rework`
+  ```sh
+  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-rework
+  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-seal --add-label to-rework
+  ```
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
   ```
 - handoff
   ```sh
-  nextPhase="to-land" # or "to-rework" if gaps found, "to-scope" if safety valve
+  nextPhase="to-land" # or "to-rework" if gaps found; use to-land for human-decision-needed warnings
   planPr="$PR_NUMBER"
+  summary="Seal {PASS|GAPS FOUND|HUMAN DECISION NEEDED} — {one-line summary}"
   planIssueMetrics="{metrics rows from plan issue body, or empty if none}"
   ```

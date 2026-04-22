@@ -152,7 +152,7 @@ Values for `tracker`: `github`, `local-tracker-gitignored`, `local-tracker-commi
 
 ### 6. Initialize saga
 
-Create the saga directory and bootstrap the world state:
+Create the saga directory and bootstrap `world.md`:
 
 ```sh
 mkdir -p .agents/moonjelly-reef/saga
