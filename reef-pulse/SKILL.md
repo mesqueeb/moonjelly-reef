@@ -69,6 +69,7 @@ This is also where the saga bootstrap behavior lives. Before printing the first 
 
 - Create `.agents/moonjelly-reef/saga/` when it does not already exist.
 - Initialize `world.md` from `$SKILL_DIR/world-template.md` when it does not already exist.
+- Read the current `world.md` contents into a `WORLD_STATE` variable before the session continues. Carry that state through the session by replacing `WORLD_STATE` each time a later lore beat returns an updated world.
 - Treat `world.md` as the persistent world state for later storytelling steps. It must already contain the persistent reef setting, active characters, ongoing threads, overall mood, current act, and a one-line hook for the next beat.
 - Treat `$SKILL_DIR/saga-writer.md` as the storytelling contract that later storytelling steps must use when they generate new beats.
 
@@ -149,7 +150,31 @@ AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
 
 ### Step 2c. Print lore snippet
 
-After all dispatched agents return, generate a lore snippet. This is a 1-2 sentence story fragment in playful Ghibli ocean vibes. Each lore snippet must read all prior snippets from the session and continues the narrative — the lore forms a continuous story, not isolated fragments. The story should be influenced by what actually happened in the pulse results (e.g., reworks are setbacks, successful inspects are triumphs, long waits are boring). Print it with the elapsed time since dispatch:
+After all dispatched agents return, generate a lore snippet by spawning a storytelling sub-agent. Do not generate lore inline inside the pulse. Use the configured creative model from `$SKILL_DIR/saga-writer.md` (`sonnet` unless the prompt is intentionally updated later). This is still a 1-2 sentence story fragment in playful Ghibli ocean vibes, but the beat now comes from the saga writer contract rather than ad-hoc pulse prose. The lore still reads all prior snippets from the session and continues the narrative.
+
+Pass the storytelling sub-agent:
+
+- The current `WORLD_STATE` loaded at session start and updated after each prior beat
+- The prior lore snippets from the current session, in order
+- Pipeline state for this pulse: dispatched phases, returned transitions, human items, idle items, and any labels still waiting after the pulse
+- The elapsed time since dispatch
+
+Tell the sub-agent: Treat pipeline state as loose DnD-style inspiration and not narrate events 1:1.
+
+The storytelling sub-agent must return exactly:
+
+- `beat:` followed by the lore prose for the dashed lore box
+- `world:` followed by the full updated `world.md` contents with the same section structure preserved
+
+After the sub-agent returns:
+
+- Print `beat:` in the existing dashed lore box format shown below
+- Append the beat text to the session's lore story list
+- Replace `WORLD_STATE` with the returned `world:` content
+- Persist the returned `world:` content back to `$WORLD_FILE` immediately so later pulses continue from the evolved state
+- Leave dispatch lines, metrics tables, and return-result output unchanged
+
+Print the returned beat with the elapsed time since dispatch:
 
 ```
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -158,7 +183,7 @@ After all dispatched agents return, generate a lore snippet. This is a 1-2 sente
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
 ```
 
-Append the lore snippet to the session's lore story list.
+Append the returned beat to the session's lore story list.
 
 ### Step 2d. Print return results
 
