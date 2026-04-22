@@ -44,7 +44,7 @@ stateDiagram-v2
 
         [*] --> to_scope
         to_scope --> to_slice : /reef-scope<br />scope the work, define success criteria
-        to_slice --> slice_lifecycle : slice.md<br />🔷　multi-slice:<br />create target branch, sub-issues, coverage matrix
+        to_slice --> slice_lifecycle : slice.md<br />🔷　multi-slice:<br />create pr-branch, sub-issues, coverage matrix
         to_slice --> slice_lifecycle : slice.md<br />🔶　single-slice:<br />plan becomes the slice, labels to-implement
         slice_lifecycle --> to_ratify
         slice_lifecycle --> to_land
@@ -61,8 +61,8 @@ stateDiagram-v2
         state "🌊　to-inspect" as to_inspect
         state "🌊　to-rework" as to_rework
         state "🌊　to-merge" as to_merge
-        state "merge.md<br />🔷　multi-slice:<br />merge PR, when all done → to-ratify" as merge_multi
-        state "merge.md<br />🔶　single-slice:<br />PR stays open → to-land" as merge_single
+        state "merge.md<br />🔷　has parent-plan:<br />merge PR, when all done → to-ratify" as merge_multi
+        state "merge.md<br />🔶　no parent-plan:<br />PR stays open → to-land" as merge_single
         [*] --> to_implement : no deps
         [*] --> to_await : has deps
         to_await --> to_implement : await-waves.md<br />check if deps are done, re-review plan
@@ -79,7 +79,7 @@ stateDiagram-v2
     class merge_multi,merge_single arrow
 ```
 
-> While slices are being worked, the plan ticket sits in `in-progress`. It is promoted to `to-ratify` by `merge.md` once all slices are done.
+> While sub-issues are being worked, the plan issue sits in `in-progress`. It is promoted to `to-ratify` by `merge.md` once all sub-issues are landed.
 
 ## Skills
 
@@ -136,8 +136,8 @@ These are the 🌊 automated phases dispatched by `/reef-pulse`. Each phase read
 
 Automatically breaks the plan into vertical slices, or determines a single slice is enough to tackle the plan.
 
-- 🔶　single-slice: plan becomes the slice, labels `to-implement`, no target branch.
-- 🔷　multi-slice: create target branch, sub-issues, coverage matrix, label slices `to-implement` or `to-await-waves`.
+- 🔶　single-slice: plan becomes the slice, labels `to-implement`.
+- 🔷　multi-slice: create plan `pr-branch`, sub-issues with their own `pr-branch`, coverage matrix, label sub-issues `to-implement` or `to-await-waves`.
 
 | source file | [`reef-pulse/slice.md`](reef-pulse/slice.md) |
 | :---------- | :------------------------------------------- |
@@ -149,7 +149,7 @@ Automatically breaks the plan into vertical slices, or determines a single slice
 <details>
 <summary>🌊 <b><code>to-await-waves</code></b> 🏷️</summary>
 
-Check if a blocked slice's dependencies are all done. If yes, re-review the plan against current code and label `to-implement`. If not, exit — next pulse will check again.
+Check if a blocked sub-issue's dependencies are all done. If yes, re-review the plan against current code and label `to-implement`. If not, exit — next pulse will check again.
 
 | source file | [`reef-pulse/await-waves.md`](reef-pulse/await-waves.md) |
 | :---------- | :------------------------------------------------------- |
@@ -161,7 +161,7 @@ Check if a blocked slice's dependencies are all done. If yes, re-review the plan
 <details>
 <summary>🌊 <b><code>to-implement</code></b> 🏷️</summary>
 
-Implement a slice using TDD in a git worktree. Create worktree → read context → red-green-refactor for each acceptance criterion → write report → open PR → label `to-inspect`.
+Implement a sub-issue using TDD in a git worktree. Create worktree → read context → red-green-refactor for each acceptance criterion → write report → open PR → label `to-inspect`.
 
 | source file | [`reef-pulse/implement.md`](reef-pulse/implement.md) |
 | :---------- | :--------------------------------------------------- |
@@ -173,7 +173,7 @@ Implement a slice using TDD in a git worktree. Create worktree → read context 
 <details>
 <summary>🌊 <b><code>to-inspect</code></b> 🏷️</summary>
 
-Independently verify a slice PR. Run the full test suite, check each acceptance criterion against actual code, do trivial cleanups. Label `to-merge` if approved, `to-rework` if gaps found.
+Independently verify a sub-issue's PR. Run the full test suite, check each acceptance criterion against actual code, do trivial cleanups. Label `to-merge` if approved, `to-rework` if gaps found.
 
 | source file | [`reef-pulse/inspect.md`](reef-pulse/inspect.md) |
 | :---------- | :----------------------------------------------- |
@@ -197,7 +197,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 <details>
 <summary>🌊 <b><code>to-merge</code></b> 🏷️</summary>
 
-🔶　single-slice: leave the PR open for the diver, label `to-land`. 🔷　multi-slice: merge the PR into the target branch, verify suite, close the slice, check for newly unblocked siblings, label plan `to-ratify` when all slices are done.
+🔶　no parent-plan: leave the PR open for the diver, label `to-land`. 🔷　has parent-plan: merge the PR into the plan's `pr-branch`, verify suite, close the sub-issue, label plan `to-ratify` when all sub-issues are landed.
 
 | source file | [`reef-pulse/merge.md`](reef-pulse/merge.md) |
 | :---------- | :------------------------------------------- |
@@ -209,7 +209,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 <details>
 <summary>🌊 <b><code>to-ratify</code></b> 🏷️</summary>
 
-🔷　multi-slice only. Holistic review of the entire target branch — checking the composed whole, not the parts. Verify every success criterion end-to-end, run the full suite, produce the aggregate report, label `to-land` or `to-rework` on gaps.
+🔷　multi-slice only. Holistic review of the plan's `pr-branch` — checking the composed whole, not the parts. Verify every success criterion end-to-end, run the full suite, produce the aggregate report, label `to-land` or `to-rework` on gaps.
 
 | source file | [`reef-pulse/ratify.md`](reef-pulse/ratify.md) |
 | :---------- | :--------------------------------------------- |
