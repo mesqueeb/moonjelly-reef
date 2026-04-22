@@ -61,9 +61,10 @@ Three types of tickets flow through the slice lifecycle phases (implement → in
 
 ## Tags
 
-| Term    | Definition                                                             | Aliases to avoid                                                   |
-| ------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| **tag** | A label on an issue that represents its current state in the lifecycle | status, state, label (though "label" is the GitHub implementation) |
+| Term       | Definition                                                                                                                                                   | Aliases to avoid                                                   |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| **tag**    | A label on an issue that represents its current state in the lifecycle                                                                                       | status, state, label (though "label" is the GitHub implementation) |
+| **landed** | The terminal tag — tracker-agnostic signal that a piece of work has reached its target branch. Once applied, the issue is considered complete and is closed. | done, completed, merged, finished                                  |
 
 ## Relationships
 

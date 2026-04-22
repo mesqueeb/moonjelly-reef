@@ -400,10 +400,10 @@ test_close_plan() {
   t issue create --title "my-feature" --label to-land >/dev/null 2>&1
   t issue close 1 >/dev/null 2>&1
 
-  if [ -f "$TRACKER_PATH/1 my-feature/[done] plan.md" ]; then
-    pass "close plan: renames tag to done"
+  if [ -f "$TRACKER_PATH/1 my-feature/[landed] plan.md" ]; then
+    pass "close plan: renames tag to landed"
   else
-    fail "close plan: renames tag to done" "file not found"
+    fail "close plan: renames tag to landed" "file not found"
   fi
 
   teardown
@@ -417,10 +417,10 @@ test_close_slice() {
   t issue create --title "auth" --label to-merge --parent 1 >/dev/null 2>&1
   t issue close 1-1 >/dev/null 2>&1
 
-  if [ -f "$TRACKER_PATH/1 my-feature/slices/1-1 auth/[done] slice.md" ]; then
-    pass "close slice: renames tag to done"
+  if [ -f "$TRACKER_PATH/1 my-feature/slices/1-1 auth/[landed] slice.md" ]; then
+    pass "close slice: renames tag to landed"
   else
-    fail "close slice: renames tag to done" "file not found"
+    fail "close slice: renames tag to landed" "file not found"
   fi
 
   teardown

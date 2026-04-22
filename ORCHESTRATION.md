@@ -132,6 +132,16 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 - phase-specific
 - set-variables
   ```sh
+  BASE_BRANCH="{from branch discussion}"
+  ```
+- conflict-anticipation — scan in-flight issues on same base-branch and surface overlaps
+  ```sh
+  for LABEL in to-slice in-progress to-implement to-inspect to-rework to-merge to-ratify to-land to-await-waves; do
+    ./tracker.sh issue list --label "$LABEL" --json number,title,body,labels
+  done
+  ```
+- set-variables
+  ```sh
   PLAN_ID="$ISSUE_ID"
   BASE_BRANCH="{from base branch discussion}"
   TARGET_BRANCH="{from branch discussion}"
@@ -491,9 +501,9 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  DEPENDENCY_ID="{from slice blocked-by list}"
+  DEPENDENCY_ID="{from frontmatter blocked-by field}"
   ```
-- dep-check
+- dep-check — checks each dependency for the `landed` label; if all carry `landed`, slice is promoted
   ```sh
   ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
   ```
@@ -609,6 +619,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - update-tracker
   ```sh
+  ./tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label landed
   ./tracker.sh issue close "$SLICE_ID"
   ```
 - update-tracker — if all-slices-done
@@ -617,7 +628,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - handoff
   ```sh
-  nextPhase="to-ratify" # or "in-progress" if not all slices done
+  nextPhase="to-ratify" # or "in-progress" if not all slices tagged 'landed'
   planPr="—" # multi-slice: no plan PR yet
   summary="Slice {name} merged — {N} of {total} slices complete"
   ```
