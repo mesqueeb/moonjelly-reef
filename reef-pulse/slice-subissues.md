@@ -120,7 +120,7 @@ Label each slice: `to-implement` if no blockers, `to-await-waves` if blocked.
 
 ## 5. Update the plan
 
-Set `pr-branch: $PR_BRANCH` in the current issue frontmatter (already set by reef-scope, but update if changed). Append the coverage matrix and a listing of all created sub-issues with their labels to the plan body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-ratify` once all sub-issues are done.
+Set `pr-branch: $PR_BRANCH` in the current issue frontmatter (already set by reef-scope, but update if changed). Append the coverage matrix and a listing of all created sub-issues with their labels to the plan body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-seal` once all sub-issues are done.
 
 ```sh
 ISSUE_BODY="{plan body with pr-branch in frontmatter and coverage matrix appended}"

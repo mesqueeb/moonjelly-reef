@@ -104,7 +104,7 @@ For each skill not found, tell the user it's optional and reef has a fallback:
 > npx skills@latest add mattpocock/skills/tdd
 > ```
 >
-> **ubiquitous-language** — used by scope and ratify to harden domain terminology. Without it, those phases skip the terminology steps.
+> **ubiquitous-language** — used by scope and seal to harden domain terminology. Without it, those phases skip the terminology steps.
 >
 > ```sh
 > npx skills@latest add mattpocock/skills/ubiquitous-language

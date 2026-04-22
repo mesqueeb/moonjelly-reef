@@ -68,14 +68,14 @@ The user confirms or adjusts. Both values are required before continuing.
 
 ## 3b. Conflict anticipation
 
-After the branch discussion, scan for in-flight work that might overlap with this plan. List open issues that share the same `base-branch` and are past `to-scope` (i.e., already in-flight: `to-slice`, `in-progress`, `to-implement`, `to-inspect`, `to-rework`, `to-merge`, `to-ratify`, `to-land`, `to-await-waves`).
+After the branch discussion, scan for in-flight work that might overlap with this plan. List open issues that share the same `base-branch` and are past `to-scope` (i.e., already in-flight: `to-slice`, `in-progress`, `to-implement`, `to-inspect`, `to-rework`, `to-merge`, `to-seal`, `to-land`, `to-await-waves`).
 
 ```sh
 BASE_BRANCH="{from branch discussion}"
 ```
 
 ```sh
-for LABEL in to-slice in-progress to-implement to-inspect to-rework to-merge to-ratify to-land to-await-waves; do
+for LABEL in to-slice in-progress to-implement to-inspect to-rework to-merge to-seal to-land to-await-waves; do
   ./tracker.sh issue list --label "$LABEL" --json number,title,body,labels
 done
 ```

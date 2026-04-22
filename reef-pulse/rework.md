@@ -58,11 +58,11 @@ Stop — do not proceed.
 
 Read every review comment on the PR. Read the full conversation — don't just skim.
 
-Also read the gap report from the PR body (`<details><summary>` blocks written by ratify or reef-land) if present.
+Also read the gap report from the PR body (`<details><summary>` blocks written by seal or reef-land) if present.
 
 Also re-read:
 - The issue's acceptance criteria or plan's success criteria
-- The gap classification from the ratify report if present (missing coverage, incomplete implementation, integration gap, planning gap)
+- The gap classification from the seal report if present (missing coverage, incomplete implementation, integration gap, planning gap)
 
 ### 3. Fix
 

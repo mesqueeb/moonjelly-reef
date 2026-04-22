@@ -94,7 +94,7 @@ General rules:
   ```
 - conflict-anticipation — scan in-flight issues on same base-branch and surface overlaps
   ```sh
-  for LABEL in to-slice in-progress to-implement to-inspect to-rework to-merge to-ratify to-land to-await-waves; do
+  for LABEL in to-slice in-progress to-implement to-inspect to-rework to-merge to-seal to-land to-await-waves; do
     ./tracker.sh issue list --label "$LABEL" --json number,title,body,labels
   done
   ```
@@ -135,7 +135,7 @@ General rules:
   PLAN_ID="{from PR body or already known}"
   PR_NUMBER="{from plan body or already known}"
   BASE_BRANCH="{from plan body}"
-  PR_BODY="{the PR body content — this is the ratify report}"
+  PR_BODY="{the PR body content — this is the seal report}"
   ```
 - phase-specific
 - set-variables — if change-requests
@@ -210,10 +210,9 @@ General rules:
 ### [slice-one-issue.md](./reef-pulse/slice-one-issue.md)
 
 - set-variables
-
-```sh
-ISSUE_BODY="{plan body with scoped pr-branch preserved and acceptance criteria appended}"
-```
+  ```sh
+  ISSUE_BODY="{plan body with scoped pr-branch preserved and acceptance criteria appended}"
+  ```
 
 - update-tracker
   ```sh
@@ -517,12 +516,12 @@ ISSUE_BODY="{plan body with scoped pr-branch preserved and acceptance criteria a
 
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label to-ratify
-  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-ratify
+  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label to-seal
+  ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-seal
   ```
 - handoff
   ```sh
-  nextPhase="to-ratify"
+  nextPhase="to-seal"
   planPr="$PR_NUMBER" # inherited from router context
   ```
 
@@ -557,15 +556,15 @@ ISSUE_BODY="{plan body with scoped pr-branch preserved and acceptance criteria a
   ```
 - update-tracker — if all-siblings-landed
   ```sh
-  ./tracker.sh issue edit "$PARENT_ID" --remove-label in-progress --add-label to-ratify
+  ./tracker.sh issue edit "$PARENT_ID" --remove-label in-progress --add-label to-seal
   ```
 - handoff
   ```sh
-  nextPhase="to-ratify" # or "in-progress" if not all issues tagged 'landed'
+  nextPhase="to-seal" # or "in-progress" if not all issues tagged 'landed'
   planPr="—" # child-issue merge does not open the parent issue PR
   ```
 
-### [ratify.md](./reef-pulse/ratify.md)
+### [seal.md](./reef-pulse/seal.md)
 
 - set-variables
   ```sh
@@ -580,7 +579,7 @@ ISSUE_BODY="{plan body with scoped pr-branch preserved and acceptance criteria a
   ISSUE_TITLE="{from issue title}"
   BASE_BRANCH="{from issue frontmatter base-branch field}"
   PR_BRANCH="{from issue frontmatter pr-branch field}"
-  WORKTREE_PATH=".worktrees/$ISSUE_ID-ratify"
+  WORKTREE_PATH=".worktrees/$ISSUE_ID-seal"
   ```
 - enter-worktree
   ```sh
@@ -589,13 +588,13 @@ ISSUE_BODY="{plan body with scoped pr-branch preserved and acceptance criteria a
 - phase-specific
 - commit-code — if documentation-added
   ```sh
-  ./commit.sh --branch "$PR_BRANCH" -m "ratify: add documentation"
+  ./commit.sh --branch "$PR_BRANCH" -m "seal: add documentation"
   ```
 - submit-report
   ```sh
-  REPORT="{ratify-report}" # <details><summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+  REPORT="{seal-report}" # <details><summary><h3>🦭 Seal report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
   # if no PR exists:
-  ./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-ratify
+  ./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-seal
   # if PR exists, append:
   PR_NUMBER="{from pr create output or existing PR}"
   PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
@@ -603,9 +602,9 @@ ISSUE_BODY="{plan body with scoped pr-branch preserved and acceptance criteria a
   ./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
   ```
 - update-tracker pass case
-  - contains: `./tracker.sh issue edit "$ISSUE_ID" --remove-label to-ratify --add-label to-land` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-land`
+  - contains: `./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-land` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-seal --add-label to-land`
 - update-tracker fail case
-  - contains: `./tracker.sh issue edit "$ISSUE_ID" --remove-label to-ratify --add-label to-rework` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-rework`
+  - contains: `./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-rework` + `./tracker.sh pr edit "$PR_NUMBER" --remove-label to-seal --add-label to-rework`
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"

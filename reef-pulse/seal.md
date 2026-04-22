@@ -1,4 +1,4 @@
-# ratify
+# seal
 
 > **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
 >
@@ -35,12 +35,12 @@ Set the post-fetch variables (after reading the plan body):
 ISSUE_TITLE="{from issue title}"
 BASE_BRANCH="{from issue frontmatter base-branch field}"
 PR_BRANCH="{from issue frontmatter pr-branch field}"
-WORKTREE_PATH=".worktrees/$ISSUE_ID-ratify"
+WORKTREE_PATH=".worktrees/$ISSUE_ID-seal"
 ```
 
-## Mindset — Ratty the Walrus
+## Mindset — Sealy the Walrus
 
-You are **Ratty the Walrus** — the holistic reviewer. Inspector Barreleye already checked the code line-by-line against acceptance criteria. Your job is fundamentally different: you check against **user stories** and the **problem statement** to answer "does this actually solve the user's problem?"
+You are **Sealy the Walrus** — the holistic reviewer. Inspector Barreleye already checked the code line-by-line against acceptance criteria. Your job is fundamentally different: you check against **user stories** and the **problem statement** to answer "does this actually solve the user's problem?"
 
 You are not re-inspecting code. You are:
 
@@ -132,7 +132,7 @@ When you find non-obvious behavior worth documenting during your holistic review
 1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and push directly to the target branch:
 
 ```sh
-./commit.sh --branch "$PR_BRANCH" -m "ratify: add documentation"
+./commit.sh --branch "$PR_BRANCH" -m "seal: add documentation"
 ```
 
 2. **Outside-of-code docs if warranted.** If the behavior is significant enough to document beyond a code comment, check the repo's `AGENTS.md`/`CLAUDE.md` for a documentation locations section. If it exists, follow it. If it doesn't, create a brief entry.
@@ -186,9 +186,9 @@ Document judgment calls made during this phase on the PR. Only document decision
 Format the report as a collapsible block with local timestamp (`yyyy/MM/dd HH:mm`):
 
 ```sh
-REPORT="{ratify-report}" # <details><summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+REPORT="{seal-report}" # <details><summary><h3>🦭 Seal report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
 # if no PR exists:
-./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-ratify
+./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-seal
 # if PR exists, append:
 PR_NUMBER="{from pr create output or existing PR}"
 PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
@@ -201,22 +201,22 @@ PR_BODY="$PR_BODY\n\n$REPORT"
 **If all criteria met (PASS):**
 
 ```sh
-./tracker.sh issue edit "$ISSUE_ID" --remove-label to-ratify --add-label to-land
-./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-land
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-land
+./tracker.sh pr edit "$PR_NUMBER" --remove-label to-seal --add-label to-land
 ```
 
 **If gaps found (fixable within success criteria):**
 
 ```sh
-./tracker.sh issue edit "$ISSUE_ID" --remove-label to-ratify --add-label to-rework
-./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-rework
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-rework
+./tracker.sh pr edit "$PR_NUMBER" --remove-label to-seal --add-label to-rework
 ```
 
 **If gaps need decisions beyond success criteria (safety valve):**
 
 ```sh
-./tracker.sh issue edit "$ISSUE_ID" --remove-label to-ratify --add-label to-scope
-./tracker.sh pr edit "$PR_NUMBER" --remove-label to-ratify --add-label to-scope
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-scope
+./tracker.sh pr edit "$PR_NUMBER" --remove-label to-seal --add-label to-scope
 ```
 
 ## Clean up
@@ -232,7 +232,7 @@ Read the plan issue body for any existing `### 🪼 Pulse metrics` rows (between
 ```sh
 nextPhase="to-land" # or "to-rework" if gaps found, "to-scope" if safety valve
 planPr="$PR_NUMBER"
-summary="Ratify {PASS|GAPS FOUND} — {one-line summary}"
+summary="Seal {PASS|GAPS FOUND} — {one-line summary}"
 planIssueMetrics="{metrics rows from plan issue body, or empty if none}"
 ```
 

@@ -44,7 +44,7 @@
 | **inspect**          | Independently verify a slice PR against acceptance criteria                                                                | review, QA, check                          |
 | **rework**           | Fix issues flagged by the inspector                                                                                        | fix, address feedback                      |
 | **merge**            | Merge an approved sub-issue PR into its parent issue's `pr-branch`, or hand off an issue with no parent issue to the diver | land (that's a different phase), integrate |
-| **ratify**           | Holistic review of an issue whose work was composed through sub-issues on its `pr-branch`                                  | final review, sign-off                     |
+| **seal**             | Holistic review of an issue whose work was composed through sub-issues on its `pr-branch`                                  | final review, sign-off                     |
 | **land**             | The diver reviews the finished work and merges to the base branch                                                          | finalise, approve, ship                    |
 
 ## Labels
@@ -115,7 +115,7 @@
 >
 > **Dev:** "When does the diver see it?"
 >
-> **Domain expert:** "At **land**. If the work stayed on one issue, that PR is still open and the diver merges it. If the issue created sub-issues, **ratify** already composed everything on the parent issue's `pr-branch` and opened a PR to the **base branch** — the diver merges that."
+> **Domain expert:** "At **land**. If the work stayed on one issue, that PR is still open and the diver merges it. If the issue created sub-issues, **seal** already composed everything on the parent issue's `pr-branch` and opened a PR to the **base branch** — the diver merges that."
 
 ## Flagged ambiguities (saga)
 

@@ -20,7 +20,7 @@ On first run, reef-pulse will prompt you to mention which issue tracker you want
 
 > _Through Moonjelly's pulse, the reef is orchestrated, creatures are set in motion, and Moonjelly recedes._
 
-The moonjelly is the orchestrator. A skill you execute which will scan all the issues and their labels in your project and dispatches sub-agents to do work dependent on the label. It holds no state — labels are the state. Within one session, it may run multiple pulse iterations. Every time an issues gets a new tag, it will automatically be picked up again and handled until until no automated work remains.
+The moonjelly is the orchestrator. Label-driven orchestrator that routes work to different sub-agents based on labels and keeps looping until all automated work is done. It holds no state — labels are the state.
 
 ## State machine
 
@@ -39,17 +39,17 @@ stateDiagram-v2
 
         state "🤿　to-scope" as to_scope
         state "🌊　to-slice" as to_slice
-        state "🌊　to-ratify" as to_ratify
+        state "🌊　to-seal" as to_seal
         state "🤿　to-land" as to_land
 
         [*] --> to_scope
         to_scope --> to_slice : reef-scope skill<br />scope the work, define success criteria
         to_slice --> slice_lifecycle : slice.md<br />🔷　creates sub-issues:<br />keep current pr-branch, create sub-issues, coverage matrix
        to_slice --> slice_lifecycle : slice.md<br />🔶　no sub-issues needed:<br />labels the current issue to-implement
-        slice_lifecycle --> to_ratify
+        slice_lifecycle --> to_seal
         slice_lifecycle --> to_land
-        to_ratify --> to_land : ratify.md<br />holistic review on current issue pr-branch
-        to_ratify --> slice_lifecycle : ratify.md<br />gaps found, add to-rework
+        to_seal --> to_land : seal.md<br />holistic review on current issue pr-branch
+        to_seal --> slice_lifecycle : seal.md<br />gaps found, add to-rework
         to_land --> [*] : reef-land skill<br />human approves, merges into main
         to_land --> slice_lifecycle : reef-land skill<br />human requests changes<br />add to-rework
     }
@@ -61,8 +61,8 @@ stateDiagram-v2
         state "🌊　to-inspect" as to_inspect
         state "🌊　to-rework" as to_rework
         state "🌊　to-merge" as to_merge
-        state "merge.md<br />🔷　has parent issue:<br />merge PR, when all done → to-ratify" as merge_multi
-        state "merge.md<br />🔶　no parent issue:<br />PR stays open → to-ratify" as merge_single
+        state "merge.md<br />🔷　has parent issue:<br />merge PR, when all done → to-seal" as merge_multi
+        state "merge.md<br />🔶　no parent issue:<br />PR stays open → to-seal" as merge_single
         [*] --> to_implement : no deps
         [*] --> to_await : has deps
         to_await --> to_implement : await-waves.md<br />check if deps are done, re-review plan
@@ -75,11 +75,11 @@ stateDiagram-v2
     }
 
     class to_scope,to_land human
-    class to_slice,to_ratify,plan_rework,to_await,to_implement,to_inspect,to_rework,to_merge agent
+    class to_slice,to_seal,plan_rework,to_await,to_implement,to_inspect,to_rework,to_merge agent
     class merge_multi,merge_single arrow
 ```
 
-> While sub-issues are being worked, the parent issue sits in `in-progress`. It is promoted to `to-ratify` by `merge.md` once all sub-issues are landed.
+> While sub-issues are being worked, the parent issue sits in `in-progress`. It is promoted to `to-seal` by `merge.md` once all sub-issues are landed.
 
 ## Skills
 
@@ -98,7 +98,7 @@ The single entry point for turning ideas into plans. Determines whether the work
 <details>
 <summary>🤿 / 🌊 <b><code>reef-pulse</code></b> — the orchestrator</summary>
 
-Runs pulse iterations inside one short-lived session: scan labels, dispatch the appropriate phase for each issue as a sub-agent, recurse while automated work remains, then exit. Holds no state — labels are the state. Run it manually or from cron; the skill handles the same pulse flow either way.
+Runs pulse iterations inside one short-lived session: scan labels, route work to the appropriate sub-agent, recurse while automated work remains, then exit. Holds no state — labels are the state. Run it manually or from cron; the skill handles the same pulse flow either way.
 
 If you've queued up enough issues with the `reef-scope` skill, running the `reef-pulse` skill will make the reef start the work, recursively pulsing through all automated phases until the work is done.
 
@@ -199,7 +199,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 <details>
 <summary>🌊 <b><code>to-merge</code></b> 🏷️</summary>
 
-🔶　no parent issue: leave the PR open, verify suite, and label the issue `to-ratify`. 🔷　has parent issue: merge the PR into the parent issue's `pr-branch`, verify suite, close the sub-issue, and label the parent issue `to-ratify` when all sub-issues are landed.
+🔶　no parent issue: leave the PR open, verify suite, and label the issue `to-seal`. 🔷　has parent issue: merge the PR into the parent issue's `pr-branch`, verify suite, close the sub-issue, and label the parent issue `to-seal` when all sub-issues are landed.
 
 | source file | [`reef-pulse/merge.md`](reef-pulse/merge.md) |
 | :---------- | :------------------------------------------- |
@@ -209,12 +209,12 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 <p align="right">🐢<br /><sub>A sea turtle tucks the last loose piece under its flipper and glides steadily toward shore — unhurried, certain, folding everything into the current behind it.</sub></p>
 
 <details>
-<summary>🌊 <b><code>to-ratify</code></b> 🏷️</summary>
+<summary>🌊 <b><code>to-seal</code></b> 🏷️</summary>
 
 Holistic review of the current issue's `pr-branch` — checking the composed whole, not the parts. Verify every success criterion end-to-end, run the full suite, produce the aggregate report, label `to-land` or `to-rework` on gaps.
 
-| source file | [`reef-pulse/ratify.md`](reef-pulse/ratify.md) |
-| :---------- | :--------------------------------------------- |
+| source file | [`reef-pulse/seal.md`](reef-pulse/seal.md) |
+| :---------- | :----------------------------------------- |
 
 </details>
 

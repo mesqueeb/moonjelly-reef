@@ -65,7 +65,7 @@ test_enter_detached_head() {
   setup_repos
   cd "$REPO"
 
-  wt_path="$TEST_ROOT/worktree-ratify"
+  wt_path="$TEST_ROOT/worktree-seal"
   if enter --fork-from main --pull-latest main --path "$wt_path" >/dev/null 2>&1; then
     if [ -d "$wt_path" ]; then
       head_status="$(cd "$wt_path" && git rev-parse --abbrev-ref HEAD)"
@@ -110,7 +110,7 @@ test_enter_creates_nested_parent_dirs() {
   setup_repos
   cd "$REPO"
 
-  wt_path="$REPO/.worktrees/nested/worktree-ratify"
+  wt_path="$REPO/.worktrees/nested/worktree-seal"
   output="$(enter --fork-from main --pull-latest main --path "$wt_path" 2>/dev/null)"
   if [ $? -eq 0 ]; then
     path="$(echo "$output" | head -1)"

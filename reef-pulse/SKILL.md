@@ -82,7 +82,7 @@ Read the config to determine the tracker type, then scan for all tagged issues.
 ```sh
 # Scan all reef-tagged issues in a single query
 ./tracker.sh issue list --json number,title,labels --limit 100 \
-  --search 'label:to-scope OR label:to-slice OR label:to-await-waves OR label:to-implement OR label:to-inspect OR label:to-rework OR label:to-merge OR label:to-ratify OR label:to-land'
+  --search 'label:to-scope OR label:to-slice OR label:to-await-waves OR label:to-implement OR label:to-inspect OR label:to-rework OR label:to-merge OR label:to-seal OR label:to-land'
 ```
 
 ### 3. Dispatch automated (🌊) work — Flow wave
@@ -104,7 +104,7 @@ For each item, spawn a sub-agent with: `"Read and follow $SKILL_DIR/{file}. Targ
 | `to-inspect`   | `$SKILL_DIR/inspect.md`   |
 | `to-rework`    | `$SKILL_DIR/rework.md`    |
 | `to-merge`     | `$SKILL_DIR/merge.md`     |
-| `to-ratify`    | `$SKILL_DIR/ratify.md`    |
+| `to-seal`      | `$SKILL_DIR/seal.md`      |
 
 ### 3a. Ebb wave — gated dispatch of to-await-waves items
 
@@ -138,7 +138,7 @@ Immediately after dispatching, print each dispatched agent with its phase emoji.
 | `to-inspect`     | `🧿`        |
 | `to-rework`      | `🦀`        |
 | `to-merge`       | `🐢`        |
-| `to-ratify`      | `🦭`        |
+| `to-seal`        | `🦭`        |
 | `to-await-waves` | `🪸`        |
 
 The narwhal (slice phase) always uses both characters `𐃆🐋`, not just the emoji.
@@ -259,16 +259,16 @@ PLAN_PR_BODY="{current plan PR body with metrics rows inserted into the table}"
 ./tracker.sh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
 ```
 
-#### Total row on ratify-to-land
+#### Total row on seal-to-land
 
-When a ratify handoff has `nextPhase: to-land`, use `planIssueMetrics` from the ratify handoff (scope/slice metrics rows from the plan issue). Prepend those rows to the PR's existing metrics table (dedup if already present), append the ratify row, then append a bold **Total** row summing all durations and tokens. Unknown values (`—`) are excluded from the total. This is the last automated edit to the metrics table.
+When a seal handoff has `nextPhase: to-land`, use `planIssueMetrics` from the seal handoff (scope/slice metrics rows from the plan issue). Prepend those rows to the PR's existing metrics table (dedup if already present), append the seal row, then append a bold **Total** row summing all durations and tokens. Unknown values (`—`) are excluded from the total. This is the last automated edit to the metrics table.
 
 Example:
 
 ```markdown
 | scope | #15 | 1m 30s | — | — | plan created | 2026/04/18 | 09:00 |
 | slice | #15 | 45s | 8 100 | 10 | slices created | 2026/04/18 | 09:05 |
-| ratify | — | 1m 5s | 15 200 | 20 | pass | 2026/04/20 | 14:35 |
+| seal | — | 1m 5s | 15 200 | 20 | pass | 2026/04/20 | 14:35 |
 | **Total** | | **5m 30s** | **62 359** | **87** | | | |
 
 <!-- end metrics table -->

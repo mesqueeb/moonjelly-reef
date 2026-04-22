@@ -39,7 +39,7 @@ Now set all variables:
 PLAN_ID="{from PR body or already known}"
 PR_NUMBER="{from plan body or already known}"
 BASE_BRANCH="{from plan body}"
-PR_BODY="{the PR body content — this is the ratify report}"
+PR_BODY="{the PR body content — this is the seal report}"
 ```
 
 Fetch PR review threads and filter to only active (unresolved + current) comments:

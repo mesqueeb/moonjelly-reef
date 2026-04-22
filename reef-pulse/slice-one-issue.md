@@ -14,7 +14,7 @@ The router has already fetched context and drafted exactly 1 slice. No sub-issue
 
 ## 1. Update the plan body
 
-Take the fast path — skip sub-issues, coverage matrix, and ratify. The plan becomes the slice:
+Take the fast path — skip sub-issues, coverage matrix, and seal. The plan becomes the slice:
 
 1. **Keep the scoped PR branch.** Preserve the `pr-branch` already written by reef-scope in the plan frontmatter.
 2. **No sub-issues.** The plan IS the slice.
