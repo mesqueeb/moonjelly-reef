@@ -4,7 +4,7 @@ Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the is
 
 > **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
 >
-> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
+> **Tracker note**: Commands below use `./tracker.sh` syntax for both issue and PR operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -122,13 +122,13 @@ REPORT="{report-content}" # starts with: closes #$SLICE_ID $SLICE_NAME\n\n
 ```
 
 ```sh
-gh pr create --base "$TARGET_BRANCH" --title "$SLICE_NAME" --body "$REPORT" --label to-inspect
+./tracker.sh pr create --base "$TARGET_BRANCH" --title "$SLICE_NAME" --body "$REPORT" --label to-inspect
 ```
 
 The PR targets the **target branch** (which equals `{base-branch}` for single-slice work).
 
 ```sh
-PR_NUMBER="{from gh pr create output}"
+PR_NUMBER="{from pr create output}"
 SLICE_BODY="{slice/plan body with PR reference and pr-branch updated}"
 ```
 

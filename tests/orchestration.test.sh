@@ -61,6 +61,10 @@ make_pattern() {
     "gh issue edit"*) echo "gh issue edit" ;;
     "gh issue close"*) echo "gh issue close" ;;
     "gh issue view"*) echo "gh issue view" ;;
+    "tracker.sh pr create"*)  echo "tracker.sh pr create" ;;
+    "tracker.sh pr merge"*)   echo "tracker.sh pr merge" ;;
+    "tracker.sh pr view"*)    echo "tracker.sh pr view" ;;
+    "tracker.sh pr edit"*)    echo "tracker.sh pr edit" ;;
     "tracker.sh issue view"*)  echo "tracker.sh issue view" ;;
     "tracker.sh issue edit"*)  echo "tracker.sh issue edit" ;;
     "tracker.sh issue close"*) echo "tracker.sh issue close" ;;

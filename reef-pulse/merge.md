@@ -4,7 +4,7 @@ Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the is
 
 > **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
 >
-> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
+> **Tracker note**: Commands below use `./tracker.sh` syntax for both issue and PR operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -44,7 +44,7 @@ Unconditional for both single-slice and multi-slice. Ensures the slice branch in
 Check the merge state of the PR:
 
 ```sh
-gh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
+./tracker.sh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
 ```
 
 Enter a worktree forked from $PR_BRANCH (not $TARGET_BRANCH) so you are testing the PR code with the latest target merged in:
@@ -71,7 +71,7 @@ If the test suite fails after merging, label the slice `to-rework` and stop:
 
 ```sh
 ./tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label to-rework
-gh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-rework
+./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-rework
 ```
 
 Clean up the worktree:

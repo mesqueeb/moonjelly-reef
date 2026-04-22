@@ -2,7 +2,7 @@
 
 > **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
 >
-> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
+> **Tracker note**: Commands below use `./tracker.sh` syntax for both issue and PR operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 > **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
@@ -93,17 +93,17 @@ Document judgment calls made during this phase on the PR. Only document decision
 Read the current PR body, then append the rework report as a collapsible block. The rework report should include judgment calls, what feedback was addressed, what was changed, and test results.
 
 ```sh
-PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q .body)
+PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
 REPORT="{rework-report}" # <details><summary><h3>🦀 Rework — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
 PR_BODY="$PR_BODY\n\n$REPORT"
-gh pr edit "$PR_NUMBER" --body "$PR_BODY"
+./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
 ```
 
 ### 8. Label
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-rework --add-label to-inspect
-gh pr edit "$PR_NUMBER" --remove-label to-rework --add-label to-inspect
+./tracker.sh pr edit "$PR_NUMBER" --remove-label to-rework --add-label to-inspect
 ```
 
 ### 9. Clean up
