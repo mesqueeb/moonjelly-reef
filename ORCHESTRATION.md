@@ -539,20 +539,20 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ./tracker.sh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
   ./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label landed
   ```
-- check-siblings-and-completion
-  ```sh
-  ./tracker.sh issue view "$PARENT_ID" --json body,title,labels
-  ```
 - set-variables
   ```sh
-  SIBLING_ID="{from coverage matrix}"
+  BASE_BRANCH="{from issue body}"
+  ```
+- check-siblings-and-completion
+  ```sh
+  ./tracker.sh issue list --json number,labels,body
   ```
 - update-tracker
   ```sh
   ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label landed
   ./tracker.sh issue close "$ISSUE_ID"
   ```
-- update-tracker — if all-slices-done
+- update-tracker — if all-siblings-landed
   ```sh
   ./tracker.sh issue edit "$PARENT_ID" --remove-label in-progress --add-label to-ratify
   ```
