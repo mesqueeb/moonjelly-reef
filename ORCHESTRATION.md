@@ -211,7 +211,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 
 - set-variables
   ```sh
-  ISSUE_BODY="{plan body with target branch and pr-branch added to frontmatter and acceptance criteria appended}"
+  ISSUE_BODY="{plan body with pr-branch added to frontmatter and acceptance criteria appended}"
   ```
 - update-tracker
   ```sh
