@@ -17,13 +17,14 @@ Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs i
 
 Three types of tickets flow through the slice lifecycle phases (implement → inspect → rework → merge):
 
-| Type                                  | base-branch | target-branch | pr-branch   |
-| ------------------------------------- | ----------- | ------------- | ----------- |
-| **A** Single-slice plan               | main        | main          | feat/042    |
-| **B** Multi-slice slice               | main        | feat/parent   | feat/part-1 |
-| **C** Multi-slice plan (after rework) | main        | feat/parent   | feat/parent |
+| Type                                  | base-branch  | pr-branch   |
+| ------------------------------------- | ------------ | ----------- |
+| **A** Single-slice plan               | main         | feat/042    |
+| **B** Multi-slice sub-issue           | feat/parent  | feat/part-1 |
+| **C** Multi-slice plan (after rework) | main         | feat/parent |
 
 All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to fork from, commit to, and review.
+`$BASE_BRANCH` is where the PR merges into. For type A and C: `main`. For type B: the parent plan's `pr-branch`.
 
 ## Skills
 
@@ -99,8 +100,8 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  BASE_BRANCH="{from base branch discussion}"
-  TARGET_BRANCH="{from branch discussion}"
+  BASE_BRANCH="{from branch discussion}"
+  PR_BRANCH="{from branch discussion}"
   ```
 - update-tracker
   ```sh
@@ -227,17 +228,17 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 
 - set-variables
   ```sh
-  TARGET_BRANCH="{from plan body}"
+  PR_BRANCH="{from plan body pr-branch field}"
   BASE_BRANCH="{from plan body}"
   WORKTREE_PATH=".worktrees/$ISSUE_ID-slice"
   ```
 - enter-worktree
   ```sh
-  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - create-remote-branch
   ```sh
-  git push -u origin "$TARGET_BRANCH"
+  git push -u origin "$PR_BRANCH"
   ```
 - phase-specific
 - set-variables
@@ -282,13 +283,12 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   ISSUE_TITLE="{from issue body}"
   BASE_BRANCH="{from issue body}"
-  TARGET_BRANCH="{from issue body}"
-  PR_BRANCH="{PR branch, e.g. feat/001-auth-endpoint}"
+  PR_BRANCH="{from issue frontmatter pr-branch field}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-implement"
   ```
 - enter-worktree
   ```sh
-  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - commit-code
@@ -301,7 +301,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - pr-create
   ```sh
-  ./tracker.sh pr create --base "$TARGET_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-inspect
+  ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-inspect
   ```
 - set-variables
   ```sh
@@ -335,13 +335,13 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 - set-variables
   ```sh
   ISSUE_TITLE="{from issue body}"
+  BASE_BRANCH="{from issue body}"
   PR_BRANCH="{from issue body pr-branch field}"
-  TARGET_BRANCH="{from issue body}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-inspect"
   ```
 - enter-worktree
   ```sh
-  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - commit-code — if cleanup-needed
@@ -383,14 +383,14 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 - set-variables
   ```sh
   ISSUE_TITLE="{from issue body}"
+  BASE_BRANCH="{from issue body}"
   PR_BRANCH="{from issue body pr-branch field}"
-  TARGET_BRANCH="{from issue body}"
   PR_NUMBER="{from issue body}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
   ```
 - enter-worktree
   ```sh
-  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - commit-code
@@ -433,7 +433,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   ISSUE_TITLE="{from issue title, stripping [await: ...] suffix}"
   BASE_BRANCH="{from issue body}"
-  TARGET_BRANCH="{from issue body}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-await-waves"
   ```
 - set-variables
@@ -450,7 +449,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - enter-worktree
   ```sh
-  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - set-variables
@@ -484,8 +483,8 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 - set-variables
   ```sh
   ISSUE_TITLE="{from issue body}"
+  BASE_BRANCH="{from issue body}"
   PR_NUMBER="{from issue body}"
-  TARGET_BRANCH="{from issue body}"
   PR_BRANCH="{from issue body pr-branch field}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-merge"
   ```
@@ -495,11 +494,11 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - enter-worktree
   ```sh
-  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - commit-code — if merge-needed
   ```sh
-  ./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts with $TARGET_BRANCH"
+  ./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts with $BASE_BRANCH"
   ```
 - update-tracker — if tests-fail
   ```sh
@@ -577,7 +576,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   ISSUE_TITLE="{from issue body}"
   BASE_BRANCH="{from issue body}"
-  TARGET_BRANCH="{from issue body}"
   PR_BRANCH="{from issue body pr-branch field}"
   WORKTREE_PATH=".worktrees/$ISSUE_ID-ratify"
   ```
@@ -594,7 +592,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   REPORT="{ratify-report}" # <details><summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
   # if no PR exists:
-  ./tracker.sh pr create --base "$BASE_BRANCH" --head "$TARGET_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-ratify
+  ./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-ratify
   # if PR exists, append:
   PR_NUMBER="{from pr create output or existing PR}"
   PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
