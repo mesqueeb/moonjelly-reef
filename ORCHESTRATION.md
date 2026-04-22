@@ -572,14 +572,14 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-land
-  gh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-land
+  ./tracker.sh issue edit "$PLAN_ID" --remove-label to-merge --add-label to-ratify
+  gh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-ratify
   ```
 - handoff
   ```sh
-  nextPhase="to-land"
+  nextPhase="to-ratify"
   planPr="$PR_NUMBER" # inherited from router context
-  summary="Single slice verified — PR stays open for human review"
+  summary="Single slice verified — forwarding to ratify for holistic review"
   ```
 
 ### [merge-multi.md](./reef-pulse/merge-multi.md)
@@ -638,17 +638,18 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   PLAN_TITLE="{from plan body}"
   BASE_BRANCH="{from plan body}"
   TARGET_BRANCH="{from plan body}"
+  PR_BRANCH="{from plan body pr-branch field}"
   WORKTREE_PATH=".worktrees/$PLAN_ID-ratify"
   ```
 - enter-worktree
-  - contains: `Enter a worktree forked from $TARGET_BRANCH because all slice PRs are merged there`
+  - contains: `Enter a worktree forked from $PR_BRANCH`
   ```sh
-  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
+  ./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
   ```
 - phase-specific
 - commit-code — if documentation-added
   ```sh
-  ./commit.sh --branch "$TARGET_BRANCH" -m "ratify: add documentation"
+  ./commit.sh --branch "$PR_BRANCH" -m "ratify: add documentation"
   ```
 - submit-report
   ```sh
