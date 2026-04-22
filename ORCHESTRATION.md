@@ -13,18 +13,18 @@ For MCP trackers (ClickUp, Jira, Linear): use equivalent MCP tool calls.
 Only variables referenced in an op's cmd/tracker field belong in set-variables.
 Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs in the .md, not here.
 
-## Ticket types in the slice lifecycle
+## Branch contract
 
-Three types of tickets flow through the slice lifecycle phases (implement → inspect → rework → merge):
+Every issue in the slice lifecycle carries both:
 
-| Type                                  | base-branch  | pr-branch   |
-| ------------------------------------- | ------------ | ----------- |
-| **A** Single-slice plan               | main         | feat/042    |
-| **B** Multi-slice sub-issue           | feat/parent  | feat/part-1 |
-| **C** Multi-slice plan (after rework) | main         | feat/parent |
+- `$PR_BRANCH` — the branch the PR lives on; phases fork from it, commit to it, and review it
+- `$BASE_BRANCH` — the branch the PR merges into
 
-All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to fork from, commit to, and review.
-`$BASE_BRANCH` is where the PR merges into. For type A and C: `main`. For type B: the parent plan's `pr-branch`.
+General rules:
+
+- If an issue has no `parent-plan`, `$BASE_BRANCH` is usually `main`
+- If an issue has `parent-plan`, `$BASE_BRANCH` is the parent issue's `$PR_BRANCH`
+- If the current issue creates sub-issues, each sub-issue gets its own `$PR_BRANCH`, while the current issue keeps its own `$PR_BRANCH` as the integration branch
 
 ## Skills
 
@@ -207,12 +207,14 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
 
-### [slice-single.md](./reef-pulse/slice-single.md)
+### [slice-one-issue.md](./reef-pulse/slice-one-issue.md)
 
 - set-variables
-  ```sh
-  ISSUE_BODY="{plan body with pr-branch added to frontmatter and acceptance criteria appended}"
-  ```
+
+```sh
+ISSUE_BODY="{plan body with scoped pr-branch preserved and acceptance criteria appended}"
+```
+
 - update-tracker
   ```sh
   ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-slice --add-label to-implement
@@ -221,10 +223,10 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   nextPhase="to-implement"
   planPr="—"
-  summary="Single slice — fast path, targeting $BASE_BRANCH directly"
+  summary="No sub-issues needed — current issue moves to to-implement"
   ```
 
-### [slice-multi.md](./reef-pulse/slice-multi.md)
+### [slice-subissues.md](./reef-pulse/slice-subissues.md)
 
 - set-variables
   ```sh
@@ -244,7 +246,8 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 - set-variables
   ```sh
   SLICE_TITLE="{slice-title} [await: #{blocker-id}]"  # omit [await: ...] if unblocked
-  SLICE_BODY="{slice-body}" # as per the template below
+  SLICE_PR_BRANCH="{derived from current issue pr-branch + slice title slug}"
+  SLICE_BODY="{slice-body}" # as per the template below, with pr-branch: $SLICE_PR_BRANCH
   SLICE_LABEL="to-implement" # or to-await-waves if blocked
   ```
 - create-slices
@@ -559,7 +562,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 - handoff
   ```sh
   nextPhase="to-ratify" # or "in-progress" if not all issues tagged 'landed'
-  planPr="—" # multi-slice: no plan PR yet
+  planPr="—" # child-issue merge does not open the parent issue PR
   ```
 
 ### [ratify.md](./reef-pulse/ratify.md)

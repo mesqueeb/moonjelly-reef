@@ -65,7 +65,7 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ```sh
 nextPhase="to-ratify" # or "in-progress" if not all issues tagged 'landed'
-planPr="—" # multi-slice: no plan PR yet
+planPr="—" # child-issue merge does not open the parent issue PR
 summary="{ISSUE_TITLE} merged — {N} of {total} issues complete"
 ```
 

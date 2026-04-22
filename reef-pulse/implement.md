@@ -16,7 +16,7 @@ Read the issue. It must contain:
 
 - Acceptance criteria
 - `base-branch` in frontmatter (where the PR merges into)
-- `pr-branch` in frontmatter (the branch the PR lives on — set by slice-single or passed to implement)
+- `pr-branch` in frontmatter (the branch the PR lives on — chosen during scope for an issue with no `parent-plan`, or assigned during slice creation for an issue with `parent-plan`)
 - Parent plan reference (if this is a sub-issue)
 
 Set the pre-fetch variables:
@@ -126,7 +126,7 @@ The PR targets `$BASE_BRANCH` — the branch it merges into.
 
 ## 6. Update the issue and label
 
-Persist the PR branch and PR number for the newly created PR on the issue body so downstream phases (inspect, rework, merge) can find it.
+Persist the PR metadata for the newly created PR on the issue body so downstream phases (inspect, rework, merge) can find it.
 
 Add to `$ISSUE_BODY` frontmatter:
 

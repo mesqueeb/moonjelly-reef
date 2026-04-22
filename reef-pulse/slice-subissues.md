@@ -1,4 +1,4 @@
-# slice-multi
+# slice-subissues
 
 Multi-slice flow — delegated from [slice.md](slice.md).
 
@@ -76,11 +76,13 @@ Assemble each slice body:
 
 ```sh
 SLICE_TITLE="{slice-title} [await: #{blocker-id}]"  # omit [await: ...] if unblocked
-SLICE_BODY="{slice-body}" # as per the template below
+SLICE_PR_BRANCH="{derived from current issue pr-branch + slice title slug}"
+SLICE_BODY="{slice-body}" # as per the template below, with pr-branch: $SLICE_PR_BRANCH
 SLICE_LABEL="to-implement" # or to-await-waves if blocked
 ```
 
 For blocked slices, append `[await: #{id}, #{id}]` to the title. Unblocked slices get a plain title.
+Give each child issue its own `pr-branch`. Derive `SLICE_PR_BRANCH` from the current issue's `pr-branch` plus a stable slug from the slice title.
 
 Slice body template:
 
@@ -89,7 +91,7 @@ Slice body template:
 
 parent-plan: "#$ISSUE_ID"
 base-branch: $PR_BRANCH
-pr-branch: —
+pr-branch: $SLICE_PR_BRANCH
 
 ---
 
@@ -118,7 +120,7 @@ Label each slice: `to-implement` if no blockers, `to-await-waves` if blocked.
 
 ## 5. Update the plan
 
-Set `pr-branch: $PR_BRANCH` in the plan frontmatter (already set by reef-scope, but update if changed). Append the coverage matrix and a listing of all created sub-issues with their labels to the plan body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-ratify` once all slices are done.
+Set `pr-branch: $PR_BRANCH` in the current issue frontmatter (already set by reef-scope, but update if changed). Append the coverage matrix and a listing of all created sub-issues with their labels to the plan body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-ratify` once all sub-issues are done.
 
 ```sh
 ISSUE_BODY="{plan body with pr-branch in frontmatter and coverage matrix appended}"
