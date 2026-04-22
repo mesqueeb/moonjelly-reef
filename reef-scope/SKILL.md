@@ -98,7 +98,6 @@ Set variables from the discussion:
 PLAN_ID="$ISSUE_ID"
 BASE_BRANCH="{from base branch discussion}"
 TARGET_BRANCH="{from branch discussion}"
-PLAN_TYPE="{feature, refactor, or bug}"
 ```
 
 The plan gets **prepended** to the evolving file (pushing the decision record down) which becomes our PLAN_CONTENT variable. The decision record remains at the bottom for reference.
@@ -109,7 +108,6 @@ The plan body starts with frontmatter that downstream phases will read:
 ---
 base-branch: $BASE_BRANCH
 target-branch: $TARGET_BRANCH
-type: $PLAN_TYPE
 ---
 ```
 

@@ -102,7 +102,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   PLAN_ID="$ISSUE_ID"
   BASE_BRANCH="{from base branch discussion}"
   TARGET_BRANCH="{from branch discussion}"
-  PLAN_TYPE="{feature, refactor, or bug}"
   ```
 - update-tracker
   ```sh
@@ -233,7 +232,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   PLAN_ID="$ISSUE_ID"
   TARGET_BRANCH="{from plan body}"
   BASE_BRANCH="{from plan body}"
-  PLAN_TYPE="{from plan body}" # feature, refactor, or bug
   WORKTREE_PATH=".worktrees/$PLAN_ID-slice"
   ```
 - enter-worktree

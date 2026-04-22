@@ -16,7 +16,6 @@ The router has already fetched context and drafted 2+ slices. Set post-fetch var
 PLAN_ID="$ISSUE_ID"
 TARGET_BRANCH="{from plan body}"
 BASE_BRANCH="{from plan body}"
-PLAN_TYPE="{from plan body}" # feature, refactor, or bug
 WORKTREE_PATH=".worktrees/$PLAN_ID-slice"
 ```
 
@@ -92,7 +91,6 @@ parent-plan: "#$PLAN_ID"
 base-branch: $BASE_BRANCH
 target-branch: $TARGET_BRANCH
 pr-branch: —
-type: $PLAN_TYPE
 
 ---
 
