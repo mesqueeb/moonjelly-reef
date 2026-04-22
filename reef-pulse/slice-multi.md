@@ -86,6 +86,7 @@ Slice body template:
 
 ```markdown
 ---
+
 parent-plan: "#$ISSUE_ID"
 base-branch: $PR_BRANCH
 pr-branch: —

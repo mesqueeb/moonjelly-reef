@@ -281,8 +281,8 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  ISSUE_TITLE="{from issue body}"
-  BASE_BRANCH="{from issue body}"
+  ISSUE_TITLE="{from issue}"
+  BASE_BRANCH="{from issue frontmatter base-branch field}"
   PR_BRANCH="{from issue frontmatter pr-branch field}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-implement"
   ```
@@ -297,7 +297,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  REPORT="{report-content}" # starts with: closes #$ISSUE_ID $ISSUE_TITLE\n\n
+  REPORT="{closes line and implementation report}" # e.g.: closes #$ISSUE_ID $ISSUE_TITLE\n\n...
   ```
 - pr-create
   ```sh
@@ -306,7 +306,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 - set-variables
   ```sh
   PR_NUMBER="{from pr create output}"
-  ISSUE_BODY="{issue body with PR reference and pr-branch updated}"
+  ISSUE_BODY="{original issue body with added frontmatter values}"
   ```
 - update-tracker
   ```sh
@@ -334,8 +334,8 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  ISSUE_TITLE="{from issue body}"
-  BASE_BRANCH="{from issue body}"
+  ISSUE_TITLE="{from issue}"
+  BASE_BRANCH="{from issue body frontmatter base-branch field}"
   PR_BRANCH="{from issue body pr-branch field}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-inspect"
   ```
@@ -382,10 +382,10 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  ISSUE_TITLE="{from issue body}"
-  BASE_BRANCH="{from issue body}"
+  ISSUE_TITLE="{from issue}"
+  BASE_BRANCH="{from issue body frontmatter base-branch field}"
   PR_BRANCH="{from issue body pr-branch field}"
-  PR_NUMBER="{from issue body}"
+  PR_NUMBER="{from issue body front-matter pr-number field}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
   ```
 - enter-worktree
@@ -482,9 +482,9 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  ISSUE_TITLE="{from issue body}"
-  BASE_BRANCH="{from issue body}"
-  PR_NUMBER="{from issue body}"
+  ISSUE_TITLE="{from issue}"
+  BASE_BRANCH="{from issue body frontmatter base-branch field}"
+  PR_NUMBER="{from issue body front-matter pr-number field}"
   PR_BRANCH="{from issue body pr-branch field}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-merge"
   ```
@@ -574,8 +574,8 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  ISSUE_TITLE="{from issue body}"
-  BASE_BRANCH="{from issue body}"
+  ISSUE_TITLE="{from issue}"
+  BASE_BRANCH="{from issue body frontmatter base-branch field}"
   PR_BRANCH="{from issue body pr-branch field}"
   WORKTREE_PATH=".worktrees/$ISSUE_ID-ratify"
   ```

@@ -27,8 +27,8 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 Set the post-fetch variables (after reading the issue body):
 
 ```sh
-ISSUE_TITLE="{from issue body}"
-BASE_BRANCH="{from issue body}"
+ISSUE_TITLE="{from issue}"
+BASE_BRANCH="{from issue body frontmatter base-branch field}"
 PR_BRANCH="{from issue body pr-branch field}"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-inspect"
 ```

@@ -34,8 +34,8 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 Set the post-fetch variables (after reading the issue body):
 
 ```sh
-ISSUE_TITLE="{from issue body}"
-BASE_BRANCH="{from issue body}"
+ISSUE_TITLE="{from issue}"
+BASE_BRANCH="{from issue frontmatter base-branch field}"
 PR_BRANCH="{from issue frontmatter pr-branch field}"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-implement"
 ```
@@ -113,7 +113,7 @@ Decisions made during implementation that weren't covered by the acceptance crit
 The PR body must start with the "closes" reference, followed by the implementation report:
 
 ```sh
-REPORT="{report-content}" # starts with: closes #$ISSUE_ID $ISSUE_TITLE\n\n
+REPORT="{closes line and implementation report}" # e.g.: closes #$ISSUE_ID $ISSUE_TITLE\n\n...
 ```
 
 ```sh
@@ -122,18 +122,22 @@ REPORT="{report-content}" # starts with: closes #$ISSUE_ID $ISSUE_TITLE\n\n
 
 The PR targets `$BASE_BRANCH` — the branch it merges into.
 
-```sh
-PR_NUMBER="{from pr create output}"
-ISSUE_BODY="{issue body with PR reference and pr-branch updated}"
-```
-
 ## 6. Document judgment calls
 
 Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
 ## 7. Update the issue and label
 
-Persist the PR reference on the issue body so downstream phases (inspect, rework, merge) can find it. Update the `pr-branch` frontmatter field to `$PR_BRANCH` (the branch the PR lives on).
+Persist the PR branch and PR number for the newly created PR on the issue body so downstream phases (inspect, rework, merge) can find it.
+
+Add to `$ISSUE_BODY` frontmatter:
+
+```sh
+PR_NUMBER="{from pr create output}"
+ISSUE_BODY="{original issue body with added frontmatter values}"
+# add to frontmatter (if not already): pr-branch: $BASE_BRANCH
+# add to frontmatter:  pr-number: $PR_NUMBER
+```
 
 ```sh
 ISSUE_BODY="{issue body with PR reference and pr-branch updated}"

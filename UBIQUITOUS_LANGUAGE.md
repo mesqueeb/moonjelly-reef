@@ -16,7 +16,6 @@
 | **plan**            | The content written into an issue by reef-scope — success criteria, metadata, coverage matrix        | spec, design, RFC                                   |
 | **slice**           | A thin vertical cut through all layers, implementing part of an issue end-to-end                                                        | sub-task, sub-issue, child issue, chunk |
 | 🔶 **single-slice** | An issue small enough that the issue itself IS the slice — no sub-items, `pr-branch` targets `base-branch` directly                      | quick fix, small, fast path             |
-| 🔷 **multi-slice**  | An issue broken into 2+ slices, each with its own `pr-branch`; the plan has a dedicated `pr-branch` that acts as the integration point   | standard, normal, full                  |
 
 ## Branches
 
@@ -35,7 +34,6 @@ Three types of tickets flow through the slice lifecycle phases (implement → in
 | **B** Multi-slice sub-issue           | feat/parent  | feat/part-1 |
 | **C** Multi-slice plan (after rework) | main         | feat/parent |
 
-All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to fork from, commit to, and review. `$BASE_BRANCH` is where the PR merges into. For type A and C: `main`. For type B: the parent plan's `pr-branch`.
 
 ## Planning
 

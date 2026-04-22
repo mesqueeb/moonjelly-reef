@@ -32,8 +32,8 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 Set the post-fetch variables (after reading the plan body):
 
 ```sh
-ISSUE_TITLE="{from issue body}"
-BASE_BRANCH="{from issue body}"
+ISSUE_TITLE="{from issue}"
+BASE_BRANCH="{from issue body frontmatter base-branch field}"
 PR_BRANCH="{from issue body pr-branch field}"
 WORKTREE_PATH=".worktrees/$ISSUE_ID-ratify"
 ```
@@ -56,7 +56,7 @@ Think like a CTO doing a final walkthrough before shipping. Product-focused, big
 
 ### 1. Get on the PR branch
 
-Enter a worktree forked from $PR_BRANCH — for multi-slice this is the integration branch where all sub-issue PRs are merged; for single-slice this is the plan's own PR branch:
+Enter a worktree forked from $PR_BRANCH:
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")

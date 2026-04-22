@@ -44,8 +44,8 @@ stateDiagram-v2
 
         [*] --> to_scope
         to_scope --> to_slice : /reef-scope<br />scope the work, define success criteria
-        to_slice --> slice_lifecycle : slice.md<br />🔷　multi-slice:<br />create pr-branch, sub-issues, coverage matrix
-        to_slice --> slice_lifecycle : slice.md<br />🔶　single-slice:<br />plan becomes the slice, labels to-implement
+        to_slice --> slice_lifecycle : slice.md<br />🔷　sliced in multiple sub-issues:<br />create pr-branch, sub-issues, coverage matrix
+       to_slice --> slice_lifecycle : slice.md<br />🔶　no sub-issues needed:<br />labels the plan to-implement
         slice_lifecycle --> to_ratify
         slice_lifecycle --> to_land
         to_ratify --> to_land : ratify.md<br />holistic review on target branch
@@ -62,7 +62,7 @@ stateDiagram-v2
         state "🌊　to-rework" as to_rework
         state "🌊　to-merge" as to_merge
         state "merge.md<br />🔷　has parent-plan:<br />merge PR, when all done → to-ratify" as merge_multi
-        state "merge.md<br />🔶　no parent-plan:<br />PR stays open → to-land" as merge_single
+        state "merge.md<br />🔶　no parent-plan:<br />PR stays open → to-ratify" as merge_single
         [*] --> to_implement : no deps
         [*] --> to_await : has deps
         to_await --> to_implement : await-waves.md<br />check if deps are done, re-review plan
@@ -138,8 +138,8 @@ These are the 🌊 automated phases dispatched by the `reef-pulse` skill. Each p
 
 Automatically breaks the plan into vertical slices, or determines a single slice is enough to tackle the plan.
 
-- 🔶　single-slice: plan becomes the slice, labels `to-implement`.
-- 🔷　multi-slice: create plan `pr-branch`, sub-issues with their own `pr-branch`, coverage matrix, label sub-issues `to-implement` or `to-await-waves`.
+- 🔷　sliced in multiple sub-issues: create pr-branch, sub-issues, coverage matrix
+- 🔶　no sub-issues needed: labels the plan `to-implement`
 
 | source file | [`reef-pulse/slice.md`](reef-pulse/slice.md) |
 | :---------- | :------------------------------------------- |
@@ -211,7 +211,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 <details>
 <summary>🌊 <b><code>to-ratify</code></b> 🏷️</summary>
 
-🔷　multi-slice only. Holistic review of the plan's `pr-branch` — checking the composed whole, not the parts. Verify every success criterion end-to-end, run the full suite, produce the aggregate report, label `to-land` or `to-rework` on gaps.
+Holistic review of the plan's `pr-branch` — checking the composed whole, not the parts. Verify every success criterion end-to-end, run the full suite, produce the aggregate report, label `to-land` or `to-rework` on gaps.
 
 | source file | [`reef-pulse/ratify.md`](reef-pulse/ratify.md) |
 | :---------- | :--------------------------------------------- |
