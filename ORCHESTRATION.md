@@ -25,16 +25,6 @@ Three types of tickets flow through the slice lifecycle phases (implement → in
 
 All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to fork from, commit to, and review.
 
-## Terminal label: `landed`
-
-`landed` is the tracker-agnostic signal that a piece of work has reached its target branch. It is the terminal label in the lifecycle — once applied, the issue is considered complete.
-
-- **reef-land** replaces `to-land` with `landed` before closing an issue (single-slice plans and multi-slice plan PRs)
-- **merge-multi** replaces `to-merge` with `landed` on slice PRs after squash-merging into the target branch
-- **await-waves** checks each dependency for the `landed` label to determine whether a blocked slice can proceed — if all dependencies carry `landed`, the slice is promoted to `to-implement`
-
-This convention works identically across tracker types: GitHub adds a label, the local tracker renames the file tag to `[landed]`, and MCP trackers set the equivalent status field.
-
 ## Skills
 
 ### [/reef-pulse](./reef-pulse/SKILL.md)
@@ -146,7 +136,9 @@ This convention works identically across tracker types: GitHub adds a label, the
   ```
 - conflict-anticipation — scan in-flight issues on same base-branch and surface overlaps
   ```sh
-  ./tracker.sh issue list --label to-slice,in-progress,to-implement,to-inspect,to-rework,to-merge,to-ratify,to-land,to-await-waves --json number,title,body,labels
+  for LABEL in to-slice in-progress to-implement to-inspect to-rework to-merge to-ratify to-land to-await-waves; do
+    ./tracker.sh issue list --label "$LABEL" --json number,title,body,labels
+  done
   ```
 - set-variables
   ```sh
@@ -627,6 +619,7 @@ This convention works identically across tracker types: GitHub adds a label, the
   ```
 - update-tracker
   ```sh
+  ./tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label landed
   ./tracker.sh issue close "$SLICE_ID"
   ```
 - update-tracker — if all-slices-done
@@ -635,7 +628,7 @@ This convention works identically across tracker types: GitHub adds a label, the
   ```
 - handoff
   ```sh
-  nextPhase="to-ratify" # or "in-progress" if not all slices done
+  nextPhase="to-ratify" # or "in-progress" if not all slices tagged 'landed'
   planPr="—" # multi-slice: no plan PR yet
   summary="Slice {name} merged — {N} of {total} slices complete"
   ```

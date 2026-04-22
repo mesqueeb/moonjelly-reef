@@ -75,7 +75,9 @@ BASE_BRANCH="{from branch discussion}"
 ```
 
 ```sh
-./tracker.sh issue list --label to-slice,in-progress,to-implement,to-inspect,to-rework,to-merge,to-ratify,to-land,to-await-waves --json number,title,body,labels
+for LABEL in to-slice in-progress to-implement to-inspect to-rework to-merge to-ratify to-land to-await-waves; do
+  ./tracker.sh issue list --label "$LABEL" --json number,title,body,labels
+done
 ```
 
 For each returned issue, parse the `base-branch` from its frontmatter. Keep only those whose `base-branch` matches the plan's `$BASE_BRANCH`. Skim each matching issue's plan body to assess whether it touches overlapping areas (same files, same modules, same concepts).

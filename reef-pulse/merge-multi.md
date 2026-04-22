@@ -54,13 +54,14 @@ Check: are ALL slices for the plan now tagged `landed`? If all slices are landed
 
 ## 3. Close the slice
 
-Close the slice issue. Add label `landed`. Remove `to-merge`:
+Close the slice issue and update its labels:
 
 ```sh
+./tracker.sh issue edit "$SLICE_ID" --remove-label to-merge --add-label landed
 ./tracker.sh issue close "$SLICE_ID"
 ```
 
-## 4. Update plan tag — if all slices landed
+## 4. Update plan tag — if all slices tagged 'landed'
 
 ```sh
 ./tracker.sh issue edit "$PLAN_ID" --remove-label in-progress --add-label to-ratify
@@ -73,7 +74,7 @@ Document judgment calls made during this phase on the PR. Only document decision
 ## Handoff
 
 ```sh
-nextPhase="to-ratify" # or "in-progress" if not all slices landed
+nextPhase="to-ratify" # or "in-progress" if not all slices tagged 'landed'
 planPr="—" # multi-slice: no plan PR yet
 summary="Slice {name} merged — {N} of {total} slices complete"
 ```
