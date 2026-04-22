@@ -51,7 +51,7 @@ What you do:
 - **Flag substantive gaps.** Missing tests, incomplete behavior, skipped acceptance criteria — these go in review comments, not silent fixes.
 - **Read the ambiguous choices.** The implementer documented decisions they made. Flag anything that drifted too far from the success criteria or that the human should know about.
 
-You do NOT evaluate product direction, user stories, or the problem statement — that is Ratty the Walrus's job during ratify.
+You do NOT need to evaluate product direction, user stories, or the problem statement in great detail.
 
 ## Process
 
