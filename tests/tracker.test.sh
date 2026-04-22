@@ -774,6 +774,177 @@ test_pr_edit_label_noop() {
 }
 
 # ============================================================
+# PR MERGE — #121
+# ============================================================
+
+# Setup helper that creates a git repo with origin, a feature branch with a commit,
+# and a progress.md so pr merge can read head/base.
+setup_merge() {
+  TEST_ROOT="$(mktemp -d)"
+  ORIGIN="$TEST_ROOT/origin.git"
+  REPO="$TEST_ROOT/repo"
+  TRACKER_PATH="$TEST_ROOT/tracker"
+
+  git init --bare "$ORIGIN" >/dev/null 2>&1
+  git clone "$ORIGIN" "$REPO" >/dev/null 2>&1
+  cd "$REPO"
+  git checkout -b main >/dev/null 2>&1
+  echo "init" > README.md
+  git add README.md
+  git commit -m "initial commit" >/dev/null 2>&1
+  git push -u origin main >/dev/null 2>&1
+
+  # Create feature branch with a commit
+  git checkout -b feat/my-feature >/dev/null 2>&1
+  echo "feature work" > feature.txt
+  git add feature.txt
+  git commit -m "add feature" >/dev/null 2>&1
+  git push -u origin feat/my-feature >/dev/null 2>&1
+
+  # Back to main for the merge
+  git checkout main >/dev/null 2>&1
+
+  # Create tracker dir and config
+  mkdir -p "$TRACKER_PATH"
+  mkdir -p "$REPO/.agents/moonjelly-reef"
+  cat > "$REPO/.agents/moonjelly-reef/config.md" <<CONF
+---
+tracker: local-tracker-gitignored
+tracker-path: $TRACKER_PATH
+tracker-branch: —
+---
+CONF
+
+  # Create issue and progress.md
+  mkdir -p "$TRACKER_PATH/1 my-feature"
+  echo "plan content" > "$TRACKER_PATH/1 my-feature/[to-inspect] plan.md"
+  cat > "$TRACKER_PATH/1 my-feature/progress.md" <<PROGRESS
+---
+head: feat/my-feature
+base: main
+---
+
+implementation report
+PROGRESS
+}
+
+test_pr_merge_squash() {
+  setup_merge
+  cd "$REPO"
+
+  t pr merge 1 --squash --delete-branch >/dev/null 2>&1
+
+  # Should be on main with the feature file present
+  current_branch="$(git rev-parse --abbrev-ref HEAD)"
+  if [ "$current_branch" = "main" ]; then
+    pass "pr merge squash: stays on base branch"
+  else
+    fail "pr merge squash: stays on base branch" "on: $current_branch"
+  fi
+
+  if [ -f "feature.txt" ]; then
+    pass "pr merge squash: feature file present after merge"
+  else
+    fail "pr merge squash: feature file present after merge" "feature.txt not found"
+  fi
+
+  # Squash merge should create a single commit (not a merge commit with two parents)
+  parent_count="$(git cat-file -p HEAD | grep -c '^parent' || true)"
+  if [ "$parent_count" -eq 1 ]; then
+    pass "pr merge squash: single parent (squash merge)"
+  else
+    fail "pr merge squash: single parent (squash merge)" "parents: $parent_count"
+  fi
+
+  teardown
+}
+
+test_pr_merge_regular() {
+  setup_merge
+  cd "$REPO"
+
+  t pr merge 1 --delete-branch >/dev/null 2>&1
+
+  if [ -f "feature.txt" ]; then
+    pass "pr merge regular: feature file present after merge"
+  else
+    fail "pr merge regular: feature file present after merge" "feature.txt not found"
+  fi
+
+  # Regular merge should create a merge commit with two parents
+  parent_count="$(git cat-file -p HEAD | grep -c '^parent' || true)"
+  if [ "$parent_count" -eq 2 ]; then
+    pass "pr merge regular: two parents (merge commit)"
+  else
+    fail "pr merge regular: two parents (merge commit)" "parents: $parent_count"
+  fi
+
+  teardown
+}
+
+test_pr_merge_deletes_head_branch_locally() {
+  setup_merge
+  cd "$REPO"
+
+  t pr merge 1 --squash --delete-branch >/dev/null 2>&1
+
+  if git rev-parse --verify feat/my-feature >/dev/null 2>&1; then
+    fail "pr merge: deletes head branch locally" "branch still exists"
+  else
+    pass "pr merge: deletes head branch locally"
+  fi
+
+  teardown
+}
+
+test_pr_merge_deletes_head_branch_from_origin() {
+  setup_merge
+  cd "$REPO"
+
+  t pr merge 1 --squash --delete-branch >/dev/null 2>&1
+
+  git fetch origin --prune >/dev/null 2>&1
+  if git rev-parse --verify origin/feat/my-feature >/dev/null 2>&1; then
+    fail "pr merge: deletes head branch from origin" "remote branch still exists"
+  else
+    pass "pr merge: deletes head branch from origin"
+  fi
+
+  teardown
+}
+
+test_pr_merge_no_progress_fails() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "no-pr" --label to-implement >/dev/null 2>&1
+
+  if t pr merge 1 --squash --delete-branch >/dev/null 2>&1; then
+    fail "pr merge: fails without progress.md" "succeeded"
+  else
+    pass "pr merge: fails without progress.md"
+  fi
+
+  teardown
+}
+
+test_pr_merge_commit_message() {
+  setup_merge
+  cd "$REPO"
+
+  t pr merge 1 --squash --delete-branch >/dev/null 2>&1
+
+  msg="$(git log -1 --format='%s')"
+  if echo "$msg" | grep -q "feat/my-feature"; then
+    pass "pr merge: commit message references head branch"
+  else
+    fail "pr merge: commit message references head branch" "msg: $msg"
+  fi
+
+  teardown
+}
+
+# ============================================================
 # PR DISPATCH — #120
 # ============================================================
 
@@ -834,6 +1005,12 @@ test_pr_view_fields
 test_pr_view_comments_reviews
 test_pr_edit_body
 test_pr_edit_label_noop
+test_pr_merge_squash
+test_pr_merge_regular
+test_pr_merge_deletes_head_branch_locally
+test_pr_merge_deletes_head_branch_from_origin
+test_pr_merge_no_progress_fails
+test_pr_merge_commit_message
 test_pr_dispatch
 
 echo ""
