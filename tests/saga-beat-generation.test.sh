@@ -78,6 +78,13 @@ test_pulse_skill_keeps_non_lore_output_unchanged() {
   assert_contains "$PULSE_SKILL" 'existing dashed lore box format' "pulse skill: lore box format stays the same"
 }
 
+test_pulse_skill_compiles_chapter_and_updates_world_at_session_end() {
+  assert_contains "$PULSE_SKILL" 'compile all beats from the current session into a new `chapter-NNN.md`' "pulse skill: session chapter compilation is documented"
+  assert_contains "$PULSE_SKILL" 'The final empty-pulse or wrap-up beat is added to the session story before the chapter is written' "pulse skill: final beat is included before chapter write"
+  assert_contains "$PULSE_SKILL" 'world.md receives its final session update with the resolved current act state and a one-line hook for the next session' "pulse skill: final world update is documented"
+  assert_contains "$PULSE_SKILL" 'the chapter and terminal output tell the same session story' "pulse skill: chapter and terminal story stay aligned"
+}
+
 test_saga_prompt_documents_parseable_contract() {
   assert_contains "$SAGA_PROMPT" 'It includes dispatched phases, returned transitions, human items, idle items, and labels that remain after the pulse' "saga prompt: pipeline state details are documented"
   assert_contains "$SAGA_PROMPT" 'Treat these details as inspiration only' "saga prompt: pipeline state is framed as inspiration"
@@ -105,6 +112,7 @@ test_pulse_skill_passes_required_context_to_story_subagent
 test_pulse_skill_requires_parseable_story_response
 test_pulse_skill_persists_updated_world_state
 test_pulse_skill_keeps_non_lore_output_unchanged
+test_pulse_skill_compiles_chapter_and_updates_world_at_session_end
 test_saga_prompt_documents_parseable_contract
 test_world_state_load_happens_before_lore_generation
 
