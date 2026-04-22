@@ -10,10 +10,11 @@
 #   tracker.sh issue create [--title "..."] [--body "..."] [--label X] [--parent <id>]
 #   tracker.sh issue close  <id>
 #   tracker.sh issue list   [--label X] [--json number,title] [--limit N]
-#   tracker.sh pr create    <id> --base X --head Y --body B
-#   tracker.sh pr view      <id> --json body,headRefName,baseRefName
+#   tracker.sh pr create    [<id>] --base X [--head Y] --body B [--title T] [--label L]
+#   tracker.sh pr view      <id> --json body,headRefName,baseRefName [--web] [-q .field]
 #   tracker.sh pr edit      <id> [--body "..."] [--add-label X] [--remove-label X]
 #   tracker.sh pr merge     <id> [--squash] [--delete-branch]
+#   tracker.sh pr list      [--search Q] [--json fields] [--limit N]
 set -eu
 
 # ============================================================
@@ -458,22 +459,73 @@ cmd_list() {
 # ============================================================
 
 pr_create() {
-  _id="$1"; shift
+  _id=""
   _base=""
   _head=""
   _body=""
+  _title=""  # accepted for gh compatibility, ignored
+  _label=""  # accepted for gh compatibility, ignored
+
+  # First positional arg (if not a flag) is the ID
+  if [ $# -gt 0 ]; then
+    case "$1" in
+      --*) ;;  # not a positional arg
+      *)  _id="$1"; shift ;;
+    esac
+  fi
 
   while [ $# -gt 0 ]; do
     case "$1" in
-      --base) [ $# -lt 2 ] && { echo "Error: --base requires a value" >&2; exit 1; }; _base="$2"; shift 2 ;;
-      --head) [ $# -lt 2 ] && { echo "Error: --head requires a value" >&2; exit 1; }; _head="$2"; shift 2 ;;
-      --body) [ $# -lt 2 ] && { echo "Error: --body requires a value" >&2; exit 1; }; _body="$2"; shift 2 ;;
+      --base)  [ $# -lt 2 ] && { echo "Error: --base requires a value" >&2; exit 1; }; _base="$2"; shift 2 ;;
+      --head)  [ $# -lt 2 ] && { echo "Error: --head requires a value" >&2; exit 1; }; _head="$2"; shift 2 ;;
+      --body)  [ $# -lt 2 ] && { echo "Error: --body requires a value" >&2; exit 1; }; _body="$2"; shift 2 ;;
+      --title) [ $# -lt 2 ] && { echo "Error: --title requires a value" >&2; exit 1; }; _title="$2"; shift 2 ;;
+      --label) [ $# -lt 2 ] && { echo "Error: --label requires a value" >&2; exit 1; }; _label="$2"; shift 2 ;;
       *) echo "Error: unknown argument: $1" >&2; exit 1 ;;
     esac
   done
 
-  if [ -z "$_base" ] || [ -z "$_head" ]; then
-    echo "Error: --base and --head are required" >&2
+  if [ -z "$_base" ]; then
+    echo "Error: --base is required" >&2
+    exit 1
+  fi
+
+  # --head defaults to current branch if omitted
+  if [ -z "$_head" ]; then
+    _head="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" || {
+      echo "Error: --head is required (could not detect current branch)" >&2
+      exit 1
+    }
+  fi
+
+  # If no positional ID, resolve from --title by finding a matching issue folder
+  if [ -z "$_id" ] && [ -n "$_title" ]; then
+    # Search plans
+    for _d in "$TRACKER_PATH"/*/; do
+      [ -d "$_d" ] || continue
+      _dname="$(basename "$_d")"
+      _dtitle="$(echo "$_dname" | sed 's/^[0-9]* *//')"
+      if [ "$_dtitle" = "$_title" ]; then
+        _id="$(echo "$_dname" | sed 's/ .*//')"
+        break
+      fi
+    done
+    # Search slices
+    if [ -z "$_id" ]; then
+      for _d in "$TRACKER_PATH"/*/slices/*/; do
+        [ -d "$_d" ] || continue
+        _dname="$(basename "$_d")"
+        _dtitle="$(echo "$_dname" | sed 's/^[0-9]*\(-[0-9]*\)* *//')"
+        if [ "$_dtitle" = "$_title" ]; then
+          _id="$(echo "$_dname" | sed 's/ .*//')"
+          break
+        fi
+      done
+    fi
+  fi
+
+  if [ -z "$_id" ]; then
+    echo "Error: could not determine issue ID (provide positional ID or --title)" >&2
     exit 1
   fi
 
@@ -488,18 +540,30 @@ pr_create() {
   if [ -n "$_body" ]; then
     printf '\n%s' "$_body" >> "$_progress"
   fi
+
+  # Output the issue ID (analogous to gh pr create returning the PR number)
+  echo "$_id"
 }
 
 pr_view() {
   _id="$1"; shift
   _json_flag=""
+  _query=""  # -q flag: accepted for gh compatibility, used to extract a single field
+  _web=false
 
   while [ $# -gt 0 ]; do
     case "$1" in
       --json) [ $# -lt 2 ] && { echo "Error: --json requires fields" >&2; exit 1; }; _json_flag="$2"; shift 2 ;;
+      -q)     [ $# -lt 2 ] && { echo "Error: -q requires a value" >&2; exit 1; }; _query="$2"; shift 2 ;;
+      --web)  _web=true; shift ;;
       *) echo "Error: unknown argument: $1" >&2; exit 1 ;;
     esac
   done
+
+  # --web is a no-op for local mode (no browser to open)
+  if [ "$_web" = true ]; then
+    return 0
+  fi
 
   if [ -z "$_json_flag" ]; then
     echo "Error: --json flag is required" >&2
@@ -529,10 +593,45 @@ pr_view() {
   # Trim leading blank line
   _body="$(echo "$_body" | sed '/./,$!d')"
 
-  printf '{"body":"%s","headRefName":"%s","baseRefName":"%s"}' \
-    "$(json_escape "$_body")" \
-    "$(json_escape "$_head")" \
-    "$(json_escape "$_base")"
+  # Build JSON output with all requested fields
+  _json="{"
+  _first_field=1
+  # Split comma-separated field list and output each requested field
+  _remaining="$_json_flag"
+  while [ -n "$_remaining" ]; do
+    _field="${_remaining%%,*}"
+    if [ "$_field" = "$_remaining" ]; then
+      _remaining=""
+    else
+      _remaining="${_remaining#*,}"
+    fi
+    if [ "$_first_field" -eq 1 ]; then _first_field=0; else _json="$_json,"; fi
+    case "$_field" in
+      body)             _json="$_json\"body\":\"$(json_escape "$_body")\"" ;;
+      headRefName)      _json="$_json\"headRefName\":\"$(json_escape "$_head")\"" ;;
+      baseRefName)      _json="$_json\"baseRefName\":\"$(json_escape "$_base")\"" ;;
+      number)           _json="$_json\"number\":\"$(json_escape "$_id")\"" ;;
+      mergeStateStatus) _json="$_json\"mergeStateStatus\":\"CLEAN\"" ;;
+      *)                _json="$_json\"$_field\":null" ;;
+    esac
+  done
+  _json="$_json}"
+
+  # If -q flag was given, extract the requested field value
+  if [ -n "$_query" ]; then
+    # Simple jq-style .field extraction (e.g. ".body", ".mergeStateStatus")
+    _qfield="$(echo "$_query" | sed 's/^\.//')"
+    case "$_qfield" in
+      body)             printf '%s' "$_body" ;;
+      headRefName)      printf '%s' "$_head" ;;
+      baseRefName)      printf '%s' "$_base" ;;
+      number)           printf '%s' "$_id" ;;
+      mergeStateStatus) printf '%s' "CLEAN" ;;
+      *)                printf 'null' ;;
+    esac
+  else
+    printf '%s' "$_json"
+  fi
 }
 
 pr_edit() {
@@ -615,6 +714,69 @@ pr_merge() {
   fi
 }
 
+pr_list() {
+  _search=""
+  _json_flag=""
+  _limit=""
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --search) [ $# -lt 2 ] && { echo "Error: --search requires a value" >&2; exit 1; }; _search="$2"; shift 2 ;;
+      --json)   [ $# -lt 2 ] && { echo "Error: --json requires fields" >&2; exit 1; }; _json_flag="$2"; shift 2 ;;
+      --limit)  [ $# -lt 2 ] && { echo "Error: --limit requires a value" >&2; exit 1; }; _limit="$2"; shift 2 ;;
+      *) echo "Error: unknown argument: $1" >&2; exit 1 ;;
+    esac
+  done
+
+  # List all issues that have a progress.md file
+  _first=1
+  _count=0
+  printf '['
+
+  # Search plans
+  for _pf in "$TRACKER_PATH"/*/progress.md; do
+    [ -f "$_pf" ] || continue
+    if [ -n "$_limit" ] && [ "$_count" -ge "$_limit" ]; then break; fi
+    _dir="$(dirname "$_pf")"
+    _dirname="$(basename "$_dir")"
+    _num="$(echo "$_dirname" | sed 's/ .*//')"
+    _title="$(extract_title "$_dir")"
+    _head="$(sed -n 's/^head: *//p' "$_pf" | head -1)"
+    # If --search is given, filter by head branch or title match
+    if [ -n "$_search" ]; then
+      case "$_head $_title" in
+        *${_search}*) ;; # match
+        *) continue ;;
+      esac
+    fi
+    if [ "$_first" -eq 1 ]; then _first=0; else printf ','; fi
+    json_list_item "$_num" "$_title"
+    _count=$((_count + 1))
+  done
+
+  # Search slices
+  for _pf in "$TRACKER_PATH"/*/slices/*/progress.md; do
+    [ -f "$_pf" ] || continue
+    if [ -n "$_limit" ] && [ "$_count" -ge "$_limit" ]; then break; fi
+    _dir="$(dirname "$_pf")"
+    _dirname="$(basename "$_dir")"
+    _num="$(echo "$_dirname" | sed 's/ .*//')"
+    _title="$(extract_title "$_dir")"
+    _head="$(sed -n 's/^head: *//p' "$_pf" | head -1)"
+    if [ -n "$_search" ]; then
+      case "$_head $_title" in
+        *${_search}*) ;; # match
+        *) continue ;;
+      esac
+    fi
+    if [ "$_first" -eq 1 ]; then _first=0; else printf ','; fi
+    json_list_item "$_num" "$_title"
+    _count=$((_count + 1))
+  done
+
+  printf ']'
+}
+
 # ============================================================
 # Main dispatch
 # ============================================================
@@ -661,10 +823,9 @@ case "$CMD_GROUP" in
   pr)
     case "$SUBCMD" in
       create)
-        if [ $# -lt 1 ]; then echo "Error: pr create requires an ID" >&2; exit 1; fi
         if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
         pr_create "$@"
-        if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: pr create $1"; fi
+        if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: pr create"; fi
         ;;
       view)
         if [ $# -lt 1 ]; then echo "Error: pr view requires an ID" >&2; exit 1; fi
@@ -679,6 +840,7 @@ case "$CMD_GROUP" in
         if [ $# -lt 1 ]; then echo "Error: pr merge requires an ID" >&2; exit 1; fi
         pr_merge "$@"
         ;;
+      list) pr_list "$@" ;;
       *) echo "Error: unknown pr subcommand: $SUBCMD" >&2; exit 1 ;;
     esac
     ;;

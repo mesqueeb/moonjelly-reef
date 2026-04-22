@@ -964,6 +964,195 @@ test_pr_dispatch() {
 }
 
 # ============================================================
+# PR CREATE — gh-compatible syntax (--title, --label, no positional ID)
+# ============================================================
+
+test_pr_create_gh_compat() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  # Call pr create without positional ID, using --title to resolve
+  id="$(t pr create --base main --head feat/my-feature --title "my-feature" --body "report" --label to-inspect 2>/dev/null)"
+
+  if [ "$id" = "1" ]; then
+    pass "pr create gh-compat: returns issue ID"
+  else
+    fail "pr create gh-compat: returns issue ID" "got: $id"
+  fi
+
+  if [ -f "$TRACKER_PATH/1 my-feature/progress.md" ]; then
+    pass "pr create gh-compat: creates progress.md"
+  else
+    fail "pr create gh-compat: creates progress.md" "file not found"
+  fi
+
+  content="$(cat "$TRACKER_PATH/1 my-feature/progress.md")"
+  if echo "$content" | grep -q "^head: feat/my-feature"; then
+    pass "pr create gh-compat: frontmatter has head"
+  else
+    fail "pr create gh-compat: frontmatter has head" "got: $content"
+  fi
+
+  teardown
+}
+
+test_pr_create_gh_compat_slice() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --label to-scope >/dev/null 2>&1
+  t issue create --title "auth-endpoint" --body "slice body" --label to-implement --parent 1 >/dev/null 2>&1
+  id="$(t pr create --base main --head feat/auth --title "auth-endpoint" --body "slice report" --label to-inspect 2>/dev/null)"
+
+  if [ "$id" = "1-1" ]; then
+    pass "pr create gh-compat slice: returns slice ID"
+  else
+    fail "pr create gh-compat slice: returns slice ID" "got: $id"
+  fi
+
+  if [ -f "$TRACKER_PATH/1 my-feature/slices/1-1 auth-endpoint/progress.md" ]; then
+    pass "pr create gh-compat slice: creates progress.md"
+  else
+    fail "pr create gh-compat slice: creates progress.md" "file not found"
+  fi
+
+  teardown
+}
+
+# ============================================================
+# PR VIEW — -q flag, mergeStateStatus, number, --web
+# ============================================================
+
+test_pr_view_q_flag() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "the report body" >/dev/null 2>&1
+  output="$(t pr view 1 --json body -q .body 2>/dev/null)"
+
+  if [ "$output" = "the report body" ]; then
+    pass "pr view -q: extracts body field"
+  else
+    fail "pr view -q: extracts body field" "got: $output"
+  fi
+
+  teardown
+}
+
+test_pr_view_merge_state_status() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
+  output="$(t pr view 1 --json mergeStateStatus -q .mergeStateStatus 2>/dev/null)"
+
+  if [ "$output" = "CLEAN" ]; then
+    pass "pr view: mergeStateStatus returns CLEAN"
+  else
+    fail "pr view: mergeStateStatus returns CLEAN" "got: $output"
+  fi
+
+  teardown
+}
+
+test_pr_view_number_field() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
+  output="$(t pr view 1 --json number,body,headRefName,baseRefName 2>/dev/null)"
+
+  if echo "$output" | grep -q '"number":"1"'; then
+    pass "pr view: number field included"
+  else
+    fail "pr view: number field included" "got: $output"
+  fi
+
+  teardown
+}
+
+test_pr_view_web_noop() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
+
+  if t pr view 1 --web >/dev/null 2>&1; then
+    pass "pr view --web: no-op succeeds"
+  else
+    fail "pr view --web: no-op succeeds" "exited non-zero"
+  fi
+
+  teardown
+}
+
+# ============================================================
+# PR LIST — #119 rework
+# ============================================================
+
+test_pr_list() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
+  output="$(t pr list --json number,title 2>/dev/null)"
+
+  if echo "$output" | grep -q '"1"'; then
+    pass "pr list: includes issue with progress.md"
+  else
+    fail "pr list: includes issue with progress.md" "got: $output"
+  fi
+
+  teardown
+}
+
+test_pr_list_search() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t issue create --title "other-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
+  t pr create 2 --base main --head feat/other --body "report" >/dev/null 2>&1
+  output="$(t pr list --search "my-feature" --json number,title 2>/dev/null)"
+
+  if echo "$output" | grep -q '"1"'; then
+    pass "pr list --search: finds matching PR"
+  else
+    fail "pr list --search: finds matching PR" "got: $output"
+  fi
+
+  if echo "$output" | grep -q '"2"'; then
+    fail "pr list --search: excludes non-matching PR" "found 2 in output"
+  else
+    pass "pr list --search: excludes non-matching PR"
+  fi
+
+  teardown
+}
+
+test_pr_list_empty() {
+  setup
+  cd "$REPO"
+
+  output="$(t pr list --json number,title 2>/dev/null)"
+
+  if [ "$output" = "[]" ]; then
+    pass "pr list: returns empty array when no PRs"
+  else
+    fail "pr list: returns empty array when no PRs" "got: $output"
+  fi
+
+  teardown
+}
+
+# ============================================================
 # Run all tests
 # ============================================================
 
@@ -1012,6 +1201,15 @@ test_pr_merge_deletes_head_branch_from_origin
 test_pr_merge_no_progress_fails
 test_pr_merge_commit_message
 test_pr_dispatch
+test_pr_create_gh_compat
+test_pr_create_gh_compat_slice
+test_pr_view_q_flag
+test_pr_view_merge_state_status
+test_pr_view_number_field
+test_pr_view_web_noop
+test_pr_list
+test_pr_list_search
+test_pr_list_empty
 
 echo ""
 if [ "$FAIL" -gt 0 ]; then
