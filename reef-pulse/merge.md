@@ -12,7 +12,7 @@ Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the is
 
 An issue tagged `to-merge` with an open PR.
 
-Read the item to find the PR reference. Check the Plan context to determine whether this is **single-slice** (target branch = base branch) or **multi-slice** (target branch forks from base branch).
+Read the item to find the PR reference. Check whether the issue has a `parent-plan` field in frontmatter — this determines which merge path to take.
 
 Set the pre-fetch variables:
 
@@ -79,7 +79,7 @@ Clean up the worktree:
 ./worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
-If tests failed, stop here. Do not proceed to single-slice or multi-slice steps.
+If tests failed, stop here. Do not proceed to the delegate step.
 
 ## Delegate
 

@@ -135,7 +135,7 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ## 7. Update the issue and label
 
-Persist the PR reference on the issue body so downstream phases (inspect, rework, merge) can find it. Update the `pr-branch` frontmatter field to `$PR_BRANCH` (the branch the PR lives on). For single-slice plans where `pr-branch` was set to `—` by slice-single.md, this fills in the actual value.
+Persist the PR reference on the issue body so downstream phases (inspect, rework, merge) can find it. Update the `pr-branch` frontmatter field to `$PR_BRANCH` (the branch the PR lives on).
 
 ```sh
 ISSUE_BODY="{issue body with PR reference and pr-branch updated}"

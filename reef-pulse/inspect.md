@@ -8,7 +8,7 @@
 
 ## Input
 
-This skill requires a specific issue (slice or plan): e.g. `#55` or `my-feature/001-auth-endpoint`.
+This skill requires a specific issue: e.g. `#55` or `my-feature/001-auth-endpoint`.
 
 Read the issue to find the PR reference.
 
