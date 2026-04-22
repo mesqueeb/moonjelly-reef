@@ -10,6 +10,29 @@ printf '\033[36m'; cat reef-pulse/banner.txt; printf '\033[0m'
 
 ## Steps
 
+### 0. Check for git
+
+Worktrees and branches (used by the reef's implement/inspect/merge cycle) require git. Check whether the current project has a git repository:
+
+```sh
+git rev-parse --git-dir 2>/dev/null
+```
+
+- **If git is present** (command succeeds): skip this step silently and continue to step 1.
+- **If git is missing** (command fails): offer to initialize one. Present this message to the user:
+
+> "This project doesn't seem to use git. So I'll treat `{dir}` as the project root folder and init a `.git` folder, is that OK? (It's so the reef can better organise its efforts when multiple tasks are worked on at once)."
+
+Replace `{dir}` with the absolute path to the current working directory.
+
+If the user agrees, run:
+
+```sh
+git init
+```
+
+If the user declines, warn them that the reef cannot function without git and stop setup.
+
 ### 1. Detect issue tracker
 
 Look for clues in the repo:
