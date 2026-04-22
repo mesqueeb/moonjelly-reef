@@ -13,8 +13,8 @@ This skill requires a specific issue: e.g. `#42` or `my-feature`.
 Read the plan. It must have:
 
 - Success criteria
-- Coverage matrix
-- Target branch name (in metadata)
+- Coverage matrix (if multi-slice)
+- `pr-branch` in frontmatter
 - Slice PRs with "Ambiguous choices" sections
 
 Set the pre-fetch variables:
@@ -34,7 +34,6 @@ Set the post-fetch variables (after reading the plan body):
 ```sh
 ISSUE_TITLE="{from issue body}"
 BASE_BRANCH="{from issue body}"
-TARGET_BRANCH="{from issue body}"
 PR_BRANCH="{from issue body pr-branch field}"
 WORKTREE_PATH=".worktrees/$ISSUE_ID-ratify"
 ```
@@ -57,7 +56,7 @@ Think like a CTO doing a final walkthrough before shipping. Product-focused, big
 
 ### 1. Get on the PR branch
 
-Enter a worktree forked from $PR_BRANCH — for multi-slice this is the target branch where all slice PRs are merged; for single-slice this is the slice's own branch:
+Enter a worktree forked from $PR_BRANCH — for multi-slice this is the integration branch where all sub-issue PRs are merged; for single-slice this is the plan's own PR branch:
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
@@ -83,7 +82,7 @@ For each success criterion in the plan:
 
 - Read the actual code on the target branch that satisfies it. Trace the full path — don't check module by module, check end-to-end.
 - Verify from the **consumer's perspective**. If the criterion says "the legacy UI must render identically", don't just check that the data is correct — check that it's in the format the legacy UI expects. (Prevents painpoint A4.)
-- Cross-reference the coverage matrix: which slices were supposed to cover this criterion? Did they actually cover it when composed together?
+- Cross-reference the coverage matrix: which issues were supposed to cover this criterion? Did they actually cover it when composed together?
 
 Mark each criterion: ✓ met, ✗ not met (with explanation).
 
@@ -189,7 +188,7 @@ Format the report as a collapsible block with local timestamp (`yyyy/MM/dd HH:mm
 ```sh
 REPORT="{ratify-report}" # <details><summary><h3>🦭 Ratify report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
 # if no PR exists:
-./tracker.sh pr create --base "$BASE_BRANCH" --head "$TARGET_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-ratify
+./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-ratify
 # if PR exists, append:
 PR_NUMBER="{from pr create output or existing PR}"
 PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)

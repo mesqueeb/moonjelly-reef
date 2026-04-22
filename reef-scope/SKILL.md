@@ -60,7 +60,7 @@ Read the issue and any existing decision record. Assess: is this a **feature**, 
 
 ## 3. Branches
 
-Suggest a base branch and a target branch name in a single line. Derive the target branch name from the issue title (kebab-case, short). For example:
+Suggest a base branch and a PR branch name in a single line. Derive the PR branch name from the issue title (kebab-case, short). For example:
 
 > "Shall we branch off `main` and call the branch `guard-branch-locking`?"
 
@@ -95,8 +95,8 @@ If no overlapping work is found, continue silently.
 Set variables from the discussion:
 
 ```sh
-BASE_BRANCH="{from base branch discussion}"
-TARGET_BRANCH="{from branch discussion}"
+BASE_BRANCH="{from branch discussion}"
+PR_BRANCH="{from branch discussion}"
 ```
 
 The plan gets **prepended** to the evolving file (pushing the decision record down) which becomes our ISSUE_BODY variable. The decision record remains at the bottom for reference.
@@ -106,7 +106,7 @@ The plan body starts with frontmatter that downstream phases will read:
 ```markdown
 ---
 base-branch: $BASE_BRANCH
-target-branch: $TARGET_BRANCH
+pr-branch: $PR_BRANCH
 ---
 ```
 
@@ -135,7 +135,7 @@ Metrics section format:
 
 | Phase | Target    | Duration  | Tokens | Tool uses | Outcome      | Date               |
 | ----- | --------- | --------- | ------ | --------- | ------------ | ------------------ |
-| scope | #$PLAN_ID | $DURATION | —      | —         | plan created | {yyyy-MM-dd HH:mm} |
+| scope | #$ISSUE_ID | $DURATION | —      | —         | plan created | {yyyy-MM-dd HH:mm} |
 
 <!-- end metrics table -->
 ```

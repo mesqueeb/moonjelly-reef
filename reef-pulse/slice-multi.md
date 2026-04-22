@@ -13,34 +13,34 @@ Multi-slice flow — delegated from [slice.md](slice.md).
 The router has already fetched context and drafted 2+ slices. Set post-fetch variables:
 
 ```sh
-TARGET_BRANCH="{from plan body}"
+PR_BRANCH="{from plan body pr-branch field}"
 BASE_BRANCH="{from plan body}"
 WORKTREE_PATH=".worktrees/$ISSUE_ID-slice"
 ```
 
 ## 1. Enter worktree
 
-Enter a worktree forked from $TARGET_BRANCH to read the codebase for informed slicing decisions:
+Enter a worktree forked from $BASE_BRANCH to read the codebase for informed slicing decisions:
 
 ```sh
-WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
 ```
 
-Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$TARGET_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$PR_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
 
 ```sh
-./tracker.sh issue edit "$PLAN_ID" --add-label blocked-with-conflicts
+./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
 ```
 
 Stop — do not proceed.
 
-If the target branch does not exist on origin yet, create it:
+If the PR branch does not exist on origin yet, create it:
 
 ```sh
-git push -u origin "$TARGET_BRANCH"
+git push -u origin "$PR_BRANCH"
 ```
 
-If the plan says to work on the current branch (no new target branch), skip the branch creation but still create a worktree to read the codebase.
+If the plan says to work on the current branch (no new PR branch), skip the branch creation but still create a worktree to read the codebase.
 
 ## 2. Build the coverage matrix
 
@@ -86,9 +86,8 @@ Slice body template:
 
 ```markdown
 ---
-parent-plan: "#$PLAN_ID"
-base-branch: $BASE_BRANCH
-target-branch: $TARGET_BRANCH
+parent-plan: "#$ISSUE_ID"
+base-branch: $PR_BRANCH
 pr-branch: —
 
 ---
@@ -118,7 +117,7 @@ Label each slice: `to-implement` if no blockers, `to-await-waves` if blocked.
 
 ## 5. Update the plan
 
-Add `pr-branch: $TARGET_BRANCH` to the plan frontmatter (for multi-slice, the plan PR lives on the target branch). Append the coverage matrix and a listing of all created sub-issues with their labels to the plan body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-ratify` once all slices are done.
+Set `pr-branch: $PR_BRANCH` in the plan frontmatter (already set by reef-scope, but update if changed). Append the coverage matrix and a listing of all created sub-issues with their labels to the plan body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-ratify` once all slices are done.
 
 ```sh
 ISSUE_BODY="{plan body with pr-branch in frontmatter and coverage matrix appended}"

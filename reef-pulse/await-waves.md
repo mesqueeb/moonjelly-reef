@@ -29,7 +29,6 @@ Set the post-fetch variables (after reading the issue title and body):
 ```sh
 ISSUE_TITLE="{from issue title, stripping [await: ...] suffix}"
 BASE_BRANCH="{from issue body}"
-TARGET_BRANCH="{from issue body}"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-await-waves"
 ```
 
@@ -64,13 +63,13 @@ Promotion is final. The worktree step below is best-effort course correction.
 
 ## 3. Course correction
 
-Enter a worktree forked from $TARGET_BRANCH to read up-to-date code (earlier work may have changed the codebase):
+Enter a worktree forked from $BASE_BRANCH to read up-to-date code (earlier work may have changed the codebase):
 
 ```sh
-WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
 ```
 
-Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$TARGET_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$BASE_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts

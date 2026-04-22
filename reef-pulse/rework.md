@@ -28,8 +28,8 @@ Set the post-fetch variables (after reading the issue body). Extract from frontm
 
 ```sh
 ISSUE_TITLE="{from issue body}"
+BASE_BRANCH="{from issue body}"
 PR_BRANCH="{from issue body pr-branch field}"
-TARGET_BRANCH="{from issue body}"
 PR_NUMBER="{from issue body}"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
 ```
@@ -43,7 +43,7 @@ For plan issues, read success criteria from the plan body instead of acceptance 
 Enter a worktree forked from $PR_BRANCH to apply fixes to the existing PR:
 
 ```sh
-WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
 ```
 
 Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to the working branch using explicit refspec (no force), then continue. If unresolvable:

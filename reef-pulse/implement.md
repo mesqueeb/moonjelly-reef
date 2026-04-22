@@ -17,10 +17,9 @@ If no issue is given, look for issues tagged `to-implement`. If multiple, pick t
 Read the issue. It must contain:
 
 - Acceptance criteria
-- Target branch name (in frontmatter)
-- Parent plan reference (if multi-slice)
-
-If the target branch is missing from the issue, check the plan frontmatter. The target branch is always set — for single-slice it equals the base branch, for multi-slice it's a dedicated branch.
+- `base-branch` in frontmatter (where the PR merges into)
+- `pr-branch` in frontmatter (the branch the PR lives on — set by slice-single or passed to implement)
+- Parent plan reference (if this is a sub-issue)
 
 Set the pre-fetch variables:
 
@@ -39,8 +38,7 @@ Set the post-fetch variables (after reading the issue body):
 ```sh
 ISSUE_TITLE="{from issue body}"
 BASE_BRANCH="{from issue body}"
-TARGET_BRANCH="{from issue body}"
-PR_BRANCH="{PR branch, e.g. feat/001-auth-endpoint}"
+PR_BRANCH="{from issue frontmatter pr-branch field}"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-implement"
 ```
 
@@ -48,13 +46,13 @@ WORKTREE_PATH=".worktrees/$ISSUE_TITLE-implement"
 
 This is non-negotiable. Every step must pass before writing any code.
 
-Enter a worktree forked from $TARGET_BRANCH so you start from a clean integration point (earlier slices' work is already merged there):
+Enter a worktree forked from $BASE_BRANCH so you start from a clean integration point:
 
 ```sh
-WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
 ```
 
-Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$TARGET_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$BASE_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
@@ -121,10 +119,10 @@ REPORT="{report-content}" # starts with: closes #$ISSUE_ID $ISSUE_TITLE\n\n
 ```
 
 ```sh
-./tracker.sh pr create --base "$TARGET_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-inspect
+./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$REPORT" --label to-inspect
 ```
 
-The PR targets the **target branch** (which equals `{base-branch}` for single-slice work).
+The PR targets `$BASE_BRANCH` — the branch it merges into.
 
 ```sh
 PR_NUMBER="{from pr create output}"
