@@ -1,6 +1,6 @@
-# merge-single
+# merge-no-parent
 
-Single-slice merge path — delegated from [merge.md](merge.md).
+No-parent merge path — delegated from [merge.md](merge.md).
 
 > **Shell blocks are literal commands** — `./tracker.sh` is a real script next to this file. Execute it as written; do not substitute with raw git commands.
 >
@@ -26,7 +26,7 @@ Remove `to-merge`, add `to-ratify`:
 ```sh
 nextPhase="to-ratify"
 planPr="$PR_NUMBER" # inherited from router context
-summary="Single slice verified — forwarding to ratify for holistic review"
+summary="No parent — forwarding to ratify for holistic review"
 ```
 
 Report these three variables to the caller.

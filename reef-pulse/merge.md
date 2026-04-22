@@ -85,5 +85,5 @@ If tests failed, stop here. Do not proceed to single-slice or multi-slice steps.
 
 After the pre-merge check passes, check: **does the issue have a `parent-plan` field in frontmatter?**
 
-- **No `parent-plan`** — read and execute [merge-single.md](merge-single.md) (fast path: label `to-ratify`, human merges via `/reef-land`)
-- **Has `parent-plan`** — read and execute [merge-multi.md](merge-multi.md) (full flow: squash merge PR, check siblings, check completion)
+- **No `parent-plan`** — read and execute [merge-no-parent.md](merge-no-parent.md) (fast path: label `to-ratify`, human merges via `/reef-land`)
+- **Has `parent-plan`** — read and execute [merge-has-parent.md](merge-has-parent.md) (full flow: squash merge PR, check siblings, check completion)

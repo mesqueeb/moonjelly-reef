@@ -1,6 +1,6 @@
-# merge-multi
+# merge-has-parent
 
-Multi-slice merge flow — delegated from [merge.md](merge.md).
+Has-parent merge flow — delegated from [merge.md](merge.md).
 
 > **Shell blocks are literal commands** — `./tracker.sh` is a real script next to this file. Execute it as written; do not substitute with raw git commands.
 >
@@ -10,7 +10,7 @@ Multi-slice merge flow — delegated from [merge.md](merge.md).
 
 ## Input (from router)
 
-The router has already fetched context, set variables, and completed the pre-merge check. This is a multi-slice plan where the target branch forks from the base branch.
+The router has already fetched context, set variables, and completed the pre-merge check. This issue has a `parent-plan` in its frontmatter — it is a sub-issue of a multi-slice plan.
 
 Set the variables needed for this path:
 
