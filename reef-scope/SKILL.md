@@ -16,7 +16,7 @@ Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the is
 Record the start time at invocation:
 
 ```sh
-START_TIME = {current UTC timestamp}
+START_TIME="{current UTC timestamp}"
 ```
 
 ## Input
@@ -123,8 +123,8 @@ PLAN_CONTENT="{plan-content}" # frontmatter + plan body from context
 Compute the duration from `$START_TIME` to now. Read the current plan issue body, then append a metrics section at the bottom:
 
 ```sh
-DURATION = {human-readable duration since START_TIME, e.g. "42s", "1m 12s"}
-PLAN_BODY = {current plan issue body with metrics section appended}
+DURATION="{human-readable duration since START_TIME}" # e.g. "42s", "1m 12s"
+PLAN_BODY="{current plan issue body with metrics section appended}"
 ```
 
 ```sh
@@ -139,6 +139,7 @@ Metrics section format:
 | Phase | Target    | Duration  | Tokens | Tool uses | Outcome      | Date               |
 | ----- | --------- | --------- | ------ | --------- | ------------ | ------------------ |
 | scope | #$PLAN_ID | $DURATION | —      | —         | plan created | {yyyy-MM-dd HH:mm} |
+
 <!-- end metrics table -->
 ```
 

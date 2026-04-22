@@ -6,7 +6,7 @@
 #
 # Usage:
 #   tracker.sh issue view   <id> --json body,title,labels
-#   tracker.sh issue edit   <id> [--body "..."] [--remove-label X] [--add-label Y]
+#   tracker.sh issue edit   <id> [--title "..."] [--body "..."] [--remove-label X] [--add-label Y]
 #   tracker.sh issue create [--title "..."] [--body "..."] [--label X] [--parent <id>]
 #   tracker.sh issue close  <id>
 #   tracker.sh issue list   [--label X] [--json number,title] [--limit N]
@@ -357,12 +357,14 @@ cmd_edit() {
   _body=""
   _remove_label=""
   _add_label=""
+  _title=""
 
   while [ $# -gt 0 ]; do
     case "$1" in
       --body)         [ $# -lt 2 ] && { echo "Error: --body requires a value" >&2; exit 1; }; _body="$2"; shift 2 ;;
       --remove-label) [ $# -lt 2 ] && { echo "Error: --remove-label requires a value" >&2; exit 1; }; _remove_label="$2"; shift 2 ;;
       --add-label)    [ $# -lt 2 ] && { echo "Error: --add-label requires a value" >&2; exit 1; }; _add_label="$2"; shift 2 ;;
+      --title)        [ $# -lt 2 ] && { echo "Error: --title requires a value" >&2; exit 1; }; _title="$2"; shift 2 ;;
       *) echo "Error: unknown argument: $1" >&2; exit 1 ;;
     esac
   done
@@ -373,6 +375,8 @@ cmd_edit() {
     exit 1
   fi
 
+  _dir="$(dirname "$_file")"
+
   # Update body if requested
   if [ -n "$_body" ]; then
     printf '%s' "$_body" > "$_file"
@@ -380,7 +384,6 @@ cmd_edit() {
 
   # Rename label if requested
   if [ -n "$_remove_label" ] && [ -n "$_add_label" ]; then
-    _dir="$(dirname "$_file")"
     _basename="$(basename "$_file")"
     _new_basename="$(echo "$_basename" | sed "s/\\[$_remove_label\\]/[$_add_label]/")"
     if [ "$_basename" = "$_new_basename" ]; then
@@ -388,6 +391,14 @@ cmd_edit() {
       exit 1
     fi
     mv "$_file" "$_dir/$_new_basename"
+  fi
+
+  # Rename directory (title) if requested
+  if [ -n "$_title" ]; then
+    _parent_dir="$(dirname "$_dir")"
+    _id_part="$(basename "$_dir" | sed 's/ .*//')"
+    _new_dir="$_parent_dir/$_id_part $_title"
+    mv "$_dir" "$_new_dir"
   fi
 }
 
@@ -407,48 +418,88 @@ cmd_close() {
   mv "$_file" "$_dir/$_new_basename"
 }
 
+json_list_item_labeled() {
+  _number="$1"
+  _title="$2"
+  _lbl="$3"
+  printf '{"number":"%s","title":"%s","labels":[{"name":"%s"}]}' \
+    "$(json_escape "$_number")" \
+    "$(json_escape "$_title")" \
+    "$(json_escape "$_lbl")"
+}
+
 cmd_list() {
   _label=""
+  _search=""
   _json_flag=""
   _limit=""
 
   while [ $# -gt 0 ]; do
     case "$1" in
-      --label) [ $# -lt 2 ] && { echo "Error: --label requires a value" >&2; exit 1; }; _label="$2"; shift 2 ;;
-      --json)  [ $# -lt 2 ] && { echo "Error: --json requires fields" >&2; exit 1; }; _json_flag="$2"; shift 2 ;;
-      --limit) [ $# -lt 2 ] && { echo "Error: --limit requires a value" >&2; exit 1; }; _limit="$2"; shift 2 ;;
+      --label)  [ $# -lt 2 ] && { echo "Error: --label requires a value" >&2; exit 1; }; _label="$2"; shift 2 ;;
+      --search) [ $# -lt 2 ] && { echo "Error: --search requires a value" >&2; exit 1; }; _search="$2"; shift 2 ;;
+      --json)   [ $# -lt 2 ] && { echo "Error: --json requires fields" >&2; exit 1; }; _json_flag="$2"; shift 2 ;;
+      --limit)  [ $# -lt 2 ] && { echo "Error: --limit requires a value" >&2; exit 1; }; _limit="$2"; shift 2 ;;
       *) echo "Error: unknown argument: $1" >&2; exit 1 ;;
     esac
   done
+
+  # Extract label:X qualifiers from --search string (OR semantics)
+  if [ -n "$_search" ]; then
+    _labels=""
+    _tmp="$_search"
+    while [ -n "$_tmp" ]; do
+      case "$_tmp" in
+        *label:*)
+          _tmp="${_tmp#*label:}"
+          _lname="${_tmp%% *}"
+          _labels="$_labels $_lname"
+          ;;
+        *)
+          _tmp=""
+          ;;
+      esac
+    done
+  else
+    _labels="$_label"
+  fi
 
   _first=1
   _count=0
   printf '['
 
-  # Search plans
-  for _f in "$TRACKER_PATH"/*/\["$_label"\]\ plan.md; do
-    [ -f "$_f" ] || continue
-    if [ -n "$_limit" ] && [ "$_count" -ge "$_limit" ]; then break; fi
-    _dir="$(dirname "$_f")"
-    _dirname="$(basename "$_dir")"
-    _num="$(echo "$_dirname" | sed 's/ .*//')"
-    _title="$(extract_title "$_dir")"
-    if [ "$_first" -eq 1 ]; then _first=0; else printf ','; fi
-    json_list_item "$_num" "$_title"
-    _count=$((_count + 1))
-  done
+  for _lbl in $_labels; do
+    # Search plans
+    for _f in "$TRACKER_PATH"/*/\["$_lbl"\]\ plan.md; do
+      [ -f "$_f" ] || continue
+      if [ -n "$_limit" ] && [ "$_count" -ge "$_limit" ]; then break; fi
+      _dir="$(dirname "$_f")"
+      _dirname="$(basename "$_dir")"
+      _num="$(echo "$_dirname" | sed 's/ .*//')"
+      _title="$(extract_title "$_dir")"
+      if [ "$_first" -eq 1 ]; then _first=0; else printf ','; fi
+      case "$_json_flag" in
+        *labels*) json_list_item_labeled "$_num" "$_title" "$_lbl" ;;
+        *)        json_list_item "$_num" "$_title" ;;
+      esac
+      _count=$((_count + 1))
+    done
 
-  # Search slices
-  for _f in "$TRACKER_PATH"/*/slices/*/\["$_label"\]\ slice.md; do
-    [ -f "$_f" ] || continue
-    if [ -n "$_limit" ] && [ "$_count" -ge "$_limit" ]; then break; fi
-    _dir="$(dirname "$_f")"
-    _dirname="$(basename "$_dir")"
-    _num="$(echo "$_dirname" | sed 's/ .*//')"
-    _title="$(extract_title "$_dir")"
-    if [ "$_first" -eq 1 ]; then _first=0; else printf ','; fi
-    json_list_item "$_num" "$_title"
-    _count=$((_count + 1))
+    # Search slices
+    for _f in "$TRACKER_PATH"/*/slices/*/\["$_lbl"\]\ slice.md; do
+      [ -f "$_f" ] || continue
+      if [ -n "$_limit" ] && [ "$_count" -ge "$_limit" ]; then break; fi
+      _dir="$(dirname "$_f")"
+      _dirname="$(basename "$_dir")"
+      _num="$(echo "$_dirname" | sed 's/ .*//')"
+      _title="$(extract_title "$_dir")"
+      if [ "$_first" -eq 1 ]; then _first=0; else printf ','; fi
+      case "$_json_flag" in
+        *labels*) json_list_item_labeled "$_num" "$_title" "$_lbl" ;;
+        *)        json_list_item "$_num" "$_title" ;;
+      esac
+      _count=$((_count + 1))
+    done
   done
 
   printf ']'

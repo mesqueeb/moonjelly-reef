@@ -89,37 +89,46 @@ At the start of each pulse iteration (including recursive calls), increment the 
 Read the config to determine the tracker type, then scan for all tagged issues.
 
 ```sh
-# Scan all reef-tagged issues
-./tracker.sh issue list --label "to-scope" --json number,title --limit 100
-./tracker.sh issue list --label "to-slice" --json number,title --limit 100
-./tracker.sh issue list --label "to-await-waves" --json number,title --limit 100
-./tracker.sh issue list --label "to-implement" --json number,title --limit 100
-./tracker.sh issue list --label "to-inspect" --json number,title --limit 100
-./tracker.sh issue list --label "to-rework" --json number,title --limit 100
-./tracker.sh issue list --label "to-merge" --json number,title --limit 100
-./tracker.sh issue list --label "to-ratify" --json number,title --limit 100
-./tracker.sh issue list --label "to-land" --json number,title --limit 100
+# Scan all reef-tagged issues in a single query
+./tracker.sh issue list --json number,title,labels --limit 100 \
+  --search 'label:to-scope OR label:to-slice OR label:to-await-waves OR label:to-implement OR label:to-inspect OR label:to-rework OR label:to-merge OR label:to-ratify OR label:to-land'
 ```
 
-Run these queries in parallel where possible for performance.
+### Step 2. Dispatch automated (🌊) work — Flow wave
 
-### Step 2. Dispatch automated (🌊) work
-
-**Do NOT ask the user for confirmation. Dispatch immediately.** The labels are the authorization — if an item is labelled for automated work, dispatch it without hesitation. Dispatch all items in parallel via sub-agents. When agent teams are supported in the environment, they can be used to parallelise items linked to the same plan.
+**Do NOT ask the user for confirmation. Dispatch immediately.** The labels are the authorization — if an item is labelled for automated work, dispatch it without hesitation.
 
 **CRITICAL: Do NOT use `isolation: "worktree"` when spawning sub-agents.** Each phase manages its own worktree via `worktree-enter.sh` (fetches from origin, forks from the correct remote branch). Platform isolation bypasses this and causes merge conflicts.
 
+**Flow wave**: dispatch all non-`to-await-waves` items in parallel via sub-agents. When agent teams are supported in the environment, they can be used to parallelise items linked to the same plan. Wait for all flow agents to complete before proceeding to the ebb wave.
+
 For each item, spawn a sub-agent with: `"Read and follow $SKILL_DIR/{file}. Target: #{number}."`
 
-| Label            | File                        |
-| ---------------- | --------------------------- |
-| `to-slice`       | `$SKILL_DIR/slice.md`       |
-| `to-await-waves` | `$SKILL_DIR/await-waves.md` |
-| `to-implement`   | `$SKILL_DIR/implement.md`   |
-| `to-inspect`     | `$SKILL_DIR/inspect.md`     |
-| `to-rework`      | `$SKILL_DIR/rework.md`      |
-| `to-merge`       | `$SKILL_DIR/merge.md`       |
-| `to-ratify`      | `$SKILL_DIR/ratify.md`      |
+| Label          | File                      |
+| -------------- | ------------------------- |
+| `to-slice`     | `$SKILL_DIR/slice.md`     |
+| `to-implement` | `$SKILL_DIR/implement.md` |
+| `to-inspect`   | `$SKILL_DIR/inspect.md`   |
+| `to-rework`    | `$SKILL_DIR/rework.md`    |
+| `to-merge`     | `$SKILL_DIR/merge.md`     |
+| `to-ratify`    | `$SKILL_DIR/ratify.md`    |
+
+### Step 2a. Ebb wave — gated dispatch of to-await-waves items
+
+After all flow agents complete, rescan `to-await-waves` items. For each item, parse the `[await: ...]` suffix from its title to find blocker IDs, then check each blocker's label:
+
+```sh
+DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. #42
+```
+
+```sh
+./tracker.sh issue view "$DEPENDENCY_ID" --json labels
+```
+
+- If **all** blockers have the `landed` label: dispatch the item via sub-agent (`$SKILL_DIR/await-waves.md`).
+- If **any** blocker is not `landed`: skip — do not dispatch. It stays `to-await-waves` and will be re-evaluated next pulse.
+
+If the `[await: ...]` suffix is missing or malformed, dispatch anyway — `await-waves` itself catches problems before promoting.
 
 ### Step 2b. Print dispatched agents
 
@@ -128,12 +137,12 @@ Immediately after dispatching, print each dispatched agent with its phase emoji.
 | Label            | Phase emoji |
 | ---------------- | ----------- |
 | `to-slice`       | `𐃆🐋`       |
-| `to-await-waves` | `🪸`        |
 | `to-implement`   | `🐙`        |
 | `to-inspect`     | `🧿`        |
 | `to-rework`      | `🦀`        |
 | `to-merge`       | `🐢`        |
 | `to-ratify`      | `🦭`        |
+| `to-await-waves` | `🪸`        |
 
 The narwhal (slice phase) always uses both characters `𐃆🐋`, not just the emoji.
 
@@ -143,7 +152,7 @@ The narwhal (slice phase) always uses both characters `𐃆🐋`, not just the e
   🧿  #53  "db migration safety"
 ```
 
-After dispatching, record the count of automated phases dispatched this iteration:
+After both flow and ebb waves complete, record the combined count of automated phases dispatched this iteration:
 
 ```sh
 AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
@@ -220,6 +229,7 @@ After all dispatched agents complete, collect from each: task notification metad
 | --------- | ------ | -------- | ------ | --------- | ------------- | ---------------- |
 | implement | #55    | 42s      | 12 340 | 18        | ✅ PR created | 2026-04-20 14:30 |
 | inspect   | #53    | 25s      | 8 200  | 12        | ✅ passed     | 2026-04-20 14:31 |
+
 <!-- end metrics table -->
 ```
 
@@ -263,6 +273,7 @@ Example:
 | slice | #15 | 45s | 8 100 | 10 | slices created | 2026/04/18 | 09:05 |
 | ratify | — | 1m 5s | 15 200 | 20 | pass | 2026/04/20 | 14:35 |
 | **Total** | | **5m 30s** | **62 359** | **87** | | | |
+
 <!-- end metrics table -->
 ```
 

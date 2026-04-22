@@ -39,6 +39,14 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```sh
   git fetch origin "$TRACKER_BRANCH" && git checkout "$TRACKER_BRANCH" && git pull
   ```
+- set-variables — ebb wave: per to-await-waves item
+  ```sh
+  DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. #42
+  ```
+- dep-check-ebb — gate dispatch: check each to-await-waves blocker before dispatching
+  ```sh
+  ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
+  ```
 - set-variables
   ```sh
   AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
@@ -68,7 +76,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 
 - set-variables
   ```sh
-  START_TIME = {current UTC timestamp}
+  START_TIME="{current UTC timestamp}"
   ```
 - set-variables
   ```sh
@@ -103,8 +111,8 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  DURATION = {human-readable duration since START_TIME, e.g. "42s", "1m 12s"}
-  PLAN_BODY = {current plan issue body with metrics section appended}
+  DURATION="{human-readable duration since START_TIME}" # e.g. "42s", "1m 12s"
+  PLAN_BODY="{current plan issue body with metrics section appended}"
   ```
 - update-tracker
   ```sh
@@ -129,10 +137,6 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   PR_NUMBER="{from plan body or already known}"
   BASE_BRANCH="{from plan body}"
   PR_BODY="{the PR body content — this is the ratify report}"
-  ```
-- fetch-pr-comments-and-reviews
-  ```sh
-  ./tracker.sh pr view "$PR_NUMBER" --json comments,reviews # if not already fetched
   ```
 - phase-specific
 - set-variables — if change-requests
@@ -234,7 +238,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - enter-worktree
   ```sh
-  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - create-remote-branch
   ```sh
@@ -243,7 +247,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 - phase-specific
 - set-variables
   ```sh
-  SLICE_TITLE="{slice-title}"
+  SLICE_TITLE="{slice-title} [await: #{blocker-id}]"  # omit [await: ...] if unblocked
   SLICE_BODY="{slice-body}" # as per the template below
   SLICE_LABEL="to-implement" # or to-await-waves if blocked
   ```
@@ -290,7 +294,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - enter-worktree
   ```sh
-  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - commit-code
@@ -344,7 +348,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - enter-worktree
   ```sh
-  ./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - commit-code — if cleanup-needed
@@ -394,7 +398,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - enter-worktree
   ```sh
-  ./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - commit-code
@@ -435,7 +439,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  SLICE_NAME="{from slice body}"
+  SLICE_NAME="{from slice title, stripping [await: ...] suffix}"
   SLICE_ID="$ISSUE_ID"
   BASE_BRANCH="{from slice/plan body}"
   TARGET_BRANCH="{from slice/plan body}"
@@ -443,15 +447,19 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  DEPENDENCY_ID="{from frontmatter blocked-by field}"
+  DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. "#55"
   ```
 - dep-check — checks each dependency for the `landed` label; if all carry `landed`, slice is promoted
   ```sh
   ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
   ```
+- update-tracker
+  ```sh
+  ./tracker.sh issue edit "$SLICE_ID" --remove-label to-await-waves --add-label to-implement --title "$SLICE_NAME"
+  ```
 - enter-worktree
   ```sh
-  ./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - set-variables
@@ -460,7 +468,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY" --remove-label to-await-waves --add-label to-implement
+  ./tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY"
   ```
 - exit-worktree
   ```sh
@@ -497,7 +505,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - enter-worktree
   ```sh
-  ./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH"
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$TARGET_BRANCH" --path "$WORKTREE_PATH")
   ```
 - commit-code — if merge-needed
   ```sh
@@ -591,7 +599,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - enter-worktree
   ```sh
-  ./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH"
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
 - commit-code — if documentation-added

@@ -389,6 +389,67 @@ test_edit_nonexistent_fails() {
   teardown
 }
 
+test_edit_title() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --label to-scope >/dev/null 2>&1
+  t issue edit 1 --title "renamed-feature" >/dev/null 2>&1
+
+  if [ -d "$TRACKER_PATH/1 renamed-feature" ]; then
+    pass "edit title: renames directory for plan"
+  else
+    fail "edit title: renames directory for plan" "directory not found"
+  fi
+
+  if [ ! -d "$TRACKER_PATH/1 my-feature" ]; then
+    pass "edit title: old directory removed"
+  else
+    fail "edit title: old directory removed" "old directory still exists"
+  fi
+
+  teardown
+}
+
+test_edit_title_slice() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --label to-scope >/dev/null 2>&1
+  t issue create --title "auth [await: #0]" --label to-await-waves --parent 1 >/dev/null 2>&1
+  t issue edit 1-1 --title "auth" >/dev/null 2>&1
+
+  if [ -d "$TRACKER_PATH/1 my-feature/slices/1-1 auth" ]; then
+    pass "edit title slice: renames slice directory"
+  else
+    fail "edit title slice: renames slice directory" "directory not found"
+  fi
+
+  if [ ! -d "$TRACKER_PATH/1 my-feature/slices/1-1 auth [await: #0]" ]; then
+    pass "edit title slice: old directory removed"
+  else
+    fail "edit title slice: old directory removed" "old directory still exists"
+  fi
+
+  teardown
+}
+
+test_edit_title_with_label() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "auth [await: #0]" --label to-await-waves >/dev/null 2>&1
+  t issue edit 1 --title "auth" --remove-label to-await-waves --add-label to-implement >/dev/null 2>&1
+
+  if [ -f "$TRACKER_PATH/1 auth/[to-implement] plan.md" ]; then
+    pass "edit title+label: file at new path with new label"
+  else
+    fail "edit title+label: file at new path with new label" "file not found"
+  fi
+
+  teardown
+}
+
 # ============================================================
 # ISSUE CLOSE — #29
 # ============================================================
@@ -496,6 +557,99 @@ test_list_empty() {
     pass "list: returns empty array when no matches"
   else
     fail "list: returns empty array when no matches" "got: $output"
+  fi
+
+  teardown
+}
+
+test_list_search_or_labels() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "first" --label to-scope >/dev/null 2>&1
+  t issue create --title "second" --label to-implement >/dev/null 2>&1
+  t issue create --title "third" --label to-merge >/dev/null 2>&1
+  t issue create --title "fourth" --label to-land >/dev/null 2>&1
+
+  output="$(t issue list --json number,title --search 'label:to-scope OR label:to-implement' 2>/dev/null)"
+
+  if echo "$output" | grep -q '"1"'; then
+    pass "list --search: includes to-scope issue"
+  else
+    fail "list --search: includes to-scope issue" "got: $output"
+  fi
+
+  if echo "$output" | grep -q '"2"'; then
+    pass "list --search: includes to-implement issue"
+  else
+    fail "list --search: includes to-implement issue" "got: $output"
+  fi
+
+  if echo "$output" | grep -q '"3"'; then
+    fail "list --search: excludes non-matching to-merge" "found 3 in output"
+  else
+    pass "list --search: excludes non-matching to-merge"
+  fi
+
+  if echo "$output" | grep -q '"4"'; then
+    fail "list --search: excludes non-matching to-land" "found 4 in output"
+  else
+    pass "list --search: excludes non-matching to-land"
+  fi
+
+  teardown
+}
+
+test_list_search_includes_labels_field() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "first" --label to-scope >/dev/null 2>&1
+  t issue create --title "second" --label to-implement >/dev/null 2>&1
+
+  output="$(t issue list --json number,title,labels --search 'label:to-scope OR label:to-implement' 2>/dev/null)"
+
+  if echo "$output" | grep -q '"to-scope"'; then
+    pass "list --search labels: to-scope label present"
+  else
+    fail "list --search labels: to-scope label present" "got: $output"
+  fi
+
+  if echo "$output" | grep -q '"to-implement"'; then
+    pass "list --search labels: to-implement label present"
+  else
+    fail "list --search labels: to-implement label present" "got: $output"
+  fi
+
+  teardown
+}
+
+test_list_search_includes_slices() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --label to-scope >/dev/null 2>&1
+  t issue create --title "auth" --label to-implement --parent 1 >/dev/null 2>&1
+  t issue create --title "db" --label to-inspect --parent 1 >/dev/null 2>&1
+
+  output="$(t issue list --json number,title,labels --search 'label:to-implement OR label:to-inspect' 2>/dev/null)"
+
+  if echo "$output" | grep -q '"1-1"'; then
+    pass "list --search: includes to-implement slice"
+  else
+    fail "list --search: includes to-implement slice" "got: $output"
+  fi
+
+  if echo "$output" | grep -q '"1-2"'; then
+    pass "list --search: includes to-inspect slice"
+  else
+    fail "list --search: includes to-inspect slice" "got: $output"
+  fi
+
+  if echo "$output" | grep -q '"1"[^-]'; then
+    fail "list --search: excludes non-matching plan 1" "found plan 1 in output"
+  else
+    pass "list --search: excludes non-matching plan 1"
   fi
 
   teardown
@@ -1175,6 +1329,9 @@ test_edit_label_slice
 test_edit_body
 test_edit_body_and_label
 test_edit_nonexistent_fails
+test_edit_title
+test_edit_title_slice
+test_edit_title_with_label
 
 test_close_plan
 test_close_slice
@@ -1182,6 +1339,9 @@ test_close_slice
 test_list_by_label
 test_list_includes_slices
 test_list_empty
+test_list_search_or_labels
+test_list_search_includes_labels_field
+test_list_search_includes_slices
 
 test_committed_create_pushes
 test_committed_edit_pushes

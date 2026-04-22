@@ -8,9 +8,9 @@
 
 ## Input
 
-This skill requires a specific slice: e.g. `#55` or `my-feature/002-token-storage`.
+This skill requires a specific slice: e.g. `#55` or `1-2`.
 
-Read the slice. It must have a `blocked-by` frontmatter field referencing other slices (comma-separated issue IDs, e.g. `blocked-by: "#55, #56"`).
+The slice title includes a `[await: ...]` suffix encoding its blockers: e.g. `"auth token storage [await: #55, #56]"`. Blockers are parsed from this suffix — not from the slice body.
 
 Set the pre-fetch variables:
 
@@ -24,22 +24,22 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Set the post-fetch variables (after reading the slice body):
+Set the post-fetch variables (after reading the slice title and body):
 
 ```sh
-SLICE_NAME="{from slice body}"
+SLICE_NAME="{from slice title, stripping [await: ...] suffix}"
 SLICE_ID="$ISSUE_ID"
 BASE_BRANCH="{from slice/plan body}"
 TARGET_BRANCH="{from slice/plan body}"
 WORKTREE_PATH=".worktrees/$SLICE_NAME-await-waves"
 ```
 
-## 1. Check dependencies
+## 1. Check dependencies (cheap label gate)
 
-Parse the `blocked-by` field from the slice's frontmatter. For each dependency ID, check if the blocking slice is tagged `landed`:
+Parse the `[await: ...]` suffix from the slice title. For each blocker ID found, check whether that issue carries the `landed` label:
 
 ```sh
-DEPENDENCY_ID="{from frontmatter blocked-by field}"
+DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. "#55"
 ```
 
 ```sh
@@ -48,11 +48,24 @@ DEPENDENCY_ID="{from frontmatter blocked-by field}"
 
 **If any dependency does NOT have the `landed` label**: this slice stays `to-await-waves`. Skip to the handoff with `nextPhase: "to-await-waves"` and `summary: "still blocked by #N, #M"`.
 
+**If the `[await: ...]` suffix is missing or malformed**: treat as "no blockers found" and continue to step 2 (safe fallback).
+
 **If ALL dependencies have the `landed` label**: continue to step 2.
 
-## 2. Re-review the plan
+## 2. Promote
 
-Enter a worktree forked from $TARGET_BRANCH to be able to read up to date code (earlier slices may have changed the codebase):
+Strip the `[await: ...]` suffix from the title and flip the label:
+
+```sh
+SLICE_NAME="{stripped title without [await: ...] suffix}"
+./tracker.sh issue edit "$SLICE_ID" --remove-label to-await-waves --add-label to-implement --title "$SLICE_NAME"
+```
+
+Promotion is final. The worktree step below is best-effort course correction.
+
+## 3. Course correction
+
+Enter a worktree forked from $TARGET_BRANCH to read up-to-date code (earlier slices may have changed the codebase):
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$TARGET_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
@@ -82,12 +95,6 @@ SLICE_BODY="{slice body, with updated acceptance criteria if changed}"
 
 ```sh
 ./tracker.sh issue edit "$SLICE_ID" --body "$SLICE_BODY"
-```
-
-## 3. Promote
-
-```sh
-./tracker.sh issue edit "$SLICE_ID" --remove-label to-await-waves --add-label to-implement
 ```
 
 ## 4. Clean up

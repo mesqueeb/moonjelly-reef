@@ -72,15 +72,17 @@ If anything looks off, adjust the breakdown. Do not ask the user — reef-scope 
 
 ## 4. Create slices
 
-Create them in dependency order (blockers first) so you can reference real issue numbers in `blocked-by`.
+Create them in dependency order (blockers first) so you can reference real issue numbers in the `[await: ...]` title suffix.
 
 Assemble each slice body:
 
 ```sh
-SLICE_TITLE="{slice-title}"
+SLICE_TITLE="{slice-title} [await: #{blocker-id}]"  # omit [await: ...] if unblocked
 SLICE_BODY="{slice-body}" # as per the template below
 SLICE_LABEL="to-implement" # or to-await-waves if blocked
 ```
+
+For blocked slices, append `[await: #{id}, #{id}]` to the title. Unblocked slices get a plain title.
 
 Slice body template:
 
@@ -91,7 +93,6 @@ base-branch: $BASE_BRANCH
 target-branch: $TARGET_BRANCH
 pr-branch: —
 type: $PLAN_TYPE
-blocked-by: "#{issue-number}, #{issue-number}"  # omit if no blockers
 
 ---
 
