@@ -32,9 +32,9 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 Set the post-fetch variables (after reading the plan body):
 
 ```sh
-ISSUE_TITLE="{from issue}"
-BASE_BRANCH="{from issue body frontmatter base-branch field}"
-PR_BRANCH="{from issue body pr-branch field}"
+ISSUE_TITLE="{from issue title}"
+BASE_BRANCH="{from issue frontmatter base-branch field}"
+PR_BRANCH="{from issue frontmatter pr-branch field}"
 WORKTREE_PATH=".worktrees/$ISSUE_ID-ratify"
 ```
 

@@ -27,9 +27,9 @@ ISSUE_ID="{issue-id}" # pre-existing and passed or generate
 Set the post-fetch variables (after reading the issue body):
 
 ```sh
-ISSUE_TITLE="{from issue}"
-BASE_BRANCH="{from issue body frontmatter base-branch field}"
-PR_BRANCH="{from issue body pr-branch field}"
+ISSUE_TITLE="{from issue title}"
+BASE_BRANCH="{from issue frontmatter base-branch field}"
+PR_BRANCH="{from issue frontmatter pr-branch field}"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-inspect"
 ```
 
@@ -114,7 +114,7 @@ Set the PR number from the issue body. If not found there, try `./tracker.sh pr 
 Read the current PR body, then append the inspect report as a collapsible block:
 
 ```sh
-PR_NUMBER="{from issue body}" # if not found, try ./tracker.sh pr list --search
+PR_NUMBER="{from issue frontmatter pr-number field}" # if not found, try ./tracker.sh pr list --search
 PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
 REPORT="{inspect-report}" # <details><summary><h3>🧿 Inspect review — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
 PR_BODY="$PR_BODY\n\n$REPORT"

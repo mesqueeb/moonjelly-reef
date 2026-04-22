@@ -281,7 +281,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  ISSUE_TITLE="{from issue}"
+  ISSUE_TITLE="{from issue title}"
   BASE_BRANCH="{from issue frontmatter base-branch field}"
   PR_BRANCH="{from issue frontmatter pr-branch field}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-implement"
@@ -334,9 +334,9 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  ISSUE_TITLE="{from issue}"
-  BASE_BRANCH="{from issue body frontmatter base-branch field}"
-  PR_BRANCH="{from issue body pr-branch field}"
+  ISSUE_TITLE="{from issue title}"
+  BASE_BRANCH="{from issue frontmatter base-branch field}"
+  PR_BRANCH="{from issue frontmatter pr-branch field}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-inspect"
   ```
 - enter-worktree
@@ -350,7 +350,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - update-pr-body
   ```sh
-  PR_NUMBER="{from issue body}" # if not found, try ./tracker.sh pr list --search
+  PR_NUMBER="{from issue frontmatter pr-number field}" # if not found, try ./tracker.sh pr list --search
   PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
   REPORT="{inspect-report}" # <details><summary><h3>🧿 Inspect review — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
   PR_BODY="$PR_BODY\n\n$REPORT"
@@ -382,10 +382,10 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  ISSUE_TITLE="{from issue}"
-  BASE_BRANCH="{from issue body frontmatter base-branch field}"
-  PR_BRANCH="{from issue body pr-branch field}"
-  PR_NUMBER="{from issue body front-matter pr-number field}"
+  ISSUE_TITLE="{from issue title}"
+  BASE_BRANCH="{from issue frontmatter base-branch field}"
+  PR_BRANCH="{from issue frontmatter pr-branch field}"
+  PR_NUMBER="{from issue frontmatter pr-number field}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
   ```
 - enter-worktree
@@ -432,7 +432,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 - set-variables
   ```sh
   ISSUE_TITLE="{from issue title, stripping [await: ...] suffix}"
-  BASE_BRANCH="{from issue body}"
+  BASE_BRANCH="{from issue frontmatter base-branch field}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-await-waves"
   ```
 - set-variables
@@ -482,10 +482,10 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  ISSUE_TITLE="{from issue}"
-  BASE_BRANCH="{from issue body frontmatter base-branch field}"
-  PR_NUMBER="{from issue body front-matter pr-number field}"
-  PR_BRANCH="{from issue body pr-branch field}"
+  ISSUE_TITLE="{from issue title}"
+  BASE_BRANCH="{from issue frontmatter base-branch field}"
+  PR_NUMBER="{from issue frontmatter pr-number field}"
+  PR_BRANCH="{from issue frontmatter pr-branch field}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-merge"
   ```
 - pre-merge-check
@@ -527,8 +527,8 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
 
 - set-variables
   ```sh
-  PARENT_ID="{from issue body parent-plan field}"
-  PR_NUMBER="{from issue body}"
+  PARENT_ID="{from issue frontmatter parent-plan field}"
+  PR_NUMBER="{from issue frontmatter pr-number field}"
   ```
 - set-variables
   ```sh
@@ -541,7 +541,7 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  BASE_BRANCH="{from issue body}"
+  BASE_BRANCH="{from issue frontmatter base-branch field}"
   ```
 - check-siblings-and-completion
   ```sh
@@ -574,9 +574,9 @@ All three use `$PR_BRANCH` — the branch the PR lives on — as the branch to f
   ```
 - set-variables
   ```sh
-  ISSUE_TITLE="{from issue}"
-  BASE_BRANCH="{from issue body frontmatter base-branch field}"
-  PR_BRANCH="{from issue body pr-branch field}"
+  ISSUE_TITLE="{from issue title}"
+  BASE_BRANCH="{from issue frontmatter base-branch field}"
+  PR_BRANCH="{from issue frontmatter pr-branch field}"
   WORKTREE_PATH=".worktrees/$ISSUE_ID-ratify"
   ```
 - enter-worktree

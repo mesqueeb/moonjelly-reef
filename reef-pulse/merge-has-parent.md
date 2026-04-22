@@ -15,8 +15,8 @@ The router has already fetched context, set variables, and completed the pre-mer
 Set the variables needed for this path:
 
 ```sh
-PARENT_ID="{from issue body parent-plan field}"
-PR_NUMBER="{from issue body}"
+PARENT_ID="{from issue frontmatter parent-plan field}"
+PR_NUMBER="{from issue frontmatter pr-number field}"
 ```
 
 ## 1. Merge
@@ -32,7 +32,7 @@ MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}"
 Read `base-branch` from the current issue's frontmatter. List all open issues:
 
 ```sh
-BASE_BRANCH="{from issue body}"
+BASE_BRANCH="{from issue frontmatter base-branch field}"
 ./tracker.sh issue list --json number,labels,body
 ```
 

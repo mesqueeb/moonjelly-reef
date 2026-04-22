@@ -28,7 +28,7 @@ Set the post-fetch variables (after reading the issue title and body):
 
 ```sh
 ISSUE_TITLE="{from issue title, stripping [await: ...] suffix}"
-BASE_BRANCH="{from issue body}"
+BASE_BRANCH="{from issue frontmatter base-branch field}"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-await-waves"
 ```
 
