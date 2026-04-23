@@ -11,7 +11,7 @@ This framework is **Issue tracker agnostic**. GitHub Issues or simply local MD f
 ## Install
 
 ```sh
-npx skills@latest add mesqueeb/moonjelly-reef
+npx skills add mesqueeb/moonjelly-reef
 ```
 
 On first run, reef-pulse will prompt you to mention which issue tracker you want to use.
