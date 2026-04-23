@@ -6,10 +6,10 @@ The reef sits in a shallow blue bowl of water where sunbeams break into wanderin
 
 ## Active characters
 
-- A Moonjelly who drifts through everyone’s business with a soft, glowing innocence that fools exactly no one.
+- A Moonjelly who drifts through everyone's business with a soft, glowing innocence that fools exactly no one.
 - An octopus who keeps a workshop of strings, shells, pebbles, and one good idea at a time.
 - A crab who is fussy, practical, and secretly proud when a repair turns out better than expected.
-- A diver who arrives with salt in their hair, pockets full of questions, and a habit of taking the reef’s troubles personally.
+- A diver who arrives with salt in their hair, pockets full of questions, and a habit of taking the reef's troubles personally.
 
 ## Ongoing threads
 

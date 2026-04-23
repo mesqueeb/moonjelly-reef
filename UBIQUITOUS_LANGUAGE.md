@@ -78,17 +78,16 @@ Use the kebab-case form for canonical domain and frontmatter terms, and the cons
 | Term        | Definition                                                                                 | Aliases to avoid                    |
 | ----------- | ------------------------------------------------------------------------------------------ | ----------------------------------- |
 | **session** | A complete orchestration run — from the first pulse to lock release. May span many pulses. | run, execution                      |
-| **pulse**   | One iteration within a session: scan → dispatch → lore → metrics → recurse-or-exit         | tick, cycle, run (that's a session) |
+| **pulse**   | One iteration within a session: scan → dispatch → metrics → recurse-or-exit                 | tick, cycle, run (that's a session) |
 
 ## Saga system
 
 | Term            | Definition                                                                                                    | Aliases to avoid                            |
 | --------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
 | **saga**        | The persistent story that accumulates across sessions — the reef's ongoing narrative memory                   | story (too vague), lore (that's the format) |
-| **beat**        | A single 1–3 sentence prose fragment written by the saga writer during one pulse; the atomic unit of the saga | snippet, entry, lore snippet                |
-| **chapter**     | The compiled archive of all beats from one session, written to `chapter-NNN.md` at session end                | session story, log                          |
+| **chapter**     | The session's full lore piece, written once to `chapter-NNN.md` at session end                                | session story, log                          |
 | **thread**      | An ongoing narrative element in `world.md` that persists across sessions and accumulates over time            | plot, arc, storyline                        |
-| **saga writer** | The sub-agent invoked each pulse to write a beat, update `world.md`, and append to the chapter file           | story agent, lore agent                     |
+| **lore writer** | The sub-agent invoked once at session end to write a chapter and update `world.md`                            | story agent, saga writer                    |
 
 ## Relationships
 
@@ -101,14 +100,14 @@ Use the kebab-case form for canonical domain and frontmatter terms, and the cons
 - Every issue has a **pr-branch** (the branch the PR lives on) and a **base-branch** (where it merges into)
 - For sub-issues, `base-branch` is the parent issue's `pr-branch`; for issues with no parent issue, `base-branch` is usually `main`
 - A **session** produces exactly one **chapter**
-- A **chapter** contains one **beat** per **pulse** that dispatched work, plus a final **beat** for the empty pulse
+- The **lore writer** is called once at session end
 - `world.md` persists between **sessions**; the **chapter** is immutable after the **session** ends
 
 ## Example dialogue (saga)
 
-> **Dev:** "The saga writer got called twice this pulse — which **beat** ends up in the **chapter**?"
+> **Dev:** "How long should the chapter be?"
 >
-> **Domain expert:** "Each **pulse** produces exactly one **beat**. The saga writer appends it to the current **chapter** file and updates `world.md` before returning. The **chapter** grows one **beat** at a time."
+> **Domain expert:** "The **lore writer** runs once after the session ends and writes one **chapter** for that session."
 >
 > **Dev:** "What's the difference between the **saga** and the **chapter**?"
 >
@@ -134,8 +133,8 @@ Use the kebab-case form for canonical domain and frontmatter terms, and the cons
 
 ## Flagged ambiguities (saga)
 
-- **"lore"** vs **"beat"** vs **"saga"** — lore is the output aesthetic (dashed box format); a **beat** is a discrete prose entry; the **saga** is the long-running narrative accumulating across sessions. Don't use "lore" as a noun for the content itself.
-- **"session"** vs **"pulse"** — a **session** spans from lock acquisition to lock release and contains multiple **pulses**. A **pulse** is one scan-dispatch-lore-metrics iteration. Don't say "pulse" when you mean "session."
+- **"lore"** vs **"chapter"** vs **"saga"** — lore is the output mode and tone; a **chapter** is one session's written artifact; the **saga** is the long-running narrative accumulating across sessions.
+- **"session"** vs **"pulse"** — a **session** spans from lock acquisition to lock release and contains multiple **pulses**. A **pulse** is one scan-dispatch-metrics iteration. Don't say "pulse" when you mean "session."
 - **"chapter"** vs **"session"** — a **chapter** is the narrative archive of one session. They are 1:1 but distinct: one is a story artifact, the other is an orchestration run.
 
 ## Flagged ambiguities

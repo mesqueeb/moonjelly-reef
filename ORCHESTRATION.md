@@ -75,27 +75,39 @@ General rules:
   NEXT_PHASE="{from handoff NEXT_PHASE}"
   PR_ID="{from handoff PR_ID}" # if returned; otherwise "—"
   SUMMARY="{from handoff SUMMARY}" # if returned
-  PLAN_ISSUE_METRICS="{from handoff PLAN_ISSUE_METRICS}" # seal only; otherwise empty
   SUBAGENT_DURATION="{duration of sub-agent total execution}" # if known; otherwise "—"
   SUBAGENT_TOKENS="{total token count used by the sub-agent}" # if known; otherwise "—"
   SUBAGENT_TOOL_USES="{tool use count for the sub-agent}" # if known; otherwise "—"
   ```
 - set-variables
   ```sh
-  ISSUE_ID="{from dispatched items}"
-  ISSUE_BODY="{current issue body with metrics rows inserted into the table}"
+  PHASE_METRIC_RECORDS='[
+    # {
+    #   "ISSUE_ID": "#55",
+    #   "ISSUE_PHASE": "to-implement",
+    #   "NEXT_PHASE": "to-inspect",
+    #   "PR_ID": "#72",
+    #   "SUMMARY": "PR created",
+    #   "SUBAGENT_DURATION": "42s",
+    #   "SUBAGENT_TOKENS": 12340,
+    #   "SUBAGENT_TOOL_USES": 18
+    # }
+  ]'
   ```
-- update-tracker
+- metrics-subagent
+
   ```sh
-  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+  Read and follow $SKILL_DIR/metric-logger.md.
+
+  AUTOMATED_DISPATCHES="$AUTOMATED_DISPATCHES"
+  PHASE_METRIC_RECORDS="$PHASE_METRIC_RECORDS"
   ```
+
 - set-variables
   ```sh
-  PLAN_PR_BODY="{current plan PR body with metrics rows inserted into the table}"
-  ```
-- update-pr-body — if PR_ID is not "—"
-  ```sh
-  ./tracker.sh pr edit "$PR_ID" --body "$PLAN_PR_BODY"
+  SUCCESS_COUNT="{from metrics logger handoff}"
+  FAIL_COUNT="{from metrics logger handoff}"
+  FAIL_IDS="{from metrics logger handoff}"
   ```
 - release-lock — if AUTOMATED_DISPATCHES == 0
   - contains: `delete the `pulse.lock` file`
@@ -439,6 +451,118 @@ General rules:
   PR_ID="$PR_ID"
   ```
 
+
+### [metric-logger.md](./reef-pulse/metric-logger.md)
+
+- set-variables
+  ```sh
+  AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
+  PHASE_METRIC_RECORDS='[
+    # {
+    #   "ISSUE_ID": "#55",
+    #   "ISSUE_PHASE": "to-implement",
+    #   "NEXT_PHASE": "to-inspect",
+    #   "PR_ID": "#72",
+    #   "SUMMARY": "PR created",
+    #   "SUBAGENT_DURATION": "42s",
+    #   "SUBAGENT_TOKENS": 12340,
+    #   "SUBAGENT_TOOL_USES": 18
+    # }
+  ]'
+  SUCCESS_COUNT="0" # mutate on every full record success
+  FAIL_COUNT="0" # mutate on every failed record
+  FAIL_IDS="" # append ISSUE_ID values for failed records
+  ```
+- phase-specific
+- if any record
+  ```sh
+  ISSUE_BODY="$(./tracker.sh issue view "$ISSUE_ID" --json body -q .body)"
+  ```
+- if to-land record
+  ```sh
+  PR_BODY="$(./tracker.sh pr view "$PR_ID" --json body -q .body)"
+  ```
+- set-variables
+  ```sh
+  METRICS_TABLE="{md table found in ISSUE_BODY}"
+  ```
+- set-variables if metrics table missing
+
+  ```sh
+  METRICS_TABLE="### 🪼 Pulse metrics
+
+  | Phase | Target | Duration | Tokens | Tool uses | Outcome | Date |
+  | ----- | ------ | -------- | ------ | --------- | ------- | ---- |
+  <!-- end metrics table -->"
+  ```
+
+- set-variables
+  ```sh
+  PHASE="${ISSUE_PHASE#to-}"
+  TARGET="$ISSUE_ID"
+  DURATION="${SUBAGENT_DURATION:-—}"
+  TOKENS="${SUBAGENT_TOKENS:-—}"
+  TOOL_USES="${SUBAGENT_TOOL_USES:-—}"
+  OUTCOME="${SUMMARY:-${NEXT_PHASE#to-}}"
+  METRICS_DATE="$(date '+%Y-%m-%d %H:%M')"
+  METRIC_ROW="| $PHASE | $TARGET | $DURATION | $TOKENS | $TOOL_USES | $OUTCOME | $METRICS_DATE |"
+  ```
+- set-variables
+  ```sh
+  METRICS_TABLE_UPDATED="{current METRICS_TABLE with $METRIC_ROW inserted immediately above <!-- end metrics table -->}"
+  ```
+- if normal record
+  ```sh
+  ISSUE_BODY_UPDATED="{current issue body with METRICS_TABLE_UPDATED written back in place}"
+  ```
+- if normal record
+  ```sh
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED"
+  ```
+- if normal record write failed
+  ```sh
+  FAIL_COUNT=$((FAIL_COUNT + 1))
+  FAIL_IDS="${FAIL_IDS:+$FAIL_IDS,}$ISSUE_ID"
+  ```
+- if normal record write succeeded
+  ```sh
+  SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+  ```
+- if to-land record
+  ```sh
+  FINAL_METRICS_TABLE="{issue metrics table with $METRIC_ROW appended and a bold Total row added last}"
+  ```
+- if to-land record
+  ```sh
+  PR_BODY_UPDATED="{current PR body with FINAL_METRICS_TABLE appended at the end}"
+  ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
+  ```
+- if to-land record
+  ```sh
+  ISSUE_BODY_CLEANED="{current issue body with the full metrics section removed}"
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_CLEANED"
+  ```
+- if to-land PR write failed
+  ```sh
+  FAIL_COUNT=$((FAIL_COUNT + 1))
+  FAIL_IDS="${FAIL_IDS:+$FAIL_IDS,}$ISSUE_ID"
+  ```
+- if to-land cleanup write failed
+  ```sh
+  FAIL_COUNT=$((FAIL_COUNT + 1))
+  FAIL_IDS="${FAIL_IDS:+$FAIL_IDS,}$ISSUE_ID"
+  ```
+- if to-land record fully succeeded
+  ```sh
+  SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+  ```
+- handoff
+  ```sh
+  SUCCESS_COUNT="$SUCCESS_COUNT"
+  FAIL_COUNT="$FAIL_COUNT"
+  FAIL_IDS="$FAIL_IDS"
+  ```
+
 ### [inspect.md](./reef-pulse/inspect.md)
 
 - set-variables
@@ -770,5 +894,4 @@ General rules:
   ISSUE_ID="$ISSUE_ID"
   NEXT_PHASE="to-land" # or "to-rework" if gaps found; use to-land for human-decision-needed warnings
   PR_ID="$PR_ID"
-  PLAN_ISSUE_METRICS="{metrics rows from plan issue body, or empty if none}"
   ```

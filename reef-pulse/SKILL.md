@@ -57,321 +57,114 @@ If this is the first iteration of the pulse (not a recursive call), print the se
 └─────────────────────────────────────────────────────────────┘
 ```
 
-Initialize the pulse counter to 0:
+Initialize the session bookkeeping variables:
 
 ```sh
-N=0
+PULSE_NR=1
+AGENT_COUNT_SESSION=0
+SESSION_START_TS="$(date +%s)"
 ```
 
-## Pulse loop
+## Start pulse loop
 
-Every recursive call is still a full pulse iteration. Do not collapse a recursive call into a quick rescan or tracker-only follow-up. Each iteration must emit the same pulse transcript structure: pulse header, dispatch lines when applicable, lore beat, return results when applicable, then recurse or complete.
+After the session is initialized, read and follow [`pulse-loop.md`](pulse-loop.md) from top to bottom for the first pulse-loop iteration.
 
-### 1. Print pulse header
+## Repeat pulse loop or finish
 
-RUN EVERY PULSE.
+After each return from [`pulse-loop.md`](pulse-loop.md), decide whether to invoke another pulse-loop iteration or move to session completion.
 
-At the start of each pulse iteration (including recursive calls), increment the pulse counter and print the pulse header with the current timestamp:
+**If `"$IS_SESSION_COMPLETE" = "false"` and `"$AGENT_COUNT_PULSE" -gt 0`**: the pulse dispatched automated work in this pulse-loop iteration. Re-run [`pulse-loop.md`](pulse-loop.md) on the main session without asking confirmation. The loop stays on the main session, never as a sub-agent — this keeps the sequence strictly serial (scan, dispatch, wait, scan again) instead of spawning nested agents. Do NOT release the lock between pulse-loop iterations; the lock persists across the entire session. Re-running `pulse-loop.md` means following that file again from top to bottom using the updated shell variables already present in the same session.
+
+**If `"$IS_SESSION_COMPLETE" = "true"`**: no automated work was dispatched this iteration. The pulse has nothing left to do. Continue to the session completion steps below.
+
+## Session Completion
+
+### Print SESSION COMPLETE
+
+RUN ONLY WHEN `"$IS_SESSION_COMPLETE" = "true"`.
+
+First compute the final session duration from the session start timestamp:
 
 ```sh
-N=$((N + 1))
+SESSION_DURATION_SECS="$(( $(date +%s) - SESSION_START_TS ))"
+SESSION_DURATION="{format SESSION_DURATION_SECS as XmYYs or HhMMmSSs}" # e.g. 17m00s
 ```
-
-```
-── PULSE $N ──────────────────────────────────────── {HH:MM:SS} ──
-```
-
-### 2. Scan
-
-RUN EVERY PULSE.
-
-Read the config to determine the tracker type, then scan for all tagged issues.
-
-```sh
-# Scan all reef-tagged issues in a single query
-./tracker.sh issue list --json number,title,labels --limit 100 \
-  --search 'label:to-scope OR label:to-slice OR label:to-await-waves OR label:to-implement OR label:to-research OR label:to-inspect OR label:to-rework OR label:to-merge OR label:to-seal OR label:to-land'
-```
-
-### 3. Dispatch automated (🌊) work — Flow wave
-
-RUN EVERY PULSE.
-
-**Do NOT ask the user for confirmation. Dispatch immediately.** The labels are the authorization — if an item is labelled for automated work, dispatch it without hesitation.
-
-**CRITICAL: Do NOT use `isolation: "worktree"` when spawning sub-agents.** Each phase manages its own worktree via `worktree-enter.sh` (fetches from origin, forks from the correct remote branch). Platform isolation bypasses this and causes merge conflicts.
-
-**Flow wave**: dispatch all non-`to-await-waves` items in parallel via sub-agents. When agent teams are supported in the environment, they can be used to parallelise items linked to the same plan. Wait for all flow agents to complete before proceeding to the ebb wave.
-
-For each item, spawn a sub-agent with: `"Read and follow $SKILL_DIR/{file}. Target: #{number}."`
-
-| Label          | File                      |
-| -------------- | ------------------------- |
-| `to-slice`     | `$SKILL_DIR/slice.md`     |
-| `to-implement` | `$SKILL_DIR/implement.md` |
-| `to-research`  | `$SKILL_DIR/research.md`  |
-| `to-inspect`   | `$SKILL_DIR/inspect.md`   |
-| `to-rework`    | `$SKILL_DIR/rework.md`    |
-| `to-merge`     | `$SKILL_DIR/merge.md`     |
-| `to-seal`      | `$SKILL_DIR/seal.md`      |
-
-### 3a. Ebb wave — gated dispatch of to-await-waves items
-
-RUN EVERY PULSE after the flow wave completes.
-
-After all flow agents complete, rescan `to-await-waves` items. For each item, parse the `[await: ...]` suffix from its title to find blocker IDs, then check each blocker's label:
-
-```sh
-DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. #42
-./tracker.sh issue view "$DEPENDENCY_ID" --json labels
-```
-
-- If **all** blockers have the `landed` label: dispatch the item via sub-agent (`$SKILL_DIR/await-waves.md`).
-- If **any** blocker is not `landed`: skip — do not dispatch. It stays `to-await-waves` and will be re-evaluated next pulse.
-
-If the `[await: ...]` suffix is missing or malformed, dispatch anyway — `await-waves` itself catches problems before promoting.
-
-### 3b. Print dispatched agents
-
-RUN EVERY PULSE if anything was dispatched in the flow or ebb wave.
-
-Immediately after dispatching, print each dispatched agent with its phase emoji. Use the phase emoji from the README lore for each phase:
-
-| Label            | Phase emoji |
-| ---------------- | ----------- |
-| `to-slice`       | `𐃆🐋`       |
-| `to-implement`   | `  🐙`      |
-| `to-research`    | `  🐬`      |
-| `to-inspect`     | `  🧿`      |
-| `to-rework`      | `  🦀`      |
-| `to-merge`       | `  🐢`      |
-| `to-seal`        | `  🦭`      |
-| `to-await-waves` | `  🪸`      |
-
-The narwhal (slice phase) always uses both characters `𐃆🐋`, not just the emoji.
-
-For each dispatched issue, capture the display values used for both the dispatch line and the later return-result line:
-
-```sh
-ISSUE_ID="{from dispatched issue}"
-ISSUE_TITLE="{from dispatched issue title}"
-ISSUE_PHASE="{label that dispatched this issue, without the to- prefix}" # e.g.: implement
-ISSUE_PHASE_EMOJI="{phase emoji for ISSUE_PHASE}" # e.g.: 🐙
-DISPATCH_ROW="$ISSUE_PHASE_EMOJI  $ISSUE_ID  \"$ISSUE_TITLE\""
-```
-
-E.g.:
-
-```
-𐃆🐋  #34  "auth token rotation"
-  🐙  #55  "user profile endpoint"
-  🧿  #53  "db migration safety"
-```
-
-### 4. Print lore snippet
-
-RUN EVERY PULSE, including empty ones.
-
-Always generate lore by spawning the storytelling sub-agent. Do not generate lore inline inside the pulse.
-
-Prep the storytelling input:
-
-```sh
-AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
-IS_FIRST_BEAT="{true if N == 1; otherwise false}"
-IS_FINAL_BEAT="{true if AUTOMATED_DISPATCHES == 0; otherwise false}"
-BEAT_NUMBER="$N"
-LORE_ROLL="{2d6 roll, 2-12, with slight wave progress influence}" # e.g.: 12
-LORE_AGENT_INPUT="{all lore input variables above with names and values}"
-# e.g.:
-#   AUTOMATED_DISPATCHES=4
-#   IS_FIRST_BEAT=false
-#   IS_FINAL_BEAT=false
-#   BEAT_NUMBER=3
-#   LORE_ROLL=12
-```
-
-Spawn a sub-agent with:
-
-```
-Read and follow $SKILL_DIR/saga-writer.md.
-
-$LORE_AGENT_INPUT
-```
-
-The storytelling sub-agent returns:
-
-```sh
-BEAT="{lore prose returned by the storytelling sub-agent}"
-```
-
-After the sub-agent returns, print the beat in the existing dashed lore box format:
-
-```
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-  +8m00s  $BEAT
-╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
-```
-
-Leave dispatch lines, metrics tables, and return-result output unchanged.
-
-### 5. Per sub-agent execution
-
-RUN EVERY PULSE if anything was dispatched in this iteration.
-
-After all dispatched agents complete, collect one execution record per returned sub-agent. Each record is keyed by the returned `ISSUE_ID`.
-
-```sh
-ISSUE_ID="{from handoff ISSUE_ID}"
-NEXT_PHASE="{from handoff NEXT_PHASE}"
-PR_ID="{from handoff PR_ID}" # if returned; otherwise "—"
-SUMMARY="{from handoff SUMMARY}" # if returned
-PLAN_ISSUE_METRICS="{from handoff PLAN_ISSUE_METRICS}" # seal only; otherwise empty
-SUBAGENT_DURATION="{duration of sub-agent total execution}" # if known; otherwise "—"
-SUBAGENT_TOKENS="{total token count used by the sub-agent}" # if known; otherwise "—"
-SUBAGENT_TOOL_USES="{tool use count for the sub-agent}" # if known; otherwise "—"
-```
-
-#### Print return results
-
-After agents return, print each result with its phase emoji and a `›` transition arrow showing the phase transition:
-
-```sh
-RESULT_ROW="$ISSUE_PHASE_EMOJI  $ISSUE_ID   $SUBAGENT_DURATION   $SUBAGENT_TOKENS   $ISSUE_PHASE › $NEXT_PHASE"
-```
-
-E.g.:
-
-```
-𐃆🐋  #34   3m12s   18k   slice › implement
-  🐙  #55   4m45s   24k   implement › inspect
-  🦀  #53   1m08s    9k   inspect › rework
-```
-
-Also print human and idle items:
-
-```
-  🤿  #60  to-scope
-  🤿  #48  to-land
-  ·   #57  idle — awaiting #55
-  ·   #56  idle
-```
-
-#### Log phase metrics
-
-RUN EVERY PULSE if anything was dispatched in this iteration.
-
-#### Metrics table format
-
-```markdown
-### 🪼 Pulse metrics
-
-| Phase     | Target | Duration | Tokens | Tool uses | Outcome       | Date             |
-| --------- | ------ | -------- | ------ | --------- | ------------- | ---------------- |
-| implement | #55    | 42s      | 12 340 | 18        | ✅ PR created | 2026-04-20 14:30 |
-| inspect   | #53    | 25s      | 8 200  | 12        | ✅ passed     | 2026-04-20 14:31 |
-
-<!-- end metrics table -->
-```
-
-No timestamp in the header. Each row gets a `Date` column (`yyyy-MM-dd HH:mm`).
-
-#### Rules
-
-- Only log phases dispatched this pulse. If nothing was dispatched, skip this step entirely.
-- Fall back to `—` for any missing metadata field (duration, tokens, tool uses).
-- Duration: human-readable (`42s`, `1m 12s`). Tokens: space-separated thousands.
-- Do NOT read issue bodies to discover PR numbers. Use the `PR_ID` returned in the handoff.
-
-#### 6a. Write metrics to the plan issue
-
-Read the current plan issue body. If a `### 🪼 Pulse metrics` table exists, insert the new row(s) immediately above the `<!-- end metrics table -->` sentinel. If no table exists, append it to the end of the body (including the sentinel after the last row).
-
-```sh
-ISSUE_ID="{from dispatched items}"
-ISSUE_BODY="{current issue body with metrics rows inserted into the table}"
-./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
-```
-
-#### 6b. Write metrics to the plan PR
-
-Use `PR_ID` from the parsed handoff data to determine the target PR. If `PR_ID` is `—`, no plan PR exists yet — skip this sub-step. Otherwise, read the current plan PR body and insert the same metrics rows immediately above the `<!-- end metrics table -->` sentinel. If no table exists, append it to the end (including the sentinel after the last row).
-
-```sh
-PLAN_PR_BODY="{current plan PR body with metrics rows inserted into the table}"
-./tracker.sh pr edit "$PR_ID" --body "$PLAN_PR_BODY"
-```
-
-#### Total row on seal-to-land
-
-When a seal handoff has `NEXT_PHASE: to-land`, use `PLAN_ISSUE_METRICS` from the seal handoff (scope/slice metrics rows from the plan issue). Prepend those rows to the PR's existing metrics table (dedup if already present), append the seal row, then append a bold **Total** row summing all durations and tokens. Unknown values (`—`) are excluded from the total. This is the last automated edit to the metrics table.
-
-Example:
-
-```markdown
-| scope | #15 | 1m 30s | — | — | plan created | 2026/04/18 | 09:00 |
-| slice | #15 | 45s | 8 100 | 10 | slices created | 2026/04/18 | 09:05 |
-| seal | — | 1m 5s | 15 200 | 20 | pass | 2026/04/20 | 14:35 |
-| **Total** | | **5m 30s** | **62 359** | **87** | | | |
-
-<!-- end metrics table -->
-```
-
-### 7. Recurse or exit
-
-RUN EVERY PULSE.
-
-After metrics are logged, check whether to recurse or exit.
-
-**If `$AUTOMATED_DISPATCHES > 0`**: the pulse dispatched automated work this iteration. After agents return and metrics are logged, recursively invoke the `reef-pulse` skill again on the main session without asking confirmation. The recursive call happens on the main session, never as a sub-agent — this ensures the loop runs sequentially (scan, dispatch, wait, scan again) rather than spawning nested agents. Do NOT release the lock between iterations; the lock persists across the entire recursive chain. Pass the pulse counter to the next iteration. Re-triggering the pulse means literally re-running this skill and following it again from top to bottom for the next pulse iteration, not doing a shorthand check.
-
-**If `$AUTOMATED_DISPATCHES == 0`**: no automated work was dispatched this iteration. The pulse has nothing left to do. Continue to the completion steps below.
-
-### Print SESSION COMPLETE and full story
-
-RUN ONLY ON THE FINAL EMPTY PULSE.
-
-This step only runs when `$AUTOMATED_DISPATCHES == 0` (the exit path from Step 7).
 
 Then print the SESSION COMPLETE box with session stats:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  SESSION COMPLETE                                            │
+│  🪼 SESSION COMPLETE                                         │
 │                                                              │
-│  Duration    17m00s                                          │
-│  Pulses      $N                                              │
-│  Agents      7  dispatches across 3 active pulses            │
+│  Duration    $SESSION_DURATION                               │
+│  Pulses      $PULSE_NR                                       │
+│  Agents      $AGENT_COUNT_SESSION  dispatches             │
 │  To Land     #34  #53                                        │
 │  Landed      #33  #52                                        │
 │  Blocked     #56  #57                                        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-- **Duration**: total wall-clock time since the session started (from the lock file timestamp)
-- **Pulses**: total number of pulse iterations (including this final empty one)
-- **Agents**: total number of sub-agent dispatches across all active pulses (pulses that dispatched at least one agent)
 - **To Land**: issues that reached `to-land` during this session
 - **Landed**: issues that reached `landed` during this session
 - **Blocked**: issues that are blocked or have no actionable label
 
-After the SESSION COMPLETE box, read the most recent `chapter-NNN.md` in `.agents/moonjelly-reef/saga/` and print its contents as a single block:
+### Print Lore
+
+RUN ONLY WHEN `"$IS_SESSION_COMPLETE" = "true"` and `"$AGENT_COUNT_SESSION" -gt 0`.
+
+Prep the lore-writer sub-agent input:
+
+```sh
+SENTENCE_BALLPARK="$((PULSE_NR * 2))"
+```
+
+Spawn a sub-agent with:
 
 ```
-  $CHAPTER_CONTENTS
+Read and follow $SKILL_DIR/lore-writer.md.
+
+SENTENCE_BALLPARK=$SENTENCE_BALLPARK
 ```
 
-If the session dispatched no automated work at all, say so plainly and point the user at the next useful action:
+The lore-writer sub-agent returns:
+
+```sh
+CHAPTER="{lore prose returned by the storytelling sub-agent}"
+```
+
+After the sub-agent returns, print the chapter:
 
 ```
-No automated work is ready right now. Run `reef-scope` to start scoping new items for the reef to pick up.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  $CHAPTER
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+### Print Next Up
+
+Query for to-land and to-scope issues and say how many there are of those.
+
+```sh
+# Scan all to-land and to-scope issues in a single query
+./tracker.sh issue list --json number,title,labels --limit 100 --search 'label:to-land OR label:to-scope'
+X="{the amount of to-land issues}"
+Y="{the amount of to-scope issues}"
+```
+
+Print:
+
+```
+The reef awaits new work. 🐚
+You have $X open issues to land and $Y open issues to scope.
+Run `reef-land` or `reef-scope` to start. 🤿
 ```
 
 ### Release lock
 
-RUN ONLY ON THE FINAL EMPTY PULSE.
+RUN ONLY WHEN `"$IS_SESSION_COMPLETE" = "true"`.
 
-This step only runs when `$AUTOMATED_DISPATCHES == 0` (the exit path from Step 7). To release the lock, delete the `pulse.lock` file.
+To release the lock, delete the `pulse.lock` file.
 
 Exit.
 

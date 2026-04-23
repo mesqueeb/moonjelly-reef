@@ -1,6 +1,6 @@
 # Moonjelly Reef world template
 
-Bootstrap file for `.agents/moonjelly-reef/saga/world.md`. The saga writer populates these fields on the first session.
+Bootstrap file for `.agents/moonjelly-reef/saga/world.md`. The lore writer populates these fields on the first session.
 
 ---
 
