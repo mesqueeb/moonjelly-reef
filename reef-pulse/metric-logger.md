@@ -11,7 +11,6 @@
 Set the input variables:
 
 ```sh
-AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
 PHASE_METRIC_RECORDS='[
   # {
   #   "ISSUE_ID": "#55",
@@ -32,7 +31,7 @@ FAIL_IDS="" # append ISSUE_ID values for failed records
 
 ## Process
 
-Handle each record in `PHASE_METRIC_RECORDS` independently. A failure for one record must not block the rest.
+Handle each record in `$PHASE_METRIC_RECORDS` independently. A failure for one record must not block the rest.
 
 ### Read issue body and / or PR body
 
