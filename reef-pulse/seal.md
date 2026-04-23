@@ -83,6 +83,10 @@ For each success criterion in the plan:
 - Read the actual code on the `pr-branch` that satisfies it. Trace the full path — don't check module by module, check end-to-end.
 - Verify from the **consumer's perspective**. If the criterion says "the legacy UI must render identically", don't just check that the data is correct — check that it's in the format the legacy UI expects. (Prevents painpoint A4.)
 - Cross-reference the coverage matrix: which issues were supposed to cover this criterion? Did they actually cover it when composed together?
+- For deep-research, review the written research holistically against the end goal, not just the slice acceptance criteria.
+- Check whether the full research answer is coherent, complete enough for the promised question, and sensible as a whole.
+- For feeling-lucky, keep the normal mechanical quality bar but apply slightly softer strictness during holistic review.
+- Ask whether the outcome makes good sense for the exploratory ticket the human tossed into the reef.
 
 Mark each criterion: ✓ met, ✗ not met (with explanation).
 
