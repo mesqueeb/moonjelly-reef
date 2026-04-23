@@ -165,7 +165,6 @@ General rules:
   ./tracker.sh pr edit "$PR_ID" --remove-label to-land --add-label landed
   ```
 - pull
-  - contains: `Pull the merged changes into the current branch if it matches the base branch:`
   ```sh
   git fetch origin --prune
   CURRENT=$(git branch --show-current)
@@ -269,16 +268,9 @@ General rules:
   NEXT_PHASE="blocked-missing-scope"
   PR_ID="—"
   ```
-- phase-specific
-  - contains: `deep-research` + `feeling-lucky` + `feature (feeling-lucky)`
-  - contains: `Compact research plans can stay as a single research issue`
-  - contains: `angle-based or dependency-based research slices`
-  - contains: `without asking the user follow-up questions`
 
 ### [slice-one-issue.md](./reef-pulse/slice-one-issue.md)
 
-- phase-specific
-  - contains: `For deep-research, label the issue to-research instead of to-implement.`
 - set-variables
   ```sh
   ISSUE_BODY="{plan issue body with scoped pr-branch, rewritten bearing, and updated Success & Acceptance criteria}"
@@ -326,9 +318,6 @@ General rules:
   SLICE_BODY="{slice-body}" # as per the template below, with pr-branch: $SLICE_PR_BRANCH and bearing: $SLICE_BEARING
   SLICE_LABEL="{to-research for unblocked deep-research slices, otherwise to-implement; or to-await-waves if blocked}"
   ```
-- phase-specific
-  - contains: `For deep-research, make the slices research-native`
-  - contains: `bearing: $SLICE_BEARING`
 - create-slices
   ```sh
   ./tracker.sh issue create --title "$SLICE_TITLE" --body "$SLICE_BODY" --label "$SLICE_LABEL"
@@ -385,7 +374,6 @@ General rules:
   NEXT_PHASE="to-rework"
   PR_ID="—"
   ```
-- phase-specific
 - commit-code
   ```sh
   ./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: implementation"
@@ -443,9 +431,6 @@ General rules:
   NEXT_PHASE="blocked-with-conflicts"
   PR_ID="—"
   ```
-- phase-specific
-  - contains: `produce a durable research artifact instead of code`
-  - contains: `lightweight source links near externally sourced findings`
 - commit-code
   ```sh
   ./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: research"
@@ -497,7 +482,6 @@ General rules:
   FAIL_COUNT="0" # mutate on every failed record
   FAIL_IDS="" # append ISSUE_ID values for failed records
   ```
-- phase-specific
 - if any record
   ```sh
   ISSUE_BODY="$(./tracker.sh issue view "$ISSUE_ID" --json body -q .body)"
@@ -614,9 +598,6 @@ General rules:
   NEXT_PHASE="blocked-with-conflicts"
   PR_ID="—"
   ```
-- phase-specific
-  - contains: `For deep-research, inspect the committed research artifact mechanically rather than treating it like code.`
-  - contains: `do not get fussy about fuzzy acceptance criteria`
 - commit-code — if cleanup-needed
   ```sh
   ./commit.sh --branch "$PR_BRANCH" -m "inspect: cleanup"
@@ -684,9 +665,6 @@ General rules:
   NEXT_PHASE="blocked-with-conflicts"
   PR_ID="$PR_ID"
   ```
-- phase-specific
-  - contains: `For deep-research, rework means revising the committed research docs to close the flagged gaps.`
-  - contains: `For feeling-lucky, rework may refine the inferred lane or bearing if QA surfaced a better interpretation.`
 - commit-code
   ```sh
   ./commit.sh --branch "$PR_BRANCH" -m "rework: address review feedback"
@@ -760,7 +738,6 @@ General rules:
   NEXT_PHASE="blocked-with-conflicts"
   PR_ID="—"
   ```
-- phase-specific
 - set-variables
   ```sh
   ISSUE_BODY_UPDATED="{issue body, with updated acceptance criteria if changed}"
@@ -913,9 +890,6 @@ General rules:
   NEXT_PHASE="blocked-with-conflicts"
   PR_ID="—"
   ```
-- phase-specific
-  - contains: `Review the written research holistically against the end goal, not just the slice acceptance criteria.`
-  - contains: `apply slightly softer strictness`
 - commit-code — if documentation-added
   ```sh
   ./commit.sh --branch "$PR_BRANCH" -m "seal: add documentation"
