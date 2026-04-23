@@ -233,14 +233,13 @@ ISSUE_BODY="{original issue body with added frontmatter values}"
 
 ## Handoff
 
-Read the plan issue body for any existing `### 🪼 Pulse metrics` rows (between the table header and `<!-- end metrics table -->`). Extract them as `PLAN_ISSUE_METRICS`.
+Leave metrics movement to `phase-metric-logger.md`. The seal handoff only reports the phase result.
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="to-land" # or "to-rework" if gaps found; use to-land for human-decision-needed warnings
 PR_ID="$PR_ID"
 SUMMARY="Seal {PASS|GAPS FOUND|HUMAN DECISION NEEDED} — {one-line summary}"
-PLAN_ISSUE_METRICS="{metrics rows from plan issue body, or empty if none}"
 ```
 
 Report these four variables to the caller.

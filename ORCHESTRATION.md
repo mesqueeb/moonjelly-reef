@@ -75,27 +75,28 @@ General rules:
   NEXT_PHASE="{from handoff NEXT_PHASE}"
   PR_ID="{from handoff PR_ID}" # if returned; otherwise "—"
   SUMMARY="{from handoff SUMMARY}" # if returned
-  PLAN_ISSUE_METRICS="{from handoff PLAN_ISSUE_METRICS}" # seal only; otherwise empty
   SUBAGENT_DURATION="{duration of sub-agent total execution}" # if known; otherwise "—"
   SUBAGENT_TOKENS="{total token count used by the sub-agent}" # if known; otherwise "—"
   SUBAGENT_TOOL_USES="{tool use count for the sub-agent}" # if known; otherwise "—"
   ```
 - set-variables
   ```sh
-  ISSUE_ID="{from dispatched items}"
-  ISSUE_BODY="{current issue body with metrics rows inserted into the table}"
+  METRICS_DATE="{current local timestamp for metrics rows}" # yyyy-MM-dd HH:mm
+  PHASE_METRIC_RECORDS='[{...}]' # JSON array of returned issue records using the handoff keys plus duration/tokens/tool uses
   ```
-- update-tracker
+- metrics-subagent
   ```sh
-  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+  Read and follow $SKILL_DIR/phase-metric-logger.md.
+  
+  AUTOMATED_DISPATCHES="$AUTOMATED_DISPATCHES"
+  METRICS_DATE="$METRICS_DATE"
+  PHASE_METRIC_RECORDS="$PHASE_METRIC_RECORDS"
   ```
 - set-variables
   ```sh
-  PLAN_PR_BODY="{current plan PR body with metrics rows inserted into the table}"
-  ```
-- update-pr-body — if PR_ID is not "—"
-  ```sh
-  ./tracker.sh pr edit "$PR_ID" --body "$PLAN_PR_BODY"
+  SUCCESS_COUNT="{from metrics logger handoff}"
+  FAIL_COUNT="{from metrics logger handoff}"
+  FAIL_IDS="{from metrics logger handoff}"
   ```
 - release-lock — if AUTOMATED_DISPATCHES == 0
   - contains: `delete the `pulse.lock` file`
@@ -368,6 +369,49 @@ General rules:
   ISSUE_ID="$ISSUE_ID"
   NEXT_PHASE="to-inspect"
   PR_ID="$PR_ID"
+  ```
+
+### [phase-metric-logger.md](./reef-pulse/phase-metric-logger.md)
+
+- set-variables
+  ```sh
+  AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
+  METRICS_DATE="{current local timestamp for metrics rows}" # yyyy-MM-dd HH:mm
+  PHASE_METRIC_RECORDS='[{...}]' # JSON array of returned issue records using the handoff keys plus duration/tokens/tool uses
+  SUCCESS_COUNT="0"
+  FAIL_COUNT="0"
+  FAIL_IDS=""
+  ```
+- phase-specific
+- if normal record
+  ```sh
+  ./tracker.sh issue view "$ISSUE_ID" --json body
+  ```
+- if normal record
+  ```sh
+  ISSUE_BODY="{current issue body with one metrics row inserted into the table}"
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+  ```
+- if to-land record
+  ```sh
+  ./tracker.sh issue view "$ISSUE_ID" --json body
+  ./tracker.sh pr view "$PR_ID" --json body
+  ```
+- if to-land record
+  ```sh
+  PR_BODY="{current PR body with the final metrics table appended}"
+  ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY"
+  ```
+- if to-land record
+  ```sh
+  ISSUE_BODY="{current issue body with the metrics section removed}"
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+  ```
+- handoff
+  ```sh
+  SUCCESS_COUNT="$SUCCESS_COUNT"
+  FAIL_COUNT="$FAIL_COUNT"
+  FAIL_IDS="$FAIL_IDS"
   ```
 
 ### [inspect.md](./reef-pulse/inspect.md)
@@ -693,5 +737,4 @@ General rules:
   ISSUE_ID="$ISSUE_ID"
   NEXT_PHASE="to-land" # or "to-rework" if gaps found; use to-land for human-decision-needed warnings
   PR_ID="$PR_ID"
-  PLAN_ISSUE_METRICS="{metrics rows from plan issue body, or empty if none}"
   ```

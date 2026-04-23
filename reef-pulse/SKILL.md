@@ -224,7 +224,6 @@ ISSUE_ID="{from handoff ISSUE_ID}"
 NEXT_PHASE="{from handoff NEXT_PHASE}"
 PR_ID="{from handoff PR_ID}" # if returned; otherwise "—"
 SUMMARY="{from handoff SUMMARY}" # if returned
-PLAN_ISSUE_METRICS="{from handoff PLAN_ISSUE_METRICS}" # seal only; otherwise empty
 SUBAGENT_DURATION="{duration of sub-agent total execution}" # if known; otherwise "—"
 SUBAGENT_TOKENS="{total token count used by the sub-agent}" # if known; otherwise "—"
 SUBAGENT_TOOL_USES="{tool use count for the sub-agent}" # if known; otherwise "—"
@@ -244,37 +243,34 @@ E.g.:
 
 RUN EVERY PULSE if anything was dispatched in this iteration.
 
-Always log phase metrics by spawning the metrics pageant sub-agent. Do not log phase metrics inline inside the pulse.
+The pulse owns the returned metadata. The logger helper owns all issue and PR body reads, validation, and writes.
 
-Prep the metrics input:
+Prep the logger input as one JSON payload keyed by returned issue:
 
 ```sh
-AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
-PHASE_METRIC_RECORDS="{one record per dispatched phase with ISSUE_ID, ISSUE_PHASE, NEXT_PHASE, PR_ID, SUMMARY, PLAN_ISSUE_METRICS, SUBAGENT_DURATION, SUBAGENT_TOKENS, and SUBAGENT_TOOL_USES}"
-METRICS_DATE="{current date and time as yyyy-MM-dd HH:mm}"
-PHASE_METRIC_AGENT_INPUT="{all metrics input variables above with names and values}"
-# e.g.:
-#   AUTOMATED_DISPATCHES=4
-#   METRICS_DATE="2026-04-20 14:30"
-#   PHASE_METRIC_RECORDS:
-#     - ISSUE_ID="#55"
-#       ISSUE_PHASE="to-implement"
-#       NEXT_PHASE="to-inspect"
-#       PR_ID="#72"
-#       SUMMARY="PR created"
-#       PLAN_ISSUE_METRICS="" # if passed
-#       SUBAGENT_DURATION=42s
-#       SUBAGENT_TOKENS=12340
-#       SUBAGENT_TOOL_USES=18
+METRICS_DATE="{current local timestamp for metrics rows}" # yyyy-MM-dd HH:mm
+PHASE_METRIC_RECORDS='[{...}]' # JSON array of returned issue records using the handoff keys plus duration/tokens/tool uses
 ```
 
-Spawn a sub-agent with:
+Spawn the logger helper with the structured metrics payload:
 
-```
+```sh
 Read and follow $SKILL_DIR/phase-metric-logger.md.
 
-$PHASE_METRIC_AGENT_INPUT
+AUTOMATED_DISPATCHES="$AUTOMATED_DISPATCHES"
+METRICS_DATE="$METRICS_DATE"
+PHASE_METRIC_RECORDS="$PHASE_METRIC_RECORDS"
 ```
+
+The logger helper returns aggregate write results for this pulse:
+
+```sh
+SUCCESS_COUNT="{from metrics logger handoff}"
+FAIL_COUNT="{from metrics logger handoff}"
+FAIL_IDS="{from metrics logger handoff}"
+```
+
+Before `to-land`, the canonical metrics location is the issue body only. At `to-land`, the logger helper cuts the metrics section from the issue body and appends the final table to the PR body.
 
 ### 7. Recurse or exit
 
