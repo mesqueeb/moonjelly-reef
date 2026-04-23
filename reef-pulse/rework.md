@@ -70,6 +70,9 @@ Address every comment and gap. For each piece of feedback:
 
 - Fix it if you can
 - If you disagree with the feedback, fix it anyway and add a PR comment explaining your reasoning. Let the inspector decide on the next round. Don't argue — fix.
+- For deep-research, rework means revising the committed research docs to close the flagged gaps.
+- Typical research fixes include answering missed questions, tightening the writing, clarifying conclusions, or adding missing source links.
+- For feeling-lucky, rework may refine the inferred lane or bearing if QA surfaced a better interpretation.
 
 Do NOT skip any feedback item. If a comment is unclear, make your best interpretation and note what you assumed.
 

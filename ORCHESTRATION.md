@@ -461,6 +461,8 @@ General rules:
   WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
+  - contains: `For deep-research, inspect the committed research artifact mechanically rather than treating it like code.`
+  - contains: `If acceptance criteria are fuzzy because the issue was intentionally feeling-lucky, do not get fussy about their absence.`
 - commit-code — if cleanup-needed
   ```sh
   ./commit.sh --branch "$PR_BRANCH" -m "inspect: cleanup"
@@ -517,6 +519,8 @@ General rules:
   WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
+  - contains: `For deep-research, rework means revising the committed research docs to close the flagged gaps.`
+  - contains: `For feeling-lucky, rework may refine the inferred lane or bearing if QA surfaced a better interpretation.`
 - commit-code
   ```sh
   ./commit.sh --branch "$PR_BRANCH" -m "rework: address review feedback"
@@ -714,6 +718,8 @@ General rules:
   WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
+  - contains: `For deep-research, review the written research holistically against the end goal, not just the slice acceptance criteria.`
+  - contains: `For feeling-lucky, keep the normal mechanical quality bar but apply slightly softer strictness during holistic review.`
 - commit-code — if documentation-added
   ```sh
   ./commit.sh --branch "$PR_BRANCH" -m "seal: add documentation"
