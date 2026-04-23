@@ -17,14 +17,16 @@ The router has already fetched context and drafted exactly 1 slice. No sub-issue
 Take the fast path — skip sub-issues, coverage matrix, and seal. The plan becomes the slice:
 
 1. **Keep the scoped `pr-branch`.** Preserve the `pr-branch` already written by reef-scope in the plan frontmatter.
-2. **No sub-issues.** The plan IS the slice.
-3. **Write acceptance criteria on the plan issue.** Append an `## Acceptance criteria` section to the plan issue body with the criteria you drafted for the single slice.
-4. **No coverage matrix.** Success criteria and acceptance criteria are 1:1 — the mapping adds no information.
+2. **Keep the scoped `pr-branch` and rewritten `bearing` preserved.** If the plan started as `feeling-lucky`, rewrite the frontmatter `bearing` to the inferred combined value before saving the issue body. If the plan is `deep-research`, preserve `bearing: "deep-research"`.
+3. **No sub-issues.** The plan IS the slice.
+4. **Write acceptance criteria on the plan issue.** Append an `## Acceptance criteria` section to the plan issue body with the criteria you drafted for the single slice.
+5. **Shape the acceptance criteria to the lane.** If the slice bearing is deep-research, the acceptance criteria must stay research-focused and describe what must be answered, clarified, or persisted rather than implementation tasks.
+6. **No coverage matrix.** Success criteria and acceptance criteria are 1:1 — the mapping adds no information.
 
 Assemble the updated plan issue body:
 
 ```sh
-ISSUE_BODY="{plan issue body with scoped pr-branch preserved and acceptance criteria appended}"
+ISSUE_BODY="{plan issue body with scoped pr-branch and rewritten bearing preserved, plus acceptance criteria appended}"
 ```
 
 ## 2. Label to-implement
