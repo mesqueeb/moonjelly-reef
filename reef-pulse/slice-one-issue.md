@@ -17,23 +17,35 @@ The router has already fetched context and drafted exactly 1 slice. No sub-issue
 Take the fast path — skip sub-issues, coverage matrix, and seal. The plan becomes the slice:
 
 1. **Keep the scoped `pr-branch`.** Preserve the `pr-branch` already written by reef-scope in the plan frontmatter.
-2. **Keep the scoped `pr-branch` and rewritten `bearing` preserved.** If the plan started as `feeling-lucky`, rewrite the frontmatter `bearing` to the inferred combined value before saving the issue body. If the plan is `deep-research`, preserve `bearing: "deep-research"`.
+2. **Rewrite `bearing` if the plan started as `feeling-lucky`.** Infer the real lane (feature, refactor, bug, or deep-research), set `bearing` to that value, and add `feeling-lucky: true` as a separate frontmatter flag:
+
+```sh
+# example: plan started as feeling-lucky → inferred as feature
+bearing: feature
+feeling-lucky: true
+```
+
+If the bearing is already anything other than `feeling-lucky`, preserve it unchanged.
+
 3. **No sub-issues.** The plan IS the slice.
-4. **Write acceptance criteria on the plan issue.** Append an `## Acceptance criteria` section to the plan issue body with the criteria you drafted for the single slice.
-5. **Shape the acceptance criteria to the lane.** If the slice bearing is deep-research, the acceptance criteria must stay research-focused and describe what must be answered, clarified, or persisted rather than implementation tasks.
-6. **Route research slices into the research phase.** For deep-research, label the issue to-research instead of to-implement.
-7. **No coverage matrix.** Success criteria and acceptance criteria are 1:1 — the mapping adds no information.
+4. **Rename `## Success criteria` to `## Success & Acceptance criteria`.** Append the acceptance criteria you drafted for the single slice to that section. Shape them to the lane: for deep-research, criteria must describe what must be answered, clarified, or persisted rather than implementation tasks.
+5. **Route research slices into the research phase.** For deep-research, label the issue to-research instead of to-implement.
+6. **No coverage matrix.** Success criteria and acceptance criteria are 1:1 — the mapping adds no information.
 
 Assemble the updated plan issue body:
 
 ```sh
-ISSUE_BODY="{plan issue body with scoped pr-branch and rewritten bearing preserved, plus acceptance criteria appended}"
+ISSUE_BODY="{plan issue body with scoped pr-branch, rewritten bearing, and updated Success & Acceptance criteria}"
 ```
 
 ## 2. Label the next phase
 
 ```sh
-NEXT_PHASE="{to-research for deep-research, otherwise to-implement}"
+if [ "$BEARING" = "deep-research" ]; then
+  NEXT_PHASE="to-research"
+else
+  NEXT_PHASE="to-implement"
+fi
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-slice --add-label "$NEXT_PHASE"
 ```
 
@@ -41,7 +53,7 @@ NEXT_PHASE="{to-research for deep-research, otherwise to-implement}"
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="to-research"
+NEXT_PHASE="$NEXT_PHASE"
 PR_ID="—"
 SUMMARY="No sub-issues needed — plan issue moves directly into research or implementation"
 ```

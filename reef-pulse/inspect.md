@@ -82,8 +82,7 @@ For each acceptance criterion on the issue:
 - If the test exists but uses mocks where integration tests are expected, flag it. (Prevents painpoint C3.)
 - For deep-research, inspect the committed research artifact mechanically rather than treating it like code.
 - Check that the writing is clear, coherent, not overly drawn out, and actually answers the promised angle or question.
-- If acceptance criteria are fuzzy because the issue was intentionally feeling-lucky, do not get fussy about their absence.
-- Still review lucky work for clarity, simplicity, polish opportunities, and obvious quality problems.
+- If acceptance criteria are fuzzy because the issue was intentionally feeling-lucky, do not get fussy about their absence — apply the same code-level checks (trace the path, check tests) but judge quality holistically: clarity, simplicity, and obvious polish opportunities.
 
 ### 3. Review the report
 

@@ -29,6 +29,14 @@ ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
 
 Read the issue. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The frontmatter block tells you the work type, `base-branch`, and `pr-branch`.
 
+Set the post-fetch variables:
+
+```sh
+BASE_BRANCH="{from issue frontmatter base-branch field}"
+PR_BRANCH="{from issue frontmatter pr-branch field}"
+BEARING="{from issue frontmatter bearing field}"
+```
+
 ### Guard: verify branch frontmatter
 
 Parse the plan frontmatter. If `base-branch` or `pr-branch` is missing, stop immediately:
@@ -52,11 +60,11 @@ Report these three variables to the caller and **do not continue**.
 
 Break the plan into slices. Each slice is a thin vertical cut through ALL integration layers end-to-end — not a horizontal slice of one layer.
 
-Also read `bearing` from the frontmatter:
+Use `$BEARING` (already set in step 0) to adjust slice behavior:
 
-- `deep-research` plans as research-native work
-- `feeling-lucky` plans as deliberately under-scoped work that must be interpreted here
-- `feature`, `refactor`, and `bug` keep their normal slice behavior
+- `deep-research` — plan as research-native work
+- `feeling-lucky` — deliberately under-scoped work that must be interpreted here
+- `feature`, `refactor`, `bug` — keep their normal slice behavior
 
 Rules:
 
@@ -68,7 +76,7 @@ Rules:
 - Surface **implicit prerequisites**. If multiple slices depend on a shared dependency (a new table, a utility module, an API client), that dependency is its own slice and the others are blocked by it. (Prevents painpoint D2.)
 - For refactors: slices must respect the tiny-commit discipline. Each slice leaves the codebase compiling and tests green.
 - If the plan bearing is `deep-research`, draft research questions rather than implementation work. Compact research plans can stay as a single research issue. Larger research plans can be split into angle-based or dependency-based research slices. Acceptance criteria should say what must be answered, clarified, or persisted.
-- If the plan bearing is `feeling-lucky`, this is the first phase allowed to deeply interpret the ticket using both the issue and the codebase. Infer the likeliest lane, rewrite `bearing` into a combined value such as `feature (feeling-lucky)`, and produce acceptance criteria and dependencies with best-effort judgment without asking the user follow-up questions.
+- If the plan bearing is `feeling-lucky`, this is the first phase allowed to deeply interpret the ticket using both the issue and the codebase. Infer the likeliest lane, set `bearing` to that value, and add `feeling-lucky: true` as a separate frontmatter flag. Produce acceptance criteria and dependencies with best-effort judgment without asking the user follow-up questions.
 
 For small bugs (scope = quick fix in the plan): produce a single slice. The plan's success criteria become the slice's acceptance criteria directly.
 

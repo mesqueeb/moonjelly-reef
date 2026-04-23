@@ -6,7 +6,7 @@ Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the is
 >
 > **Tracker note**: Commands below use `./tracker.sh` syntax for both issue and PR operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
-> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
+**AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
 ## Input
 
@@ -58,13 +58,6 @@ Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to re
 
 Stop — do not proceed.
 
-Verify:
-
-- [ ] The project builds / compiles cleanly before you touch anything
-- [ ] The full test suite passes before you touch anything (this is your baseline)
-
-If the baseline is already broken, **stop and report this**. Do not try to fix pre-existing failures. Label the issue `to-rework` with a note explaining what's broken.
-
 ## 2. Read context
 
 Before writing any artifacts, read and understand:
@@ -105,9 +98,6 @@ Decisions made during research that weren't covered by the acceptance criteria o
 
 - `{path/to/artifact.md}` — {what it answers}
 
-## Test results
-
-{Output of the full test suite run. If too long, summarize: "X tests passed, 0 failed, 0 skipped."}
 ```
 
 ## 5. Open the PR
@@ -129,7 +119,7 @@ The PR targets `$BASE_BRANCH` — the branch it merges into.
 
 ## 6. Update the issue and label
 
-Persist the PR metadata for the newly created PR on the issue body so downstream phases (inspect, rework, merge) can find it.
+Persist the PR metadata for the newly created PR on the issue body so downstream phases (inspect, rework, merge) can find it:
 
 ```sh
 PR_ID="{from pr create output}" # e.g.: #43
