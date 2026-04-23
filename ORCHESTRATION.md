@@ -189,7 +189,7 @@ General rules:
 - flow-wave-scan
   ```sh
   ./tracker.sh issue list --json number,title,labels --limit 100 \
-    --search 'label:to-slice OR label:to-implement OR label:to-inspect OR label:to-rework OR label:to-seal'
+    --search 'label:to-slice OR label:to-implement OR label:to-research OR label:to-inspect OR label:to-rework OR label:to-seal'
   ```
 - ebb-wave-scan
   ```sh
@@ -278,24 +278,20 @@ General rules:
 ### [slice-one-issue.md](./reef-pulse/slice-one-issue.md)
 
 - phase-specific
-  - contains: `inferred combined value before saving the issue body`
-  - contains: `If the slice bearing is deep-research, the acceptance criteria must stay research-focused`
   - contains: `For deep-research, label the issue to-research instead of to-implement.`
 - set-variables
-
   ```sh
-  ISSUE_BODY="{plan issue body with scoped pr-branch and rewritten bearing preserved, plus acceptance criteria appended}"
+  ISSUE_BODY="{plan issue body with scoped pr-branch, rewritten bearing, and updated Success & Acceptance criteria}"
   ```
-
 - update-tracker
   ```sh
-  NEXT_PHASE="{to-research for deep-research, otherwise to-implement}"
+  NEXT_PHASE="to-research"
   ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-slice --add-label "$NEXT_PHASE"
   ```
 - handoff
   ```sh
   ISSUE_ID="$ISSUE_ID"
-  NEXT_PHASE="to-research"
+  NEXT_PHASE="$NEXT_PHASE"
   PR_ID="—"
   ```
 
@@ -305,8 +301,7 @@ General rules:
   ```sh
   PR_BRANCH="{from plan issue body pr-branch field}"
   BASE_BRANCH="{from plan issue body}"
-  PLAN_BEARING="{from plan issue body bearing field}"
-  EFFECTIVE_BEARING="{deep-research or inferred lane such as feature (feeling-lucky)}"
+  BEARING="{from plan issue body bearing field}"
   WORKTREE_PATH=".worktrees/$ISSUE_ID-slice"
   ```
 - enter-worktree
@@ -327,7 +322,7 @@ General rules:
   ```sh
   SLICE_TITLE="{slice-title} [await: #{blocker-id}]"  # omit [await: ...] if unblocked
   SLICE_PR_BRANCH="{derived from plan issue pr-branch + slice title slug}"
-  SLICE_BEARING="{per-slice bearing, usually $EFFECTIVE_BEARING unless a slice needs a narrower inferred lane}"
+  SLICE_BEARING="{per-slice bearing, usually $BEARING unless a slice needs a narrower inferred lane}"
   SLICE_BODY="{slice-body}" # as per the template below, with pr-branch: $SLICE_PR_BRANCH and bearing: $SLICE_BEARING
   SLICE_LABEL="{to-research for unblocked deep-research slices, otherwise to-implement; or to-await-waves if blocked}"
   ```
@@ -619,18 +614,18 @@ General rules:
   NEXT_PHASE="blocked-with-conflicts"
   PR_ID="—"
   ```
+- phase-specific
+  - contains: `For deep-research, inspect the committed research artifact mechanically rather than treating it like code.`
+  - contains: `do not get fussy about fuzzy acceptance criteria`
+- commit-code — if cleanup-needed
+  ```sh
+  ./commit.sh --branch "$PR_BRANCH" -m "inspect: cleanup"
+  ```
 - handoff — if pr-missing
   ```sh
   ISSUE_ID="$ISSUE_ID"
   NEXT_PHASE="pr-missing"
   PR_ID="—"
-  ```
-- phase-specific
-  - contains: `For deep-research, inspect the committed research artifact mechanically rather than treating it like code.`
-  - contains: `If acceptance criteria are fuzzy because the issue was intentionally feeling-lucky, do not get fussy about their absence.`
-- commit-code — if cleanup-needed
-  ```sh
-  ./commit.sh --branch "$PR_BRANCH" -m "inspect: cleanup"
   ```
 - update-pr-body
   ```sh
@@ -919,8 +914,8 @@ General rules:
   PR_ID="—"
   ```
 - phase-specific
-  - contains: `For deep-research, review the written research holistically against the end goal, not just the slice acceptance criteria.`
-  - contains: `For feeling-lucky, keep the normal mechanical quality bar but apply slightly softer strictness during holistic review.`
+  - contains: `Review the written research holistically against the end goal, not just the slice acceptance criteria.`
+  - contains: `apply slightly softer strictness`
 - commit-code — if documentation-added
   ```sh
   ./commit.sh --branch "$PR_BRANCH" -m "seal: add documentation"
