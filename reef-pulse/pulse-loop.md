@@ -36,7 +36,7 @@ For all sub-agents spawned:
 
 ```sh
 ./tracker.sh issue list --json number,title,labels --limit 100 \
-  --search 'label:to-slice OR label:to-implement OR label:to-inspect OR label:to-rework OR label:to-seal'
+  --search 'label:to-slice OR label:to-implement OR label:to-research OR label:to-inspect OR label:to-rework OR label:to-seal'
 ```
 
 Dispatch a sub-agent per issue in parallel as per the following instructions. When agent teams are supported in the environment, they can be used to parallelise items linked to the same plan.
@@ -49,6 +49,7 @@ FILE="{based on the label as per the example below}"
 # e.g.:
 # FILE="$SKILL_DIR/slice.md" (if label `to-slice`)
 # FILE="$SKILL_DIR/implement.md" (if label `to-implement`)
+# FILE="$SKILL_DIR/research.md" (if label `to-research`)
 # FILE="$SKILL_DIR/inspect.md" (if label `to-inspect`)
 # FILE="$SKILL_DIR/rework.md" (if label `to-rework`)
 # FILE="$SKILL_DIR/seal.md" (if label `to-seal`)
@@ -126,6 +127,7 @@ ISSUE_PHASE_EMOJI="{phase emoji for ISSUE_PHASE}"
 # e.g.:
 # ISSUE_PHASE_EMOJI="𐃆🐋" (if label `to-slice`)
 # ISSUE_PHASE_EMOJI="  🐙" (if label `to-implement`)
+# ISSUE_PHASE_EMOJI="  🐬" (if label `to-research`)
 # ISSUE_PHASE_EMOJI="  🧿" (if label `to-inspect`)
 # ISSUE_PHASE_EMOJI="  🦀" (if label `to-rework`)
 # ISSUE_PHASE_EMOJI="  🐢" (if label `to-merge`)

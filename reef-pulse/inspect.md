@@ -1,22 +1,28 @@
 # inspect
 
-> **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
->
-> **Tracker note**: Commands below use `./tracker.sh` syntax for both issue and PR operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
-
-> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
-
 ## Input
 
 This skill requires a specific issue: e.g. `#55` or `my-feature/001-auth-endpoint`.
 
-Read the issue to find the PR reference.
-
-Set the pre-fetch variables:
+Set the input as a shell variable:
 
 ```sh
 ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
 ```
+
+## Rules
+
+Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills.
+
+**Shell blocks are literal commands** — run `./worktree-enter.sh`, `./worktree-exit.sh`, and `./commit.sh` exactly as written.
+
+**Tracker note**:
+
+- For `local-tracker`, run `./tracker.sh` exactly as written.
+- For GitHub, replace `./tracker.sh` with `gh`, then execute the command as written.
+- For other trackers with MCP issue tools, replace `./tracker.sh pr` with `gh pr`, and replace `./tracker.sh issue` with the MCP equivalent for that tracker.
+
+**AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
 ## 0. Fetch context
 
@@ -30,6 +36,7 @@ Set the post-fetch variables (after reading the issue body):
 ISSUE_TITLE="{from issue title}"
 BASE_BRANCH="{from issue frontmatter base-branch field}"
 PR_BRANCH="{from issue frontmatter pr-branch field}"
+FEELING_LUCKY="{true if issue frontmatter has feeling-lucky: true, otherwise false}"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-inspect"
 ```
 
@@ -80,6 +87,9 @@ For each acceptance criterion on the issue:
 - Confirm the behavior is correct by reading the test that covers it.
 - If there's no test for an acceptance criterion, that's a gap — flag it.
 - If the test exists but uses mocks where integration tests are expected, flag it. (Prevents painpoint C3.)
+- For deep-research, inspect the committed research artifact mechanically rather than treating it like code.
+- Check that the writing is clear, coherent, not overly drawn out, and actually answers the promised angle or question.
+- If `$FEELING_LUCKY = "true"`, do not get fussy about fuzzy acceptance criteria — apply the same code-level checks (trace the path, check tests) but judge quality holistically: clarity, simplicity, and obvious polish opportunities.
 
 ### 3. Review the report
 

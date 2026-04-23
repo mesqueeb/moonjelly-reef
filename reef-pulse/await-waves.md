@@ -1,22 +1,30 @@
 # await-waves
 
-> **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
->
-> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
-
-> **AFK skill**: this skill runs without human interaction. No judgment calls expected — if blocked, exit silently. If dependencies are landed, promote. Never block waiting for human input.
-
 ## Input
 
 This skill requires a specific issue: e.g. `#55` or `1-2`.
 
 The issue title includes a `[await: ...]` suffix encoding its blockers: e.g. `"auth token storage [await: #55, #56]"`. Blockers are parsed from this suffix — not from the issue body.
 
-Set the pre-fetch variables:
+Set the input as a shell variable:
 
 ```sh
 ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
 ```
+
+## Rules
+
+Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills.
+
+**Shell blocks are literal commands** — run `./worktree-enter.sh`, `./worktree-exit.sh`, and `./commit.sh` exactly as written.
+
+**Tracker note**:
+
+- For `local-tracker`, run `./tracker.sh` exactly as written.
+- For GitHub, replace `./tracker.sh` with `gh`, then execute the command as written.
+- For other trackers with MCP issue tools, replace `./tracker.sh pr` with `gh pr`, and replace `./tracker.sh issue` with the MCP equivalent for that tracker.
+
+**AFK skill**: runs without human interaction. No judgment calls expected — if blocked, exit silently. If dependencies are landed, promote. Never block waiting for human input.
 
 ## 0. Fetch context
 
@@ -29,6 +37,7 @@ Set the post-fetch variables (after reading the issue title and body):
 ```sh
 ISSUE_TITLE="{from issue title, stripping [await: ...] suffix}"
 BASE_BRANCH="{from issue frontmatter base-branch field}"
+BEARING="{from issue frontmatter bearing field}"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-await-waves"
 ```
 
@@ -52,11 +61,12 @@ DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. "#55"
 
 ## 2. Promote
 
-Strip the `[await: ...]` suffix from the title and flip the label:
+Strip the `[await: ...]` suffix from the title and flip the label. If the bearing is `deep-research`, promote into label `to-research`; otherwise promote into label `to-implement`:
 
 ```sh
 ISSUE_TITLE="{stripped title without [await: ...] suffix}"
-./tracker.sh issue edit "$ISSUE_ID" --remove-label to-await-waves --add-label to-implement --title "$ISSUE_TITLE"
+NEXT_LABEL="{to-research for deep-research, otherwise to-implement}"
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-await-waves --add-label "$NEXT_LABEL" --title "$ISSUE_TITLE"
 ```
 
 Promotion is final. The worktree step below is best-effort course correction.
@@ -105,9 +115,9 @@ ISSUE_BODY_UPDATED="{issue body, with updated acceptance criteria if changed}"
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="to-implement" # or "to-await-waves" if still blocked
+NEXT_PHASE="to-research" # or "to-implement" or "to-await-waves" depending on bearing and blockers
 PR_ID="—"
-SUMMARY="{ISSUE_TITLE} is unblocked and ready for implementation" # or "still blocked by #N, #M"
+SUMMARY="{ISSUE_TITLE} is unblocked and ready for research or implementation" # or "still blocked by #N, #M"
 ```
 
 Report these three variables to the caller.

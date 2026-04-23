@@ -1,24 +1,28 @@
 # merge
 
-Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, read and follow [setup.md](setup.md) first and return here after.
-
-> **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
->
-> **Tracker note**: Commands below use `./tracker.sh` syntax for both issue and PR operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
-
-> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
-
 ## Input
 
 An issue tagged `to-merge` with an open PR.
 
-Read the item to find the PR reference. Check whether the issue has a `parent-issue` field in frontmatter — this determines which merge path to take.
-
-Set the pre-fetch variables:
+Set the input as a shell variable:
 
 ```sh
 ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
 ```
+
+## Rules
+
+Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills.
+
+**Shell blocks are literal commands** — run `./worktree-enter.sh`, `./worktree-exit.sh`, and `./commit.sh` exactly as written.
+
+**Tracker note**:
+
+- For `local-tracker`, run `./tracker.sh` exactly as written.
+- For GitHub, replace `./tracker.sh` with `gh`, then execute the command as written.
+- For other trackers with MCP issue tools, replace `./tracker.sh pr` with `gh pr`, and replace `./tracker.sh issue` with the MCP equivalent for that tracker.
+
+**AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
 ## 0. Fetch context
 
@@ -33,6 +37,7 @@ ISSUE_TITLE="{from issue title}"
 BASE_BRANCH="{from issue frontmatter base-branch field}"
 PR_ID="{from issue frontmatter pr-id field}"
 PR_BRANCH="{from issue frontmatter pr-branch field}"
+PARENT_ISSUE="{from issue frontmatter parent-issue field, or empty string if not present}"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-merge"
 ```
 
@@ -83,7 +88,7 @@ If tests failed, stop here. Do not proceed to the delegate step.
 
 ## Delegate
 
-After the pre-merge check passes, check: **does the issue have a `parent-issue` field in frontmatter?**
+After the pre-merge check passes, route on `$PARENT_ISSUE`:
 
-- **No `parent-issue`** — read and execute [merge-no-parent.md](merge-no-parent.md) (fast path: label `to-seal`, human merges via the `reef-land` skill)
-- **Has `parent-issue`** — read and execute [merge-has-parent.md](merge-has-parent.md) (full flow: squash merge PR, check siblings, check completion)
+- **No `$PARENT_ISSUE`** — read and execute [merge-no-parent.md](merge-no-parent.md) (fast path: label `to-seal`, human merges via the `reef-land` skill)
+- **Has `$PARENT_ISSUE`** — read and execute [merge-has-parent.md](merge-has-parent.md) (full flow: squash merge PR, check siblings, check completion)

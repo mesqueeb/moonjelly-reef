@@ -52,11 +52,33 @@ Wait for the user's response before continuing.
 
 ## 3. Write the plan
 
-Read the issue and any existing decision record. Assess: is this a **feature**, **refactor**, or **bug**? Then follow the type-specific guide.
+Every `reef-scope` run must show a route picker before you start the interview or write the plan.
+
+The route picker always offers exactly these five options:
+
+- `scope a feature`
+- `scope a refactor`
+- `triage a bug`
+- `I'm feeling lucky (hand over to the reef)`
+- `deep research`
+
+If `ISSUE_ID` was provided, `reef-scope` reads only the issue title and body before showing the picker. From that issue text alone, recommend the single best route. The picker marks exactly one route as `(recommended)`.
+
+Persist the selected route as `bearing` using one of these exact values:
+
+- bearing: `feature`
+- bearing: `refactor`
+- bearing: `bug`
+- bearing: `feeling-lucky`
+- bearing: `deep-research`
+
+Then follow the route-specific guide:
 
 - **Feature**: see [scope-feature.md](scope-feature.md)
 - **Refactor**: see [scope-refactor.md](scope-refactor.md)
 - **Bug**: see [triage-issue.md](triage-issue.md)
+- **Feeling lucky**: skip the normal scoping interview, stamp only the minimal routing metadata, and persist `bearing: "feeling-lucky"`.
+- **Deep research**: see [scope-deep-research.md](scope-deep-research.md)
 
 ## 4. Branches
 
@@ -99,6 +121,7 @@ The plan issue body starts with frontmatter that downstream phases will read:
 ---
 base-branch: $BASE_BRANCH
 pr-branch: $PR_BRANCH
+bearing: "{selected bearing}"
 ---
 ```
 

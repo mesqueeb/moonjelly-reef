@@ -1,22 +1,28 @@
 # rework
 
-> **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
->
-> **Tracker note**: Commands below use `./tracker.sh` syntax for both issue and PR operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
-
-> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
-
 ## Input
 
 This skill requires a specific issue: e.g. `#55` or `my-feature/001-auth-endpoint`.
 
-Read the issue to find the PR reference.
-
-Set the pre-fetch variables:
+Set the input as a shell variable:
 
 ```sh
 ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
 ```
+
+## Rules
+
+Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills.
+
+**Shell blocks are literal commands** — run `./worktree-enter.sh`, `./worktree-exit.sh`, and `./commit.sh` exactly as written.
+
+**Tracker note**:
+
+- For `local-tracker`, run `./tracker.sh` exactly as written.
+- For GitHub, replace `./tracker.sh` with `gh`, then execute the command as written.
+- For other trackers with MCP issue tools, replace `./tracker.sh pr` with `gh pr`, and replace `./tracker.sh issue` with the MCP equivalent for that tracker.
+
+**AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
 ## 0. Fetch context
 
@@ -70,6 +76,9 @@ Address every comment and gap. For each piece of feedback:
 
 - Fix it if you can
 - If you disagree with the feedback, fix it anyway and add a PR comment explaining your reasoning. Let the inspector decide on the next round. Don't argue — fix.
+- For deep-research, rework means revising the committed research docs to close the flagged gaps.
+- Typical research fixes include answering missed questions, tightening the writing, clarifying conclusions, or adding missing source links.
+- For feeling-lucky, rework may refine the inferred lane or bearing if QA surfaced a better interpretation.
 
 Do NOT skip any feedback item. If a comment is unclear, make your best interpretation and note what you assumed.
 

@@ -1,11 +1,5 @@
 # metric-logger
 
-> **Shell blocks are literal commands** — `./tracker.sh` is a real script next to this file. Execute it as written; do not substitute with raw git commands.
->
-> **Tracker note**: Commands below use `./tracker.sh` syntax for both issue and PR operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
-
-> **AFK skill**: `metric-logger.md` runs without human interaction. If one record fails validation or a write, report it and continue with the remaining records.
-
 ## Input
 
 Set the input variables:
@@ -28,6 +22,20 @@ SUCCESS_COUNT="0" # mutate on every full record success
 FAIL_COUNT="0" # mutate on every failed record
 FAIL_IDS="" # append ISSUE_ID values for failed records
 ```
+
+## Rules
+
+Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills.
+
+**Shell blocks are literal commands** — run `./tracker.sh` exactly as written.
+
+**Tracker note**:
+
+- For `local-tracker`, run `./tracker.sh` exactly as written.
+- For GitHub, replace `./tracker.sh` with `gh`, then execute the command as written.
+- For other trackers with MCP issue tools, replace `./tracker.sh pr` with `gh pr`, and replace `./tracker.sh issue` with the MCP equivalent for that tracker.
+
+**AFK skill**: runs without human interaction. If one record fails validation or a write, report it and continue with the remaining records.
 
 ## Process
 

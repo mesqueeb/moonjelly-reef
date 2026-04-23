@@ -269,23 +269,33 @@ General rules:
   NEXT_PHASE="blocked-missing-scope"
   PR_ID="—"
   ```
+- phase-specific
+  - contains: `deep-research` + `feeling-lucky` + `feature (feeling-lucky)`
+  - contains: `Compact research plans can stay as a single research issue`
+  - contains: `angle-based or dependency-based research slices`
+  - contains: `without asking the user follow-up questions`
 
 ### [slice-one-issue.md](./reef-pulse/slice-one-issue.md)
 
+- phase-specific
+  - contains: `inferred combined value before saving the issue body`
+  - contains: `If the slice bearing is deep-research, the acceptance criteria must stay research-focused`
+  - contains: `For deep-research, label the issue to-research instead of to-implement.`
 - set-variables
 
   ```sh
-  ISSUE_BODY="{plan issue body with scoped pr-branch preserved and acceptance criteria appended}"
+  ISSUE_BODY="{plan issue body with scoped pr-branch and rewritten bearing preserved, plus acceptance criteria appended}"
   ```
 
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-slice --add-label to-implement
+  NEXT_PHASE="{to-research for deep-research, otherwise to-implement}"
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-slice --add-label "$NEXT_PHASE"
   ```
 - handoff
   ```sh
   ISSUE_ID="$ISSUE_ID"
-  NEXT_PHASE="to-implement"
+  NEXT_PHASE="to-research"
   PR_ID="—"
   ```
 
@@ -295,6 +305,8 @@ General rules:
   ```sh
   PR_BRANCH="{from plan issue body pr-branch field}"
   BASE_BRANCH="{from plan issue body}"
+  PLAN_BEARING="{from plan issue body bearing field}"
+  EFFECTIVE_BEARING="{deep-research or inferred lane such as feature (feeling-lucky)}"
   WORKTREE_PATH=".worktrees/$ISSUE_ID-slice"
   ```
 - enter-worktree
@@ -305,14 +317,17 @@ General rules:
   ```sh
   git push -u origin "$PR_BRANCH"
   ```
-- phase-specific
 - set-variables
   ```sh
   SLICE_TITLE="{slice-title} [await: #{blocker-id}]"  # omit [await: ...] if unblocked
   SLICE_PR_BRANCH="{derived from plan issue pr-branch + slice title slug}"
-  SLICE_BODY="{slice-body}" # as per the template below, with pr-branch: $SLICE_PR_BRANCH
-  SLICE_LABEL="to-implement" # or to-await-waves if blocked
+  SLICE_BEARING="{per-slice bearing, usually $EFFECTIVE_BEARING unless a slice needs a narrower inferred lane}"
+  SLICE_BODY="{slice-body}" # as per the template below, with pr-branch: $SLICE_PR_BRANCH and bearing: $SLICE_BEARING
+  SLICE_LABEL="{to-research for unblocked deep-research slices, otherwise to-implement; or to-await-waves if blocked}"
   ```
+- phase-specific
+  - contains: `For deep-research, make the slices research-native`
+  - contains: `bearing: $SLICE_BEARING`
 - create-slices
   ```sh
   ./tracker.sh issue create --title "$SLICE_TITLE" --body "$SLICE_BODY" --label "$SLICE_LABEL"
@@ -387,6 +402,61 @@ General rules:
   NEXT_PHASE="to-inspect"
   PR_ID="$PR_ID"
   ```
+
+### [research.md](./reef-pulse/research.md)
+
+- set-variables
+  ```sh
+  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
+  ```
+- fetch-context
+  ```sh
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ```
+- set-variables
+  ```sh
+  ISSUE_TITLE="{from issue title}"
+  BASE_BRANCH="{from issue frontmatter base-branch field}"
+  PR_BRANCH="{from issue frontmatter pr-branch field}"
+  WORKTREE_PATH=".worktrees/$ISSUE_TITLE-research"
+  ```
+- enter-worktree
+  ```sh
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+  ```
+- phase-specific
+  - contains: `produce a durable research artifact instead of code`
+  - contains: `lightweight source links near externally sourced findings`
+- commit-code
+  ```sh
+  ./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: research"
+  ```
+- set-variables
+  ```sh
+  CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g.: #42
+  REPORT="{research report}"
+  PR_BODY_NEW="$CLOSES\n\n$REPORT"
+  ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
+  ```
+- set-variables
+  ```sh
+  PR_ID="{from pr create output}" # e.g.: #43
+  ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
+  # add to frontmatter (if not already): pr-branch: $PR_BRANCH
+  # add to frontmatter:  pr-id: $PR_ID
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED" --remove-label to-research --add-label to-inspect
+  ```
+- exit-worktree
+  ```sh
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
+  ```
+- handoff
+  ```sh
+  ISSUE_ID="$ISSUE_ID"
+  NEXT_PHASE="to-inspect"
+  PR_ID="$PR_ID"
+  ```
+
 
 ### [metric-logger.md](./reef-pulse/metric-logger.md)
 
@@ -520,6 +590,8 @@ General rules:
   WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
+  - contains: `For deep-research, inspect the committed research artifact mechanically rather than treating it like code.`
+  - contains: `If acceptance criteria are fuzzy because the issue was intentionally feeling-lucky, do not get fussy about their absence.`
 - commit-code — if cleanup-needed
   ```sh
   ./commit.sh --branch "$PR_BRANCH" -m "inspect: cleanup"
@@ -576,6 +648,8 @@ General rules:
   WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
+  - contains: `For deep-research, rework means revising the committed research docs to close the flagged gaps.`
+  - contains: `For feeling-lucky, rework may refine the inferred lane or bearing if QA surfaced a better interpretation.`
 - commit-code
   ```sh
   ./commit.sh --branch "$PR_BRANCH" -m "rework: address review feedback"
@@ -617,6 +691,7 @@ General rules:
   ```sh
   ISSUE_TITLE="{from issue title, stripping [await: ...] suffix}"
   BASE_BRANCH="{from issue frontmatter base-branch field}"
+  BEARING="{from issue frontmatter bearing field}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-await-waves"
   ```
 - set-variables
@@ -629,7 +704,8 @@ General rules:
   ```
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-await-waves --add-label to-implement --title "$ISSUE_TITLE"
+  NEXT_LABEL="{to-research for deep-research, otherwise to-implement}"
+  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-await-waves --add-label "$NEXT_LABEL" --title "$ISSUE_TITLE"
   ```
 - enter-worktree
   ```sh
@@ -651,7 +727,7 @@ General rules:
 - handoff
   ```sh
   ISSUE_ID="$ISSUE_ID"
-  NEXT_PHASE="to-implement" # or "to-await-waves" if still blocked
+  NEXT_PHASE="to-research" # or "to-implement" or "to-await-waves" depending on bearing and blockers
   PR_ID="—"
   ```
 
@@ -771,6 +847,8 @@ General rules:
   WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
 - phase-specific
+  - contains: `For deep-research, review the written research holistically against the end goal, not just the slice acceptance criteria.`
+  - contains: `For feeling-lucky, keep the normal mechanical quality bar but apply slightly softer strictness during holistic review.`
 - commit-code — if documentation-added
   ```sh
   ./commit.sh --branch "$PR_BRANCH" -m "seal: add documentation"
