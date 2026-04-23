@@ -114,9 +114,10 @@ PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
 ## Handoff
 
 ```sh
+ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="to-inspect"
 PR_ID="$PR_ID"
-summary="Rework complete — addressed review feedback"
+SUMMARY="Rework complete — addressed review feedback"
 ```
 
 Report these three variables to the caller.

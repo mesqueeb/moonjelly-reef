@@ -143,9 +143,10 @@ Document judgment calls made during this phase as a comment on the plan. Only do
 ## Handoff
 
 ```sh
+ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="in-progress"
 PR_ID="—"
-summary="Slices created with acceptance criteria, dependency graph, and coverage matrix"
+SUMMARY="Slices created with acceptance criteria, dependency graph, and coverage matrix"
 ```
 
 Report these three variables to the caller.

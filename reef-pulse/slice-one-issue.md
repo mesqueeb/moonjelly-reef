@@ -36,6 +36,7 @@ ISSUE_BODY="{plan issue body with scoped pr-branch preserved and acceptance crit
 ## Handoff
 
 ```sh
+ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="to-implement"
 PR_ID="—"
 SUMMARY="No sub-issues needed — plan issue moves to to-implement"

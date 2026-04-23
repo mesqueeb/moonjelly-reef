@@ -40,9 +40,10 @@ Parse the plan frontmatter. If `base-branch` or `pr-branch` is missing, stop imm
 Then hand off with:
 
 ```sh
-nextPhase="blocked-missing-scope"
-planPr="—"
-summary="Stopped: plan frontmatter is missing base-branch or pr-branch. Re-run /reef-scope to fix."
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="blocked-missing-scope"
+PR_ID="—"
+SUMMARY="Stopped: plan frontmatter is missing base-branch or pr-branch. Re-run /reef-scope to fix."
 ```
 
 Report these three variables to the caller and **do not continue**.

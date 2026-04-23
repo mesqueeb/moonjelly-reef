@@ -64,9 +64,10 @@ Document judgment calls made during this phase on the PR. Only document decision
 ## Handoff
 
 ```sh
+ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="to-seal" # or "in-progress" if not all issues tagged 'landed'
 PR_ID="—" # sub-issue merge does not open the parent issue PR
-summary="{ISSUE_TITLE} merged — {N} of {total} issues complete"
+SUMMARY="{ISSUE_TITLE} merged — {N} of {total} issues complete"
 ```
 
 Report these three variables to the caller.

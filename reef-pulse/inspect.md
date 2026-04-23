@@ -148,9 +148,10 @@ Leave specific review comments on the PR for each gap. Be precise — tell the i
 ## Handoff
 
 ```sh
+ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="to-merge" # or "to-rework" if gaps found
 PR_ID="$PR_ID"
-summary="{verdict}: {one-line summary of findings}"
+SUMMARY="{verdict}: {one-line summary of findings}"
 ```
 
 Report these three variables to the caller.

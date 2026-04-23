@@ -24,9 +24,10 @@ Remove `to-merge`, add `to-seal`:
 ## Handoff
 
 ```sh
+ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="to-seal"
 PR_ID="$PR_ID" # inherited from router context
-summary="No parent — forwarding to seal for holistic review"
+SUMMARY="No parent — forwarding to seal for holistic review"
 ```
 
 Report these three variables to the caller.

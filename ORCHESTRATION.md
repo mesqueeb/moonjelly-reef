@@ -40,17 +40,45 @@ General rules:
   ```sh
   git fetch origin "$TRACKER_BRANCH" && git checkout "$TRACKER_BRANCH" && git pull
   ```
-- set-variables — ebb wave: per to-await-waves item
+- set-variables
   ```sh
-  DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. #42
+  N=0
+  ```
+- set-variables
+  ```sh
+  N=$((N + 1))
   ```
 - dep-check-ebb — gate dispatch: check each to-await-waves blocker before dispatching
   ```sh
+  DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. #42
   ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
   ```
 - set-variables
   ```sh
   AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
+  ```
+- set-variables
+  ```sh
+  IS_FIRST_BEAT="{true if N == 1; otherwise false}"
+  IS_FINAL_BEAT="{true if AUTOMATED_DISPATCHES == 0; otherwise false}"
+  BEAT_NUMBER="$N"
+  LORE_ROLL="{2d6 roll, 2-12, with slight wave progress influence}" # e.g.: 12
+  LORE_AGENT_INPUT="{all lore input variables above with names and values}"
+  ```
+- set-variables
+  ```sh
+  BEAT="{lore prose returned by the storytelling sub-agent}"
+  ```
+- set-variables
+  ```sh
+  ISSUE_ID="{from handoff ISSUE_ID}"
+  NEXT_PHASE="{from handoff NEXT_PHASE}"
+  PR_ID="{from handoff PR_ID}" # if returned; otherwise "—"
+  SUMMARY="{from handoff SUMMARY}" # if returned
+  PLAN_ISSUE_METRICS="{from handoff PLAN_ISSUE_METRICS}" # seal only; otherwise empty
+  SUBAGENT_DURATION="{duration of sub-agent total execution}" # if known; otherwise "—"
+  SUBAGENT_TOKENS="{total token count used by the sub-agent}" # if known; otherwise "—"
+  SUBAGENT_TOOL_USES="{tool use count for the sub-agent}" # if known; otherwise "—"
   ```
 - set-variables
   ```sh
@@ -63,12 +91,11 @@ General rules:
   ```
 - set-variables
   ```sh
-  PLAN_PR_ID="$planPr" # from handoff — never read issue bodies for this
   PLAN_PR_BODY="{current plan PR body with metrics rows inserted into the table}"
   ```
-- update-pr-body — if planPr is not "—"
+- update-pr-body — if PR_ID is not "—"
   ```sh
-  ./tracker.sh pr edit "$PLAN_PR_ID" --body "$PLAN_PR_BODY"
+  ./tracker.sh pr edit "$PR_ID" --body "$PLAN_PR_BODY"
   ```
 - release-lock — if AUTOMATED_DISPATCHES == 0
   - contains: `delete the `pulse.lock` file`
@@ -214,6 +241,16 @@ General rules:
   ```sh
   ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
   ```
+- update-tracker — if base-branch or pr-branch is missing
+  ```sh
+  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-slice --add-label blocked-missing-scope --add-label to-scope
+  ```
+- handoff — if base-branch or pr-branch is missing
+  ```sh
+  ISSUE_ID="$ISSUE_ID"
+  NEXT_PHASE="blocked-missing-scope"
+  PR_ID="—"
+  ```
 
 ### [slice-one-issue.md](./reef-pulse/slice-one-issue.md)
 
@@ -229,9 +266,9 @@ General rules:
   ```
 - handoff
   ```sh
+  ISSUE_ID="$ISSUE_ID"
   NEXT_PHASE="to-implement"
   PR_ID="—"
-  SUMMARY="No sub-issues needed — plan issue moves to to-implement"
   ```
 
 ### [slice-subissues.md](./reef-pulse/slice-subissues.md)
@@ -276,6 +313,7 @@ General rules:
   ```
 - handoff
   ```sh
+  ISSUE_ID="$ISSUE_ID"
   NEXT_PHASE="in-progress"
   PR_ID="—"
   ```
@@ -327,6 +365,7 @@ General rules:
   ```
 - handoff
   ```sh
+  ISSUE_ID="$ISSUE_ID"
   NEXT_PHASE="to-inspect"
   PR_ID="$PR_ID"
   ```
@@ -381,6 +420,7 @@ General rules:
   ```
 - handoff
   ```sh
+  ISSUE_ID="$ISSUE_ID"
   NEXT_PHASE="to-merge" # or "to-rework" if gaps found
   PR_ID="$PR_ID"
   ```
@@ -430,6 +470,7 @@ General rules:
   ```
 - handoff
   ```sh
+  ISSUE_ID="$ISSUE_ID"
   NEXT_PHASE="to-inspect"
   PR_ID="$PR_ID"
   ```
@@ -481,6 +522,7 @@ General rules:
   ```
 - handoff
   ```sh
+  ISSUE_ID="$ISSUE_ID"
   NEXT_PHASE="to-implement" # or "to-await-waves" if still blocked
   PR_ID="—"
   ```
@@ -534,6 +576,7 @@ General rules:
   ```
 - handoff
   ```sh
+  ISSUE_ID="$ISSUE_ID"
   NEXT_PHASE="to-seal"
   PR_ID="$PR_ID" # inherited from router context
   ```
@@ -573,6 +616,7 @@ General rules:
   ```
 - handoff
   ```sh
+  ISSUE_ID="$ISSUE_ID"
   NEXT_PHASE="to-seal" # or "in-progress" if not all issues tagged 'landed'
   PR_ID="—" # sub-issue merge does not open the parent issue PR
   ```
@@ -646,8 +690,8 @@ General rules:
   ```
 - handoff
   ```sh
+  ISSUE_ID="$ISSUE_ID"
   NEXT_PHASE="to-land" # or "to-rework" if gaps found; use to-land for human-decision-needed warnings
   PR_ID="$PR_ID"
-  SUMMARY="Seal {PASS|GAPS FOUND|HUMAN DECISION NEEDED} — {one-line summary}"
   PLAN_ISSUE_METRICS="{metrics rows from plan issue body, or empty if none}"
   ```

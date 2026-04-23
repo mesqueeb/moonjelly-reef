@@ -236,6 +236,7 @@ ISSUE_BODY="{original issue body with added frontmatter values}"
 Read the plan issue body for any existing `### 🪼 Pulse metrics` rows (between the table header and `<!-- end metrics table -->`). Extract them as `PLAN_ISSUE_METRICS`.
 
 ```sh
+ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="to-land" # or "to-rework" if gaps found; use to-land for human-decision-needed warnings
 PR_ID="$PR_ID"
 SUMMARY="Seal {PASS|GAPS FOUND|HUMAN DECISION NEEDED} — {one-line summary}"

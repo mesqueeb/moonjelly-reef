@@ -44,7 +44,7 @@ DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. "#55"
 ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
 ```
 
-**If any dependency does NOT have the `landed` label**: this issue stays `to-await-waves`. Skip to the handoff with `nextPhase: "to-await-waves"` and `summary: "still blocked by #N, #M"`.
+**If any dependency does NOT have the `landed` label**: this issue stays `to-await-waves`. Skip to the handoff with `NEXT_PHASE: "to-await-waves"` and `SUMMARY: "still blocked by #N, #M"`.
 
 **If the `[await: ...]` suffix is missing or malformed**: treat as "no blockers found" and continue to step 2 (safe fallback).
 
@@ -104,9 +104,10 @@ ISSUE_BODY_UPDATED="{issue body, with updated acceptance criteria if changed}"
 ## Handoff
 
 ```sh
+ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="to-implement" # or "to-await-waves" if still blocked
 PR_ID="—"
-summary="{ISSUE_TITLE} is unblocked and ready for implementation" # or "still blocked by #N, #M"
+SUMMARY="{ISSUE_TITLE} is unblocked and ready for implementation" # or "still blocked by #N, #M"
 ```
 
 Report these three variables to the caller.

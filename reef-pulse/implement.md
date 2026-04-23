@@ -144,9 +144,10 @@ ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
 ## Handoff
 
 ```sh
+ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="to-inspect"
 PR_ID="$PR_ID"
-summary="Implementation complete for $ISSUE_TITLE"
+SUMMARY="Implementation complete for $ISSUE_TITLE"
 ```
 
 Report these three variables to the caller.

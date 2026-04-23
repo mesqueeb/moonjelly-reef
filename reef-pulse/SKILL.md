@@ -57,7 +57,11 @@ If this is the first iteration of the pulse (not a recursive call), print the se
 └─────────────────────────────────────────────────────────────┘
 ```
 
-Initialize the pulse counter to 0.
+Initialize the pulse counter to 0:
+
+```sh
+N=0
+```
 
 ## Pulse loop
 
@@ -69,8 +73,12 @@ RUN EVERY PULSE.
 
 At the start of each pulse iteration (including recursive calls), increment the pulse counter and print the pulse header with the current timestamp:
 
+```sh
+N=$((N + 1))
 ```
-── PULSE {N} ──────────────────────────────────────── {HH:MM:SS} ──
+
+```
+── PULSE $N ──────────────────────────────────────── {HH:MM:SS} ──
 ```
 
 ### 2. Scan
@@ -114,9 +122,6 @@ After all flow agents complete, rescan `to-await-waves` items. For each item, pa
 
 ```sh
 DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. #42
-```
-
-```sh
 ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
 ```
 
@@ -134,14 +139,26 @@ Immediately after dispatching, print each dispatched agent with its phase emoji.
 | Label            | Phase emoji |
 | ---------------- | ----------- |
 | `to-slice`       | `𐃆🐋`       |
-| `to-implement`   | `🐙`        |
-| `to-inspect`     | `🧿`        |
-| `to-rework`      | `🦀`        |
-| `to-merge`       | `🐢`        |
-| `to-seal`        | `🦭`        |
-| `to-await-waves` | `🪸`        |
+| `to-implement`   | `  🐙`      |
+| `to-inspect`     | `  🧿`      |
+| `to-rework`      | `  🦀`      |
+| `to-merge`       | `  🐢`      |
+| `to-seal`        | `  🦭`      |
+| `to-await-waves` | `  🪸`      |
 
 The narwhal (slice phase) always uses both characters `𐃆🐋`, not just the emoji.
+
+For each dispatched issue, capture the display values used for both the dispatch line and the later return-result line:
+
+```sh
+ISSUE_ID="{from dispatched issue}"
+ISSUE_TITLE="{from dispatched issue title}"
+ISSUE_PHASE="{label that dispatched this issue, without the to- prefix}" # e.g.: implement
+ISSUE_PHASE_EMOJI="{phase emoji for ISSUE_PHASE}" # e.g.: 🐙
+DISPATCH_ROW="$ISSUE_PHASE_EMOJI  $ISSUE_ID  \"$ISSUE_TITLE\""
+```
+
+E.g.:
 
 ```
 𐃆🐋  #34  "auth token rotation"
@@ -149,34 +166,42 @@ The narwhal (slice phase) always uses both characters `𐃆🐋`, not just the e
   🧿  #53  "db migration safety"
 ```
 
-After both flow and ebb waves complete, record the combined count of automated phases dispatched this iteration:
-
-```sh
-AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
-```
-
 ### 4. Print lore snippet
 
 RUN EVERY PULSE, including empty ones.
 
-It is required even when the iteration feels like "just a follow-up scan" or "just the final empty pulse." Generate a lore snippet by spawning a storytelling sub-agent (use `$SKILL_DIR/saga-writer.md`). Do not generate lore inline inside the pulse.
+Always generate lore by spawning the storytelling sub-agent. Do not generate lore inline inside the pulse.
 
-Choose a random number as-if you make a 2d6 roll (2-12) with slight wave progress influence:
+Prep the storytelling input:
 
-- 6–8 for neutral or mixed results
-- 2–5 when agents failed, were blocked, or nothing moved forward
-- 9–12 when agents landed cleanly or a milestone was reached
+```sh
+AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
+IS_FIRST_BEAT="{true if N == 1; otherwise false}"
+IS_FINAL_BEAT="{true if AUTOMATED_DISPATCHES == 0; otherwise false}"
+BEAT_NUMBER="$N"
+LORE_ROLL="{2d6 roll, 2-12, with slight wave progress influence}" # e.g.: 12
+LORE_AGENT_INPUT="{all lore input variables above with names and values}"
+# e.g.:
+#   AUTOMATED_DISPATCHES=4
+#   IS_FIRST_BEAT=false
+#   IS_FINAL_BEAT=false
+#   BEAT_NUMBER=3
+#   LORE_ROLL=12
+```
 
-Pass the storytelling sub-agent:
+Spawn a sub-agent with:
 
-- `IS_FIRST_BEAT`: true if `N == 1`
-- `IS_FINAL_BEAT`: true if `$AUTOMATED_DISPATCHES == 0`
-- `BEAT_NUMBER`: `N`
-- The 2d6 roll
+```
+Read and follow $SKILL_DIR/saga-writer.md.
+
+$LORE_AGENT_INPUT
+```
 
 The storytelling sub-agent returns:
 
-- `BEAT:` followed by the lore prose
+```sh
+BEAT="{lore prose returned by the storytelling sub-agent}"
+```
 
 After the sub-agent returns, print the beat in the existing dashed lore box format:
 
@@ -188,19 +213,38 @@ After the sub-agent returns, print the beat in the existing dashed lore box form
 
 Leave dispatch lines, metrics tables, and return-result output unchanged.
 
-### 5. Print return results
+### 5. Per sub-agent execution
 
 RUN EVERY PULSE if anything was dispatched in this iteration.
 
+After all dispatched agents complete, collect one execution record per returned sub-agent. Each record is keyed by the returned `ISSUE_ID`.
+
+```sh
+ISSUE_ID="{from handoff ISSUE_ID}"
+NEXT_PHASE="{from handoff NEXT_PHASE}"
+PR_ID="{from handoff PR_ID}" # if returned; otherwise "—"
+SUMMARY="{from handoff SUMMARY}" # if returned
+PLAN_ISSUE_METRICS="{from handoff PLAN_ISSUE_METRICS}" # seal only; otherwise empty
+SUBAGENT_DURATION="{duration of sub-agent total execution}" # if known; otherwise "—"
+SUBAGENT_TOKENS="{total token count used by the sub-agent}" # if known; otherwise "—"
+SUBAGENT_TOOL_USES="{tool use count for the sub-agent}" # if known; otherwise "—"
+```
+
+#### Print return results
+
 After agents return, print each result with its phase emoji and a `›` transition arrow showing the phase transition:
+
+```sh
+RESULT_ROW="$ISSUE_PHASE_EMOJI  $ISSUE_ID   $SUBAGENT_DURATION   $SUBAGENT_TOKENS   $ISSUE_PHASE › $NEXT_PHASE"
+```
+
+E.g.:
 
 ```
 𐃆🐋  #34   3m12s   18k   slice › implement
   🐙  #55   4m45s   24k   implement › inspect
   🦀  #53   1m08s    9k   inspect › rework
 ```
-
-The narwhal (slice phase) always uses both characters `𐃆🐋`. Each line shows: phase emoji, issue number, duration, token count, and the transition (previous label `›` next label from handoff).
 
 Also print human and idle items:
 
@@ -211,11 +255,9 @@ Also print human and idle items:
   ·   #56  idle
 ```
 
-### 6. Log phase metrics
+#### Log phase metrics
 
 RUN EVERY PULSE if anything was dispatched in this iteration.
-
-After all dispatched agents complete, collect from each: task notification metadata (duration, tokens, tool uses) and the structured handoff variables (`nextPhase`, `planPr`, `summary`). Group results by plan.
 
 #### Metrics table format
 
@@ -237,7 +279,7 @@ No timestamp in the header. Each row gets a `Date` column (`yyyy-MM-dd HH:mm`).
 - Only log phases dispatched this pulse. If nothing was dispatched, skip this step entirely.
 - Fall back to `—` for any missing metadata field (duration, tokens, tool uses).
 - Duration: human-readable (`42s`, `1m 12s`). Tokens: space-separated thousands.
-- Do NOT read issue bodies to discover PR numbers. Use `planPr` from the handoff.
+- Do NOT read issue bodies to discover PR numbers. Use the `PR_ID` returned in the handoff.
 
 #### 6a. Write metrics to the plan issue
 
@@ -251,17 +293,16 @@ ISSUE_BODY="{current issue body with metrics rows inserted into the table}"
 
 #### 6b. Write metrics to the plan PR
 
-Use `planPr` from the handoff to determine the target PR. If `planPr` is `—`, no plan PR exists yet — skip this sub-step. Otherwise, read the current plan PR body and insert the same metrics rows immediately above the `<!-- end metrics table -->` sentinel. If no table exists, append it to the end (including the sentinel after the last row).
+Use `PR_ID` from the parsed handoff data to determine the target PR. If `PR_ID` is `—`, no plan PR exists yet — skip this sub-step. Otherwise, read the current plan PR body and insert the same metrics rows immediately above the `<!-- end metrics table -->` sentinel. If no table exists, append it to the end (including the sentinel after the last row).
 
 ```sh
-PLAN_PR_ID="$planPr" # from handoff — never read issue bodies for this
 PLAN_PR_BODY="{current plan PR body with metrics rows inserted into the table}"
-./tracker.sh pr edit "$PLAN_PR_ID" --body "$PLAN_PR_BODY"
+./tracker.sh pr edit "$PR_ID" --body "$PLAN_PR_BODY"
 ```
 
 #### Total row on seal-to-land
 
-When a seal handoff has `nextPhase: to-land`, use `planIssueMetrics` from the seal handoff (scope/slice metrics rows from the plan issue). Prepend those rows to the PR's existing metrics table (dedup if already present), append the seal row, then append a bold **Total** row summing all durations and tokens. Unknown values (`—`) are excluded from the total. This is the last automated edit to the metrics table.
+When a seal handoff has `NEXT_PHASE: to-land`, use `PLAN_ISSUE_METRICS` from the seal handoff (scope/slice metrics rows from the plan issue). Prepend those rows to the PR's existing metrics table (dedup if already present), append the seal row, then append a bold **Total** row summing all durations and tokens. Unknown values (`—`) are excluded from the total. This is the last automated edit to the metrics table.
 
 Example:
 
