@@ -35,7 +35,7 @@ Read the config to determine the tracker type, then scan for all labeled issues.
 ```sh
 # Scan all reef-labeled issues in a single query
 ./tracker.sh issue list --json number,title,labels --limit 100 \
-  --search 'label:to-slice OR label:to-await-waves OR label:to-implement OR label:to-inspect OR label:to-rework OR label:to-merge OR label:to-seal'
+  --search 'label:to-slice OR label:to-await-waves OR label:to-implement OR label:to-research OR label:to-inspect OR label:to-rework OR label:to-merge OR label:to-seal'
 ```
 
 ## 3. Dispatch automated (🌊) work — Flow wave
@@ -54,6 +54,7 @@ For each item, spawn a sub-agent with: `"Read and follow $SKILL_DIR/{file}. Targ
 | -------------- | ------------------------- |
 | `to-slice`     | `$SKILL_DIR/slice.md`     |
 | `to-implement` | `$SKILL_DIR/implement.md` |
+| `to-research`  | `$SKILL_DIR/research.md`  |
 | `to-inspect`   | `$SKILL_DIR/inspect.md`   |
 | `to-rework`    | `$SKILL_DIR/rework.md`    |
 | `to-merge`     | `$SKILL_DIR/merge.md`     |
@@ -85,6 +86,7 @@ Immediately after dispatching, print each dispatched agent with its phase emoji.
 | ---------------- | ----------- |
 | `to-slice`       | `𐃆🐋`       |
 | `to-implement`   | `  🐙`      |
+| `to-research`    | `  🐬`      |
 | `to-inspect`     | `  🧿`      |
 | `to-rework`      | `  🦀`      |
 | `to-merge`       | `  🐢`      |
