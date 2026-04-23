@@ -1,17 +1,15 @@
 # Phase instructions
 
-Source of truth for what each skill/phase .md file should contain.
-Each entry is an ordered list of operations.
-The test runner checks: (1) each command string exists in the .md file, (2) they appear in this order, (3) `contains` strings are present in the body.
+This file captures the orchestration contract for each skill/phase.
+It is intentionally narrow: only record the external I/O and durable side effects that must stay stable across implementations.
 
-`if` means the operation is conditional — it must exist in the .md but only runs when the condition holds.
+That means things like:
+- tracker reads and writes via `./tracker.sh`
+- worktree entry/exit calls
+- commit calls
+- handoff variables and other persisted state
 
-Tracker commands use `./tracker.sh issue ...` and `./tracker.sh pr ...` syntax.
-For GitHub: replace `./tracker.sh` with `gh`.
-For MCP trackers (ClickUp, Jira, Linear): use equivalent MCP tool calls.
-
-Only variables referenced in an op's cmd/tracker field belong in set-variables.
-Phase-specific context (PLAN_TITLE for prose, BASE_BRANCH for reading) belongs in the .md, not here.
+Do not use this file to document general prompting, prose instructions, or other internal execution detail that can live in the phase `.md` files.
 
 ## Branch contract
 
@@ -42,74 +40,13 @@ General rules:
   ```
 - set-variables
   ```sh
-  N=0
+  PULSE_NR=1
+  AGENT_COUNT_SESSION=0
+  SESSION_START_TS="$(date +%s)"
   ```
-- set-variables
-  ```sh
-  N=$((N + 1))
-  ```
-- dep-check-ebb — gate dispatch: check each to-await-waves blocker before dispatching
-  ```sh
-  DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. #42
-  ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
-  ```
-- set-variables
-  ```sh
-  AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
-  ```
-- set-variables
-  ```sh
-  IS_FIRST_BEAT="{true if N == 1; otherwise false}"
-  IS_FINAL_BEAT="{true if AUTOMATED_DISPATCHES == 0; otherwise false}"
-  BEAT_NUMBER="$N"
-  LORE_ROLL="{2d6 roll, 2-12, with slight wave progress influence}" # e.g.: 12
-  LORE_AGENT_INPUT="{all lore input variables above with names and values}"
-  ```
-- set-variables
-  ```sh
-  BEAT="{lore prose returned by the storytelling sub-agent}"
-  ```
-- set-variables
-  ```sh
-  ISSUE_ID="{from handoff ISSUE_ID}"
-  NEXT_PHASE="{from handoff NEXT_PHASE}"
-  PR_ID="{from handoff PR_ID}" # if returned; otherwise "—"
-  SUMMARY="{from handoff SUMMARY}" # if returned
-  SUBAGENT_DURATION="{duration of sub-agent total execution}" # if known; otherwise "—"
-  SUBAGENT_TOKENS="{total token count used by the sub-agent}" # if known; otherwise "—"
-  SUBAGENT_TOOL_USES="{tool use count for the sub-agent}" # if known; otherwise "—"
-  ```
-- set-variables
-  ```sh
-  PHASE_METRIC_RECORDS='[
-    # {
-    #   "ISSUE_ID": "#55",
-    #   "ISSUE_PHASE": "to-implement",
-    #   "NEXT_PHASE": "to-inspect",
-    #   "PR_ID": "#72",
-    #   "SUMMARY": "PR created",
-    #   "SUBAGENT_DURATION": "42s",
-    #   "SUBAGENT_TOKENS": 12340,
-    #   "SUBAGENT_TOOL_USES": 18
-    # }
-  ]'
-  ```
-- metrics-subagent
-
-  ```sh
-  Read and follow $SKILL_DIR/metric-logger.md.
-
-  AUTOMATED_DISPATCHES="$AUTOMATED_DISPATCHES"
-  PHASE_METRIC_RECORDS="$PHASE_METRIC_RECORDS"
-  ```
-
-- set-variables
-  ```sh
-  SUCCESS_COUNT="{from metrics logger handoff}"
-  FAIL_COUNT="{from metrics logger handoff}"
-  FAIL_IDS="{from metrics logger handoff}"
-  ```
-- release-lock — if AUTOMATED_DISPATCHES == 0
+- pulse-loop
+  - contains: `read and follow [`pulse-loop.md`](pulse-loop.md) from top to bottom for the first pulse-loop iteration`
+- release-lock — if `"$IS_SESSION_COMPLETE" = "true"`
   - contains: `delete the `pulse.lock` file`
 
 ### [/reef-scope](./reef-scope/SKILL.md)
@@ -242,6 +179,75 @@ General rules:
   ```
 
 ## Phases
+
+### [pulse-loop.md](./reef-pulse/pulse-loop.md)
+
+- set-variables
+  ```sh
+  AGENT_COUNT_PULSE=0
+  ```
+- flow-wave-scan
+  ```sh
+  ./tracker.sh issue list --json number,title,labels --limit 100 \
+    --search 'label:to-slice OR label:to-implement OR label:to-inspect OR label:to-rework OR label:to-seal'
+  ```
+- ebb-wave-scan
+  ```sh
+  ./tracker.sh issue list --json number,title,labels --limit 100 \
+    --search 'label:to-await-waves OR label:to-merge'
+  ```
+- dependency-gate — if `to-await-waves`
+  ```sh
+  DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. #42
+  ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
+  ```
+- set-variables
+  ```sh
+  AGENT_COUNT_SESSION=$((AGENT_COUNT_SESSION + AGENT_COUNT_PULSE))
+  if [ "$AGENT_COUNT_PULSE" -eq 0 ]; then
+    IS_SESSION_COMPLETE=true
+  else
+    IS_SESSION_COMPLETE=false
+    PULSE_NR=$((PULSE_NR + 1))
+  fi
+  ```
+- set-variables — if `"$AGENT_COUNT_PULSE" -gt 0`
+  ```sh
+  ISSUE_ID="{from handoff ISSUE_ID}"
+  NEXT_PHASE="{from handoff NEXT_PHASE}"
+  PR_ID="{from handoff PR_ID}" # if returned; otherwise "—"
+  SUMMARY="{from handoff SUMMARY}" # if returned
+  SUBAGENT_DURATION="{duration of sub-agent total execution}" # if known; otherwise "—"
+  SUBAGENT_TOKENS="{total token count used by the sub-agent}" # if known; otherwise "—"
+  SUBAGENT_TOOL_USES="{tool use count for the sub-agent}" # if known; otherwise "—"
+  ```
+- set-variables — if `"$AGENT_COUNT_PULSE" -gt 0`
+  ```sh
+  PHASE_METRIC_RECORDS='[
+    # {
+    #   "ISSUE_ID": "#55",
+    #   "ISSUE_PHASE": "to-implement",
+    #   "NEXT_PHASE": "to-inspect",
+    #   "PR_ID": "#72",
+    #   "SUMMARY": "PR created",
+    #   "SUBAGENT_DURATION": "42s",
+    #   "SUBAGENT_TOKENS": 12340,
+    #   "SUBAGENT_TOOL_USES": 18
+    # }
+  ]'
+  ```
+- metrics-subagent — if `"$AGENT_COUNT_PULSE" -gt 0`
+  ```sh
+  Read and follow $SKILL_DIR/metric-logger.md.
+
+  PHASE_METRIC_RECORDS="$PHASE_METRIC_RECORDS"
+  ```
+- set-variables — if `"$AGENT_COUNT_PULSE" -gt 0`
+  ```sh
+  SUCCESS_COUNT="{from metrics logger handoff}" # e.g.: 2
+  FAIL_COUNT="{from metrics logger handoff}" # e.g.: 0
+  FAIL_IDS="{from metrics logger handoff}" # e.g.: #25, #89
+  ```
 
 ### [slice.md](./reef-pulse/slice.md)
 
@@ -386,7 +392,6 @@ General rules:
 
 - set-variables
   ```sh
-  AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
   PHASE_METRIC_RECORDS='[
     # {
     #   "ISSUE_ID": "#55",

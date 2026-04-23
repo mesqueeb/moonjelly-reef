@@ -18,52 +18,64 @@ AGENT_COUNT_PULSE=0 # Reset per pulse-loop; Increment per sub-agent used
 
 ## 1. Print pulse header
 
-RUN DURING EACH PULSE-LOOP ITERATION.
-
 At the start of each pulse-loop iteration (including recursive calls), print the pulse header with the current timestamp:
 
 ```
 ── PULSE $PULSE_NR ───────────────────────────────── {HH:MM:SS} ──
 ```
 
-## 2. Scan
+## 2. Dispatch Automated Work
 
-RUN DURING EACH PULSE-LOOP ITERATION.
-
-Read the config to determine the tracker type, then scan for all labeled issues.
-
-```sh
-# Scan all reef-labeled issues in a single query
-./tracker.sh issue list --json number,title,labels --limit 100 \
-  --search 'label:to-slice OR label:to-await-waves OR label:to-implement OR label:to-inspect OR label:to-rework OR label:to-merge OR label:to-seal'
-```
-
-## 3. Dispatch automated (🌊) work — Flow wave
-
-RUN DURING EACH PULSE-LOOP ITERATION.
+For all sub-agents spawned:
 
 **Do NOT ask the user for confirmation. Dispatch immediately.** The labels are the authorization — if an item is labelled for automated work, dispatch it without hesitation.
 
 **CRITICAL: Do NOT use `isolation: "worktree"` when spawning sub-agents.** Each phase manages its own worktree via `worktree-enter.sh` (fetches from origin, forks from the correct remote branch). Platform isolation bypasses this and causes merge conflicts.
 
-**Flow wave**: dispatch all non-`to-await-waves` items in parallel via sub-agents. When agent teams are supported in the environment, they can be used to parallelise items linked to the same plan. Wait for all flow agents to complete before proceeding to the ebb wave.
+## 2a. Flow wave
 
-For each item, spawn a sub-agent with: `"Read and follow $SKILL_DIR/{file}. Target: #{number}."`
+```sh
+./tracker.sh issue list --json number,title,labels --limit 100 \
+  --search 'label:to-slice OR label:to-implement OR label:to-inspect OR label:to-rework OR label:to-seal'
+```
 
-| Label          | File                      |
-| -------------- | ------------------------- |
-| `to-slice`     | `$SKILL_DIR/slice.md`     |
-| `to-implement` | `$SKILL_DIR/implement.md` |
-| `to-inspect`   | `$SKILL_DIR/inspect.md`   |
-| `to-rework`    | `$SKILL_DIR/rework.md`    |
-| `to-merge`     | `$SKILL_DIR/merge.md`     |
-| `to-seal`      | `$SKILL_DIR/seal.md`      |
+Dispatch a sub-agent per issue in parallel as per the following instructions. When agent teams are supported in the environment, they can be used to parallelise items linked to the same plan.
 
-## 3a. Ebb wave — gated dispatch of to-await-waves items
+Per sub-agent define `FILE` and `ISSUE_ID` to pass as its input:
 
-RUN DURING EACH PULSE-LOOP ITERATION after the flow wave completes.
+```sh
+ISSUE_ID="{from the fetched issue}"
+FILE="{based on the label as per the example below}"
+# e.g.:
+# FILE="$SKILL_DIR/slice.md" (if label `to-slice`)
+# FILE="$SKILL_DIR/implement.md" (if label `to-implement`)
+# FILE="$SKILL_DIR/inspect.md" (if label `to-inspect`)
+# FILE="$SKILL_DIR/rework.md" (if label `to-rework`)
+# FILE="$SKILL_DIR/seal.md" (if label `to-seal`)
+```
 
-After all flow agents complete, rescan `to-await-waves` items. For each item, parse the `[await: ...]` suffix from its title to find blocker IDs, then check each blocker's label:
+Spawn the sub-agent:
+
+```sh
+Read and follow $SKILL_DIR/$FILE.md.
+
+ISSUE_ID="$ISSUE_ID"
+```
+
+Wait for all flow agents to complete before proceeding to the ebb wave.
+
+## 2b. Ebb wave — dispatch `to-await-waves` and `to-merge`
+
+RUN after the flow wave completes.
+
+```sh
+./tracker.sh issue list --json number,title,labels --limit 100 \
+  --search 'label:to-await-waves OR label:to-merge'
+```
+
+Dispatch a sub-agent per issue in parallel as per the following instructions.
+
+Per `to-await-waves` issue, first parse the `[await: ...]` suffix from its title to find blocker IDs, then check each blocker's label:
 
 ```sh
 DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. #42
@@ -72,24 +84,35 @@ DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. #42
 
 - If **all** blockers have the `landed` label: dispatch the item via sub-agent (`$SKILL_DIR/await-waves.md`).
 - If **any** blocker is not `landed`: skip — do not dispatch. It stays `to-await-waves` and will be re-evaluated next pulse.
+- If the `[await: ...]` suffix is missing or malformed: dispatch anyway — `await-waves` itself catches problems before promoting.
 
-If the `[await: ...]` suffix is missing or malformed, dispatch anyway — `await-waves` itself catches problems before promoting.
+`to-merge` items do not use the dependency gate above; they simply run during ebb instead of flow.
 
-## 3b. Print dispatched agents
+Per sub-agent define the `$FILE` and `$ISSUE_ID` to pass as its input:
 
-RUN DURING THIS PULSE-LOOP ITERATION if `$AGENT_COUNT_PULSE > 0`.
+```sh
+ISSUE_ID="{from the fetched issue}"
+FILE="{based on the label as per the example below}"
+# e.g.:
+# FILE="$SKILL_DIR/await-waves.md" (if label `to-await-waves` and eligible after dependency gate)
+# FILE="$SKILL_DIR/merge.md" (if label `to-merge`)
+```
 
-Immediately after dispatching, print each dispatched agent with its phase emoji. Use the phase emoji from the README lore for each phase:
+Spawn the sub-agent:
 
-| Label            | Phase emoji |
-| ---------------- | ----------- |
-| `to-slice`       | `𐃆🐋`       |
-| `to-implement`   | `  🐙`      |
-| `to-inspect`     | `  🧿`      |
-| `to-rework`      | `  🦀`      |
-| `to-merge`       | `  🐢`      |
-| `to-seal`        | `  🦭`      |
-| `to-await-waves` | `  🪸`      |
+```sh
+Read and follow $FILE.
+
+ISSUE_ID="$ISSUE_ID"
+```
+
+Wait for all ebb agents to complete before proceeding.
+
+## 3. Print dispatched agents
+
+RUN DURING THIS PULSE-LOOP ITERATION if `"$AGENT_COUNT_PULSE" -gt 0`.
+
+Immediately after dispatching, print each dispatched agent with its phase emoji. Use the phase emoji from the README lore for each phase.
 
 The narwhal (slice phase) always uses both characters `𐃆🐋`, not just the emoji.
 
@@ -99,11 +122,20 @@ For each dispatched issue, capture the display values used for both the dispatch
 ISSUE_ID="{from dispatched issue}"
 ISSUE_TITLE="{from dispatched issue title}"
 ISSUE_PHASE="{label that dispatched this issue, without the to- prefix}" # e.g.: implement
-ISSUE_PHASE_EMOJI="{phase emoji for ISSUE_PHASE}" # e.g.: "  🐙"
+ISSUE_PHASE_EMOJI="{phase emoji for ISSUE_PHASE}"
+# e.g.:
+# ISSUE_PHASE_EMOJI="𐃆🐋" (if label `to-slice`)
+# ISSUE_PHASE_EMOJI="  🐙" (if label `to-implement`)
+# ISSUE_PHASE_EMOJI="  🧿" (if label `to-inspect`)
+# ISSUE_PHASE_EMOJI="  🦀" (if label `to-rework`)
+# ISSUE_PHASE_EMOJI="  🐢" (if label `to-merge`)
+# ISSUE_PHASE_EMOJI="  🦭" (if label `to-seal`)
+# ISSUE_PHASE_EMOJI="  🪸" (if label `to-await-waves`)
+# Make the row
 DISPATCH_ROW="$ISSUE_PHASE_EMOJI  $ISSUE_ID  \"$ISSUE_TITLE\""
 ```
 
-E.g.:
+Print `$DISPATCH_ROW`. E.g.:
 
 ```
 𐃆🐋  #34  "auth token rotation"
@@ -111,7 +143,7 @@ E.g.:
   🧿  #53  "db migration safety"
 ```
 
-## 3c. Increment pulse variables
+## 4. Increment pulse variables
 
 RUN DURING EACH PULSE-LOOP ITERATION after the flow and ebb wave dispatch decisions are complete.
 
@@ -125,9 +157,9 @@ else
 fi
 ```
 
-## 4. Print all return results
+## 5. Print all return results
 
-RUN DURING THIS PULSE-LOOP ITERATION if `$AGENT_COUNT_PULSE > 0`.
+RUN DURING THIS PULSE-LOOP ITERATION if `"$AGENT_COUNT_PULSE" -gt 0`.
 
 After all dispatched agents complete, collect one execution record per returned sub-agent. Each record is keyed by the returned `ISSUE_ID` and is used for the return-result output and the metrics pageant.
 
@@ -143,7 +175,7 @@ SUBAGENT_TOOL_USES="{tool use count for the sub-agent}" # if known; otherwise "�
 RESULT_ROW="$ISSUE_PHASE_EMOJI  $ISSUE_ID   $SUBAGENT_DURATION   $SUBAGENT_TOKENS   $ISSUE_PHASE › $NEXT_PHASE"
 ```
 
-E.g.:
+Print `$RESULT_ROW`. E.g.:
 
 ```
 𐃆🐋  #34   3m12s   18k   slice › implement
@@ -153,9 +185,9 @@ E.g.:
 
 ## 5. Log all sub-agent metrics
 
-RUN DURING THIS PULSE-LOOP ITERATION if `$AGENT_COUNT_PULSE > 0`.
+RUN DURING THIS PULSE-LOOP ITERATION if `"$AGENT_COUNT_PULSE" -gt 0`.
 
-Prep one JSON array for the metric-logger sub-agent:
+Prep one JSON array for the metric-logger sub-agent that includes the key variables and metrics gathered per sub-agent dispatched in this pulse-loop iteration:
 
 ```sh
 PHASE_METRIC_RECORDS='[
@@ -183,10 +215,14 @@ PHASE_METRIC_RECORDS="$PHASE_METRIC_RECORDS"
 The metric-logger sub-agent returns aggregate write results for this pulse:
 
 ```sh
-SUCCESS_COUNT="{from metrics logger handoff}"
-FAIL_COUNT="{from metrics logger handoff}"
-FAIL_IDS="{from metrics logger handoff}"
+SUCCESS_COUNT="{from metrics logger handoff}" # e.g.: 2
+FAIL_COUNT="{from metrics logger handoff}" # e.g.: 0
+FAIL_IDS="{from metrics logger handoff}" # e.g.: #25, #89
 METRICS_RESULT_ROW="🪼  metrics ok=$SUCCESS_COUNT fail=$FAIL_COUNT ids=${FAIL_IDS:-—}"
 ```
 
-Log the METRICS_RESULT_ROW.
+Print `$METRICS_RESULT_ROW`. E.g.:
+
+```
+🪼  metrics ok=3 fail=0 ids=—
+```
