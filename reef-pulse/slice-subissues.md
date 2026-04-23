@@ -81,7 +81,7 @@ SLICE_TITLE="{slice-title} [await: #{blocker-id}]"  # omit [await: ...] if unblo
 SLICE_PR_BRANCH="{derived from plan issue pr-branch + slice title slug}"
 SLICE_BEARING="{per-slice bearing, usually $EFFECTIVE_BEARING unless a slice needs a narrower inferred lane}"
 SLICE_BODY="{slice-body}" # as per the template below, with pr-branch: $SLICE_PR_BRANCH and bearing: $SLICE_BEARING
-SLICE_LABEL="to-implement" # or to-await-waves if blocked
+SLICE_LABEL="{to-research for unblocked deep-research slices, otherwise to-implement; or to-await-waves if blocked}"
 ```
 
 For blocked slices, append `[await: #{id}, #{id}]` to the title. Unblocked slices get a plain title.
@@ -121,7 +121,7 @@ Create the slice:
 ./tracker.sh issue create --title "$SLICE_TITLE" --body "$SLICE_BODY" --label "$SLICE_LABEL"
 ```
 
-Label each slice: `to-implement` if no blockers, `to-await-waves` if blocked.
+Label each slice: `to-research` if no blockers and the slice bearing is `deep-research`, `to-implement` if no blockers and the slice is implementation work, `to-await-waves` if blocked.
 
 ## 5. Update the plan
 

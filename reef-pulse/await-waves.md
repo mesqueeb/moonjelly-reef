@@ -29,6 +29,7 @@ Set the post-fetch variables (after reading the issue title and body):
 ```sh
 ISSUE_TITLE="{from issue title, stripping [await: ...] suffix}"
 BASE_BRANCH="{from issue frontmatter base-branch field}"
+BEARING="{from issue frontmatter bearing field}"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-await-waves"
 ```
 
@@ -52,11 +53,12 @@ DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. "#55"
 
 ## 2. Promote
 
-Strip the `[await: ...]` suffix from the title and flip the label:
+Strip the `[await: ...]` suffix from the title and flip the label. If the bearing is `deep-research`, promote into label `to-research`; otherwise promote into label `to-implement`:
 
 ```sh
 ISSUE_TITLE="{stripped title without [await: ...] suffix}"
-./tracker.sh issue edit "$ISSUE_ID" --remove-label to-await-waves --add-label to-implement --title "$ISSUE_TITLE"
+NEXT_LABEL="{to-research for deep-research, otherwise to-implement}"
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-await-waves --add-label "$NEXT_LABEL" --title "$ISSUE_TITLE"
 ```
 
 Promotion is final. The worktree step below is best-effort course correction.
@@ -105,9 +107,9 @@ ISSUE_BODY_UPDATED="{issue body, with updated acceptance criteria if changed}"
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="to-implement" # or "to-await-waves" if still blocked
+NEXT_PHASE="to-research" # or "to-implement" or "to-await-waves" depending on bearing and blockers
 PR_ID="—"
-SUMMARY="{ISSUE_TITLE} is unblocked and ready for implementation" # or "still blocked by #N, #M"
+SUMMARY="{ISSUE_TITLE} is unblocked and ready for research or implementation" # or "still blocked by #N, #M"
 ```
 
 Report these three variables to the caller.
