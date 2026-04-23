@@ -97,7 +97,7 @@ General rules:
 - metrics-subagent
 
   ```sh
-  Read and follow $SKILL_DIR/pulse-metric-logger.md.
+  Read and follow $SKILL_DIR/metric-logger.md.
 
   AUTOMATED_DISPATCHES="$AUTOMATED_DISPATCHES"
   PHASE_METRIC_RECORDS="$PHASE_METRIC_RECORDS"
@@ -382,7 +382,7 @@ General rules:
   PR_ID="$PR_ID"
   ```
 
-### [pulse-metric-logger.md](./reef-pulse/pulse-metric-logger.md)
+### [metric-logger.md](./reef-pulse/metric-logger.md)
 
 - set-variables
   ```sh

@@ -1,10 +1,10 @@
-# pulse-metric-logger
+# metric-logger
 
 > **Shell blocks are literal commands** — `./tracker.sh` is a real script next to this file. Execute it as written; do not substitute with raw git commands.
 >
 > **Tracker note**: Commands below use `./tracker.sh` syntax for both issue and PR operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
-> **AFK skill**: `pulse-metric-logger.md` runs without human interaction. If one record fails validation or a write, report it and continue with the remaining records.
+> **AFK skill**: `metric-logger.md` runs without human interaction. If one record fails validation or a write, report it and continue with the remaining records.
 
 ## Input
 

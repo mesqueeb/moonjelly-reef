@@ -263,7 +263,7 @@ PHASE_METRIC_RECORDS='[
 Spawn the logger agent:
 
 ```sh
-Read and follow $SKILL_DIR/pulse-metric-logger.md.
+Read and follow $SKILL_DIR/metric-logger.md.
 
 AUTOMATED_DISPATCHES="$AUTOMATED_DISPATCHES"
 PHASE_METRIC_RECORDS="$PHASE_METRIC_RECORDS"
