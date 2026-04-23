@@ -233,8 +233,6 @@ ISSUE_BODY="{original issue body with added frontmatter values}"
 
 ## Handoff
 
-Leave metrics movement to `phase-metric-logger.md`. The seal handoff only reports the phase result.
-
 ```sh
 ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="to-land" # or "to-rework" if gaps found; use to-land for human-decision-needed warnings

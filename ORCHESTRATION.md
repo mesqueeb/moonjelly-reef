@@ -81,15 +81,24 @@ General rules:
   ```
 - set-variables
   ```sh
-  METRICS_DATE="{current local timestamp for metrics rows}" # yyyy-MM-dd HH:mm
-  PHASE_METRIC_RECORDS='[{...}]' # JSON array of returned issue records using the handoff keys plus duration/tokens/tool uses
+  PHASE_METRIC_RECORDS='[
+    {
+      "ISSUE_ID": "#55",
+      "ISSUE_PHASE": "to-implement",
+      "NEXT_PHASE": "to-inspect",
+      "PR_ID": "#72",
+      "SUMMARY": "PR created",
+      "SUBAGENT_DURATION": "42s",
+      "SUBAGENT_TOKENS": 12340,
+      "SUBAGENT_TOOL_USES": 18
+    }
+  ]'
   ```
 - metrics-subagent
   ```sh
   Read and follow $SKILL_DIR/phase-metric-logger.md.
   
   AUTOMATED_DISPATCHES="$AUTOMATED_DISPATCHES"
-  METRICS_DATE="$METRICS_DATE"
   PHASE_METRIC_RECORDS="$PHASE_METRIC_RECORDS"
   ```
 - set-variables
@@ -376,36 +385,102 @@ General rules:
 - set-variables
   ```sh
   AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
-  METRICS_DATE="{current local timestamp for metrics rows}" # yyyy-MM-dd HH:mm
-  PHASE_METRIC_RECORDS='[{...}]' # JSON array of returned issue records using the handoff keys plus duration/tokens/tool uses
-  SUCCESS_COUNT="0"
-  FAIL_COUNT="0"
-  FAIL_IDS=""
+  PHASE_METRIC_RECORDS='[
+    {
+      "ISSUE_ID": "#55",
+      "ISSUE_PHASE": "to-implement",
+      "NEXT_PHASE": "to-inspect",
+      "PR_ID": "#72",
+      "SUMMARY": "PR created",
+      "SUBAGENT_DURATION": "42s",
+      "SUBAGENT_TOKENS": 12340,
+      "SUBAGENT_TOOL_USES": 18
+    }
+  ]'
+  SUCCESS_COUNT="0" # mutate on every full record success
+  FAIL_COUNT="0" # mutate on every failed record
+  FAIL_IDS="" # append ISSUE_ID values for failed records
   ```
 - phase-specific
+- if any record
+  ```sh
+  ISSUE_BODY="$(./tracker.sh issue view "$ISSUE_ID" --json body -q .body)"
+  ```
+- if to-land record
+  ```sh
+  PR_BODY="$(./tracker.sh pr view "$PR_ID" --json body -q .body)"
+  ```
+- set-variables
+  ```sh
+  METRICS_TABLE="{md table found in ISSUE_BODY}"
+  ```
+- set-variables if metrics table missing
+  ```sh
+  METRICS_TABLE="### 🪼 Pulse metrics
+  
+  | Phase | Target | Duration | Tokens | Tool uses | Outcome | Date |
+  | ----- | ------ | -------- | ------ | --------- | ------- | ---- |
+  <!-- end metrics table -->"
+  ```
+- set-variables
+  ```sh
+  PHASE="${ISSUE_PHASE#to-}"
+  TARGET="$ISSUE_ID"
+  DURATION="${SUBAGENT_DURATION:-—}"
+  TOKENS="${SUBAGENT_TOKENS:-—}"
+  TOOL_USES="${SUBAGENT_TOOL_USES:-—}"
+  OUTCOME="${SUMMARY:-${NEXT_PHASE#to-}}"
+  METRICS_DATE="$(date '+%Y-%m-%d %H:%M')"
+  METRIC_ROW="| $PHASE | $TARGET | $DURATION | $TOKENS | $TOOL_USES | $OUTCOME | $METRICS_DATE |"
+  ```
+- set-variables
+  ```sh
+  METRICS_TABLE_UPDATED="{current METRICS_TABLE with $METRIC_ROW inserted immediately above <!-- end metrics table -->}"
+  ```
 - if normal record
   ```sh
-  ./tracker.sh issue view "$ISSUE_ID" --json body
+  ISSUE_BODY_UPDATED="{current issue body with METRICS_TABLE_UPDATED written back in place}"
   ```
 - if normal record
   ```sh
-  ISSUE_BODY="{current issue body with one metrics row inserted into the table}"
-  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED"
+  ```
+- if normal record write failed
+  ```sh
+  FAIL_COUNT=$((FAIL_COUNT + 1))
+  FAIL_IDS="${FAIL_IDS:+$FAIL_IDS,}$ISSUE_ID"
+  ```
+- if normal record write succeeded
+  ```sh
+  SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
   ```
 - if to-land record
   ```sh
-  ./tracker.sh issue view "$ISSUE_ID" --json body
-  ./tracker.sh pr view "$PR_ID" --json body
+  FINAL_METRICS_TABLE="{issue metrics table with $METRIC_ROW appended and a bold Total row added last}"
   ```
 - if to-land record
   ```sh
-  PR_BODY="{current PR body with the final metrics table appended}"
-  ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY"
+  PR_BODY_UPDATED="{current PR body with FINAL_METRICS_TABLE appended at the end}"
+  ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
   ```
 - if to-land record
   ```sh
-  ISSUE_BODY="{current issue body with the metrics section removed}"
-  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+  ISSUE_BODY_CLEANED="{current issue body with the full metrics section removed}"
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_CLEANED"
+  ```
+- if to-land PR write failed
+  ```sh
+  FAIL_COUNT=$((FAIL_COUNT + 1))
+  FAIL_IDS="${FAIL_IDS:+$FAIL_IDS,}$ISSUE_ID"
+  ```
+- if to-land cleanup write failed
+  ```sh
+  FAIL_COUNT=$((FAIL_COUNT + 1))
+  FAIL_IDS="${FAIL_IDS:+$FAIL_IDS,}$ISSUE_ID"
+  ```
+- if to-land record fully succeeded
+  ```sh
+  SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
   ```
 - handoff
   ```sh

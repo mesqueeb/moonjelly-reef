@@ -243,26 +243,33 @@ E.g.:
 
 RUN EVERY PULSE if anything was dispatched in this iteration.
 
-The pulse owns the returned metadata. The logger helper owns all issue and PR body reads, validation, and writes.
-
-Prep the logger input as one JSON payload keyed by returned issue:
+Prep one JSON array for the logger agent:
 
 ```sh
-METRICS_DATE="{current local timestamp for metrics rows}" # yyyy-MM-dd HH:mm
-PHASE_METRIC_RECORDS='[{...}]' # JSON array of returned issue records using the handoff keys plus duration/tokens/tool uses
+PHASE_METRIC_RECORDS='[
+  {
+    "ISSUE_ID": "#55",
+    "ISSUE_PHASE": "to-implement",
+    "NEXT_PHASE": "to-inspect",
+    "PR_ID": "#72",
+    "SUMMARY": "PR created",
+    "SUBAGENT_DURATION": "42s",
+    "SUBAGENT_TOKENS": 12340,
+    "SUBAGENT_TOOL_USES": 18
+  }
+]'
 ```
 
-Spawn the logger helper with the structured metrics payload:
+Spawn the logger agent:
 
 ```sh
 Read and follow $SKILL_DIR/phase-metric-logger.md.
 
 AUTOMATED_DISPATCHES="$AUTOMATED_DISPATCHES"
-METRICS_DATE="$METRICS_DATE"
 PHASE_METRIC_RECORDS="$PHASE_METRIC_RECORDS"
 ```
 
-The logger helper returns aggregate write results for this pulse:
+The logger agent returns aggregate write results for this pulse:
 
 ```sh
 SUCCESS_COUNT="{from metrics logger handoff}"
@@ -270,7 +277,11 @@ FAIL_COUNT="{from metrics logger handoff}"
 FAIL_IDS="{from metrics logger handoff}"
 ```
 
-Before `to-land`, the canonical metrics location is the issue body only. At `to-land`, the logger helper cuts the metrics section from the issue body and appends the final table to the PR body.
+If you want to print one pulse-level result row for the metrics write, format it explicitly:
+
+```sh
+METRICS_RESULT_ROW="🪼  metrics ok=$SUCCESS_COUNT fail=$FAIL_COUNT ids=${FAIL_IDS:-—}"
+```
 
 ### 7. Recurse or exit
 
