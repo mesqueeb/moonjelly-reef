@@ -15,6 +15,8 @@ The router has already fetched context and drafted 2+ slices. Set post-fetch var
 ```sh
 PR_BRANCH="{from plan issue body pr-branch field}"
 BASE_BRANCH="{from plan issue body}"
+PLAN_BEARING="{from plan issue body bearing field}"
+EFFECTIVE_BEARING="{deep-research or inferred lane such as feature (feeling-lucky)}"
 WORKTREE_PATH=".worktrees/$ISSUE_ID-slice"
 ```
 
@@ -77,12 +79,14 @@ Assemble each slice body:
 ```sh
 SLICE_TITLE="{slice-title} [await: #{blocker-id}]"  # omit [await: ...] if unblocked
 SLICE_PR_BRANCH="{derived from plan issue pr-branch + slice title slug}"
-SLICE_BODY="{slice-body}" # as per the template below, with pr-branch: $SLICE_PR_BRANCH
+SLICE_BEARING="{per-slice bearing, usually $EFFECTIVE_BEARING unless a slice needs a narrower inferred lane}"
+SLICE_BODY="{slice-body}" # as per the template below, with pr-branch: $SLICE_PR_BRANCH and bearing: $SLICE_BEARING
 SLICE_LABEL="to-implement" # or to-await-waves if blocked
 ```
 
 For blocked slices, append `[await: #{id}, #{id}]` to the title. Unblocked slices get a plain title.
 Give each sub-issue its own `pr-branch`. Derive `SLICE_PR_BRANCH` from the plan issue's `pr-branch` plus a stable slug from the slice title.
+For deep-research, make the slices research-native: use research questions or investigation angles as the slice descriptions, and write acceptance criteria around what must be answered, clarified, or persisted. For feeling-lucky, use the inferred combined bearing and best-effort acceptance criteria without bouncing the work back to scope.
 
 Slice body template:
 
@@ -92,6 +96,7 @@ Slice body template:
 parent-issue: "#$ISSUE_ID"
 base-branch: $PR_BRANCH
 pr-branch: $SLICE_PR_BRANCH
+bearing: $SLICE_BEARING
 
 ---
 
