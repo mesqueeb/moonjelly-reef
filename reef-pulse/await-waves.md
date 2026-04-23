@@ -1,22 +1,30 @@
 # await-waves
 
-> **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
->
-> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
-
-> **AFK skill**: this skill runs without human interaction. No judgment calls expected — if blocked, exit silently. If dependencies are landed, promote. Never block waiting for human input.
-
 ## Input
 
 This skill requires a specific issue: e.g. `#55` or `1-2`.
 
 The issue title includes a `[await: ...]` suffix encoding its blockers: e.g. `"auth token storage [await: #55, #56]"`. Blockers are parsed from this suffix — not from the issue body.
 
-Set the pre-fetch variables:
+Set the input as a shell variable:
 
 ```sh
 ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
 ```
+
+## Rules
+
+Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills.
+
+**Shell blocks are literal commands** — run `./worktree-enter.sh`, `./worktree-exit.sh`, and `./commit.sh` exactly as written.
+
+**Tracker note**:
+
+- For `local-tracker`, run `./tracker.sh` exactly as written.
+- For GitHub, replace `./tracker.sh` with `gh`, then execute the command as written.
+- For other trackers with MCP issue tools, replace `./tracker.sh pr` with `gh pr`, and replace `./tracker.sh issue` with the MCP equivalent for that tracker.
+
+**AFK skill**: runs without human interaction. No judgment calls expected — if blocked, exit silently. If dependencies are landed, promote. Never block waiting for human input.
 
 ## 0. Fetch context
 

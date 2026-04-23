@@ -2,12 +2,6 @@
 
 Multi-slice flow — delegated from [slice.md](slice.md).
 
-> **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
->
-> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
-
-> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
-
 ## Input (from router)
 
 The router has already fetched context and drafted 2+ slices. Set post-fetch variables:
@@ -15,8 +9,8 @@ The router has already fetched context and drafted 2+ slices. Set post-fetch var
 ```sh
 PR_BRANCH="{from plan issue body pr-branch field}"
 BASE_BRANCH="{from plan issue body}"
-PLAN_BEARING="{from plan issue body bearing field}"
-EFFECTIVE_BEARING="{deep-research or inferred lane such as feature (feeling-lucky)}"
+BEARING="{from plan issue body bearing field}"
+FEELING_LUCKY="{true if plan issue frontmatter has feeling-lucky: true, otherwise false}"
 WORKTREE_PATH=".worktrees/$ISSUE_ID-slice"
 ```
 
@@ -79,25 +73,23 @@ Assemble each slice body:
 ```sh
 SLICE_TITLE="{slice-title} [await: #{blocker-id}]"  # omit [await: ...] if unblocked
 SLICE_PR_BRANCH="{derived from plan issue pr-branch + slice title slug}"
-SLICE_BEARING="{per-slice bearing, usually $EFFECTIVE_BEARING unless a slice needs a narrower inferred lane}"
+SLICE_BEARING="{per-slice bearing, usually $BEARING unless a slice needs a narrower inferred lane}"
 SLICE_BODY="{slice-body}" # as per the template below, with pr-branch: $SLICE_PR_BRANCH and bearing: $SLICE_BEARING
 SLICE_LABEL="{to-research for unblocked deep-research slices, otherwise to-implement; or to-await-waves if blocked}"
 ```
 
 For blocked slices, append `[await: #{id}, #{id}]` to the title. Unblocked slices get a plain title.
 Give each sub-issue its own `pr-branch`. Derive `SLICE_PR_BRANCH` from the plan issue's `pr-branch` plus a stable slug from the slice title.
-For deep-research, make the slices research-native: use research questions or investigation angles as the slice descriptions, and write acceptance criteria around what must be answered, clarified, or persisted. For feeling-lucky, use the inferred combined bearing and best-effort acceptance criteria without bouncing the work back to scope.
+For deep-research, make the slices research-native: use research questions or investigation angles as the slice descriptions, and write acceptance criteria around what must be answered, clarified, or persisted. For feeling-lucky (`$FEELING_LUCKY = "true"`), use best-effort acceptance criteria without bouncing the work back to scope.
 
 Slice body template:
 
 ```markdown
 ---
-
 parent-issue: "#$ISSUE_ID"
 base-branch: $PR_BRANCH
 pr-branch: $SLICE_PR_BRANCH
 bearing: $SLICE_BEARING
-
 ---
 
 ## What to build

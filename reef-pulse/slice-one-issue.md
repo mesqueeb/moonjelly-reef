@@ -2,12 +2,6 @@
 
 Single-slice fast path — delegated from [slice.md](slice.md).
 
-> **Shell blocks are literal commands** — `./tracker.sh` is a real script next to this file. Execute it as written; do not substitute with raw git commands.
->
-> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
-
-> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
-
 ## Input (from router)
 
 The router has already fetched context and drafted exactly 1 slice. No sub-issues are needed — the plan becomes the slice.

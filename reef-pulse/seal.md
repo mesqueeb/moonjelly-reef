@@ -1,14 +1,34 @@
 # seal
 
-> **Shell blocks are literal commands** — `./worktree-enter.sh`, `./worktree-exit.sh`, `./commit.sh`, and `./tracker.sh` are real scripts next to this file. Execute them as written; do not substitute with raw git commands.
->
-> **Tracker note**: Commands below use `./tracker.sh` syntax for both issue and PR operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
-
-> **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
-
 ## Input
 
 This skill requires a specific issue: e.g. `#42` or `my-feature`.
+
+Set the input as a shell variable:
+
+```sh
+ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
+```
+
+## Rules
+
+Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills.
+
+**Shell blocks are literal commands** — run `./worktree-enter.sh`, `./worktree-exit.sh`, and `./commit.sh` exactly as written.
+
+**Tracker note**:
+
+- For `local-tracker`, run `./tracker.sh` exactly as written.
+- For GitHub, replace `./tracker.sh` with `gh`, then execute the command as written.
+- For other trackers with MCP issue tools, replace `./tracker.sh pr` with `gh pr`, and replace `./tracker.sh issue` with the MCP equivalent for that tracker.
+
+**AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
+
+## 0. Fetch context
+
+```sh
+./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+```
 
 Read the plan. It must have:
 
@@ -17,24 +37,13 @@ Read the plan. It must have:
 - `pr-branch` in frontmatter
 - Slice PRs with "Ambiguous choices" sections
 
-Set the pre-fetch variables:
-
-```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
-```
-
-## 0. Fetch context
-
-```sh
-./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
-```
-
 Set the post-fetch variables (after reading the plan issue body):
 
 ```sh
 ISSUE_TITLE="{from issue title}"
 BASE_BRANCH="{from issue frontmatter base-branch field}"
 PR_BRANCH="{from issue frontmatter pr-branch field}"
+FEELING_LUCKY="{true if issue frontmatter has feeling-lucky: true, otherwise false}"
 WORKTREE_PATH=".worktrees/$ISSUE_ID-seal"
 ```
 
@@ -90,7 +99,7 @@ If `"$BEARING" = "deep-research"`:
 
 Otherwise:
 - Apply the normal mechanical quality bar.
-- For `feeling-lucky`, apply slightly softer strictness — ask whether the outcome makes good sense for the exploratory ticket the human tossed into the reef.
+- If `$FEELING_LUCKY = "true"`, apply slightly softer strictness — ask whether the outcome makes good sense for the exploratory ticket the human tossed into the reef.
 
 Mark each criterion: ✓ met, ✗ not met (with explanation).
 
