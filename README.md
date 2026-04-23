@@ -89,7 +89,15 @@ stateDiagram-v2
 <details>
 <summary>🤿 <b><code>reef-scope</code></b> — scope an issue</summary>
 
-The single entry point for turning ideas into plans. Determines whether the work is a feature, refactor, or bug, interviews the diver if needed, writes a plan with **success criteria**, and labels `to-slice`.
+The single entry point for turning ideas into plans. It always shows a route picker, recommends a route from issue text when an issue is passed in, writes a plan with **success criteria**, and labels `to-slice`.
+
+The route picker always offers these five options:
+
+- `scope a feature`
+- `scope a refactor`
+- `triage a bug`
+- `I'm feeling lucky (hand over to the reef)`
+- `deep research`
 
 | source file | [`reef-scope/SKILL.md`](reef-scope/SKILL.md) |
 | :---------- | :------------------------------------------- |
