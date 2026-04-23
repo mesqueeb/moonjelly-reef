@@ -75,7 +75,16 @@ Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to re
 ./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
 ```
 
-Stop — do not proceed.
+Hand off with:
+
+```sh
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="blocked-with-conflicts"
+PR_ID="—"
+SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
+```
+
+Report these variables to the caller and **do not continue**.
 
 Run the full project test suite. Record the result.
 
@@ -119,7 +128,22 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ### 6. Update the PR
 
-Set the PR number from the issue body. If not found there, try `./tracker.sh pr list --search`. If PR_ID is nowhere to be found, label the issue `pr-missing` and stop.
+Set the PR number from the issue body. If not found there, try `./tracker.sh pr list --search`. If PR_ID is nowhere to be found:
+
+```sh
+./tracker.sh issue edit "$ISSUE_ID" --add-label pr-missing
+```
+
+Hand off with:
+
+```sh
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="pr-missing"
+PR_ID="—"
+SUMMARY="Blocked: PR not found. pr-missing label applied."
+```
+
+Report these variables to the caller and **do not continue**.
 
 Read the current PR body, then append the inspect report as a collapsible block:
 

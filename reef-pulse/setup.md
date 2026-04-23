@@ -18,7 +18,7 @@ Worktrees and branches (used by the reef's implement/inspect/merge cycle) requir
 git rev-parse --git-dir 2>/dev/null
 ```
 
-- **If git is present** (command succeeds): skip this step silently and continue to step 1.
+- **If git is present** (command succeeds): skip this step and continue to step 1.
 - **If git is missing** (command fails): offer to initialize one. Present this message to the user:
 
 > "This project doesn't seem to use git. So I'll treat `{dir}` as the project root folder and init a `.git` folder, is that OK? (It's so the reef can better organise its efforts when multiple tasks are worked on at once)."

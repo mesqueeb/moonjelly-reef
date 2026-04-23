@@ -24,7 +24,7 @@ Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker ty
 - For GitHub, replace `./tracker.sh` with `gh`, then execute the command as written.
 - For other trackers with MCP issue tools, replace `./tracker.sh pr` with `gh pr`, and replace `./tracker.sh issue` with the MCP equivalent for that tracker.
 
-**AFK skill**: runs without human interaction. No judgment calls expected — if blocked, exit silently. If dependencies are landed, promote. Never block waiting for human input.
+**AFK skill**: runs without human interaction. No judgment calls expected — if blocked, hand off and do not continue. If dependencies are landed, promote. Never block waiting for human input.
 
 ## 0. Fetch context
 
@@ -53,7 +53,16 @@ DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. "#55"
 ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
 ```
 
-**If any dependency does NOT have the `landed` label**: this issue stays `to-await-waves`. Skip to the handoff with `NEXT_PHASE: "to-await-waves"` and `SUMMARY: "still blocked by #N, #M"`.
+**If any dependency does NOT have the `landed` label**: this issue stays `to-await-waves`. Hand off with:
+
+```sh
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="to-await-waves"
+PR_ID="—"
+SUMMARY="still blocked by #N, #M"
+```
+
+Report these variables to the caller and **do not continue**.
 
 **If the `[await: ...]` suffix is missing or malformed**: treat as "no blockers found" and continue to step 2 (safe fallback).
 
@@ -85,7 +94,16 @@ Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to re
 ./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
 ```
 
-Stop — do not proceed.
+Hand off with:
+
+```sh
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="blocked-with-conflicts"
+PR_ID="—"
+SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
+```
+
+Report these variables to the caller and **do not continue**.
 
 Earlier work may have changed the codebase. Read this issue's acceptance criteria and compare against the current state of the code:
 

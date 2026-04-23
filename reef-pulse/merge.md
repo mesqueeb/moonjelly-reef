@@ -63,7 +63,16 @@ Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to re
 ./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
 ```
 
-Stop — do not proceed.
+Hand off with:
+
+```sh
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="blocked-with-conflicts"
+PR_ID="$PR_ID"
+SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
+```
+
+Report these variables to the caller and **do not continue**.
 
 Run the full test suite. If tests pass, commit and push:
 
@@ -71,7 +80,7 @@ Run the full test suite. If tests pass, commit and push:
 ./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts with $BASE_BRANCH"
 ```
 
-If the test suite fails after merging, label the issue `to-rework` and stop:
+If the test suite fails after merging, label the issue `to-rework`:
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label to-rework
@@ -84,7 +93,16 @@ Clean up the worktree:
 ./worktree-exit.sh --path "$WORKTREE_PATH"
 ```
 
-If tests failed, stop here. Do not proceed to the delegate step.
+Hand off with:
+
+```sh
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="to-rework"
+PR_ID="$PR_ID"
+SUMMARY="Merge blocked: test suite failed after conflict resolution."
+```
+
+Report these variables to the caller and **do not continue**.
 
 ## Delegate
 

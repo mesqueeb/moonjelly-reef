@@ -62,14 +62,38 @@ Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to re
 ./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
 ```
 
-Stop — do not proceed.
+Hand off with:
+
+```sh
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="blocked-with-conflicts"
+PR_ID="—"
+SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
+```
+
+Report these variables to the caller and **do not continue**.
 
 Verify:
 
 - [ ] The project builds / compiles cleanly before you touch anything
 - [ ] The full test suite passes before you touch anything (this is your baseline)
 
-If the baseline is already broken, **stop and report this**. Do not try to fix pre-existing failures. Label the issue `to-rework` with a note explaining what's broken. (Prevents painpoint D1 — solving problems in the wrong order.)
+If the baseline is already broken, do not try to fix pre-existing failures. Label the issue `to-rework`:
+
+```sh
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-implement --add-label to-rework
+```
+
+Hand off with:
+
+```sh
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="to-rework"
+PR_ID="—"
+SUMMARY="Blocked: baseline broken before implementation started. Pre-existing failures must be fixed first. (Prevents painpoint D1.)"
+```
+
+Report these variables to the caller and **do not continue**.
 
 ## 2. Read context
 

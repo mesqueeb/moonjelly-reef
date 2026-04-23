@@ -313,6 +313,12 @@ General rules:
   ```sh
   WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
+- handoff — if blocked-with-conflicts
+  ```sh
+  ISSUE_ID="$ISSUE_ID"
+  NEXT_PHASE="blocked-with-conflicts"
+  PR_ID="—"
+  ```
 - create-remote-branch
   ```sh
   git push -u origin "$PR_BRANCH"
@@ -372,6 +378,18 @@ General rules:
   ```sh
   WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
+- handoff — if blocked-with-conflicts
+  ```sh
+  ISSUE_ID="$ISSUE_ID"
+  NEXT_PHASE="blocked-with-conflicts"
+  PR_ID="—"
+  ```
+- handoff — if baseline-broken
+  ```sh
+  ISSUE_ID="$ISSUE_ID"
+  NEXT_PHASE="to-rework"
+  PR_ID="—"
+  ```
 - phase-specific
 - commit-code
   ```sh
@@ -423,6 +441,12 @@ General rules:
 - enter-worktree
   ```sh
   WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+  ```
+- handoff — if blocked-with-conflicts
+  ```sh
+  ISSUE_ID="$ISSUE_ID"
+  NEXT_PHASE="blocked-with-conflicts"
+  PR_ID="—"
   ```
 - phase-specific
   - contains: `produce a durable research artifact instead of code`
@@ -589,6 +613,18 @@ General rules:
   ```sh
   WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
+- handoff — if blocked-with-conflicts
+  ```sh
+  ISSUE_ID="$ISSUE_ID"
+  NEXT_PHASE="blocked-with-conflicts"
+  PR_ID="—"
+  ```
+- handoff — if pr-missing
+  ```sh
+  ISSUE_ID="$ISSUE_ID"
+  NEXT_PHASE="pr-missing"
+  PR_ID="—"
+  ```
 - phase-specific
   - contains: `For deep-research, inspect the committed research artifact mechanically rather than treating it like code.`
   - contains: `If acceptance criteria are fuzzy because the issue was intentionally feeling-lucky, do not get fussy about their absence.`
@@ -647,6 +683,12 @@ General rules:
   ```sh
   WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
+- handoff — if blocked-with-conflicts
+  ```sh
+  ISSUE_ID="$ISSUE_ID"
+  NEXT_PHASE="blocked-with-conflicts"
+  PR_ID="$PR_ID"
+  ```
 - phase-specific
   - contains: `For deep-research, rework means revising the committed research docs to close the flagged gaps.`
   - contains: `For feeling-lucky, rework may refine the inferred lane or bearing if QA surfaced a better interpretation.`
@@ -702,6 +744,12 @@ General rules:
   ```sh
   ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
   ```
+- handoff — if still-blocked
+  ```sh
+  ISSUE_ID="$ISSUE_ID"
+  NEXT_PHASE="to-await-waves"
+  PR_ID="—"
+  ```
 - update-tracker
   ```sh
   NEXT_LABEL="{to-research for deep-research, otherwise to-implement}"
@@ -710,6 +758,12 @@ General rules:
 - enter-worktree
   ```sh
   WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+  ```
+- handoff — if blocked-with-conflicts
+  ```sh
+  ISSUE_ID="$ISSUE_ID"
+  NEXT_PHASE="blocked-with-conflicts"
+  PR_ID="—"
   ```
 - phase-specific
 - set-variables
@@ -757,6 +811,12 @@ General rules:
   ```sh
   WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
   ```
+- handoff — if blocked-with-conflicts
+  ```sh
+  ISSUE_ID="$ISSUE_ID"
+  NEXT_PHASE="blocked-with-conflicts"
+  PR_ID="$PR_ID"
+  ```
 - commit-code — if merge-needed
   ```sh
   ./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts with $BASE_BRANCH"
@@ -769,6 +829,12 @@ General rules:
 - exit-worktree
   ```sh
   ./worktree-exit.sh --path "$WORKTREE_PATH"
+  ```
+- handoff — if tests-fail
+  ```sh
+  ISSUE_ID="$ISSUE_ID"
+  NEXT_PHASE="to-rework"
+  PR_ID="$PR_ID"
   ```
 
 ### [merge-no-parent.md](./reef-pulse/merge-no-parent.md)
@@ -845,6 +911,12 @@ General rules:
 - enter-worktree
   ```sh
   WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+  ```
+- handoff — if blocked-with-conflicts
+  ```sh
+  ISSUE_ID="$ISSUE_ID"
+  NEXT_PHASE="blocked-with-conflicts"
+  PR_ID="—"
   ```
 - phase-specific
   - contains: `For deep-research, review the written research holistically against the end goal, not just the slice acceptance criteria.`

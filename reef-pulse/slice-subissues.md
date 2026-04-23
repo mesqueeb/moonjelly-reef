@@ -28,7 +28,16 @@ Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to re
 ./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
 ```
 
-Stop — do not proceed.
+Hand off with:
+
+```sh
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="blocked-with-conflicts"
+PR_ID="—"
+SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
+```
+
+Report these variables to the caller and **do not continue**.
 
 If the `pr-branch` does not exist on origin yet, create it:
 
