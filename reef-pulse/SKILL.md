@@ -213,11 +213,11 @@ After the sub-agent returns, print the beat in the existing dashed lore box form
 
 Leave dispatch lines, metrics tables, and return-result output unchanged.
 
-### 5. Per sub-agent execution
+### 5. Print all return results
 
 RUN EVERY PULSE if anything was dispatched in this iteration.
 
-After all dispatched agents complete, collect one execution record per returned sub-agent. Each record is keyed by the returned `ISSUE_ID`.
+After all dispatched agents complete, collect one execution record per returned sub-agent. Each record is keyed by the returned `ISSUE_ID` and is used for the return-result output and the metrics pageant.
 
 ```sh
 ISSUE_ID="{from handoff ISSUE_ID}"
@@ -228,13 +228,7 @@ PLAN_ISSUE_METRICS="{from handoff PLAN_ISSUE_METRICS}" # seal only; otherwise em
 SUBAGENT_DURATION="{duration of sub-agent total execution}" # if known; otherwise "—"
 SUBAGENT_TOKENS="{total token count used by the sub-agent}" # if known; otherwise "—"
 SUBAGENT_TOOL_USES="{tool use count for the sub-agent}" # if known; otherwise "—"
-```
-
-#### Print return results
-
-After agents return, print each result with its phase emoji and a `›` transition arrow showing the phase transition:
-
-```sh
+# And log one result row per sub-agent
 RESULT_ROW="$ISSUE_PHASE_EMOJI  $ISSUE_ID   $SUBAGENT_DURATION   $SUBAGENT_TOKENS   $ISSUE_PHASE › $NEXT_PHASE"
 ```
 
@@ -246,73 +240,40 @@ E.g.:
   🦀  #53   1m08s    9k   inspect › rework
 ```
 
-Also print human and idle items:
-
-```
-  🤿  #60  to-scope
-  🤿  #48  to-land
-  ·   #57  idle — awaiting #55
-  ·   #56  idle
-```
-
-#### Log phase metrics
+### 6. Log all sub-agent metrics
 
 RUN EVERY PULSE if anything was dispatched in this iteration.
 
-#### Metrics table format
+Always log phase metrics by spawning the metrics pageant sub-agent. Do not log phase metrics inline inside the pulse.
 
-```markdown
-### 🪼 Pulse metrics
-
-| Phase     | Target | Duration | Tokens | Tool uses | Outcome       | Date             |
-| --------- | ------ | -------- | ------ | --------- | ------------- | ---------------- |
-| implement | #55    | 42s      | 12 340 | 18        | ✅ PR created | 2026-04-20 14:30 |
-| inspect   | #53    | 25s      | 8 200  | 12        | ✅ passed     | 2026-04-20 14:31 |
-
-<!-- end metrics table -->
-```
-
-No timestamp in the header. Each row gets a `Date` column (`yyyy-MM-dd HH:mm`).
-
-#### Rules
-
-- Only log phases dispatched this pulse. If nothing was dispatched, skip this step entirely.
-- Fall back to `—` for any missing metadata field (duration, tokens, tool uses).
-- Duration: human-readable (`42s`, `1m 12s`). Tokens: space-separated thousands.
-- Do NOT read issue bodies to discover PR numbers. Use the `PR_ID` returned in the handoff.
-
-#### 6a. Write metrics to the plan issue
-
-Read the current plan issue body. If a `### 🪼 Pulse metrics` table exists, insert the new row(s) immediately above the `<!-- end metrics table -->` sentinel. If no table exists, append it to the end of the body (including the sentinel after the last row).
+Prep the metrics input:
 
 ```sh
-ISSUE_ID="{from dispatched items}"
-ISSUE_BODY="{current issue body with metrics rows inserted into the table}"
-./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
+PHASE_METRIC_RECORDS="{one record per dispatched phase with ISSUE_ID, ISSUE_PHASE, NEXT_PHASE, PR_ID, SUMMARY, PLAN_ISSUE_METRICS, SUBAGENT_DURATION, SUBAGENT_TOKENS, and SUBAGENT_TOOL_USES}"
+METRICS_DATE="{current date and time as yyyy-MM-dd HH:mm}"
+PHASE_METRIC_AGENT_INPUT="{all metrics input variables above with names and values}"
+# e.g.:
+#   AUTOMATED_DISPATCHES=4
+#   METRICS_DATE="2026-04-20 14:30"
+#   PHASE_METRIC_RECORDS:
+#     - ISSUE_ID="#55"
+#       ISSUE_PHASE="to-implement"
+#       NEXT_PHASE="to-inspect"
+#       PR_ID="#72"
+#       SUMMARY="PR created"
+#       PLAN_ISSUE_METRICS="" # if passed
+#       SUBAGENT_DURATION=42s
+#       SUBAGENT_TOKENS=12340
+#       SUBAGENT_TOOL_USES=18
 ```
 
-#### 6b. Write metrics to the plan PR
+Spawn a sub-agent with:
 
-Use `PR_ID` from the parsed handoff data to determine the target PR. If `PR_ID` is `—`, no plan PR exists yet — skip this sub-step. Otherwise, read the current plan PR body and insert the same metrics rows immediately above the `<!-- end metrics table -->` sentinel. If no table exists, append it to the end (including the sentinel after the last row).
-
-```sh
-PLAN_PR_BODY="{current plan PR body with metrics rows inserted into the table}"
-./tracker.sh pr edit "$PR_ID" --body "$PLAN_PR_BODY"
 ```
+Read and follow $SKILL_DIR/phase-metric-logger.md.
 
-#### Total row on seal-to-land
-
-When a seal handoff has `NEXT_PHASE: to-land`, use `PLAN_ISSUE_METRICS` from the seal handoff (scope/slice metrics rows from the plan issue). Prepend those rows to the PR's existing metrics table (dedup if already present), append the seal row, then append a bold **Total** row summing all durations and tokens. Unknown values (`—`) are excluded from the total. This is the last automated edit to the metrics table.
-
-Example:
-
-```markdown
-| scope | #15 | 1m 30s | — | — | plan created | 2026/04/18 | 09:00 |
-| slice | #15 | 45s | 8 100 | 10 | slices created | 2026/04/18 | 09:05 |
-| seal | — | 1m 5s | 15 200 | 20 | pass | 2026/04/20 | 14:35 |
-| **Total** | | **5m 30s** | **62 359** | **87** | | | |
-
-<!-- end metrics table -->
+$PHASE_METRIC_AGENT_INPUT
 ```
 
 ### 7. Recurse or exit
