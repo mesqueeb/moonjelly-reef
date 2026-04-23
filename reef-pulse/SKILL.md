@@ -247,33 +247,23 @@ Prep one JSON array for the logger agent:
 
 ```sh
 PHASE_METRIC_RECORDS='[
-#  {
-#    "ISSUE_ID": "#55",
-#    "ISSUE_PHASE": "to-implement",
-#    "NEXT_PHASE": "to-inspect",
-#    "PR_ID": "#72",
-#    "SUMMARY": "PR created",
-#    "SUBAGENT_DURATION": "42s",
-#    "SUBAGENT_TOKENS": 12340,
-#    "SUBAGENT_TOOL_USES": 18
-#  }
-  {
-    "ISSUE_ID": "#55",
-    "ISSUE_PHASE": "to-implement",
-    "NEXT_PHASE": "to-inspect",
-    "PR_ID": "#72",
-    "SUMMARY": "PR created",
-    "SUBAGENT_DURATION": "42s",
-    "SUBAGENT_TOKENS": 12340,
-    "SUBAGENT_TOOL_USES": 18
-  }
+  # {
+  #   "ISSUE_ID": "#55",
+  #   "ISSUE_PHASE": "to-implement",
+  #   "NEXT_PHASE": "to-inspect",
+  #   "PR_ID": "#72",
+  #   "SUMMARY": "PR created",
+  #   "SUBAGENT_DURATION": "42s",
+  #   "SUBAGENT_TOKENS": 12340,
+  #   "SUBAGENT_TOOL_USES": 18
+  # }
 ]'
 ```
 
 Spawn the logger agent:
 
 ```sh
-Read and follow $SKILL_DIR/phase-metric-logger.md.
+Read and follow $SKILL_DIR/pulse-metric-logger.md.
 
 AUTOMATED_DISPATCHES="$AUTOMATED_DISPATCHES"
 PHASE_METRIC_RECORDS="$PHASE_METRIC_RECORDS"
@@ -285,13 +275,10 @@ The logger agent returns aggregate write results for this pulse:
 SUCCESS_COUNT="{from metrics logger handoff}"
 FAIL_COUNT="{from metrics logger handoff}"
 FAIL_IDS="{from metrics logger handoff}"
-```
-
-Log the metrics write.
-
-```sh
 METRICS_RESULT_ROW="🪼  metrics ok=$SUCCESS_COUNT fail=$FAIL_COUNT ids=${FAIL_IDS:-—}"
 ```
+
+Log the METRICS_RESULT_ROW.
 
 ### 7. Recurse or exit
 

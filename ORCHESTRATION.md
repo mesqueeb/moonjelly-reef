@@ -82,25 +82,27 @@ General rules:
 - set-variables
   ```sh
   PHASE_METRIC_RECORDS='[
-    {
-      "ISSUE_ID": "#55",
-      "ISSUE_PHASE": "to-implement",
-      "NEXT_PHASE": "to-inspect",
-      "PR_ID": "#72",
-      "SUMMARY": "PR created",
-      "SUBAGENT_DURATION": "42s",
-      "SUBAGENT_TOKENS": 12340,
-      "SUBAGENT_TOOL_USES": 18
-    }
+    # {
+    #   "ISSUE_ID": "#55",
+    #   "ISSUE_PHASE": "to-implement",
+    #   "NEXT_PHASE": "to-inspect",
+    #   "PR_ID": "#72",
+    #   "SUMMARY": "PR created",
+    #   "SUBAGENT_DURATION": "42s",
+    #   "SUBAGENT_TOKENS": 12340,
+    #   "SUBAGENT_TOOL_USES": 18
+    # }
   ]'
   ```
 - metrics-subagent
+
   ```sh
-  Read and follow $SKILL_DIR/phase-metric-logger.md.
-  
+  Read and follow $SKILL_DIR/pulse-metric-logger.md.
+
   AUTOMATED_DISPATCHES="$AUTOMATED_DISPATCHES"
   PHASE_METRIC_RECORDS="$PHASE_METRIC_RECORDS"
   ```
+
 - set-variables
   ```sh
   SUCCESS_COUNT="{from metrics logger handoff}"
@@ -380,22 +382,22 @@ General rules:
   PR_ID="$PR_ID"
   ```
 
-### [phase-metric-logger.md](./reef-pulse/phase-metric-logger.md)
+### [pulse-metric-logger.md](./reef-pulse/pulse-metric-logger.md)
 
 - set-variables
   ```sh
   AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
   PHASE_METRIC_RECORDS='[
-    {
-      "ISSUE_ID": "#55",
-      "ISSUE_PHASE": "to-implement",
-      "NEXT_PHASE": "to-inspect",
-      "PR_ID": "#72",
-      "SUMMARY": "PR created",
-      "SUBAGENT_DURATION": "42s",
-      "SUBAGENT_TOKENS": 12340,
-      "SUBAGENT_TOOL_USES": 18
-    }
+    # {
+    #   "ISSUE_ID": "#55",
+    #   "ISSUE_PHASE": "to-implement",
+    #   "NEXT_PHASE": "to-inspect",
+    #   "PR_ID": "#72",
+    #   "SUMMARY": "PR created",
+    #   "SUBAGENT_DURATION": "42s",
+    #   "SUBAGENT_TOKENS": 12340,
+    #   "SUBAGENT_TOOL_USES": 18
+    # }
   ]'
   SUCCESS_COUNT="0" # mutate on every full record success
   FAIL_COUNT="0" # mutate on every failed record
@@ -415,13 +417,15 @@ General rules:
   METRICS_TABLE="{md table found in ISSUE_BODY}"
   ```
 - set-variables if metrics table missing
+
   ```sh
   METRICS_TABLE="### 🪼 Pulse metrics
-  
+
   | Phase | Target | Duration | Tokens | Tool uses | Outcome | Date |
   | ----- | ------ | -------- | ------ | --------- | ------- | ---- |
   <!-- end metrics table -->"
   ```
+
 - set-variables
   ```sh
   PHASE="${ISSUE_PHASE#to-}"

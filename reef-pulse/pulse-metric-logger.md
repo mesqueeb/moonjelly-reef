@@ -13,26 +13,16 @@ Set the input variables:
 ```sh
 AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
 PHASE_METRIC_RECORDS='[
-#  {
-#    "ISSUE_ID": "#55",
-#    "ISSUE_PHASE": "to-implement",
-#    "NEXT_PHASE": "to-inspect",
-#    "PR_ID": "#72",
-#    "SUMMARY": "PR created",
-#    "SUBAGENT_DURATION": "42s",
-#    "SUBAGENT_TOKENS": 12340,
-#    "SUBAGENT_TOOL_USES": 18
-#  }
-  {
-    "ISSUE_ID": "#55",
-    "ISSUE_PHASE": "to-implement",
-    "NEXT_PHASE": "to-inspect",
-    "PR_ID": "#72",
-    "SUMMARY": "PR created",
-    "SUBAGENT_DURATION": "42s",
-    "SUBAGENT_TOKENS": 12340,
-    "SUBAGENT_TOOL_USES": 18
-  }
+  # {
+  #   "ISSUE_ID": "#55",
+  #   "ISSUE_PHASE": "to-implement",
+  #   "NEXT_PHASE": "to-inspect",
+  #   "PR_ID": "#72",
+  #   "SUMMARY": "PR created",
+  #   "SUBAGENT_DURATION": "42s",
+  #   "SUBAGENT_TOKENS": 12340,
+  #   "SUBAGENT_TOOL_USES": 18
+  # }
 ]'
 # Variables for loop use:
 SUCCESS_COUNT="0" # mutate on every full record success
@@ -52,11 +42,9 @@ For each record:
 - If `NEXT_PHASE` is `to-land`, read the issue body first, then read the PR body.
 
 ```sh
+# Always execute:
 ISSUE_BODY="$(./tracker.sh issue view "$ISSUE_ID" --json body -q .body)"
-```
-
-# Only if `NEXT_PHASE == "to-land"`
-```sh
+# Only if `NEXT_PHASE == "to-land"`:
 PR_BODY="$(./tracker.sh pr view "$PR_ID" --json body -q .body)"
 ```
 
