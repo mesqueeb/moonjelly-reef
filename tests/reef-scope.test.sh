@@ -46,15 +46,39 @@ assert_contains() {
   fi
 }
 
-test_route_picker_lists_exact_routes() {
-  routes=$(grep '^- `' "$SKILL_FILE" | sed 's/^- //')
-  printf 'DIAGNOSTIC: reef-scope currently lists these backtick bullets as routes:\n%s\n' "$routes"
+assert_equals() {
+  expected="$1"
+  actual="$2"
+  label="$3"
 
-  assert_contains "$SKILL_FILE" '`scope a feature`' "route picker includes feature route"
-  assert_contains "$SKILL_FILE" '`scope a refactor`' "route picker includes refactor route"
-  assert_contains "$SKILL_FILE" '`triage a bug`' "route picker includes bug route"
-  assert_contains "$SKILL_FILE" '`I'\''m feeling lucky (hand over to the reef)`' "route picker includes feeling-lucky route"
-  assert_contains "$SKILL_FILE" '`deep research`' "route picker includes deep-research route"
+  if [ "$expected" = "$actual" ]; then
+    pass "$label"
+  else
+    fail "$label" "expected: $expected, actual: $actual"
+  fi
+}
+
+route_picker_block() {
+  awk '
+    /^The route picker always offers exactly these five options:/ { capture=1; next }
+    capture && /^If `ISSUE_ID` was provided/ { exit }
+    capture && /^- `/ { print }
+  ' "$SKILL_FILE"
+}
+
+test_route_picker_lists_exact_routes() {
+  routes="$(route_picker_block)"
+  route_count="$(printf '%s\n' "$routes" | sed '/^$/d' | wc -l | tr -d ' ')"
+  expected_routes='- `scope a feature`
+- `scope a refactor`
+- `triage a bug`
+- `I'\''m feeling lucky (hand over to the reef)`
+- `deep research`'
+
+  printf 'DIAGNOSTIC: reef-scope route picker block currently resolves to:\n%s\n' "$routes"
+
+  assert_equals "5" "$route_count" "route picker exposes exactly five selectable routes"
+  assert_equals "$expected_routes" "$routes" "route picker routes match the required options exactly"
 }
 
 test_issue_recommendation_uses_issue_text_only() {
