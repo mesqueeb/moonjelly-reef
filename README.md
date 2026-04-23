@@ -44,9 +44,9 @@ stateDiagram-v2
 
         [*] --> to_scope
         to_scope --> to_slice : reef-scope skill<br />scope the work, define success criteria
-        to_slice --> slice_lifecycle : slice.md<br />🔷　creates sub-issues:<br />labels each sub-issue to-implement
+        to_slice --> slice_lifecycle : slice.md<br />🔷　creates sub-issues:<br />labels each sub-issue to-implement or to-research
 <br />adds coverage matrix to parent issue
-        to_slice --> slice_lifecycle : slice.md<br />🔶　no sub-issues needed:<br />labels the current issue to-implement
+        to_slice --> slice_lifecycle : slice.md<br />🔶　no sub-issues needed:<br />labels the current issue to-implement or to-research
         slice_lifecycle --> to_seal
         slice_lifecycle --> to_land
         to_seal --> to_land : seal.md<br />holistic review on current issue pr-branch
@@ -59,15 +59,19 @@ stateDiagram-v2
 
         state "🌊　to-await-waves" as to_await
         state "🌊　to-implement" as to_implement
+        state "🌊　to-research" as to_research
         state "🌊　to-inspect" as to_inspect
         state "🌊　to-rework" as to_rework
         state "🌊　to-merge" as to_merge
         state "merge.md<br />🔷　has parent issue:<br />merge PR, when all sub-issues are landed → to-seal" as merge_multi
         state "merge.md<br />🔶　no parent issue:<br />PR stays open → to-seal" as merge_single
-        [*] --> to_implement : no deps
+        [*] --> to_implement : no deps, implementation lane
+        [*] --> to_research : no deps, research lane
         [*] --> to_await : has deps
-        to_await --> to_implement : await-waves.md<br />check if deps are landed, re-review plan
+        to_await --> to_implement : await-waves.md<br />deps landed, implementation lane still fits
+        to_await --> to_research : await-waves.md<br />deps landed, research lane still fits
         to_implement --> to_inspect : implement.md<br />TDD per slice, full suite green
+        to_research --> to_inspect : research.md<br />research artifact committed, source links nearby
         to_inspect --> to_merge : inspect.md<br />acceptance criteria met, PR clean
         to_inspect --> to_rework : inspect.md<br />gaps flagged
         to_rework --> to_inspect : rework.md<br />read feedback, fix, re-verify
@@ -76,13 +80,13 @@ stateDiagram-v2
     }
 
     class to_scope,to_land human
-    class to_slice,to_seal,plan_rework,to_await,to_implement,to_inspect,to_rework,to_merge agent
+    class to_slice,to_seal,plan_rework,to_await,to_implement,to_research,to_inspect,to_rework,to_merge agent
     class merge_multi,merge_single arrow
 ```
 
 > While sub-issues are being worked, the parent issue sits in `in-progress`. It is promoted to `to-seal` by `merge.md` once all sub-issues are landed.
 >
-> Each issue has one `DELIVERY CYCLE`. It may contain one or many `IMPLEMENTATION CYCLE`s: one on the issue itself when no sub-issues are needed, or one per sub-issue when the work is split.
+> Each issue has one `DELIVERY CYCLE`. It may contain one or many execution cycles: one on the issue itself when no sub-issues are needed, or one per sub-issue when the work is split. Most slices use the implementation cycle; research slices branch through `to-research` but rejoin the same inspect, rework, merge, and seal flow.
 
 ## Skills
 
@@ -147,10 +151,10 @@ These are the 🌊 automated phases dispatched by the `reef-pulse` skill. Each p
 <details>
 <summary>🌊 <b><code>to-slice</code></b> 🏷️</summary>
 
-Automatically breaks the plan into vertical slices, or determines that the current issue can be implemented directly without sub-issues.
+Automatically breaks the plan into vertical slices, or determines that the current issue can be executed directly without sub-issues.
 
-- 🔷　creates sub-issues: labels each sub-issue `to-implement`, adds coverage matrix to the parent issue
-- 🔶　no sub-issues needed: labels the current issue `to-implement`
+- 🔷　creates sub-issues: labels each sub-issue `to-implement`, `to-research`, or `to-await-waves`, adds coverage matrix to the parent issue
+- 🔶　no sub-issues needed: labels the current issue `to-implement` or `to-research`
 
 | source file | [`reef-pulse/slice.md`](reef-pulse/slice.md) |
 | :---------- | :------------------------------------------- |
@@ -162,7 +166,7 @@ Automatically breaks the plan into vertical slices, or determines that the curre
 <details>
 <summary>🌊 <b><code>to-await-waves</code></b> 🏷️</summary>
 
-Check if a blocked issue's dependencies are all landed. If yes, re-review the plan against current code and label `to-implement`. If not, exit — next pulse will check again.
+Check if a blocked issue's dependencies are all landed. If yes, re-review the plan against current code and restore the right execution label: `to-research` for deep-research work, `to-implement` otherwise. If not, exit — next pulse will check again.
 
 | source file | [`reef-pulse/await-waves.md`](reef-pulse/await-waves.md) |
 | :---------- | :------------------------------------------------------- |
@@ -182,6 +186,18 @@ Implement an issue using TDD in a git worktree. Create worktree → read context
 </details>
 
 <p align="right">🐙<br /><sub>An octopus in a little workshop arranges shells, pebbles, and ribbons of kelp with patient hands. By dusk, a once-empty corner of the reef has become something useful and alive.</sub></p>
+
+<details>
+<summary>🌊 <b><code>to-research</code></b> 🏷️</summary>
+
+Execute a research issue in a git worktree. Investigate the promised question, persist committed Markdown research artifacts, keep lightweight source links close to externally sourced findings, write the report, and label `to-inspect`.
+
+| source file | [`reef-pulse/research.md`](reef-pulse/research.md) |
+| :---------- | :------------------------------------------------- |
+
+</details>
+
+<p align="right">🐬<br /><sub>A dolphin loops ahead of the reef and returns with a ribbon of shells, each one pointing back toward what it found in the open water. The trail is playful, but nothing in it is vague.</sub></p>
 
 <details>
 <summary>🌊 <b><code>to-inspect</code></b> 🏷️</summary>

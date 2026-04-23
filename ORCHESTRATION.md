@@ -262,6 +262,7 @@ General rules:
 - phase-specific
   - contains: `inferred combined value before saving the issue body`
   - contains: `If the slice bearing is deep-research, the acceptance criteria must stay research-focused`
+  - contains: `For deep-research, label the issue to-research instead of to-implement.`
 - set-variables
 
   ```sh
@@ -270,12 +271,13 @@ General rules:
 
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-slice --add-label to-implement
+  NEXT_PHASE="{to-research for deep-research, otherwise to-implement}"
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-slice --add-label "$NEXT_PHASE"
   ```
 - handoff
   ```sh
   ISSUE_ID="$ISSUE_ID"
-  NEXT_PHASE="to-implement"
+  NEXT_PHASE="to-research"
   PR_ID="—"
   ```
 
@@ -303,7 +305,7 @@ General rules:
   SLICE_PR_BRANCH="{derived from plan issue pr-branch + slice title slug}"
   SLICE_BEARING="{per-slice bearing, usually $EFFECTIVE_BEARING unless a slice needs a narrower inferred lane}"
   SLICE_BODY="{slice-body}" # as per the template below, with pr-branch: $SLICE_PR_BRANCH and bearing: $SLICE_BEARING
-  SLICE_LABEL="to-implement" # or to-await-waves if blocked
+  SLICE_LABEL="{to-research for unblocked deep-research slices, otherwise to-implement; or to-await-waves if blocked}"
   ```
 - phase-specific
   - contains: `For deep-research, make the slices research-native`
@@ -371,6 +373,60 @@ General rules:
   # add to frontmatter (if not already): pr-branch: $PR_BRANCH
   # add to frontmatter:  pr-id: $PR_ID
   ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED" --remove-label to-implement --add-label to-inspect
+  ```
+- exit-worktree
+  ```sh
+  ./worktree-exit.sh --path "$WORKTREE_PATH"
+  ```
+- handoff
+  ```sh
+  ISSUE_ID="$ISSUE_ID"
+  NEXT_PHASE="to-inspect"
+  PR_ID="$PR_ID"
+  ```
+
+### [research.md](./reef-pulse/research.md)
+
+- set-variables
+  ```sh
+  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
+  ```
+- fetch-context
+  ```sh
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ```
+- set-variables
+  ```sh
+  ISSUE_TITLE="{from issue title}"
+  BASE_BRANCH="{from issue frontmatter base-branch field}"
+  PR_BRANCH="{from issue frontmatter pr-branch field}"
+  WORKTREE_PATH=".worktrees/$ISSUE_TITLE-research"
+  ```
+- enter-worktree
+  ```sh
+  WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+  ```
+- phase-specific
+  - contains: `produce a durable research artifact instead of code`
+  - contains: `lightweight source links near externally sourced findings`
+- commit-code
+  ```sh
+  ./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: research"
+  ```
+- set-variables
+  ```sh
+  CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g.: #42
+  REPORT="{research report}"
+  PR_BODY_NEW="$CLOSES\n\n$REPORT"
+  ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
+  ```
+- set-variables
+  ```sh
+  PR_ID="{from pr create output}" # e.g.: #43
+  ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
+  # add to frontmatter (if not already): pr-branch: $PR_BRANCH
+  # add to frontmatter:  pr-id: $PR_ID
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED" --remove-label to-research --add-label to-inspect
   ```
 - exit-worktree
   ```sh
@@ -502,6 +558,7 @@ General rules:
   ```sh
   ISSUE_TITLE="{from issue title, stripping [await: ...] suffix}"
   BASE_BRANCH="{from issue frontmatter base-branch field}"
+  BEARING="{from issue frontmatter bearing field}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-await-waves"
   ```
 - set-variables
@@ -514,7 +571,8 @@ General rules:
   ```
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-await-waves --add-label to-implement --title "$ISSUE_TITLE"
+  NEXT_LABEL="{to-research for deep-research, otherwise to-implement}"
+  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-await-waves --add-label "$NEXT_LABEL" --title "$ISSUE_TITLE"
   ```
 - enter-worktree
   ```sh
@@ -536,7 +594,7 @@ General rules:
 - handoff
   ```sh
   ISSUE_ID="$ISSUE_ID"
-  NEXT_PHASE="to-implement" # or "to-await-waves" if still blocked
+  NEXT_PHASE="to-research" # or "to-implement" or "to-await-waves" depending on bearing and blockers
   PR_ID="—"
   ```
 

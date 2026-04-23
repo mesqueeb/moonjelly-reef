@@ -62,18 +62,21 @@ test_slice_router_handles_research_and_lucky_bearings() {
 test_single_issue_path_preserves_bearing_and_acceptance_shape() {
   assert_contains "$SINGLE_FILE" 'scoped `pr-branch` and rewritten `bearing` preserved' "single-issue flow preserves rewritten bearing in frontmatter"
   assert_contains "$SINGLE_FILE" 'If the slice bearing is deep-research, the acceptance criteria must stay research-focused' "single-issue flow keeps research acceptance criteria research-native"
+  assert_contains "$SINGLE_FILE" 'For deep-research, label the issue to-research instead of to-implement.' "single-issue flow routes research work into to-research"
 }
 
 test_subissues_path_carries_effective_bearing_into_slice_bodies() {
   assert_contains "$SUBISSUES_FILE" 'PLAN_BEARING="{from plan issue body bearing field}"' "subissues flow reads bearing from the plan"
   assert_contains "$SUBISSUES_FILE" 'EFFECTIVE_BEARING="{deep-research or inferred lane such as feature (feeling-lucky)}"' "subissues flow computes effective bearing for lucky work"
   assert_contains "$SUBISSUES_FILE" 'bearing: $SLICE_BEARING' "subissue template persists slice bearing in frontmatter"
+  assert_contains "$SUBISSUES_FILE" 'SLICE_LABEL="{to-research for unblocked deep-research slices, otherwise to-implement; or to-await-waves if blocked}"' "subissues flow routes research slices into to-research when unblocked"
   assert_contains "$SUBISSUES_FILE" 'For deep-research, make the slices research-native' "subissues flow keeps research slice descriptions research-native"
 }
 
 test_orchestration_tracks_slice_bearing_rules() {
   assert_contains "$ORCHESTRATION_FILE" 'contains: `deep-research` + `feeling-lucky` + `feature (feeling-lucky)`' "orchestration spec records slice bearing cases"
   assert_contains "$ORCHESTRATION_FILE" 'contains: `inferred combined value before saving the issue body`' "orchestration spec records single-issue bearing preservation"
+  assert_contains "$ORCHESTRATION_FILE" 'contains: `For deep-research, label the issue to-research instead of to-implement.`' "orchestration spec records research single-issue routing"
   assert_contains "$ORCHESTRATION_FILE" 'bearing: $SLICE_BEARING' "orchestration spec records subissue bearing frontmatter"
 }
 

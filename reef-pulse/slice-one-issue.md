@@ -21,7 +21,8 @@ Take the fast path — skip sub-issues, coverage matrix, and seal. The plan beco
 3. **No sub-issues.** The plan IS the slice.
 4. **Write acceptance criteria on the plan issue.** Append an `## Acceptance criteria` section to the plan issue body with the criteria you drafted for the single slice.
 5. **Shape the acceptance criteria to the lane.** If the slice bearing is deep-research, the acceptance criteria must stay research-focused and describe what must be answered, clarified, or persisted rather than implementation tasks.
-6. **No coverage matrix.** Success criteria and acceptance criteria are 1:1 — the mapping adds no information.
+6. **Route research slices into the research phase.** For deep-research, label the issue to-research instead of to-implement.
+7. **No coverage matrix.** Success criteria and acceptance criteria are 1:1 — the mapping adds no information.
 
 Assemble the updated plan issue body:
 
@@ -29,19 +30,20 @@ Assemble the updated plan issue body:
 ISSUE_BODY="{plan issue body with scoped pr-branch and rewritten bearing preserved, plus acceptance criteria appended}"
 ```
 
-## 2. Label to-implement
+## 2. Label the next phase
 
 ```sh
-./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-slice --add-label to-implement
+NEXT_PHASE="{to-research for deep-research, otherwise to-implement}"
+./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-slice --add-label "$NEXT_PHASE"
 ```
 
 ## Handoff
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="to-implement"
+NEXT_PHASE="to-research"
 PR_ID="—"
-SUMMARY="No sub-issues needed — plan issue moves to to-implement"
+SUMMARY="No sub-issues needed — plan issue moves directly into research or implementation"
 ```
 
 Report these three variables to the caller.
