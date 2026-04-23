@@ -8,7 +8,7 @@ This skill accepts:
 - nothing: look for items tagged `to-slice`. If multiple, pick the first one. If none, hand off with:
 
   ```sh
-  ISSUE_ID="—"
+  ISSUE_ID="${ISSUE_ID:-—}"
   NEXT_PHASE="—"
   PR_ID="—"
   SUMMARY="No issues tagged to-slice found."
