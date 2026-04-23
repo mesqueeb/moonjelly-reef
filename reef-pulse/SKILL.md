@@ -247,6 +247,16 @@ Prep one JSON array for the logger agent:
 
 ```sh
 PHASE_METRIC_RECORDS='[
+#  {
+#    "ISSUE_ID": "#55",
+#    "ISSUE_PHASE": "to-implement",
+#    "NEXT_PHASE": "to-inspect",
+#    "PR_ID": "#72",
+#    "SUMMARY": "PR created",
+#    "SUBAGENT_DURATION": "42s",
+#    "SUBAGENT_TOKENS": 12340,
+#    "SUBAGENT_TOOL_USES": 18
+#  }
   {
     "ISSUE_ID": "#55",
     "ISSUE_PHASE": "to-implement",
@@ -277,7 +287,7 @@ FAIL_COUNT="{from metrics logger handoff}"
 FAIL_IDS="{from metrics logger handoff}"
 ```
 
-If you want to print one pulse-level result row for the metrics write, format it explicitly:
+Log the metrics write.
 
 ```sh
 METRICS_RESULT_ROW="🪼  metrics ok=$SUCCESS_COUNT fail=$FAIL_COUNT ids=${FAIL_IDS:-—}"

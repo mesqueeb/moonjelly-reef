@@ -4,7 +4,7 @@
 >
 > **Tracker note**: Commands below use `./tracker.sh` syntax for both issue and PR operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
-> **AFK skill**: this agent runs without human interaction. If one record fails validation or a write, report it and continue with the remaining records.
+> **AFK skill**: `pulse-metric-logger.md` runs without human interaction. If one record fails validation or a write, report it and continue with the remaining records.
 
 ## Input
 
@@ -13,6 +13,16 @@ Set the input variables:
 ```sh
 AUTOMATED_DISPATCHES="{count of automated phases dispatched this iteration}"
 PHASE_METRIC_RECORDS='[
+#  {
+#    "ISSUE_ID": "#55",
+#    "ISSUE_PHASE": "to-implement",
+#    "NEXT_PHASE": "to-inspect",
+#    "PR_ID": "#72",
+#    "SUMMARY": "PR created",
+#    "SUBAGENT_DURATION": "42s",
+#    "SUBAGENT_TOKENS": 12340,
+#    "SUBAGENT_TOOL_USES": 18
+#  }
   {
     "ISSUE_ID": "#55",
     "ISSUE_PHASE": "to-implement",
@@ -24,6 +34,7 @@ PHASE_METRIC_RECORDS='[
     "SUBAGENT_TOOL_USES": 18
   }
 ]'
+# Variables for loop use:
 SUCCESS_COUNT="0" # mutate on every full record success
 FAIL_COUNT="0" # mutate on every failed record
 FAIL_IDS="" # append ISSUE_ID values for failed records
@@ -44,11 +55,12 @@ For each record:
 ISSUE_BODY="$(./tracker.sh issue view "$ISSUE_ID" --json body -q .body)"
 ```
 
+# Only if `NEXT_PHASE == "to-land"`
 ```sh
 PR_BODY="$(./tracker.sh pr view "$PR_ID" --json body -q .body)"
 ```
 
-Search the issue body for the full `### 🪼 Pulse metrics` section. Work with that section as one variable:
+Search the issue body for the full `### 🪼 Pulse metrics` section until `<!-- end metrics table -->`. Work with that section as one variable:
 
 ```sh
 METRICS_TABLE="{md table found in ISSUE_BODY}"
@@ -66,10 +78,10 @@ METRICS_TABLE="### 🪼 Pulse metrics
 
 ### Build the metrics row
 
-For every record, compute the row values close to the write operation:
+For every record, compute the row values:
 
 ```sh
-PHASE="${ISSUE_PHASE#to-}"
+PHASE="${ISSUE_PHASE#to-}" # e.g. ISSUE_PHASE="to-seal" -> PHASE="seal"
 TARGET="$ISSUE_ID"
 DURATION="${SUBAGENT_DURATION:-—}"
 TOKENS="${SUBAGENT_TOKENS:-—}"
@@ -85,7 +97,7 @@ Insert the new row immediately above `<!-- end metrics table -->`. Do not leave 
 METRICS_TABLE_UPDATED="{current METRICS_TABLE with $METRIC_ROW inserted immediately above <!-- end metrics table -->}"
 ```
 
-### Normal record
+### If `NEXT_PHASE != "to-land"`
 
 If `NEXT_PHASE` is not `to-land`, only write to the issue body:
 
@@ -112,7 +124,7 @@ If the issue write succeeds, count the record as success:
 SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
 ```
 
-### `to-land` record
+### If `NEXT_PHASE == "to-land"`
 
 If `NEXT_PHASE` is `to-land`, metrics move from the issue body to the PR body. This is a cut-and-paste flow, not copy-and-merge.
 
