@@ -10,32 +10,23 @@
 
 ## Work hierarchy
 
-| Term             | Definition                                                                                    | Aliases to avoid                      |
-| ---------------- | --------------------------------------------------------------------------------------------- | ------------------------------------- |
-| **issue**        | A scoped unit of work tracked by the issue tracker — a bug, feature, or refactor              | ticket, work item, task, epic, parent |
-| **plan**         | The content written into an issue by reef-scope — success criteria, metadata, coverage matrix | spec, design, RFC                     |
-| **slice**        | A thin vertical cut through all layers, implementing part of an issue end-to-end              | sub-task, chunk                       |
-| **parent issue** | An issue that creates sub-issues and owns the integration branch they merge into              | epic, umbrella issue                  |
-| **sub-issue**    | An issue created by the slice phase to implement one slice under a parent issue               | child task, child ticket              |
+| Term          | Definition                                                                                                      | Aliases to avoid                      |
+| ------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| **issue**     | A scoped unit of work tracked by the issue tracker — a bug, feature, or refactor                                | ticket, work item, task, epic, parent |
+| **plan**      | The content written into an issue by reef-scope — success criteria, metadata, coverage matrix                   | spec, design, RFC                     |
+| **sub-issue** | An issue created by the slice phase to implement one slice under a parent issue, also called a "vertical slice" | child task, child ticket, sub task    |
 
-## Frontmatter fields
+## Fields and identifiers
 
-| Term             | Definition                                                                                                                                               | Aliases to avoid                                     |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| **base-branch**  | The branch the PR merges into. For issues with no parent issue: usually `main`. For sub-issues: the parent issue's `pr-branch`.                          | trunk, main branch, target branch                    |
-| **parent-issue** | The frontmatter field on a sub-issue that points to the parent issue it belongs to                                                                       | parent issue ref, parent ticket, `parent-plan`       |
-| **pr-branch**    | The branch the PR lives on. Every issue owns its own `pr-branch`. If an issue creates sub-issues, its `pr-branch` also acts as their integration branch. | PR branch, feature branch, work branch, slice branch |
-| **pr-id**        | The frontmatter field storing the pull request identifier associated with an issue's current `pr-branch`                                                 | pull request number, numeric PR field                |
+| Term                                | Definition                                                                                                         | Aliases to avoid                                                            |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| **issue-id** / **`ISSUE_ID`**       | The tracker-native identifier for an issue, such as `#42`.                                                         | issue id, issue number, numeric issue id, plan id, plan number, `PLAN_ID`   |
+| **pr-id** / **`PR_ID`**             | The tracker-native identifier or handle for a PR artifact.                                                         | pull request id, pull request number, pr number, numeric PR id, `pr-number` |
+| **pr-branch** / **`PR_BRANCH`**     | The branch the PR lives on.                                                                                        | PR branch, feature branch, work branch, slice branch, issue branch          |
+| **base-branch** / **`BASE_BRANCH`** | The branch the PR merges into.                                                                                     | trunk, main branch, target branch                                           |
+| **parent-issue**                    | The parent to which a sub-issues belongs to. The parent's pr-branch is the sub-issue's base-branch they merge into | epic, umbrella issue, parent ticket, parent plan                            |
 
-## Identifiers
-
-| Term                | Definition                                                                                                                    | Aliases to avoid                                 |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| **issue id**        | A tracker-native issue identifier string, including any tracker prefix if one exists. Example: `#42`. Treat it as a string.   | issue number, numeric issue id                   |
-| **`ISSUE_ID`**      | The shell variable for an issue id. It always stores the full tracker-native issue identifier string, such as `#42`.          | bare numeric issue variable, numeric issue value |
-| **`PLAN_ID`**       | The shell variable for the current plan issue's issue id. It follows the same rules as `ISSUE_ID`.                            | `PLAN_NUMBER`                                    |
-| **pull request id** | A tracker-native pull request identifier or handle. Treat it as an opaque string, even if one tracker renders it numerically. | pull request number, numeric PR id               |
-| **`PR_ID`**         | The shell variable for a pull request id. It stores the full tracker-native pull request identifier or handle.                | bare numeric PR variable, numeric PR value       |
+Use the kebab-case form for canonical domain and frontmatter terms, and the constant-case form for shell variables that hold those values.
 
 ## Title suffixes
 
@@ -105,8 +96,8 @@
 - A sub-issue has its own **acceptance criteria**, derived from the plan's **success criteria**
 - If an issue has no sub-issues, its **success criteria** and **acceptance criteria** describe the same work directly
 - If an issue creates sub-issues, the **coverage matrix** maps every **success criterion** to one or more sub-issues
-- Every **issue id** is a tracker-native string; shell variables such as **`ISSUE_ID`** and **`PLAN_ID`** keep the full value, including `#` when the tracker uses it
-- Every **pull request id** is also treated as a tracker-native string or handle; **`PR_ID`** stores that full value
+- Every **issue-id** is a tracker-native string; **`ISSUE_ID`** keeps the full value, including `#` when the tracker uses it
+- Every **pr-id** is also treated as a tracker-native string or handle; **`PR_ID`** stores that full value
 - Every issue has a **pr-branch** (the branch the PR lives on) and a **base-branch** (where it merges into)
 - For sub-issues, `base-branch` is the parent issue's `pr-branch`; for issues with no parent issue, `base-branch` is usually `main`
 - A **session** produces exactly one **chapter**
@@ -133,6 +124,10 @@
 >
 > **Domain expert:** "Then the current issue becomes a **parent issue**. Its `pr-branch` becomes the integration branch, it creates sub-issues with their own `pr-branch` and **acceptance criteria**, builds the **coverage matrix**, and labels them `to-implement` or `to-await-waves`."
 >
+> **Dev:** "How do I refer to the identifiers and branches in the plan?"
+>
+> **Domain expert:** "Use **issue-id** and **pr-id** for identifiers, plus **pr-branch** and **base-branch** for branches. Keep shell variables in uppercase as **`ISSUE_ID`**, **`PR_ID`**, **`PR_BRANCH`**, and **`BASE_BRANCH`**."
+>
 > **Dev:** "When does the diver see it?"
 >
 > **Domain expert:** "At **land**. If the work stayed on one issue, that PR is still open and the diver merges it. If the issue created sub-issues, **seal** already composed everything on the parent issue's `pr-branch` and opened a PR to the **base branch** — the diver merges that."
@@ -147,12 +142,14 @@
 
 - **"slice"** is both a noun (a unit of work) and a phase name (the act of breaking a plan into slices). Context usually makes it clear, but when ambiguous, say "the slice phase" for the action and "a slice" for the work unit.
 - **"merge"** is both a phase name and a git operation. The phase may or may not perform a git merge. When referring to the git operation specifically, say "merge the PR."
+- **"issue id"** vs **"issue-id"** — use **issue-id** as the canonical term. The unhyphenated form is understandable but not preferred in specs or glossary text.
+- **"`PLAN_ID`"**, **"plan-id"**, or **"plan number"** — do not use. A plan is content written into an issue, not a separate identifier concept. Use **issue-id** / **`ISSUE_ID`** instead.
 - **numeric issue variables** — use **`ISSUE_ID`** only. It stores the full tracker-native issue identifier string, such as `#42`. Do not introduce a separate numeric-only issue variable.
-- **"`PLAN_ID`"** — treat it exactly like **`ISSUE_ID`** because it is also an issue identifier. It includes the tracker-native prefix when one exists and is handled as a string.
-- **numeric pull request variables** — use **`PR_ID`** only. Treat it as an opaque pull request identifier or handle, not as a guaranteed numeric value.
-- **pull request frontmatter naming** — use **`pr-id`** for the frontmatter field. Do not introduce a numeric-only variant.
+- **"pull request id"** or **"pull request number"** — do not use. The canonical abstraction is **pr-id**, which stays valid even when the local tracker uses a progress file instead of GitHub PRs.
+- **numeric PR variables** — use **`PR_ID`** only. Treat it as an opaque PR identifier or handle, not as a guaranteed numeric value.
+- **PR frontmatter naming** — use **`pr-id`** for the frontmatter field. Do not introduce `pr-number` or any numeric-only variant.
 - **"PR branch"** — do not use. The canonical term is **pr-branch**, matching the frontmatter field and keeping it distinct from generic git-branch talk.
-- **"feature branch"**, **"work branch"**, or **"target branch"** — do not use. The correct terms are **pr-branch** (the branch the PR lives on) and **base-branch** (where it merges into). Not all issues are features, and "target" is ambiguous once you realize base-branch serves that role for sub-issues.
+- **"feature branch"**, **"work branch"**, **"issue branch"**, or **"target branch"** — do not use. The correct terms are **pr-branch** (the branch the PR lives on) and **base-branch** (where it merges into). Not all issues are features, and "target" is ambiguous once you realize base-branch serves that role for sub-issues.
 - **"merge to main"** — do not use as the generic description of landing. The correct term is **merge to the base branch**. Some repos do not use `main`, and for sub-issues the relevant destination is the issue's `base-branch`, which may be a parent issue's `pr-branch`.
 - **"blocked-by"** — do not use as a dependency mechanism. The canonical dependency encoding is the **`[await: ...]`** issue-title suffix used with `to-await-waves`.
 - **"user story"** vs **"success criterion"** — a **user story** captures user intent and benefit; a **success criterion** is the mechanically verifiable condition used to decide whether the issue is done. Do not use them interchangeably.

@@ -29,7 +29,7 @@ This skill accepts:
 Set the initial variables:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed or generate
+ISSUE_ID="{issue-id}" # pre-existing and passed or generate, eg.: #42
 ```
 
 ## 1. Fetch context

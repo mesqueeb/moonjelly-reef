@@ -254,9 +254,9 @@ ISSUE_BODY="{current issue body with metrics rows inserted into the table}"
 Use `planPr` from the handoff to determine the target PR. If `planPr` is `—`, no plan PR exists yet — skip this sub-step. Otherwise, read the current plan PR body and insert the same metrics rows immediately above the `<!-- end metrics table -->` sentinel. If no table exists, append it to the end (including the sentinel after the last row).
 
 ```sh
-PLAN_PR_NUMBER="$planPr" # from handoff — never read issue bodies for this
+PLAN_PR_ID="$planPr" # from handoff — never read issue bodies for this
 PLAN_PR_BODY="{current plan PR body with metrics rows inserted into the table}"
-./tracker.sh pr edit "$PLAN_PR_NUMBER" --body "$PLAN_PR_BODY"
+./tracker.sh pr edit "$PLAN_PR_ID" --body "$PLAN_PR_BODY"
 ```
 
 #### Total row on seal-to-land

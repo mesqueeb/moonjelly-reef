@@ -16,28 +16,28 @@ Run the `reef-land` skill with either a plan issue or a PR, for example `reef-la
 Determine which you received — a plan issue ID or a PR number/URL. Set whichever is known:
 
 ```sh
-PLAN_ID="{issue-id}" # if passed
-PR_NUMBER="{pr-number}" # if passed
+ISSUE_ID="{issue-id}" # if passed directly or extracted from passed URL
+PR_ID="{pr-id}" # if passed directly or extracted from passed URL
 ```
 
 ## 0. Fetch context
 
 Use whichever identifier you have to look up the other:
 
-- If you have `PLAN_ID`: read the plan body to find the PR number.
+- If you have `ISSUE_ID`: read the plan body to find the PR number.
   ```sh
-  ./tracker.sh issue view "$PLAN_ID" --json body,title,labels # if PLAN_ID known
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels # if ISSUE_ID known
   ```
-- If you have `PR_NUMBER`: read the PR to find the plan issue reference.
+- If you have `PR_ID`: read the PR to find the plan issue reference.
   ```sh
-  ./tracker.sh pr view "$PR_NUMBER" --json number,body,headRefName,baseRefName,comments,reviews # if PR_NUMBER known
+  ./tracker.sh pr view "$PR_ID" --json number,body,headRefName,baseRefName,comments,reviews # if PR_ID known
   ```
 
 Now set all variables:
 
 ```sh
-PLAN_ID="{from PR body or already known}"
-PR_NUMBER="{from plan issue body or already known}"
+ISSUE_ID="{from PR body or already known}"
+PR_ID="{from plan issue body or already known}"
 BASE_BRANCH="{from plan issue body}"
 PR_BODY="{the PR body content — this contains the seal report}"
 ```
@@ -49,7 +49,7 @@ OWNER=$(gh repo view --json owner --jq '.owner.login')
 REPO=$(gh repo view --json name --jq '.name')
 
 gh api graphql \
-  -f owner="$OWNER" -f repo="$REPO" -F number="$PR_NUMBER" \
+  -f owner="$OWNER" -f repo="$REPO" -F number="$PR_ID" \
   -f query='
 query($owner: String!, $repo: String!, $number: Int!) {
   repository(owner: $owner, name: $repo) {
@@ -111,7 +111,7 @@ Ask the human:
 If (2): open the PR in the browser:
 
 ```sh
-./tracker.sh pr view "$PR_NUMBER" --web
+./tracker.sh pr view "$PR_ID" --web
 ```
 
 Then say: "Take your time reviewing. Leave any comments on the PR, then let me know when you're ready to continue." Wait for the human. When they return, re-check for comments and return to the top of step 2.
@@ -177,16 +177,16 @@ PR_BODY="{current PR body with gap report appended in <details><summary> block}"
 ```
 
 ```sh
-./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
-./tracker.sh issue edit "$PLAN_ID" --remove-label to-land --add-label to-rework
+./tracker.sh pr edit "$PR_ID" --body "$PR_BODY"
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-land --add-label to-rework
 ```
 
 If the discussion changed any plan-level Decisions, Stories, or Success Criteria, also update the plan body:
 
 ```sh
-PLAN_BODY=$(./tracker.sh issue view "$PLAN_ID" --json body)
-./tracker.sh issue edit "$PLAN_ID" --body "$PLAN_BODY"
-./tracker.sh pr edit "$PR_NUMBER" --remove-label to-land --add-label to-rework
+PLAN_BODY=$(./tracker.sh issue view "$ISSUE_ID" --json body)
+./tracker.sh issue edit "$ISSUE_ID" --body "$PLAN_BODY"
+./tracker.sh pr edit "$PR_ID" --remove-label to-land --add-label to-rework
 ```
 
 Tell the human:
@@ -212,7 +212,7 @@ Tell the human: "Created follow-up issue #{N}." Then continue to **step 5 (Appro
 Check merge status first:
 
 ```sh
-./tracker.sh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
+./tracker.sh pr view "$PR_ID" --json mergeStateStatus -q .mergeStateStatus
 ```
 
 If the PR cannot be merged (conflicts, failing checks, branch protection), tell the human what's blocking and exit. Do not force-merge.
@@ -224,8 +224,8 @@ MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}"
 ```
 
 ```sh
-./tracker.sh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
-./tracker.sh pr edit "$PR_NUMBER" --remove-label to-land --add-label landed
+./tracker.sh pr merge "$PR_ID" --"$MERGE_STRATEGY" --delete-branch
+./tracker.sh pr edit "$PR_ID" --remove-label to-land --add-label landed
 ```
 
 Pull the merged changes into the current branch if it matches the base branch:
@@ -241,7 +241,7 @@ fi
 Close the plan:
 
 ```sh
-./tracker.sh issue close "$PLAN_ID"
+./tracker.sh issue close "$ISSUE_ID"
 ```
 
 ## 6. Status report

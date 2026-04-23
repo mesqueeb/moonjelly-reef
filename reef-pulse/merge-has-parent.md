@@ -16,15 +16,15 @@ Set the variables needed for this path:
 
 ```sh
 PARENT_ID="{from issue frontmatter parent-issue field}"
-PR_NUMBER="{from issue frontmatter pr-number field}"
+PR_ID="{from issue frontmatter pr-id field}"
 ```
 
 ## 1. Merge
 
 ```sh
 MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}"
-./tracker.sh pr merge "$PR_NUMBER" --"$MERGE_STRATEGY" --delete-branch
-./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label landed
+./tracker.sh pr merge "$PR_ID" --"$MERGE_STRATEGY" --delete-branch
+./tracker.sh pr edit "$PR_ID" --remove-label to-merge --add-label landed
 ```
 
 ## 2. Check siblings and plan completion
@@ -64,8 +64,8 @@ Document judgment calls made during this phase on the PR. Only document decision
 ## Handoff
 
 ```sh
-nextPhase="to-seal" # or "in-progress" if not all issues tagged 'landed'
-planPr="—" # sub-issue merge does not open the parent issue PR
+NEXT_PHASE="to-seal" # or "in-progress" if not all issues tagged 'landed'
+PR_ID="—" # sub-issue merge does not open the parent issue PR
 summary="{ISSUE_TITLE} merged — {N} of {total} issues complete"
 ```
 

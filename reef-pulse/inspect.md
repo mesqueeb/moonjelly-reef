@@ -15,7 +15,7 @@ Read the issue to find the PR reference.
 Set the pre-fetch variables:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed or generate
+ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
 ```
 
 ## 0. Fetch context
@@ -109,16 +109,16 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ### 6. Update the PR
 
-Set the PR number from the issue body. If not found there, try `./tracker.sh pr list --search`. If PR_NUMBER is nowhere to be found, label the issue `pr-missing` and stop.
+Set the PR number from the issue body. If not found there, try `./tracker.sh pr list --search`. If PR_ID is nowhere to be found, label the issue `pr-missing` and stop.
 
 Read the current PR body, then append the inspect report as a collapsible block:
 
 ```sh
-PR_NUMBER="{from issue frontmatter pr-number field}" # if not found, try ./tracker.sh pr list --search
-PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
+PR_ID="{from issue frontmatter pr-id field}" # if not found, try ./tracker.sh pr list --search
+PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
 REPORT="{inspect-report}" # <details><summary><h3>🧿 Inspect review — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
-PR_BODY="$PR_BODY\n\n$REPORT"
-./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
+PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
+./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
 ```
 
 ### 7. Verdict
@@ -127,14 +127,14 @@ PR_BODY="$PR_BODY\n\n$REPORT"
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-inspect --add-label to-merge
-./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-merge
+./tracker.sh pr edit "$PR_ID" --remove-label to-inspect --add-label to-merge
 ```
 
 **If gaps are found:**
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-inspect --add-label to-rework
-./tracker.sh pr edit "$PR_NUMBER" --remove-label to-inspect --add-label to-rework
+./tracker.sh pr edit "$PR_ID" --remove-label to-inspect --add-label to-rework
 ```
 
 Leave specific review comments on the PR for each gap. Be precise — tell the implementer exactly what's wrong and what "fixed" looks like.
@@ -148,8 +148,8 @@ Leave specific review comments on the PR for each gap. Be precise — tell the i
 ## Handoff
 
 ```sh
-nextPhase="to-merge" # or "to-rework" if gaps found
-planPr="$PR_NUMBER"
+NEXT_PHASE="to-merge" # or "to-rework" if gaps found
+PR_ID="$PR_ID"
 summary="{verdict}: {one-line summary of findings}"
 ```
 

@@ -15,7 +15,7 @@ The issue title includes a `[await: ...]` suffix encoding its blockers: e.g. `"a
 Set the pre-fetch variables:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed or generate
+ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
 ```
 
 ## 0. Fetch context
@@ -88,11 +88,11 @@ Earlier work may have changed the codebase. Read this issue's acceptance criteri
 **If adjustments needed**: update the issue's acceptance criteria and description to reflect the current reality. Be specific about what changed and why.
 
 ```sh
-ISSUE_BODY="{issue body, with updated acceptance criteria if changed}"
+ISSUE_BODY_UPDATED="{issue body, with updated acceptance criteria if changed}"
 ```
 
 ```sh
-./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED"
 ```
 
 ## 4. Clean up
@@ -104,8 +104,8 @@ ISSUE_BODY="{issue body, with updated acceptance criteria if changed}"
 ## Handoff
 
 ```sh
-nextPhase="to-implement" # or "to-await-waves" if still blocked
-planPr="—"
+NEXT_PHASE="to-implement" # or "to-await-waves" if still blocked
+PR_ID="—"
 summary="{ISSUE_TITLE} is unblocked and ready for implementation" # or "still blocked by #N, #M"
 ```
 

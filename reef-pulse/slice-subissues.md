@@ -143,8 +143,8 @@ Document judgment calls made during this phase as a comment on the plan. Only do
 ## Handoff
 
 ```sh
-nextPhase="in-progress"
-planPr="—"
+NEXT_PHASE="in-progress"
+PR_ID="—"
 summary="Slices created with acceptance criteria, dependency graph, and coverage matrix"
 ```
 

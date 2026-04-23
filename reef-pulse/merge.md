@@ -17,7 +17,7 @@ Read the item to find the PR reference. Check whether the issue has a `parent-is
 Set the pre-fetch variables:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed or generate
+ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
 ```
 
 ## 0. Fetch context
@@ -31,7 +31,7 @@ Set the post-fetch variables (after reading the issue body):
 ```sh
 ISSUE_TITLE="{from issue title}"
 BASE_BRANCH="{from issue frontmatter base-branch field}"
-PR_NUMBER="{from issue frontmatter pr-number field}"
+PR_ID="{from issue frontmatter pr-id field}"
 PR_BRANCH="{from issue frontmatter pr-branch field}"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-merge"
 ```
@@ -43,7 +43,7 @@ Unconditional. Ensures the `pr-branch` integrates cleanly with the `base-branch`
 Check the merge state of the PR:
 
 ```sh
-./tracker.sh pr view "$PR_NUMBER" --json mergeStateStatus -q .mergeStateStatus
+./tracker.sh pr view "$PR_ID" --json mergeStateStatus -q .mergeStateStatus
 ```
 
 Enter a worktree forked from $PR_BRANCH so you are testing the issue's `pr-branch` with the latest `base-branch` merged in:
@@ -70,7 +70,7 @@ If the test suite fails after merging, label the issue `to-rework` and stop:
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label to-rework
-./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-rework
+./tracker.sh pr edit "$PR_ID" --remove-label to-merge --add-label to-rework
 ```
 
 Clean up the worktree:

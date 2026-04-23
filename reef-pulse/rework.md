@@ -15,7 +15,7 @@ Read the issue to find the PR reference.
 Set the pre-fetch variables:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed or generate
+ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
 ```
 
 ## 0. Fetch context
@@ -30,7 +30,7 @@ Set the post-fetch variables (after reading the issue body). Extract from frontm
 ISSUE_TITLE="{from issue title}"
 BASE_BRANCH="{from issue frontmatter base-branch field}"
 PR_BRANCH="{from issue frontmatter pr-branch field}"
-PR_NUMBER="{from issue frontmatter pr-number field}"
+PR_ID="{from issue frontmatter pr-id field}"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
 ```
 
@@ -92,17 +92,17 @@ Document judgment calls made during this phase on the PR. Only document decision
 Read the current PR body, then append the rework report as a collapsible block. The rework report should include judgment calls, what feedback was addressed, what was changed, and test results.
 
 ```sh
-PR_BODY=$(./tracker.sh pr view "$PR_NUMBER" --json body -q .body)
+PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
 REPORT="{rework-report}" # <details><summary><h3>🦀 Rework — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
-PR_BODY="$PR_BODY\n\n$REPORT"
-./tracker.sh pr edit "$PR_NUMBER" --body "$PR_BODY"
+PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
+./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
 ```
 
 ### 8. Label
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-rework --add-label to-inspect
-./tracker.sh pr edit "$PR_NUMBER" --remove-label to-rework --add-label to-inspect
+./tracker.sh pr edit "$PR_ID" --remove-label to-rework --add-label to-inspect
 ```
 
 ### 9. Clean up
@@ -114,8 +114,8 @@ PR_BODY="$PR_BODY\n\n$REPORT"
 ## Handoff
 
 ```sh
-nextPhase="to-inspect"
-planPr="$PR_NUMBER"
+NEXT_PHASE="to-inspect"
+PR_ID="$PR_ID"
 summary="Rework complete — addressed review feedback"
 ```
 

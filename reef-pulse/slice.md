@@ -18,7 +18,7 @@ This skill accepts:
 Set the pre-fetch variables:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed or generate
+ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
 ```
 
 ## 0. Fetch context

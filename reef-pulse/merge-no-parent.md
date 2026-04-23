@@ -18,14 +18,14 @@ Remove `to-merge`, add `to-seal`:
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label to-seal
-./tracker.sh pr edit "$PR_NUMBER" --remove-label to-merge --add-label to-seal
+./tracker.sh pr edit "$PR_ID" --remove-label to-merge --add-label to-seal
 ```
 
 ## Handoff
 
 ```sh
-nextPhase="to-seal"
-planPr="$PR_NUMBER" # inherited from router context
+NEXT_PHASE="to-seal"
+PR_ID="$PR_ID" # inherited from router context
 summary="No parent — forwarding to seal for holistic review"
 ```
 

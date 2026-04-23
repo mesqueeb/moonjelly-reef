@@ -22,7 +22,7 @@ Read the issue. It must contain:
 Set the pre-fetch variables:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed or generate
+ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
 ```
 
 ## 0. Fetch context
@@ -144,8 +144,8 @@ ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
 ## Handoff
 
 ```sh
-nextPhase="to-inspect"
-planPr="$PR_NUMBER"
+NEXT_PHASE="to-inspect"
+PR_ID="$PR_ID"
 summary="Implementation complete for $ISSUE_TITLE"
 ```
 
