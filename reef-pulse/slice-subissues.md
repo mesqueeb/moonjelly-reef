@@ -125,10 +125,6 @@ bearing: $SLICE_BEARING
 - [ ] {criterion 1}
 - [ ] {criterion 2}
 - [ ] {criterion 3}
-
-## Success criteria covered
-
-- Success criterion {n}: {criterion text}
 ```
 
 Create the slice:

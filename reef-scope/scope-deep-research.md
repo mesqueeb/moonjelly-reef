@@ -38,7 +38,7 @@ Fold the answers into the Testing Decisions section of the plan. Do not create a
 
 ## 5. Write the plan
 
-Write the scoped issue so the success criteria describe what must be answered, clarified, or persisted, not what code must be written.
+Write the scoped issue so the acceptance criteria describe what must be answered, clarified, or persisted, not what code must be written.
 
 After writing the plan, append the full Q&A transcript from the interview:
 
