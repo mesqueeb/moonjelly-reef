@@ -142,7 +142,7 @@ bearing: "{selected bearing}"
 ```
 
 ```sh
-ISSUE_BODY="{frontmatter + plan content}"
+ISSUE_BODY="{frontmatter + $PLAN_BODY_WITH_DONE}"
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-scope --add-label to-slice
 ```
 
