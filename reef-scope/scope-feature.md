@@ -10,7 +10,7 @@ ISSUE_ID="{from context}" # e.g. "#42"
 
 RUN ONLY IF the issue does not have decisions captured yet.
 
-Before asking anything, explore the codebase and answer every question you can from the code. Only bring questions to the diver that genuinely cannot be resolved by reading the repo.
+Before and during the interview, explore the codebase and read related code. If a question can be answered by exploring the codebase, explore the codebase instead.
 
 Then interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer.
 
