@@ -76,13 +76,17 @@ Present the picker to the user — mark exactly one route as `(recommended)`:
 
 Wait for the user to confirm or pick a different route.
 
-Persist the selected route as `bearing` using one of these exact values:
+Set the selected route:
 
-- bearing: `feature`
-- bearing: `refactor`
-- bearing: `bug`
-- bearing: `feeling-lucky`
-- bearing: `deep-research`
+```sh
+BEARING="{selected route}"
+# e.g.
+# BEARING="feature"        (scope a feature)
+# BEARING="refactor"       (scope a refactor)
+# BEARING="bug"            (triage a bug)
+# BEARING="feeling-lucky"  (I'm feeling lucky)
+# BEARING="deep-research"  (deep research)
+```
 
 ## 3. Write the plan
 
@@ -91,14 +95,14 @@ Follow the route-specific guide:
 - **Feature**: see [scope-feature.md](scope-feature.md)
 - **Refactor**: see [scope-refactor.md](scope-refactor.md)
 - **Bug**: see [triage-issue.md](triage-issue.md)
-- **Feeling lucky**: skip the normal scoping interview, stamp only the minimal routing metadata, and persist `bearing: "feeling-lucky"`.
+- **Feeling lucky**: no guide — go directly to step 4.
 - **Deep research**: see [scope-deep-research.md](scope-deep-research.md)
 
 ## 4. Branches
 
 Suggest a base branch and a `pr-branch` name in a single line. Derive the `pr-branch` name from the issue title (kebab-case, short). For example:
 
-> "Shall we branch off `main` and call the branch `guard-branch-locking`?"
+> "Shall we plan to branch off `main`, with PR branch name `guard-branch-locking`. Good?"
 
 The user confirms or adjusts. Both values are required before continuing.
 
@@ -108,9 +112,6 @@ Scan for in-flight work that might overlap with this plan. List open issues that
 
 ```sh
 BASE_BRANCH="{from branch discussion}" # e.g. "main"
-```
-
-```sh
 for LABEL in to-slice in-progress to-implement to-inspect to-rework to-merge to-seal to-land to-await-waves; do
   ./tracker.sh issue list --label "$LABEL" --json number,title,body,labels
 done
@@ -136,6 +137,7 @@ The issue body starts with frontmatter that downstream phases will read:
 base-branch: $BASE_BRANCH
 pr-branch: $PR_BRANCH
 bearing: "{selected bearing}"
+
 ---
 ```
 
@@ -187,4 +189,4 @@ Metrics section format:
 
 Tell the user:
 
-> "Plan with success criteria saved. Run the `reef-pulse` skill to let the reef take it from here."
+> 🪼 The plan is charted. Run `reef-pulse` when you're ready to dive in.
