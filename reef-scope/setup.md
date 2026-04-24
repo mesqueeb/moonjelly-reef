@@ -118,13 +118,12 @@ Ask the user:
 > 1. `squash` — squash and merge (one clean commit per PR)
 > 2. `merge` — merge commit (preserves full branch history)
 
-## 4. Ignore reef worktrees
+## 4. Ignore reef directories
 
-Reef keeps its temporary git worktrees under `.worktrees/` inside the repo.
+Reef keeps its temporary git worktrees under `.worktrees/` and its agent files under `.agents/moonjelly-reef/` inside the repo.
 
-1. Check whether `.worktrees/` is already ignored.
-2. If not, offer to add it to `.gitignore`: "Want me to add `.worktrees/` to `.gitignore` so reef's temporary worktrees don't show up as untracked files?"
-3. If yes, append `.worktrees/` to `.gitignore` (create the file if needed).
+1. Check whether `.agents/moonjelly-reef/` and `.worktrees/` are already in `.gitignore`. For each that isn't, append it to `.gitignore` (create the file if needed).
+2. Tell the user what was added, e.g.: "Added `.agents/moonjelly-reef/` and `.worktrees/` to `.gitignore`, so reef's agent files and temporary worktrees won't show up as untracked files."
 
 ## 5. Write config
 
