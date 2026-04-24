@@ -26,6 +26,26 @@ Figure out the core question, what uncertainty needs to be reduced, and what wou
 
 Plan for a durable Markdown deliverable in the repo. If external research will be needed, plan to keep lightweight `Sources:` links near the related findings.
 
-## 4. Write the plan
+## 4. Nail down completion criteria
+
+Ask the user (one at a time, skip any already answered):
+
+- What must be answered or documented for this research to be complete?
+- What open questions, if left unanswered, would make this research feel incomplete?
+- Who will act on the findings, and what do they need from this research to move forward?
+
+Fold the answers into the Testing Decisions section of the plan. Do not create a separate section.
+
+## 5. Write the plan
 
 Write the scoped issue so the acceptance criteria describe what must be answered, clarified, or persisted, not what code must be written.
+
+After writing the plan, append the full Q&A transcript from the interview:
+
+```
+<details><summary>Interview log</summary>
+
+{full Q&A transcript}
+
+</details>
+```

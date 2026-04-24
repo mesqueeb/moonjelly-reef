@@ -52,7 +52,26 @@ Create a concrete, ordered list of RED-GREEN cycles. Each cycle is one vertical 
 - Include a final refactor step if needed
 - **Durability**: Only suggest fixes that would survive radical codebase changes. Describe behaviors and contracts, not internal structure. Tests assert on observable outcomes (API responses, UI state, user-visible effects), not internal state. A good suggestion reads like a spec; a bad one reads like a diff.
 
-## 5. Write the plan
+## 5. What does done look like?
+
+Present these four options to the user. Recommend one based on your investigation findings:
+
+1. **Theoretical fix** — fix identified and documented in the plan; no code or tests required
+2. **Compile-verified** — fix applied and confirmed to compile/run without errors
+3. **TDD** — failing test written first, then fix applied; all tests pass
+4. **Dive in together** — interactive debugging session; not suitable for AFK Reef flow
+
+**How to recommend**: if you found a clear root cause with a known fix, recommend option 2 or 3. If the root cause is unclear or the fix requires exploration, recommend option 4. If the issue is well-understood but low-risk, option 1 may suffice.
+
+If the user picks option 4, do not label the issue `to-implement`. Close out by explaining that this issue needs a live session and won't enter the Reef queue.
+
+For options 1–3, the chosen option drives the `## Acceptance Criteria` checklist in the plan:
+
+- **Option 1**: `- [ ] Fix applied to the identified code path`
+- **Option 2**: `- [ ] Fix compiles and runs without errors`
+- **Option 3**: `- [ ] Failing test written first` and `- [ ] All tests pass after fix`
+
+## 6. Write the plan
 
 Write the plan using this template:
 
@@ -90,9 +109,10 @@ A numbered list of RED-GREEN cycles:
 
 ## Acceptance Criteria
 
-- [ ] {criterion 1}
-- [ ] {criterion 2}
+- [ ] {criterion driven by the chosen rigor option from step 5}
 - [ ] All new tests pass
 - [ ] Existing tests still pass
 
 </plan-template>
+
+When persisting the plan in SKILL.md step 6 (for options 1–3), use `to-implement` instead of `to-slice`. A bug fix is a single branch, single PR — slicing adds overhead with no benefit.

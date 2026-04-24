@@ -28,7 +28,17 @@ A deep module (as opposed to a shallow module) is one which encapsulates a lot o
 
 Check with the user that these modules match their expectations. Check with the user which modules they want tests written for.
 
-## 4. Write the plan
+## 4. Nail down testing expectations
+
+Ask the user these questions (one at a time, skip any already answered):
+
+- What kind of testing do you expect for this feature?
+- Should each user story have an automated test?
+- Is there anything you'd need to see to feel confident this is ready to merge?
+
+Fold the answers into the Testing Decisions section of the plan. Do not create a separate section.
+
+## 5. Write the plan
 
 Write the plan using this template:
 
@@ -77,3 +87,13 @@ A list of testing decisions that were made. Include:
 A description of the things that are out of scope for this feature.
 
 </plan-template>
+
+After writing the plan, append the full Q&A transcript from the interview:
+
+```
+<details><summary>Interview log</summary>
+
+{full Q&A transcript}
+
+</details>
+```
