@@ -176,7 +176,7 @@ Append the gap report to the current PR body. Include original PR review comment
 
   Context: {what was clarified or decided}
 
-### New or updated success criteria (if any)
+### New or updated What does done look like items (if any)
 
 - [ ] {new criterion}
 
@@ -194,7 +194,7 @@ PR_BODY="{current PR body with gap report appended in <details><summary> block}"
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-land --add-label to-rework
 ```
 
-If the discussion changed any plan-level Decisions, Stories, or Success Criteria, also update the plan body:
+If the discussion changed any plan-level Decisions, Stories, or What does done look like items, also update the plan body:
 
 ```sh
 PLAN_BODY=$(./tracker.sh issue view "$ISSUE_ID" --json body)

@@ -46,7 +46,7 @@ Read the issue. It must contain:
 - Acceptance criteria
 - `base-branch` in frontmatter (where the PR merges into)
 - `pr-branch` in frontmatter (the branch the PR lives on)
-- Research-oriented success criteria or acceptance criteria
+- Research-oriented What does done look like or acceptance criteria
 
 ```sh
 ISSUE_TITLE="{from issue title}" # e.g. "auth-token-rotation"
@@ -88,7 +88,7 @@ Report these variables to the caller and **do not continue**.
 Read and understand:
 
 - **This issue's acceptance criteria** — this is your checklist. Every criterion must be addressed.
-- **The plan + success criteria** — understand the question the research must answer.
+- **The plan + What does done look like** — understand the question the research must answer.
 - **Sibling issues** — awareness of what others are doing or have done. Don't duplicate, don't conflict.
 - **The decision record** — the original decisions that led here.
 
