@@ -10,11 +10,11 @@ ISSUE_ID="{from context}" # e.g. "#42"
 
 RUN ONLY IF the issue does not have decisions captured yet.
 
-Interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer.
+Before and during the interview, explore the codebase and read related code. If a question can be answered by exploring the codebase, explore the codebase instead.
+
+Then interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer.
 
 Ask the questions one at a time.
-
-If a question can be answered by exploring the codebase, explore the codebase instead.
 
 ## 2. Explore the repo
 
