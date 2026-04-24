@@ -142,14 +142,16 @@ Then interview the human to refine the change requests into concrete, actionable
 
 For each concern or comment:
 
-- Confirm you understand it correctly
-- Ask clarifying questions if the intent is ambiguous
-- Propose how it maps to work: is it a code change? A restructuring? A naming fix?
-- Check if it relates to an existing plan item (US, ID, TD) or needs a new one
+1. Read all files and lines referenced in the comment.
+2. Read related test files and codebase conventions relevant to the referenced area.
+3. Form a hypothesis about the intent — decide whether the intent is clear or genuinely ambiguous.
+4. Only surface a question to the human if the intent remains ambiguous after steps 1–3.
+5. When asking, lead with your recommended answer that demonstrates the investigation.
+6. Confirm your understanding of what change is needed.
+7. Propose how it maps to work: code change? Restructuring? Naming fix?
+8. Check whether it relates to an existing plan item (US, ID, TD) or needs a new one.
 
-Ask questions one at a time. For each question, provide your recommended answer.
-
-If a question can be answered by exploring the codebase, explore the codebase instead of asking.
+Ask questions one at a time.
 
 ### Trivial vs substantial changes
 
