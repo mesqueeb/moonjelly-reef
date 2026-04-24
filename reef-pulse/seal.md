@@ -43,7 +43,7 @@ Report these variables to the caller and **do not continue**.
 
 Read the plan. It must have:
 
-- Success criteria
+- User Stories, Implementation Decisions, and Testing Decisions
 - Coverage matrix (if multi-slice)
 - `pr-branch` in frontmatter
 - Slice PRs with "Ambiguous choices" sections
@@ -102,13 +102,13 @@ Verify you have the latest — all slice PRs should be merged into this `pr-bran
 
 Not negotiable. Record the result.
 
-## 3. Check every success criterion holistically
+## 3. Check every plan item holistically
 
-For each success criterion in the plan:
+For each User Story, Implementation Decision, and Testing Decision in the plan:
 
 - Read the actual code on the `pr-branch` that satisfies it. Trace the full path — don't check module by module, check end-to-end.
-- Verify from the **consumer's perspective**. If the criterion says "the legacy UI must render identically", don't just check that the data is correct — check that it's in the format the legacy UI expects. (Prevents painpoint A4.)
-- Cross-reference the coverage matrix: which issues were supposed to cover this criterion? Did they actually cover it when composed together?
+- Verify from the **consumer's perspective**. If a user story says "the legacy UI must render identically", don't just check that the data is correct — check that it's in the format the legacy UI expects. (Prevents painpoint A4.)
+- Cross-reference the coverage matrix: which issues were supposed to cover this plan item? Did they actually cover it when composed together?
 
 If `"$BEARING" = "deep-research"`:
 
@@ -127,7 +127,7 @@ Mark each criterion: ✓ met, ✗ not met (with explanation).
 Read the "Ambiguous choices" section from each slice's merged PR. For each decision:
 
 - Does it make sense?
-- Did it introduce drift from the original success criteria or decision record?
+- Did it introduce drift from the original plan items or decision record?
 - Would the human want to know about this?
 
 ## 5. Check for integration issues
@@ -144,21 +144,21 @@ Look for problems that only appear when slices are composed:
 
 Use your findings from steps 3-5 to tighten the plan before deciding PASS vs GAPS:
 
-- If the review revealed something that SHOULD have been a criterion but wasn't, update the success criteria on the plan issue.
+- If the review revealed something that SHOULD have been captured but wasn't, update the Testing Decisions or Implementation Decisions on the plan issue.
 - Classify each gap found:
-  - **Missing coverage**: a success criterion has no slice addressing it
-  - **Incomplete implementation**: a slice was done but didn't fully satisfy a criterion when composed
+  - **Missing coverage**: a plan item has no slice addressing it
+  - **Incomplete implementation**: a slice was done but didn't fully satisfy a plan item when composed
   - **Integration gap**: slices work individually but not together
-  - **Planning gap**: the plan or success criteria were ambiguous or missed something
+  - **Planning gap**: the Testing Decisions or Implementation Decisions were ambiguous or missed something
 
-If you updated the plan's success criteria:
+If you updated the plan's Testing Decisions or Implementation Decisions:
 
 ```sh
-ISSUE_BODY="{plan issue body with updated success criteria}"
+ISSUE_BODY="{plan issue body with updated Testing Decisions or Implementation Decisions}"
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
 ```
 
-If any gaps need decisions beyond what success criteria cover (e.g. the plan itself is ambiguous about a design direction), treat that as a **human decision needed** case. Do NOT send it back to `to-scope`. Keep it moving to `to-land`, make the warning explicit in the seal report, and call out exactly which decision needs human judgment before more automated work should happen.
+If any gaps need decisions beyond what the plan covers (e.g. the plan itself is ambiguous about a design direction), treat that as a **human decision needed** case. Do NOT send it back to `to-scope`. Keep it moving to `to-land`, make the warning explicit in the seal report, and call out exactly which decision needs human judgment before more automated work should happen.
 
 ## 7. Documentation
 
@@ -185,11 +185,11 @@ The report should be concise and focused on what the human needs to know. Do NOT
 
 ### Status: {PASS / GAPS FOUND / HUMAN DECISION NEEDED}
 
-### Success criteria
+### Plan items
 
-- ✓ SC1: {criterion} — verified: {one-line how}
-- ✓ SC2: {criterion} — verified: {one-line how}
-- ✗ SC3: {criterion} — GAP: {what's wrong}
+- ✓ US1: {user story} — verified: {one-line how}
+- ✓ ID1: {implementation decision} — verified: {one-line how}
+- ✗ TD1: {testing decision} — GAP: {what's wrong}
 
 ### Agent decisions to review
 
@@ -247,14 +247,14 @@ ISSUE_BODY="{original issue body with added frontmatter values}"
 ./tracker.sh pr edit "$PR_ID" --remove-label to-seal --add-label to-land
 ```
 
-**If the remaining gap is a human decision beyond current success criteria:**
+**If the remaining gap is a human decision beyond the current plan:**
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-land --add-label blocked-need-human-input
 ./tracker.sh pr edit "$PR_ID" --remove-label to-seal --add-label to-land --add-label blocked-need-human-input
 ```
 
-**If gaps found (fixable within success criteria and without human input needed):**
+**If gaps found (fixable within the plan and without human input needed):**
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-rework

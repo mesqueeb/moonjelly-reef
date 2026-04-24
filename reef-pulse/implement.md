@@ -111,7 +111,7 @@ Report these variables to the caller and **do not continue**.
 Read and understand:
 
 - **This issue's acceptance criteria** — this is your checklist. Every criterion must be addressed.
-- **The plan + success criteria** — understand the "why" behind this issue.
+- **The plan** — understand the "why" behind this issue (User Stories, Implementation Decisions, Testing Decisions).
 - **Sibling issues** — awareness of what others are doing or have done. Don't duplicate, don't conflict.
 - **The decision record** — the original decisions that led here.
 

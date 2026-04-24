@@ -1,6 +1,6 @@
 ---
 name: reef-scope
-description: Scope an issue into a plan with success criteria, ready for the Moonjelly Reef to pick up. Route between a feature, refactor, a bug triage or deep research. Turn an ideas into a plan.
+description: Scope an issue into a plan, ready for the Moonjelly Reef to pick up. Route between a feature, refactor, a bug triage or deep research. Turn an idea into a plan.
 ---
 
 # reef-scope

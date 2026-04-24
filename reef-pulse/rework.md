@@ -51,7 +51,7 @@ PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#7"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
 ```
 
-For plan issues, read success criteria from the plan issue body instead of acceptance criteria.
+For plan issues (issues without a parent-issue), read User Stories, Implementation Decisions, and Testing Decisions from the plan issue body as the rework target instead of acceptance criteria.
 
 ## 1. Git prep
 
@@ -86,7 +86,7 @@ Also read the gap report from the PR body (`<details><summary>` blocks written b
 
 Also re-read:
 
-- The issue's acceptance criteria or plan's success criteria
+- The issue's acceptance criteria or the plan's User Stories, Implementation Decisions, and Testing Decisions
 - The gap classification from the seal report if present (missing coverage, incomplete implementation, integration gap, planning gap)
 
 ## 3. Fix

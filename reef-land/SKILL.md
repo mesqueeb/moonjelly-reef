@@ -145,7 +145,7 @@ For each concern or comment:
 - Confirm you understand it correctly
 - Ask clarifying questions if the intent is ambiguous
 - Propose how it maps to work: is it a code change? A restructuring? A naming fix?
-- Check if it relates to an existing success criterion or needs a new one
+- Check if it relates to an existing plan item (US, ID, TD) or needs a new one
 
 Ask questions one at a time. For each question, provide your recommended answer.
 
@@ -176,7 +176,7 @@ Append the gap report to the current PR body. Include original PR review comment
 
   Context: {what was clarified or decided}
 
-### New or updated success criteria (if any)
+### New or updated plan items (if any)
 
 - [ ] {new criterion}
 
@@ -194,7 +194,7 @@ PR_BODY="{current PR body with gap report appended in <details><summary> block}"
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-land --add-label to-rework
 ```
 
-If the discussion changed any plan-level Decisions, Stories, or Success Criteria, also update the plan body:
+If the discussion changed any plan-level User Stories, Implementation Decisions, or Testing Decisions, also update the plan body:
 
 ```sh
 PLAN_BODY=$(./tracker.sh issue view "$ISSUE_ID" --json body)

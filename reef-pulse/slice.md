@@ -53,13 +53,28 @@ SUMMARY="Skipped: issue does not carry the to-slice label."
 
 Report these variables to the caller and **do not continue**.
 
-Read the issue. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The frontmatter block tells you the work type, `base-branch`, and `pr-branch`.
+Read the issue. It must contain a plan with User Stories, Implementation Decisions, and Testing Decisions (from reef-scope). This skill synthesizes those plan items into **acceptance criteria** per slice. The frontmatter block tells you the work type, `base-branch`, and `pr-branch`.
 
 ```sh
 BASE_BRANCH="{from issue frontmatter base-branch field, or - if not present}" # e.g. "main"
 PR_BRANCH="{from issue frontmatter pr-branch field, or - if not present}"     # e.g. "feat/my-feature"
 BEARING="{from issue frontmatter bearing field, or - if not present}"         # e.g. "feature"
 ```
+
+### Guard: refactor and bug bearings skip slicing
+
+RUN ONLY WHEN `"$BEARING" = "refactor"` or `"$BEARING" = "bug"`.
+
+These bearings no longer reach the slice phase — they are already labeled `to-implement` by `reef-scope`.
+
+```sh
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="—"
+PR_ID="—"
+SUMMARY="Skipped: $BEARING bearings do not reach the slice phase. The plan issue should already be labeled to-implement."
+```
+
+Report these variables to the caller and **do not continue**.
 
 ### Guard: verify branch frontmatter
 
@@ -130,7 +145,6 @@ Rules:
 - If `"$BEARING" = "deep-research"`, draft research questions rather than implementation work. Compact research plans can stay as a single research issue. Larger research plans can be split into angle-based or dependency-based research slices. Acceptance criteria should say what must be answered, clarified, or persisted.
 - If `"$FEELING_LUCKY" = "true"`, produce acceptance criteria and dependencies with best-effort judgment without asking the user follow-up questions.
 
-For small bugs (scope = quick fix in the plan): produce a single slice. The plan's success criteria become the slice's acceptance criteria directly.
 
 ## 2. Delegate
 
