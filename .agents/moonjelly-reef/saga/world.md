@@ -1,33 +1,23 @@
-# Moonjelly Reef world template
-
-Bootstrap file for `.agents/moonjelly-reef/saga/world.md`. Populates these fields on the first session.
-
-_There is a place where a few creatures live and work together — each one distinct and funny in their own way. The place has a texture and a light. The creatures do not always agree, and they do not always succeed. Between the work, small true things happen. That is where the story lives._
-
-_You know this place. Fill it in as if it has always been there._
+# Moonjelly Reef
 
 ## Reef setting
 
-Describe the reef as a real place someone could picture and revisit.
+The reef sits where a warm current and a cold one meet, which means the water is always doing two things at once — hazy gold near the surface, clear and blue-green further down. The creatures mostly work and gather in a middle band where the light is good and the pressure is easy.
 
-- What does the water look like?
-- Where do the creatures gather, rest, work, or keep tools?
-- What small detail makes the reef feel cozy instead of grand?
+Vesper's workshop is built into a wide basalt overhang on the east face. Shelves of varying rock jut from the wall, some natural, some shaped. The workshop smells of salt and something faintly sweet — seagrass, or the oils she uses on her tools. It is always warmer than the open water.
+
+The north edge of the reef has a cold outflow where Pip keeps his observation post — just a flat stone and a current, which is all he needs.
 
 ## Active characters
 
-Use the below as inspiration and retain only what's needed after finishing chapter 1.
+**Vesper** (octopus) — runs a workshop that is somehow both meticulous and chaotic. She keeps plans on shell-notes pinned with coral and is protective of them. Practical, direct, capable of being short-tempered but also capable of choosing not to be.
 
-- A Moonjelly could be a soft, glowing busybody who drifts in and out of everyone's business as if by accident, though nobody believes it is ever accidental.
-- A narwhal could be dramatic, elegant, and a little too pleased whenever a clever shortcut appears exactly where he said it would.
-- A coral could be an old neighborhood of tiny murmuring aunties who seem half-asleep until the exact important moment, when they are suddenly all paying attention.
-- An octopus could keep a workshop that is somehow messy and meticulous at once, and make something lovely out of string, shells, pebbles, and one good idea.
-- A barreleye could be small, polite, unsettlingly observant, and forever peering at things from odd angles no one else would think to try.
-- A crab could be fussy, practical, easily offended by shoddy craftsmanship, and secretly delighted by the chance to make a thing better than it was before.
-- A sea turtle could be broad-backed, patient, and so dependable that everyone keeps leaving important things with her without even having to ask.
-- An elephant seal could be enormous, warm, and solemn in a faintly ridiculous way, like an old master of ceremonies who insists on sitting on a problem until the truth comes out.
-- A diver could be the strange land-friend who very seldomly arrives with pockets full of questions, salt in their hair, and the habit of taking the reef's troubles personally.
+**Luma** (moonjelly) — drifts in without being invited, glows amber-pink, and rearranges things she calls improvements. Her meddling is genuine helpfulness imperfectly aimed. She knows more about what's happening across the reef than she lets on.
+
+**Pip** (barreleye) — small, polite, deeply observant. Sits at the cold outflow on the north edge. Finds things in the current and studies them from angles no one else would try. Honest rather than apologetic. Goes by a name he did not choose.
 
 ## Ongoing threads
 
-Only fill this in after finishing chapter 1.
+- Vesper is working on an abalone-and-seagrass project; the plan is intact and underway
+- Pip has agreed to bring found things to Vesper first — a small new protocol between them
+- Luma's habit of improving things without asking is unresolved; Vesper did not push back, which may matter later
