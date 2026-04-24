@@ -136,16 +136,14 @@ If overlapping in-flight work is found, surface it to the user:
 
 > "From a quick look at current work in progress, this scope might lead to conflicts with #77 and #83. Should this issue wait for them to land?"
 
-If the user says **yes**, mark the dependency using the same issue-title syntax used elsewhere:
+If the user says **no**, go to step 8.
+
+If the user says **yes**, mark the dependency in the title only — do not change labels:
 
 ```sh
-ISSUE_TITLE="{current issue title} [await: #77, #83]"
-./tracker.sh issue edit "$ISSUE_ID" --title "$ISSUE_TITLE" --remove-label to-slice --add-label to-await-waves
+ISSUE_TITLE_UPDATED="{current issue title} [await: #77, #83]"
+./tracker.sh issue edit "$ISSUE_ID" --title "$ISSUE_TITLE_UPDATED"
 ```
-
-If the user says **no**, leave the issue as `to-slice`.
-
-If no overlapping work is found, continue silently.
 
 ## 8. Append metrics
 
