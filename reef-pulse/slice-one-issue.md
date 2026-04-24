@@ -20,14 +20,14 @@ No sub-issues are needed — the plan becomes the slice. Skip sub-issues, covera
 Starting from `$ISSUE_BODY_UPDATED`:
 
 1. **No sub-issues.** The plan IS the slice.
-2. **Rename `## Success criteria` to `## Success & Acceptance criteria`.** Append the acceptance criteria you drafted for the single slice to that section. Shape them to the lane: for deep-research, criteria must describe what must be answered, clarified, or persisted rather than implementation tasks.
+2. **Append acceptance criteria.** Add the acceptance criteria you drafted for the single slice to the issue body. Shape them to the lane: for deep-research, criteria must describe what must be answered, clarified, or persisted rather than implementation tasks.
 3. **Route research slices into the research phase.** For deep-research, label the issue to-research instead of to-implement.
-4. **No coverage matrix.** Success criteria and acceptance criteria are 1:1 — the mapping adds no information.
+4. **No coverage matrix.** Acceptance criteria are sufficient — the mapping adds no information.
 
 Assemble the updated plan issue body:
 
 ```sh
-ISSUE_BODY="{$ISSUE_BODY_UPDATED with updated Success & Acceptance criteria}"
+ISSUE_BODY="{plan issue body with scoped pr-branch, rewritten bearing, and appended Acceptance criteria}"
 ```
 
 ## 2. Label the next phase

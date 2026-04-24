@@ -28,4 +28,4 @@ Plan for a durable Markdown deliverable in the repo. If external research will b
 
 ## 4. Write the plan
 
-Write the scoped issue so the success criteria describe what must be answered, clarified, or persisted, not what code must be written.
+Write the scoped issue so the acceptance criteria describe what must be answered, clarified, or persisted, not what code must be written.

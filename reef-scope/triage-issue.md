@@ -88,7 +88,7 @@ A numbered list of RED-GREEN cycles:
 
 **REFACTOR**: [Any cleanup needed after all tests pass]
 
-## Success Criteria
+## Acceptance Criteria
 
 - [ ] {criterion 1}
 - [ ] {criterion 2}
