@@ -2,34 +2,32 @@
 
 Single-slice fast path — delegated from [slice.md](slice.md).
 
-## Input (from router)
+## Input (from context)
 
-The router has already fetched context and drafted exactly 1 slice. No sub-issues are needed — the plan becomes the slice.
+Context already fetched and resolved by `slice.md`.
+
+```sh
+ISSUE_ID="{from context}"          # e.g. "#42"
+BEARING="{from context}"           # e.g. "feature" — already resolved, never "feeling-lucky"
+FEELING_LUCKY="{from context}"     # e.g. "false"
+ISSUE_BODY_UPDATED="{from context}" # plan body with frontmatter already cleaned up
+```
 
 ## 1. Update the plan issue body
 
-Take the fast path — skip sub-issues, coverage matrix, and seal. The plan becomes the slice:
+No sub-issues are needed — the plan becomes the slice. Skip sub-issues, coverage matrix, and seal.
 
-1. **Keep the scoped `pr-branch`.** Preserve the `pr-branch` already written by reef-scope in the plan frontmatter.
-2. **Rewrite `bearing` if the plan started as `feeling-lucky`.** Infer the real lane (feature, refactor, bug, or deep-research), set `bearing` to that value, and add `feeling-lucky: true` as a separate frontmatter flag:
+Starting from `$ISSUE_BODY_UPDATED`:
 
-```sh
-# example: plan started as feeling-lucky → inferred as feature
-bearing: feature
-feeling-lucky: true
-```
-
-If the bearing is already anything other than `feeling-lucky`, preserve it unchanged.
-
-3. **No sub-issues.** The plan IS the slice.
-4. **Rename `## Success criteria` to `## Success & Acceptance criteria`.** Append the acceptance criteria you drafted for the single slice to that section. Shape them to the lane: for deep-research, criteria must describe what must be answered, clarified, or persisted rather than implementation tasks.
-5. **Route research slices into the research phase.** For deep-research, label the issue to-research instead of to-implement.
-6. **No coverage matrix.** Success criteria and acceptance criteria are 1:1 — the mapping adds no information.
+1. **No sub-issues.** The plan IS the slice.
+2. **Rename `## Success criteria` to `## Success & Acceptance criteria`.** Append the acceptance criteria you drafted for the single slice to that section. Shape them to the lane: for deep-research, criteria must describe what must be answered, clarified, or persisted rather than implementation tasks.
+3. **Route research slices into the research phase.** For deep-research, label the issue to-research instead of to-implement.
+4. **No coverage matrix.** Success criteria and acceptance criteria are 1:1 — the mapping adds no information.
 
 Assemble the updated plan issue body:
 
 ```sh
-ISSUE_BODY="{plan issue body with scoped pr-branch, rewritten bearing, and updated Success & Acceptance criteria}"
+ISSUE_BODY="{$ISSUE_BODY_UPDATED with updated Success & Acceptance criteria}"
 ```
 
 ## 2. Label the next phase
@@ -52,4 +50,4 @@ PR_ID="—"
 SUMMARY="No sub-issues needed — plan issue moves directly into research or implementation"
 ```
 
-Report these three variables to the caller.
+Report these variables to the caller.

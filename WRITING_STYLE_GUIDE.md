@@ -13,6 +13,16 @@ Every skill or phase file follows this top-level order:
 
 Sub-sections within a step use `###`.
 
+**Same-phase subfiles** (see Ubiquitous Language) omit `## Rules` entirely and use `## Input (from context)` instead of `## Input`. They run in the same session — `config.md` was already read and the tracker type is already known. Use `"{from context}"` as the placeholder for every input variable:
+
+  preferred:     MERGE_STRATEGY="{from context}" # e.g. "squash"
+  anti-pattern:  MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}" # e.g. "squash"
+
+The first line of prose under `## Input (from context)` must state which file delegated to this one:
+
+  preferred:     Context already fetched by `merge.md`.
+  anti-pattern:  The router has already fetched context and set variables.
+
 ## Input section
 
 Declare input variables and anything needed immediately (e.g. `SKILL_DIR`, a lock file path). Optional inputs use `"-"` as the nil sentinel:
@@ -56,6 +66,16 @@ WORKTREE_PATH=".worktrees/$ISSUE_TITLE-{phase}"
 
   anti-pattern:  fetching the issue again later to read a field not extracted the first time
   anti-pattern:  declaring ISSUE_TITLE in step 0 and BASE_BRANCH in step 3, when both came from the same fetch
+
+The same rule applies to `config.md`, which is read in `## Rules`. Declare every variable drawn from it right there — not deferred to the step that first uses it:
+
+In `## Rules`:
+
+```sh
+MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}" # e.g. "squash"
+```
+
+  anti-pattern:  declaring MERGE_STRATEGY in step 5 when config.md was already read in ## Rules
 
 When a field may be absent, use a nil sentinel in the placeholder:
 
@@ -111,6 +131,11 @@ Do not use phrases like "Before doing anything else," when the step order alread
   required:  **Wait for the metric-logger sub-agent to complete before proceeding.**
 
 ## Conditionals
+
+Wrap inline shell conditions in backticks:
+
+  preferred:     If `"$ISSUE_ID" = "-"`
+  anti-pattern:  If "$ISSUE_ID" = "-"
 
 Always reference variables with `$VAR` syntax in prose — never bare names:
 

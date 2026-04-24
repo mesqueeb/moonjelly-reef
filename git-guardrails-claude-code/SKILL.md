@@ -7,8 +7,6 @@ description: Set up Claude Code hooks to block dangerous git commands (force pus
 
 Sets up a PreToolUse hook that intercepts and blocks dangerous git commands before Claude executes them — without getting in the way of normal target-branch workflows.
 
-## What Gets Blocked
-
 **Always blocked, everywhere:**
 
 - `git reset --hard`
@@ -23,13 +21,21 @@ Sets up a PreToolUse hook that intercepts and blocks dangerous git commands befo
 
 When blocked, Claude sees a message telling it that it does not have authority to access these commands.
 
-## Steps
+## Input
 
-### 1. Ask scope
+```sh
+SKILL_DIR="{base directory for this skill}" # e.g. ".agents/skills/git-guardrails-claude-code"
+```
+
+## Rules
+
+**Shell blocks are literal commands** — execute them as written.
+
+## 1. Ask scope
 
 Ask the user: install for **this project only** (`.claude/settings.json`) or **all projects** (`~/.claude/settings.json`)?
 
-### 2. Copy the hook script
+## 2. Copy the hook script
 
 The bundled script is at: [scripts/block-dangerous-git.sh](scripts/block-dangerous-git.sh)
 
@@ -40,7 +46,7 @@ Copy it to the target location based on scope:
 
 Make it executable with `chmod +x`.
 
-### 3. Add hook to settings
+## 3. Add hook to settings
 
 Add to the appropriate settings file:
 
@@ -86,11 +92,11 @@ Add to the appropriate settings file:
 
 If the settings file already exists, merge the hook into existing `hooks.PreToolUse` array — don't overwrite other settings.
 
-### 4. Ask about customization
+## 4. Ask about customization
 
 Ask if user wants to add or remove any patterns from the blocked list. Edit the copied script accordingly.
 
-### 5. Verify
+## 5. Verify
 
 Run a few quick tests:
 

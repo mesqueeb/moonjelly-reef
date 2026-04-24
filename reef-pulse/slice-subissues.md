@@ -2,21 +2,21 @@
 
 Multi-slice flow — delegated from [slice.md](slice.md).
 
-## Input (from router)
-
-The router has already fetched context and drafted 2+ slices. Set post-fetch variables:
+## Input (from context)
 
 ```sh
-PR_BRANCH="{from plan issue body pr-branch field}"
-BASE_BRANCH="{from plan issue body}"
-BEARING="{from plan issue body bearing field}"
-FEELING_LUCKY="{true if plan issue frontmatter has feeling-lucky: true, otherwise false}"
+ISSUE_ID="{from context}"           # e.g. "#42"
+PR_BRANCH="{from context}"          # e.g. "feat/my-feature"
+BASE_BRANCH="{from context}"        # e.g. "main"
+BEARING="{from context}"            # e.g. "feature" — already resolved, never "feeling-lucky"
+FEELING_LUCKY="{from context}"      # e.g. "true"
+ISSUE_BODY_UPDATED="{from context}" # plan body with frontmatter already cleaned up
 WORKTREE_PATH=".worktrees/$ISSUE_ID-slice"
 ```
 
 ## 1. Enter worktree
 
-Enter a worktree forked from $BASE_BRANCH to read the codebase for informed slicing decisions:
+Enter a worktree forked from `$BASE_BRANCH` to read the codebase for informed slicing decisions:
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
@@ -39,7 +39,7 @@ SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying
 
 Report these variables to the caller and **do not continue**.
 
-If the `pr-branch` does not exist on origin yet, create it:
+If `$PR_BRANCH` does not exist on origin yet, create it:
 
 ```sh
 git push -u origin "$PR_BRANCH"
@@ -65,7 +65,7 @@ For each success criterion in the plan, map it to which slice(s) and which accep
 
 ## 3. Verify the breakdown
 
-Before creating slices, verify internally:
+Verify internally:
 
 - Is the granularity reasonable? (prefer many thin slices over few thick ones)
 - Are the dependency relationships correct? Are there implicit deps not captured?
@@ -79,17 +79,31 @@ Create them in dependency order (blockers first) so you can reference real issue
 
 Assemble each slice body:
 
+Set `UNBLOCKED` based on whether this slice has any blocking dependencies in the plan:
+
 ```sh
-SLICE_TITLE="{slice-title} [await: #{blocker-id}]"  # omit [await: ...] if unblocked
-SLICE_PR_BRANCH="{derived from plan issue pr-branch + slice title slug}"
-SLICE_BEARING="{per-slice bearing, usually $BEARING unless a slice needs a narrower inferred lane}"
-SLICE_BODY="{slice-body}" # as per the template below, with pr-branch: $SLICE_PR_BRANCH and bearing: $SLICE_BEARING
-SLICE_LABEL="{to-research for unblocked deep-research slices, otherwise to-implement; or to-await-waves if blocked}"
+if [ "{slice has no blockers}" = "true" ]; then
+  UNBLOCKED=true
+  SLICE_TITLE="{slice-title}" # e.g. "002 Token storage"
+else
+  UNBLOCKED=false
+  SLICE_TITLE="{slice-title} [await: #{blocker-id}]" # e.g. "002 Token storage [await: #43]"
+fi
 ```
 
-For blocked slices, append `[await: #{id}, #{id}]` to the title. Unblocked slices get a plain title.
-Give each sub-issue its own `pr-branch`. Derive `SLICE_PR_BRANCH` from the plan issue's `pr-branch` plus a stable slug from the slice title.
-For deep-research, make the slices research-native: use research questions or investigation angles as the slice descriptions, and write acceptance criteria around what must be answered, clarified, or persisted. For feeling-lucky (`$FEELING_LUCKY = "true"`), use best-effort acceptance criteria without bouncing the work back to scope.
+```sh
+SLICE_BEARING="{per-slice bearing, usually $BEARING unless a slice needs a narrower inferred lane}" # e.g. "implement"
+if [ "$UNBLOCKED" = "true" ] && [ "$SLICE_BEARING" = "deep-research" ]; then
+  SLICE_LABEL="to-research"
+elif [ "$UNBLOCKED" = "true" ]; then
+  SLICE_LABEL="to-implement"
+else
+  SLICE_LABEL="to-await-waves"
+fi
+SLICE_PR_BRANCH="{derived from plan issue pr-branch + slice title slug}" # e.g. "feat/my-feature-002-token-storage"
+```
+
+If `"$FEELING_LUCKY" = "true"`, use best-effort acceptance criteria without bouncing the work back to scope. For deep-research slices, make them research-native: use research questions or investigation angles as the slice descriptions, and write acceptance criteria around what must be answered, clarified, or persisted.
 
 Slice body template:
 
@@ -119,21 +133,17 @@ bearing: $SLICE_BEARING
 Create the slice:
 
 ```sh
+SLICE_BODY="{slice-body as per the template below, with pr-branch: $SLICE_PR_BRANCH and bearing: $SLICE_BEARING}"
 ./tracker.sh issue create --title "$SLICE_TITLE" --body "$SLICE_BODY" --label "$SLICE_LABEL"
 ```
 
-Label each slice: `to-research` if no blockers and the slice bearing is `deep-research`, `to-implement` if no blockers and the slice is implementation work, `to-await-waves` if blocked.
-
 ## 5. Update the plan
 
-Set `pr-branch: $PR_BRANCH` in the plan issue frontmatter (already set by reef-scope, but update if changed). Append the coverage matrix and a listing of all created sub-issues with their labels to the plan issue body. Change label from `to-slice` to `in-progress`. It will be promoted to `to-seal` once all sub-issues are landed.
+Starting from `$ISSUE_BODY_UPDATED`, append the coverage matrix and a listing of all created sub-issues with their labels. Change label from `to-slice` to `in-progress`.
 
 ```sh
-ISSUE_BODY="{plan issue body with pr-branch in frontmatter and coverage matrix appended}"
-```
-
-```sh
-./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-slice --add-label in-progress
+PARENT_ISSUE_BODY_UPDATED="{$ISSUE_BODY_UPDATED with pr-branch in frontmatter and coverage matrix appended}"
+./tracker.sh issue edit "$ISSUE_ID" --body "$PARENT_ISSUE_BODY_UPDATED" --remove-label to-slice --add-label in-progress
 ```
 
 ## 6. Document judgment calls
@@ -155,4 +165,4 @@ PR_ID="—"
 SUMMARY="Slices created with acceptance criteria, dependency graph, and coverage matrix"
 ```
 
-Report these three variables to the caller.
+Report these variables to the caller.

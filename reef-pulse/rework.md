@@ -7,7 +7,7 @@ This skill requires a specific issue: e.g. `#42` or `my-feature/001-auth-endpoin
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
+ISSUE_ID="{issue-id}" # e.g. "#42"
 ```
 
 ## Rules
@@ -44,18 +44,16 @@ Report these variables to the caller and **do not continue**.
 Set the post-fetch variables (after reading the issue body):
 
 ```sh
-ISSUE_TITLE="{from issue title}"
-BASE_BRANCH="{from issue frontmatter base-branch field}"
-PR_BRANCH="{from issue frontmatter pr-branch field}"
-PR_ID="{from issue frontmatter pr-id field}"
+ISSUE_TITLE="{from issue title}" # e.g. "001-auth-endpoint"
+BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
+PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "feat/001-auth-endpoint"
+PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#7"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
 ```
 
 For plan issues, read success criteria from the plan issue body instead of acceptance criteria.
 
-## Process
-
-### 1. Git prep
+## 1. Git prep
 
 Enter a worktree forked from $PR_BRANCH to apply fixes to the existing PR:
 
@@ -80,17 +78,18 @@ SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying
 
 Report these variables to the caller and **do not continue**.
 
-### 2. Read all feedback
+## 2. Read all feedback
 
 Read every review comment on the PR. Read the full conversation — don't just skim.
 
 Also read the gap report from the PR body (`<details><summary>` blocks written by seal or reef-land) if present.
 
 Also re-read:
+
 - The issue's acceptance criteria or plan's success criteria
 - The gap classification from the seal report if present (missing coverage, incomplete implementation, integration gap, planning gap)
 
-### 3. Fix
+## 3. Fix
 
 Address every comment and gap. For each piece of feedback:
 
@@ -102,21 +101,21 @@ Address every comment and gap. For each piece of feedback:
 
 Do NOT skip any feedback item. If a comment is unclear, make your best interpretation and note what you assumed.
 
-### 4. Run the full test suite
+## 4. Run the full test suite
 
 Not a subset. The full project test suite must be green.
 
-### 5. Document judgment calls
+## 5. Document judgment calls
 
 Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
-### 6. Push fixes
+## 6. Push fixes
 
 ```sh
 ./commit.sh --branch "$PR_BRANCH" -m "rework: address review feedback"
 ```
 
-### 7. Update the PR description
+## 7. Update the PR description
 
 Read the current PR body, then append the rework report as a collapsible block. The rework report should include judgment calls, what feedback was addressed, what was changed, and test results.
 
@@ -127,14 +126,14 @@ PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
 ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
 ```
 
-### 8. Label
+## 8. Label
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-rework --add-label to-inspect
 ./tracker.sh pr edit "$PR_ID" --remove-label to-rework --add-label to-inspect
 ```
 
-### 9. Clean up
+## 9. Clean up
 
 ```sh
 ./worktree-exit.sh --path "$WORKTREE_PATH"

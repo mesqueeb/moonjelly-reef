@@ -8,7 +8,7 @@ This skill accepts:
 - nothing: look for items labeled `to-slice`. If multiple, pick the first one. If none, hand off with:
 
   ```sh
-  ISSUE_ID="${ISSUE_ID:-—}"
+  ISSUE_ID="-"
   NEXT_PHASE="—"
   PR_ID="—"
   SUMMARY="No issues labeled to-slice found."
@@ -19,7 +19,7 @@ This skill accepts:
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
+ISSUE_ID="{issue-id or -}" # e.g. "#42"
 ```
 
 ## Rules
@@ -55,17 +55,15 @@ Report these variables to the caller and **do not continue**.
 
 Read the issue. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The frontmatter block tells you the work type, `base-branch`, and `pr-branch`.
 
-Set the post-fetch variables (after reading the issue body):
-
 ```sh
-BASE_BRANCH="{from issue frontmatter base-branch field}"
-PR_BRANCH="{from issue frontmatter pr-branch field}"
-BEARING="{from issue frontmatter bearing field}"
+BASE_BRANCH="{from issue frontmatter base-branch field, or - if not present}" # e.g. "main"
+PR_BRANCH="{from issue frontmatter pr-branch field, or - if not present}"     # e.g. "feat/my-feature"
+BEARING="{from issue frontmatter bearing field, or - if not present}"         # e.g. "feature"
 ```
 
 ### Guard: verify branch frontmatter
 
-Parse the plan frontmatter. If `base-branch` or `pr-branch` is missing, stop immediately:
+RUN ONLY WHEN `"$BASE_BRANCH" = "-"` or `"$PR_BRANCH" = "-"`.
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-slice --add-label blocked-missing-scope --add-label to-scope
@@ -80,16 +78,44 @@ PR_ID="—"
 SUMMARY="Stopped: plan frontmatter is missing base-branch or pr-branch. Re-run /reef-scope to fix."
 ```
 
-Report these three variables to the caller and **do not continue**.
+Report these variables to the caller and **do not continue**.
+
+### Resolve bearing
+
+If `"$BEARING" = "feeling-lucky"`, this is the first phase allowed to deeply interpret the ticket. Infer the real lane (`feature`, `refactor`, `bug`, or `deep-research`) from the issue title, body, and codebase context. Then:
+
+```sh
+BEARING="{inferred lane}"  # e.g. "feature" — replaces "feeling-lucky"
+FEELING_LUCKY="true"
+```
+
+Rewrite the plan issue body frontmatter: replace `bearing: feeling-lucky` with `bearing: $BEARING` and add `feeling-lucky: true` as a separate line.
+
+```sh
+ISSUE_BODY_UPDATED="{issue body with rewritten frontmatter}"
+# e.g.
+# ...original content...
+# bearing: "feature"
+# feeling-lucky: "true"
+# ...original content...
+```
+
+Otherwise:
+
+```sh
+FEELING_LUCKY="false"
+ISSUE_BODY_UPDATED="{issue body unchanged}"
+```
+
+Do not write `$ISSUE_BODY_UPDATED` to the issue yet — the delegatee applies it as part of their own update.
 
 ## 1. Draft vertical slices
 
 Break the plan into slices. Each slice is a thin vertical cut through ALL integration layers end-to-end — not a horizontal slice of one layer.
 
-Use `$BEARING` (already set in step 0) to adjust slice behavior:
+Use `$BEARING` to adjust slice behavior:
 
 - `deep-research` — plan as research-native work
-- `feeling-lucky` — deliberately under-scoped work that must be interpreted here
 - `feature`, `refactor`, `bug` — keep their normal slice behavior
 
 Rules:
@@ -101,14 +127,16 @@ Rules:
 - DO include durable decisions: route paths, schema shapes, data model names.
 - Surface **implicit prerequisites**. If multiple slices depend on a shared dependency (a new table, a utility module, an API client), that dependency is its own slice and the others are blocked by it. (Prevents painpoint D2.)
 - For refactors: slices must respect the tiny-commit discipline. Each slice leaves the codebase compiling and tests green.
-- If the plan bearing is `deep-research`, draft research questions rather than implementation work. Compact research plans can stay as a single research issue. Larger research plans can be split into angle-based or dependency-based research slices. Acceptance criteria should say what must be answered, clarified, or persisted.
-- If the plan bearing is `feeling-lucky`, this is the first phase allowed to deeply interpret the ticket using both the issue and the codebase. Infer the likeliest lane, set `bearing` to that value, and add `feeling-lucky: true` as a separate frontmatter flag. Produce acceptance criteria and dependencies with best-effort judgment without asking the user follow-up questions.
+- If `"$BEARING" = "deep-research"`, draft research questions rather than implementation work. Compact research plans can stay as a single research issue. Larger research plans can be split into angle-based or dependency-based research slices. Acceptance criteria should say what must be answered, clarified, or persisted.
+- If `"$FEELING_LUCKY" = "true"`, produce acceptance criteria and dependencies with best-effort judgment without asking the user follow-up questions.
 
 For small bugs (scope = quick fix in the plan): produce a single slice. The plan's success criteria become the slice's acceptance criteria directly.
 
 ## 2. Delegate
 
-After drafting, check: **did you produce exactly 1 slice?**
+Pass `ISSUE_BODY_UPDATED`, `BEARING`, and `FEELING_LUCKY` through context to the delegatee.
+
+Check: **did you produce exactly 1 slice?**
 
 - **1 slice** — read and execute [slice-one-issue.md](slice-one-issue.md) (no sub-issues: no worktree, no branch creation, label `to-implement`)
 - **2+ slices** — read and execute [slice-subissues.md](slice-subissues.md) (creates sub-issues: worktree, branch, coverage matrix, label `in-progress`)

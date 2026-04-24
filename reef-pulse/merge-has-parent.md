@@ -2,39 +2,42 @@
 
 Has-parent merge flow — delegated from [merge.md](merge.md).
 
-## Input (from router)
+## Input (from context)
 
-The router has already fetched context, set variables, and completed the pre-merge check. This issue has a `parent-issue` in its frontmatter — it is a sub-issue of a multi-slice plan.
-
-Set the variables needed for this path:
+Context already fetched by `merge.md`.
 
 ```sh
-PARENT_ID="{from issue frontmatter parent-issue field}"
-PR_ID="{from issue frontmatter pr-id field}"
+ISSUE_ID="{from context}" # e.g. "#42"
+PARENT_ID="{from context}" # e.g. "#3"
+PR_ID="{from context}" # e.g. "#7"
+BASE_BRANCH="{from context}" # e.g. "feat/my-feature"
+MERGE_STRATEGY="{from context}" # e.g. "squash"
 ```
 
 ## 1. Merge
 
 ```sh
-MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}"
 ./tracker.sh pr merge "$PR_ID" --"$MERGE_STRATEGY" --delete-branch
 ./tracker.sh pr edit "$PR_ID" --remove-label to-merge --add-label landed
 ```
 
 ## 2. Check siblings and plan completion
 
-Read `base-branch` from the current issue's frontmatter. List all open issues:
+List all open issues:
 
 ```sh
-BASE_BRANCH="{from issue frontmatter base-branch field}"
 ./tracker.sh issue list --json number,labels,body
 ```
 
 Filter to issues whose `base-branch` frontmatter matches `$BASE_BRANCH` (these are the siblings — all sub-issues of the same parent issue share the same base-branch, which is the parent's pr-branch).
 
-Check: are ALL such issues labeled `landed`? If all siblings are landed, change the parent issue label from `in-progress` to `to-seal` (step 4). If any are still open, do nothing — more work is in progress.
+Note: no need to read the coverage matrix — the `$BASE_BRANCH` match is sufficient to identify all siblings agnostically.
 
-Note: no need to read the coverage matrix — the `base-branch` match is sufficient to identify all siblings agnostically.
+Determine whether all siblings are labeled `landed`:
+
+```sh
+ALL_SIBLINGS_LANDED="{true if every sibling issue is labeled landed, false otherwise}"
+```
 
 ## 3. Close the issue
 
@@ -45,7 +48,9 @@ Close the current issue and update its labels:
 ./tracker.sh issue close "$ISSUE_ID"
 ```
 
-## 4. Update plan label — if all siblings landed
+## 4. Update plan label
+
+RUN ONLY WHEN `"$ALL_SIBLINGS_LANDED" = "true"`.
 
 ```sh
 ./tracker.sh issue edit "$PARENT_ID" --remove-label in-progress --add-label to-seal
@@ -58,10 +63,18 @@ Document judgment calls made during this phase on the PR. Only document decision
 ## Handoff
 
 ```sh
-ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="to-seal" # or "in-progress" if not all issues labeled 'landed'
-PR_ID="—" # sub-issue merge does not open the parent issue PR
-SUMMARY="{ISSUE_TITLE} merged — {N} of {total} issues complete"
+if [ "$ALL_SIBLINGS_LANDED" = "true" ]; then
+  NEXT_PHASE="to-seal"
+else
+  NEXT_PHASE="in-progress"
+fi
 ```
 
-Report these three variables to the caller.
+```sh
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="$NEXT_PHASE"
+PR_ID="-" # sub-issue merge does not open the parent issue PR
+SUMMARY="{ISSUE_TITLE} merged — {N} of {total} issues complete" # e.g. "my-feature merged — 3 of 4 issues complete"
+```
+
+Report these variables to the caller.

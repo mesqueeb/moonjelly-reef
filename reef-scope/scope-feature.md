@@ -1,8 +1,14 @@
 # Scoping a feature
 
-If the issue doesn't have decisions captured yet, run the interview here before writing the plan:
+## Input (from context)
 
-## Interview (if decisions aren't captured yet)
+```sh
+ISSUE_ID="{from context}" # e.g. "#42"
+```
+
+## 1. Interview
+
+RUN ONLY IF the issue does not have decisions captured yet.
 
 Interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer.
 
@@ -10,13 +16,11 @@ Ask the questions one at a time.
 
 If a question can be answered by exploring the codebase, explore the codebase instead.
 
-## Process
-
-### 1. Explore the repo
+## 2. Explore the repo
 
 Explore the repo to understand the current state of the codebase, if you haven't already.
 
-### 2. Sketch modules
+## 3. Sketch modules
 
 Sketch out the major modules you will need to build or modify. Actively look for opportunities to extract deep modules that can be tested in isolation.
 
@@ -24,7 +28,7 @@ A deep module (as opposed to a shallow module) is one which encapsulates a lot o
 
 Check with the user that these modules match their expectations. Check with the user which modules they want tests written for.
 
-### 3. Write the plan
+## 4. Write the plan
 
 Write the plan using this template:
 

@@ -65,6 +65,19 @@ Use the kebab-case form for canonical domain and frontmatter terms, and the cons
 | **seal**             | Holistic review of an issue whose work was composed through sub-issues on its `pr-branch`                                  | final review, sign-off                     |
 | **land**             | The diver reviews the finished work and merges to the base branch                                                          | finalise, approve, ship                    |
 
+## File types
+
+| Term | Definition | Aliases to avoid |
+| ---- | ---------- | ---------------- |
+| **phase file** | A top-level instruction file executed by the reef for one phase of the lifecycle, e.g. `merge.md`, `slice.md`, `reef-scope/SKILL.md` | skill file (when referring to a phase), step file |
+| **same-phase subfile** | An instruction file delegated to inline (in the same session) from a phase file. It omits `## Rules`, uses `## Input (from context)`, and all its input variables are resolved by the calling phase file. | sub-skill, child phase, router target |
+
+Same-phase subfiles by phase:
+
+- **merge** → `merge-has-parent.md`, `merge-no-parent.md`
+- **slice** → `slice-one-issue.md`, `slice-subissues.md`
+- **scope** → `scope-feature.md`, `scope-refactor.md`, `scope-deep-research.md`, `triage-issue.md`
+
 ## Labels
 
 | Term            | Definition                                                                                                                                    | Aliases to avoid                  |

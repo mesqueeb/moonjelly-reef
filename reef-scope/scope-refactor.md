@@ -1,36 +1,36 @@
 # Scoping a refactor
 
-## Process
+## Input (from context)
 
-### 1. Capture the problem
+## 1. Capture the problem
 
 Ask the user for a long, detailed description of the problem they want to solve and any potential ideas for solutions.
 
-### 2. Explore the repo
+## 2. Explore the repo
 
 Explore the repo to verify their assertions and understand the current state of the codebase.
 
-### 3. Consider alternatives
+## 3. Consider alternatives
 
 Ask whether they have considered other options, and present other options to them.
 
-### 4. Interview the implementation
+## 4. Interview the implementation
 
 Interview the user about the implementation. Be extremely detailed and thorough.
 
-### 5. Hammer out scope
+## 5. Hammer out scope
 
 Hammer out the exact scope of the implementation. Work out what you plan to change and what you plan NOT to change.
 
-### 6. Assess test coverage
+## 6. Assess test coverage
 
 Look in the codebase to check for test coverage of this area. If there is insufficient test coverage, ask the user what their plans for testing are.
 
-### 7. Design the commit plan
+## 7. Design the commit plan
 
 Break the implementation into a plan of tiny commits. Remember Martin Fowler's advice to "make each refactoring step as small as possible, so that you can always see the program working."
 
-### 8. Write the plan
+## 8. Write the plan
 
 Write the plan using this template:
 

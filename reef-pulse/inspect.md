@@ -7,7 +7,7 @@ This skill requires a specific issue: e.g. `#42` or `my-feature/001-auth-endpoin
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
+ISSUE_ID="{issue-id}" # e.g. "#42"
 ```
 
 ## Rules
@@ -44,10 +44,10 @@ Report these variables to the caller and **do not continue**.
 Set the post-fetch variables (after reading the issue body):
 
 ```sh
-ISSUE_TITLE="{from issue title}"
-BASE_BRANCH="{from issue frontmatter base-branch field}"
-PR_BRANCH="{from issue frontmatter pr-branch field}"
-FEELING_LUCKY="{true if issue frontmatter has feeling-lucky: true, otherwise false}"
+ISSUE_TITLE="{from issue title}" # e.g. "auth-endpoint"
+BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
+PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "my-feature/001-auth-endpoint"
+FEELING_LUCKY="{from issue frontmatter feeling-lucky field, or - if not present}" # e.g. "true"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-inspect"
 ```
 
@@ -70,9 +70,7 @@ What you do:
 
 You do NOT need to evaluate product direction, user stories, or the problem statement in great detail.
 
-## Process
-
-### 1. Pull and verify
+## 1. Pull and verify
 
 Enter a worktree forked from $PR_BRANCH to review the implementation without disturbing the main checkout:
 
@@ -99,7 +97,7 @@ Report these variables to the caller and **do not continue**.
 
 Run the full project test suite. Record the result.
 
-### 2. Check each acceptance criterion
+## 2. Check each acceptance criterion
 
 For each acceptance criterion on the issue:
 
@@ -109,9 +107,9 @@ For each acceptance criterion on the issue:
 - If the test exists but uses mocks where integration tests are expected, flag it. (Prevents painpoint C3.)
 - For deep-research, inspect the committed research artifact mechanically rather than treating it like code.
 - Check that the writing is clear, coherent, not overly drawn out, and actually answers the promised angle or question.
-- If `$FEELING_LUCKY = "true"`, do not get fussy about fuzzy acceptance criteria — apply the same code-level checks (trace the path, check tests) but judge quality holistically: clarity, simplicity, and obvious polish opportunities.
+- If `"$FEELING_LUCKY" = "true"`, do not get fussy about fuzzy acceptance criteria — apply the same code-level checks (trace the path, check tests) but judge quality holistically: clarity, simplicity, and obvious polish opportunities.
 
-### 3. Review the report
+## 3. Review the report
 
 Read the PR description's "Ambiguous choices" section. For each choice:
 
@@ -119,7 +117,7 @@ Read the PR description's "Ambiguous choices" section. For each choice:
 - Does it drift from the success criteria? If so, is the drift acceptable?
 - Would the human want to know about this before merging?
 
-### 4. Trivial cleanups
+## 4. Trivial cleanups
 
 Do these yourself — commit and push to the `pr-branch`:
 
@@ -133,11 +131,11 @@ Do these yourself — commit and push to the `pr-branch`:
 ./commit.sh --branch "$PR_BRANCH" -m "inspect: cleanup"
 ```
 
-### 5. Document judgment calls
+## 5. Document judgment calls
 
 Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
-### 6. Update the PR
+## 6. Update the PR
 
 Set the PR number from the issue body. If not found there, try `./tracker.sh pr list --search`. If PR_ID is nowhere to be found:
 
@@ -159,14 +157,14 @@ Report these variables to the caller and **do not continue**.
 Read the current PR body, then append the inspect report as a collapsible block:
 
 ```sh
-PR_ID="{from issue frontmatter pr-id field}" # if not found, try ./tracker.sh pr list --search
+PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#42"
 PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
 REPORT="{inspect-report}" # <details><summary><h3>🧿 Inspect review — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
 PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
 ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
 ```
 
-### 7. Verdict
+## 7. Verdict
 
 **If all acceptance criteria are met and the suite is green:**
 

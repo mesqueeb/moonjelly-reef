@@ -2,7 +2,9 @@
 
 Use this route when the main task is to investigate, compare, or answer a question rather than jump straight into implementation.
 
-## Interview
+## Input (from context)
+
+## 1. Interview
 
 Grill the user until the research target is sharp enough for downstream phases to execute without guessing.
 
@@ -16,16 +18,14 @@ You must explicitly capture:
 
 If the issue already contains strong answers, confirm them briefly instead of re-asking verbatim.
 
-## Process
-
-### 1. Clarify the research target
+## 2. Clarify the research target
 
 Figure out the core question, what uncertainty needs to be reduced, and what would count as a useful outcome.
 
-### 2. Define the research artifact
+## 3. Define the research artifact
 
 Plan for a durable Markdown deliverable in the repo. If external research will be needed, plan to keep lightweight `Sources:` links near the related findings.
 
-### 3. Write the plan
+## 4. Write the plan
 
 Write the scoped issue so the success criteria describe what must be answered, clarified, or persisted, not what code must be written.

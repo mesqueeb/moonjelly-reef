@@ -9,7 +9,7 @@ The issue title includes a `[await: ...]` suffix encoding its blockers: e.g. `"a
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
+ISSUE_ID="{issue-id or -}" # e.g. "#42"
 ```
 
 ## Rules
@@ -46,9 +46,9 @@ Report these variables to the caller and **do not continue**.
 Set the post-fetch variables (after reading the issue body):
 
 ```sh
-ISSUE_TITLE="{from issue title, stripping [await: ...] suffix}"
-BASE_BRANCH="{from issue frontmatter base-branch field}"
-BEARING="{from issue frontmatter bearing field}"
+ISSUE_TITLE="{from issue title, stripping [await: ...] suffix}" # e.g. "auth token storage"
+BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
+BEARING="{from issue frontmatter bearing field}" # e.g. "deep-research"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-await-waves"
 ```
 
@@ -81,11 +81,15 @@ Report these variables to the caller and **do not continue**.
 
 ## 2. Promote
 
-Strip the `[await: ...]` suffix from the title and flip the label. If the bearing is `deep-research`, promote into label `to-research`; otherwise promote into label `to-implement`:
+Strip the `[await: ...]` suffix from the title and flip the label. If `"$BEARING" = "deep-research"`, promote into label `to-research`; otherwise promote into label `to-implement`:
 
 ```sh
-ISSUE_TITLE="{stripped title without [await: ...] suffix}"
-NEXT_LABEL="{to-research for deep-research, otherwise to-implement}"
+ISSUE_TITLE="{stripped title without [await: ...] suffix}" # e.g. "auth token storage"
+if [ "$BEARING" = "deep-research" ]; then
+  NEXT_LABEL="to-research"
+else
+  NEXT_LABEL="to-implement"
+fi
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-await-waves --add-label "$NEXT_LABEL" --title "$ISSUE_TITLE"
 ```
 

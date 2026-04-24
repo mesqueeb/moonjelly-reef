@@ -7,7 +7,7 @@ This skill requires a specific issue: e.g. `#42` or `my-feature/001-auth-endpoin
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
+ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. "#42"
 ```
 
 ## Rules
@@ -51,9 +51,9 @@ Read the issue. It must contain:
 Set the post-fetch variables (after reading the issue body):
 
 ```sh
-ISSUE_TITLE="{from issue title}"
-BASE_BRANCH="{from issue frontmatter base-branch field}"
-PR_BRANCH="{from issue frontmatter pr-branch field}"
+ISSUE_TITLE="{from issue title}" # e.g. "add auth endpoint"
+BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
+PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "my-feature/001-auth-endpoint"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-implement"
 ```
 
@@ -61,10 +61,10 @@ WORKTREE_PATH=".worktrees/$ISSUE_TITLE-implement"
 
 This is non-negotiable. Every step must pass before writing any code.
 
-Enter a worktree forked from $BASE_BRANCH so you start from a clean integration point:
+Enter a worktree forked from `$BASE_BRANCH` so you start from a clean integration point:
 
 ```sh
-WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH") # e.g. "ready"
 ```
 
 Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$BASE_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
@@ -108,7 +108,7 @@ Report these variables to the caller and **do not continue**.
 
 ## 2. Read context
 
-Before writing any code, read and understand:
+Read and understand:
 
 - **This issue's acceptance criteria** — this is your checklist. Every criterion must be addressed.
 - **The plan + success criteria** — understand the "why" behind this issue.
@@ -156,8 +156,8 @@ The PR body must start with the "closes" reference, followed by the implementati
 Document judgment calls in that implementation report. Only include decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
 ```sh
-CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. #42
-REPORT="{implementation report}"
+CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. "closes #42 add auth endpoint"
+REPORT="{implementation report}" # e.g. "## Ambiguous choices\n\nNone — implementation followed the plan exactly.\n\n## Test results\n\n42 tests passed, 0 failed."
 PR_BODY_NEW="$CLOSES\n\n$REPORT"
 ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
 ```
@@ -169,8 +169,8 @@ The PR targets `$BASE_BRANCH` — the branch it merges into.
 Persist the PR metadata for the newly created PR on the issue body so downstream phases (inspect, rework, merge) can find it.
 
 ```sh
-PR_ID="{from pr create output}" # e.g. #43
-ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
+PR_ID="{from pr create output}" # e.g. "#43"
+ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}" # e.g. "---\npr-branch: my-feature/001\npr-id: #43\n---\n..."
 # add to frontmatter (if not already): pr-branch: $PR_BRANCH
 # add to frontmatter:  pr-id: $PR_ID
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED" --remove-label to-implement --add-label to-inspect

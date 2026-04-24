@@ -61,8 +61,8 @@ Dispatch a sub-agent per issue in parallel. When sub-agent teams are supported i
 Per sub-agent define `FILENAME` and `ISSUE_ID` to pass as its input:
 
 ```sh
-ISSUE_ID="{from the fetched issue}" # e.g. #42
-FILENAME="{based on the label as per the example below}" # e.g. implement.md
+ISSUE_ID="{from the fetched issue}" # e.g. "#42"
+FILENAME="{based on the label as per the example below}" # e.g. "implement.md"
 # e.g.
 # FILENAME="slice.md" (if label `to-slice`)
 # FILENAME="implement.md" (if label `to-implement`)
@@ -94,7 +94,7 @@ Dispatch a sub-agent per issue in parallel.
 Per `to-await-waves` issue, first parse the `[await: ...]` suffix from its title to find blocker IDs, then check each blocker's label:
 
 ```sh
-DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. #42
+DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. "#42"
 ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
 ```
 
@@ -107,8 +107,8 @@ DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. #42
 Per sub-agent define `$FILENAME` and `$ISSUE_ID` to pass as its input:
 
 ```sh
-ISSUE_ID="{from the fetched issue}" # e.g. #42
-FILENAME="{based on the label as per the example below}" # e.g. merge.md
+ISSUE_ID="{from the fetched issue}" # e.g. "#42"
+FILENAME="{based on the label as per the example below}" # e.g. "merge.md"
 # e.g.
 # FILENAME="await-waves.md" (if label `to-await-waves` and eligible after dependency gate)
 # FILENAME="merge.md" (if label `to-merge`)
@@ -133,9 +133,9 @@ Immediately after dispatching, print each dispatched sub-agent with its phase em
 For each dispatched issue, capture the display values used for both the dispatch line and the later return-result line:
 
 ```sh
-ISSUE_ID="{from dispatched issue}" # e.g. #42
+ISSUE_ID="{from dispatched issue}" # e.g. "#42"
 ISSUE_TITLE="{from dispatched issue title}" # e.g. "auth token rotation"
-ISSUE_PHASE="{label that dispatched this issue, without the to- prefix}" # e.g. implement
+ISSUE_PHASE="{label that dispatched this issue, without the to- prefix}" # e.g. "implement"
 ISSUE_PHASE_EMOJI="{phase emoji for ISSUE_PHASE}"
 # e.g.
 # ISSUE_PHASE_EMOJI="𐃆🐋" (if label `to-slice`)
@@ -176,13 +176,13 @@ RUN ONLY WHEN `"$AGENT_COUNT_PULSE" -gt 0`.
 Collect one execution record per returned sub-agent. Each record is keyed by the returned `ISSUE_ID` and is used for the return-result output and the metrics pageant.
 
 ```sh
-ISSUE_ID="{from handoff ISSUE_ID}" # e.g. #42
-NEXT_PHASE="{from handoff NEXT_PHASE}" # e.g. to-inspect
-PR_ID="{from handoff PR_ID}" # if returned; otherwise "—"
+ISSUE_ID="{from handoff ISSUE_ID}" # e.g. "#42"
+NEXT_PHASE="{from handoff NEXT_PHASE}" # e.g. "to-inspect"
+PR_ID="{from handoff PR_ID}" # e.g. "#72"; "—" if not returned
 SUMMARY="{from handoff SUMMARY}" # e.g. "PR created"
-SUBAGENT_DURATION="{duration of sub-agent total execution}" # if known; otherwise "—"
-SUBAGENT_TOKENS="{total token count used by the sub-agent}" # e.g. 18k; if unknown: "—"
-SUBAGENT_TOOL_USES="{tool use count for the sub-agent}" # e.g. 24; if unknown: "—"
+SUBAGENT_DURATION="{duration of sub-agent total execution}" # e.g. "3m12s"; "—" if unknown
+SUBAGENT_TOKENS="{total token count used by the sub-agent}" # e.g. "18k"; "—" if unknown
+SUBAGENT_TOOL_USES="{tool use count for the sub-agent}" # e.g. 24; "—" if unknown
 RESULT_ROW="$ISSUE_PHASE_EMOJI  $ISSUE_ID   $SUBAGENT_DURATION   $SUBAGENT_TOKENS   $ISSUE_PHASE › $NEXT_PHASE"
 ```
 
@@ -230,7 +230,7 @@ The metric-logger sub-agent returns aggregate write results for this pulse:
 ```sh
 SUCCESS_COUNT="{from metrics logger handoff}" # e.g. 2
 FAIL_COUNT="{from metrics logger handoff}" # e.g. 0
-FAIL_IDS="{from metrics logger handoff}" # e.g. #25, #89
+FAIL_IDS="{from metrics logger handoff}" # e.g. "#25, #89"
 METRICS_RESULT_ROW="🪼 ~~ METRICS ⟦ $SUCCESS_COUNT written ⟧ ⟦ $FAIL_COUNT failed · ids: ${FAIL_IDS:-—} ⟧"
 ```
 

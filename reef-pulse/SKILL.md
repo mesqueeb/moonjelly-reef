@@ -41,7 +41,7 @@ If `$ONLY_ISSUE_ID` is a specific ID, fetch that issue. The pulse-loop will proc
 ## 1. Session setup
 
 ```sh
-TRACKER_BRANCH="{from config.md}" # e.g. main
+TRACKER_BRANCH="{from config.md}" # e.g. "main"
 LOCK_FILE=".agents/moonjelly-reef/pulse.lock"
 ```
 
@@ -102,14 +102,14 @@ RUN ONLY WHEN `"$IS_SESSION_COMPLETE" = "true"`.
 
 ### Print SESSION COMPLETE
 
-First compute the final session duration from the session start timestamp:
+Compute the final session duration from the session start timestamp:
 
 ```sh
 SESSION_DURATION_SECS="$(( $(date +%s) - SESSION_START_TS ))"
 SESSION_DURATION="{format SESSION_DURATION_SECS as XmYYs or HhMMmSSs}" # e.g. 17m00s
 ```
 
-Then print the SESSION COMPLETE box with session stats:
+Print the SESSION COMPLETE box with session stats:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -132,7 +132,7 @@ Then print the SESSION COMPLETE box with session stats:
 
 RUN ONLY WHEN `"$AGENT_COUNT_SESSION" -gt 0`.
 
-Prep the lore-writer sub-agent input:
+prep:
 
 ```sh
 SENTENCE_BALLPARK="$((PULSE_NR * 2))"
@@ -149,10 +149,10 @@ SENTENCE_BALLPARK="$SENTENCE_BALLPARK"
 The lore-writer sub-agent returns:
 
 ```sh
-CHAPTER="{lore prose returned by the storytelling sub-agent}"
+CHAPTER="{lore prose returned by the storytelling sub-agent}" # e.g. "The tide shifted as three issues moved from implement to inspect..."
 ```
 
-After the sub-agent returns, print the chapter:
+Print the chapter:
 
 ```
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

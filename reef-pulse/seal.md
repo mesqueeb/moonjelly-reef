@@ -7,7 +7,7 @@ This skill requires a specific issue: e.g. `#42` or `my-feature`.
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
+ISSUE_ID="{issue-id}" # e.g. "#42"
 ```
 
 ## Rules
@@ -48,13 +48,12 @@ Read the plan. It must have:
 - `pr-branch` in frontmatter
 - Slice PRs with "Ambiguous choices" sections
 
-Set the post-fetch variables (after reading the plan issue body):
-
 ```sh
-ISSUE_TITLE="{from issue title}"
-BASE_BRANCH="{from issue frontmatter base-branch field}"
-PR_BRANCH="{from issue frontmatter pr-branch field}"
-FEELING_LUCKY="{true if issue frontmatter has feeling-lucky: true, otherwise false}"
+ISSUE_TITLE="{from issue title}" # e.g. "My feature title"
+BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
+PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "feat/my-feature"
+BEARING="{from issue frontmatter bearing field, or - if not present}" # e.g. "deep-research"
+FEELING_LUCKY="{from issue frontmatter feeling-lucky field, or - if not present}" # e.g. "true"
 WORKTREE_PATH=".worktrees/$ISSUE_ID-seal"
 ```
 
@@ -72,9 +71,7 @@ You are not re-inspecting code. You are:
 
 Think like a CTO doing a final walkthrough before shipping. Product-focused, big-picture, judgment-oriented.
 
-## Process
-
-### 1. Get on the `pr-branch`
+## 1. Get on the `pr-branch`
 
 Enter a worktree forked from $PR_BRANCH:
 
@@ -101,11 +98,11 @@ Report these variables to the caller and **do not continue**.
 
 Verify you have the latest — all slice PRs should be merged into this `pr-branch`.
 
-### 2. Run the full test suite
+## 2. Run the full test suite
 
 Not negotiable. Record the result.
 
-### 3. Check every success criterion holistically
+## 3. Check every success criterion holistically
 
 For each success criterion in the plan:
 
@@ -114,16 +111,18 @@ For each success criterion in the plan:
 - Cross-reference the coverage matrix: which issues were supposed to cover this criterion? Did they actually cover it when composed together?
 
 If `"$BEARING" = "deep-research"`:
+
 - Review the written research holistically against the end goal, not just the slice acceptance criteria.
 - Check whether the full research answer is coherent, complete enough for the promised question, and sensible as a whole.
 
-Otherwise:
+If `"$BEARING" != "deep-research"`:
+
 - Apply the normal mechanical quality bar.
-- If `$FEELING_LUCKY = "true"`, apply slightly softer strictness — ask whether the outcome makes good sense for the exploratory ticket the human tossed into the reef.
+- If `"$FEELING_LUCKY" = "true"`, apply slightly softer strictness — ask whether the outcome makes good sense for the exploratory ticket the human tossed into the reef.
 
 Mark each criterion: ✓ met, ✗ not met (with explanation).
 
-### 4. Review all agent decisions
+## 4. Review all agent decisions
 
 Read the "Ambiguous choices" section from each slice's merged PR. For each decision:
 
@@ -131,7 +130,7 @@ Read the "Ambiguous choices" section from each slice's merged PR. For each decis
 - Did it introduce drift from the original success criteria or decision record?
 - Would the human want to know about this?
 
-### 5. Check for integration issues
+## 5. Check for integration issues
 
 Look for problems that only appear when slices are composed:
 
@@ -141,7 +140,7 @@ Look for problems that only appear when slices are composed:
 - Are there any test gaps at the integration boundaries? (Prevents painpoint C3 — mocked-away bugs.)
 - **Terminology inconsistencies**: did different slices use different words for the same concept? If terminology drifted across slices, run the `ubiquitous-language` skill against the `pr-branch` to flag ambiguities and include findings in the report.
 
-### 6. Tighten the plan and classify findings
+## 6. Tighten the plan and classify findings
 
 Use your findings from steps 3-5 to tighten the plan before deciding PASS vs GAPS:
 
@@ -161,7 +160,7 @@ ISSUE_BODY="{plan issue body with updated success criteria}"
 
 If any gaps need decisions beyond what success criteria cover (e.g. the plan itself is ambiguous about a design direction), treat that as a **human decision needed** case. Do NOT send it back to `to-scope`. Keep it moving to `to-land`, make the warning explicit in the seal report, and call out exactly which decision needs human judgment before more automated work should happen.
 
-### 7. Documentation
+## 7. Documentation
 
 When you find non-obvious behavior worth documenting during your holistic review:
 
@@ -175,7 +174,7 @@ When you find non-obvious behavior worth documenting during your holistic review
 
 Don't document what's obvious from reading the code.
 
-### 8. Produce the report
+## 8. Produce the report
 
 The report goes on a **PR from the `pr-branch` to the `base-branch`** (usually `main` for issues with no parent issue). This PR is what the human will ultimately merge or reject.
 
@@ -209,7 +208,7 @@ The report should be concise and focused on what the human needs to know. Do NOT
 {If the app is launchable and the feature is visible, include screenshots or a screen recording demonstrating the end-to-end behavior. Omit if not applicable.}
 ```
 
-#### Submit the report
+### Submit the report
 
 Format the report as a collapsible block with local timestamp (`yyyy/MM/dd HH:mm`):
 
@@ -220,7 +219,7 @@ REPORT="{seal-report}" # <details><summary><h3>🦭 Seal report — {yyyy/MM/dd 
 **If PR exists, append:**
 
 ```sh
-PR_ID="{from pr create output or existing PR}"
+PR_ID="{from pr create output or existing PR}" # e.g. "#43"
 PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
 PR_BODY="$PR_BODY\n\n$REPORT"
 ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY"
@@ -229,17 +228,17 @@ PR_BODY="$PR_BODY\n\n$REPORT"
 **If no PR exists, create and update the plan issue body as well:**
 
 ```sh
-CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. #42
+CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. "closes #42 My feature title"
 PR_BODY_NEW="$CLOSES\n\n$REPORT"
 ./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-seal
 # Persist the PR metadata on the plan issue so downstream human review can always find it:
-PR_ID="{from pr create output or existing PR}"
+PR_ID="{from pr create output or existing PR}" # e.g. "#43"
 ISSUE_BODY="{original issue body with added frontmatter values}"
 # add to frontmatter: pr-id: $PR_ID
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
 ```
 
-### 9. Label
+## 9. Label
 
 **If all criteria met (PASS):**
 

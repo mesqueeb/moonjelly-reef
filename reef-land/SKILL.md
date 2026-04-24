@@ -9,16 +9,20 @@ description: Present the final report to the human for review. Human approves (m
 
 Run the `reef-land` skill with either a plan issue or a PR, for example `reef-land #42` or `reef-land my-feature`.
 
-Determine which you received — a plan issue ID or a PR number/URL. Set whichever is known:
+Set whichever identifier was provided; use `"-"` for the one not provided:
 
 ```sh
-ISSUE_ID="{issue-id}" # if passed directly or extracted from passed URL
-PR_ID="{pr-id}" # if passed directly or extracted from passed URL
+ISSUE_ID="{issue-id or -}" # e.g. "#42"
+PR_ID="{pr-id or -}"       # e.g. "#43"
 ```
 
 ## Rules
 
 Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type, merge strategy, and any installed optional skills.
+
+```sh
+MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}" # e.g. "squash"
+```
 
 **Shell blocks are literal commands** — execute them as written.
 
@@ -30,24 +34,25 @@ Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker ty
 
 ## 0. Fetch context
 
-Use whichever identifier you have to look up the other:
-
-- If you have `ISSUE_ID`: read the plan body to find the PR number.
-  ```sh
-  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels # if ISSUE_ID known
-  ```
-- If you have `PR_ID`: read the PR to find the plan issue reference.
-  ```sh
-  ./tracker.sh pr view "$PR_ID" --json number,body,headRefName,baseRefName,comments,reviews # if PR_ID known
-  ```
-
-Now set all variables:
+If `$ISSUE_ID` is a specific ID, read the plan body to find the PR number:
 
 ```sh
-ISSUE_ID="{from PR body or already known}"
-PR_ID="{from plan issue body or already known}"
-BASE_BRANCH="{from plan issue body}"
-PR_BODY="{the PR body content — this contains the seal report}"
+./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+```
+
+If `$PR_ID` is a specific ID, read the PR to find the plan issue reference:
+
+```sh
+./tracker.sh pr view "$PR_ID" --json number,body,headRefName,baseRefName,comments,reviews
+```
+
+Set all variables from the fetched data:
+
+```sh
+ISSUE_ID="{from PR body or already known}"  # e.g. "#42"
+PR_ID="{from plan issue body or already known}"  # e.g. "#43"
+BASE_BRANCH="{from plan issue body}"  # e.g. "main"
+PR_BODY="{the PR body content — this contains the seal report}"  # e.g. "closes #42 ...\n\n## Test results\n..."
 ```
 
 Fetch PR review threads and filter to only active (unresolved + current) comments:
@@ -126,7 +131,7 @@ Then say: "Take your time reviewing. Leave any comments on the PR, then let me k
 
 ## 3. Scope change requests
 
-This section activates when there are active PR comments, the human raised concerns during the report discussion, or the human explicitly requests changes.
+RUN ONLY WHEN there are active PR comments, the human raised concerns during steps 1–2, or the human explicitly requests changes.
 
 Collect all feedback from:
 
@@ -206,7 +211,7 @@ Tell the human:
 Create a new issue with the PR comments and concerns, labeled `to-scope`:
 
 ```sh
-FOLLOW_UP_CONTEXT="{summary of PR comments and concerns from step 2}"
+FOLLOW_UP_CONTEXT="{summary of PR comments and concerns from step 2}"  # e.g. "Reviewer noted the auth middleware doesn't handle expired tokens..."
 ```
 
 ```sh
@@ -226,10 +231,6 @@ Check merge status first:
 If the PR cannot be merged (conflicts, failing checks, branch protection), tell the human what's blocking and exit. Do not force-merge.
 
 Merge the PR using the strategy from config:
-
-```sh
-MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}"
-```
 
 ```sh
 ./tracker.sh pr merge "$PR_ID" --"$MERGE_STRATEGY" --delete-branch

@@ -37,28 +37,26 @@ Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker ty
 
 **AFK skill**: this skill runs without human interaction. If one record fails validation or a write, report it and continue with the remaining records.
 
-## Process
+## 0. Read issue and PR bodies
 
 Handle each record in `$PHASE_METRIC_RECORDS` independently. A failure for one record must not block the rest.
 
-### Read issue body and / or PR body
-
 For each record:
 
-- If `NEXT_PHASE` is not `to-land`, read the issue body only.
-- If `NEXT_PHASE` is `to-land`, read the issue body first, then read the PR body.
+- If `"$NEXT_PHASE" != "to-land"`, read the issue body only.
+- If `"$NEXT_PHASE" = "to-land"`, read the issue body first, then read the PR body.
 
 ```sh
-# Always execute:
 ISSUE_BODY="$(./tracker.sh issue view "$ISSUE_ID" --json body -q .body)"
-# Only if `NEXT_PHASE == "to-land"`:
-PR_BODY="$(./tracker.sh pr view "$PR_ID" --json body -q .body)"
+if [ "$NEXT_PHASE" = "to-land" ]; then
+  PR_BODY="$(./tracker.sh pr view "$PR_ID" --json body -q .body)"
+fi
 ```
 
 Search the issue body for the full `### 🪼 Pulse metrics` section until `<!-- end metrics table -->`. Work with that section as one variable:
 
 ```sh
-METRICS_TABLE="{md table found in ISSUE_BODY}"
+METRICS_TABLE="{md table found in ISSUE_BODY}" # e.g. "### 🪼 Pulse metrics\n\n| Phase | ... |\n<!-- end metrics table -->"
 ```
 
 If the issue body has no metrics table yet, create one before inserting the current row:
@@ -71,7 +69,7 @@ METRICS_TABLE="### 🪼 Pulse metrics
 <!-- end metrics table -->"
 ```
 
-### Build the metrics row
+## 1. Build the metrics row
 
 For every record, compute the row values:
 
@@ -92,9 +90,13 @@ Insert the new row immediately above `<!-- end metrics table -->`. Do not leave 
 METRICS_TABLE_UPDATED="{current METRICS_TABLE with $METRIC_ROW inserted immediately above <!-- end metrics table -->}"
 ```
 
-### If `NEXT_PHASE != "to-land"`
+## 2. Write metrics
 
-If `NEXT_PHASE` is not `to-land`, only write to the issue body:
+### Write to issue only
+
+RUN ONLY WHEN `"$NEXT_PHASE" != "to-land"`.
+
+Write the updated metrics to the issue body only:
 
 ```sh
 ISSUE_BODY_UPDATED="{current issue body with METRICS_TABLE_UPDATED written back in place}"
@@ -119,9 +121,11 @@ If the issue write succeeds, count the record as success:
 SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
 ```
 
-### If `NEXT_PHASE == "to-land"`
+### Move metrics to PR
 
-If `NEXT_PHASE` is `to-land`, metrics move from the issue body to the PR body. This is a cut-and-paste flow, not copy-and-merge.
+RUN ONLY WHEN `"$NEXT_PHASE" = "to-land"`.
+
+Metrics move from the issue body to the PR body. This is a cut-and-paste flow, not copy-and-merge.
 
 Extract the full metrics table from the issue body, add the current seal row, then append a bold `Total` row:
 

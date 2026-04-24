@@ -2,9 +2,14 @@
 
 No-parent merge path — delegated from [merge.md](merge.md).
 
-## Input (from router)
+## Input (from context)
 
-The router has already fetched context, set variables, and completed the pre-merge check. The PR targets the base branch. The human will merge it during the `reef-land` skill — do NOT merge it here.
+Context already fetched by `merge.md`. The PR targets the base branch directly — do NOT merge it here. The human merges during the `reef-land` skill.
+
+```sh
+ISSUE_ID="{from context}" # e.g. "#42"
+PR_ID="{from context}" # e.g. "#7"
+```
 
 ## 1. Label to-seal
 
@@ -15,13 +20,13 @@ Remove `to-merge`, add `to-seal`:
 ./tracker.sh pr edit "$PR_ID" --remove-label to-merge --add-label to-seal
 ```
 
-## Handoff
+## 2. Handoff
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="to-seal"
-PR_ID="$PR_ID" # inherited from router context
+PR_ID="$PR_ID"
 SUMMARY="No parent — forwarding to seal for holistic review"
 ```
 
-Report these three variables to the caller.
+Report these variables to the caller.

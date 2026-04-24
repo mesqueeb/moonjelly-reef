@@ -2,15 +2,17 @@
 
 Investigate a reported problem, find its root cause, and write a plan with a TDD fix approach. This is a mostly hands-off workflow — minimize questions to the user.
 
-## Process
+## Input (from context)
 
-### 1. Capture the problem
+```sh
+ISSUE_ID="{from context}" # e.g. "#42"
+```
+
+## 1. Capture the problem
 
 Get a brief description of the issue from the user. If they haven't provided one, ask ONE question: "What's the problem you're seeing?"
 
-Do NOT ask follow-up questions yet. Start investigating immediately.
-
-### 2. Explore and diagnose
+## 2. Explore and diagnose
 
 Deeply investigate the codebase. If your environment supports explorer-style sub-agents, use one; otherwise do the exploration yourself. Your goal is to find:
 
@@ -26,7 +28,7 @@ Look at:
 - Error handling in the code path
 - Similar patterns elsewhere in the codebase that work correctly
 
-### 3. Identify the fix approach
+## 3. Identify the fix approach
 
 Based on your investigation, determine:
 
@@ -35,21 +37,22 @@ Based on your investigation, determine:
 - What behaviors need to be verified via tests
 - Whether this is a regression, missing feature, or design flaw
 
-### 4. Design TDD fix plan
+## 4. Design TDD fix plan
 
 Create a concrete, ordered list of RED-GREEN cycles. Each cycle is one vertical slice:
 
 - **RED**: Describe a specific test that captures the broken/missing behavior
 - **GREEN**: Describe the minimal code change to make that test pass
 
-Rules:
+### Rules
+
 - Tests verify behavior through public interfaces, not implementation details
 - One test at a time, vertical slices (NOT all tests first, then all code)
 - Each test should survive internal refactors
 - Include a final refactor step if needed
 - **Durability**: Only suggest fixes that would survive radical codebase changes. Describe behaviors and contracts, not internal structure. Tests assert on observable outcomes (API responses, UI state, user-visible effects), not internal state. A good suggestion reads like a spec; a bad one reads like a diff.
 
-### 5. Write the plan
+## 5. Write the plan
 
 Write the plan using this template:
 

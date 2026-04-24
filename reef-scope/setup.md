@@ -2,15 +2,13 @@
 
 You are setting up Moonjelly Reef for this project. This only runs once — when `.agents/moonjelly-reef/config.md` does not exist.
 
-Start by printing the banner. Do NOT try to reproduce the art manually — use `cat`:
+Print the banner. Do NOT try to reproduce the art manually — use `cat`:
 
 ```sh
 printf '\033[36m'; cat "$SKILL_DIR/banner.txt"; printf '\033[0m'
 ```
 
-## Steps
-
-### 0. Check for git
+## 0. Check for git
 
 Worktrees and branches (used by the reef's implement/inspect/merge cycle) require git. Check whether the current project has a git repository:
 
@@ -18,8 +16,7 @@ Worktrees and branches (used by the reef's implement/inspect/merge cycle) requir
 git rev-parse --git-dir 2>/dev/null
 ```
 
-- **If git is present** (command succeeds): skip this step and continue to step 1.
-- **If git is missing** (command fails): offer to initialize one. Present this message to the user:
+If git is present (command succeeds), continue to step 1. If git is missing (command fails), offer to initialize one. Present this message to the user:
 
 > "This project doesn't seem to use git. So I'll treat `{dir}` as the project root folder and init a `.git` folder, is that OK? (It's so the reef can better organise its efforts when multiple tasks are worked on at once)."
 
@@ -33,7 +30,7 @@ git init
 
 If the user declines, warn them that the reef cannot function without git and stop setup.
 
-### 1. Detect issue tracker
+## 1. Detect issue tracker
 
 Look for clues in the repo:
 
@@ -84,7 +81,7 @@ If the user chose local, ask:
 3. Ask which branch to commit tracker updates to. Suggest `main`: "Which branch should tracker updates be committed to? (suggest: `main`)"
 4. Set tracker type to `local-tracker-committed`.
 
-### 2. Check for optional skills
+## 2. Check for optional skills
 
 Check which skills are installed:
 
@@ -112,7 +109,7 @@ For each skill not found, tell the user it's optional and reef has a fallback:
 >
 > "Run the install commands above if you want them, or skip — the reef works fine without them."
 
-### 3. Merge strategy
+## 3. Merge strategy
 
 Ask the user:
 
@@ -121,7 +118,7 @@ Ask the user:
 > 1. `squash` — squash and merge (one clean commit per PR)
 > 2. `merge` — merge commit (preserves full branch history)
 
-### 4. Ignore reef worktrees
+## 4. Ignore reef worktrees
 
 Reef keeps its temporary git worktrees under `.worktrees/` inside the repo.
 
@@ -129,7 +126,7 @@ Reef keeps its temporary git worktrees under `.worktrees/` inside the repo.
 2. If not, offer to add it to `.gitignore`: "Want me to add `.worktrees/` to `.gitignore` so reef's temporary worktrees don't show up as untracked files?"
 3. If yes, append `.worktrees/` to `.gitignore` (create the file if needed).
 
-### 5. Write config
+## 5. Write config
 
 Create `.agents/moonjelly-reef/config.md` at project root:
 
@@ -150,7 +147,7 @@ Values for `tracker`: `github`, `local-tracker-gitignored`, `local-tracker-commi
 
 `tracker-branch` is set when tracker is `local-tracker-committed` (e.g. `main`). Otherwise `—`.
 
-### 6. Initialize saga
+## 6. Initialize saga
 
 Create the saga directory and bootstrap `world.md`:
 
@@ -159,7 +156,7 @@ mkdir -p .agents/moonjelly-reef/saga
 cp "$SKILL_DIR/world-template.md" .agents/moonjelly-reef/saga/world.md
 ```
 
-### 7. Confirm
+## 7. Confirm
 
 > 🪼 "You're all set. The reef is alive."
 >

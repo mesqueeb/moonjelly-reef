@@ -7,7 +7,7 @@ This skill requires a specific issue: e.g. `#42` or `my-feature`.
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
+ISSUE_ID="{issue-id}" # e.g. "#42"
 ```
 
 ## Rules
@@ -44,17 +44,15 @@ Report these variables to the caller and **do not continue**.
 Set the post-fetch variables (after reading the issue body):
 
 ```sh
-ISSUE_TITLE="{from issue title}"
-BASE_BRANCH="{from issue frontmatter base-branch field}"
-PR_ID="{from issue frontmatter pr-id field}"
-PR_BRANCH="{from issue frontmatter pr-branch field}"
-PARENT_ISSUE="{from issue frontmatter parent-issue field, or empty string if not present}"
+ISSUE_TITLE="{from issue title}" # e.g. "my-feature"
+BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
+PR_ID="{from issue frontmatter pr-id field}" # e.g. "#7"
+PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "feat/my-feature"
+PARENT_ISSUE="{from issue frontmatter parent-issue field, or - if not present}" # e.g. "#3"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-merge"
 ```
 
-## Pre-merge check
-
-Unconditional. Ensures the `pr-branch` integrates cleanly with the `base-branch` before proceeding.
+## 1. Pre-merge check
 
 Check the merge state of the PR:
 
@@ -62,7 +60,7 @@ Check the merge state of the PR:
 ./tracker.sh pr view "$PR_ID" --json mergeStateStatus -q .mergeStateStatus
 ```
 
-Enter a worktree forked from $PR_BRANCH so you are testing the issue's `pr-branch` with the latest `base-branch` merged in:
+Enter a worktree forked from `$PR_BRANCH` so you are testing the `$PR_BRANCH` with the latest `$BASE_BRANCH` merged in:
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
@@ -115,9 +113,21 @@ SUMMARY="Merge blocked: test suite failed after conflict resolution."
 
 Report these variables to the caller and **do not continue**.
 
-## Delegate
+## 2. Delegate
 
-After the pre-merge check passes, route on `$PARENT_ISSUE`:
+If `"$PARENT_ISSUE" = "-"`, read and execute [merge-no-parent.md](merge-no-parent.md) with:
 
-- **No `$PARENT_ISSUE`** — read and execute [merge-no-parent.md](merge-no-parent.md) (fast path: label `to-seal`, human merges via the `reef-land` skill)
-- **Has `$PARENT_ISSUE`** — read and execute [merge-has-parent.md](merge-has-parent.md) (full flow: squash merge PR, check siblings, check completion)
+```
+ISSUE_ID="$ISSUE_ID"
+PR_ID="$PR_ID"
+```
+
+If `$PARENT_ISSUE` is a specific issue ID, read and execute [merge-has-parent.md](merge-has-parent.md) with:
+
+```
+ISSUE_ID="$ISSUE_ID"
+PARENT_ID="$PARENT_ISSUE"
+PR_ID="$PR_ID"
+BASE_BRANCH="$BASE_BRANCH"
+MERGE_STRATEGY="$MERGE_STRATEGY"
+```

@@ -10,13 +10,13 @@ description: Scope an issue into a plan with success criteria, ready for the Moo
 A specific issue ID, or nothing.
 
 ```sh
-ISSUE_ID="{issue-id or -}" # pre-existing and passed or picked, e.g. #42; "-" if nothing provided
-SKILL_DIR="{base directory for this skill}"
+ISSUE_ID="{issue-id or -}" # e.g. "#42"; "-" if nothing provided
+SKILL_DIR="{base directory for this skill}" # e.g. ".agents/skills/reef-scope"
 ```
 
 ## Rules
 
-Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills. If the file doesn't exist, read and follow `$SKILL_DIR/setup.md` first, then return here.
+Read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills. If the file doesn't exist, read and follow `$SKILL_DIR/setup.md` first, then return here.
 
 **Shell blocks are literal commands** — execute them as written.
 
@@ -28,13 +28,15 @@ Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker ty
 
 ## 0. Fetch context
 
-If `ISSUE_ID` was not provided, look for items labeled `to-scope`:
+If `"$ISSUE_ID" = "-"`, look for items labeled `to-scope`:
 
 ```sh
 ./tracker.sh issue list --label to-scope --json number,title
 ```
 
 If multiple, ask the user to pick. If none, ask: "🪼 Did you want to scope something new?"
+
+Set `ISSUE_ID` to the picked or confirmed issue number. If $ISSUE_ID is a specific ID, use it directly.
 
 ```sh
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
@@ -45,7 +47,7 @@ If multiple, ask the user to pick. If none, ask: "🪼 Did you want to scope som
 Record the start time:
 
 ```sh
-START_TIME="{current UTC timestamp}"
+START_TIME="{current UTC timestamp}" # e.g. "2026-04-24T09:00:00Z"
 ```
 
 Fetch remote and check branch status:
@@ -105,7 +107,7 @@ The user confirms or adjusts. Both values are required before continuing.
 Scan for in-flight work that might overlap with this plan. List open issues that share the same `base-branch` and are past `to-scope` (i.e., already in-flight: `to-slice`, `in-progress`, `to-implement`, `to-inspect`, `to-rework`, `to-merge`, `to-seal`, `to-land`, `to-await-waves`).
 
 ```sh
-BASE_BRANCH="{from branch discussion}"
+BASE_BRANCH="{from branch discussion}" # e.g. "main"
 ```
 
 ```sh
@@ -121,8 +123,8 @@ For each returned issue, parse the `base-branch` from its frontmatter. Keep only
 Set variables from the discussion:
 
 ```sh
-BASE_BRANCH="{from branch discussion}"
-PR_BRANCH="{from branch discussion}"
+BASE_BRANCH="{from branch discussion}" # e.g. "main"
+PR_BRANCH="{from branch discussion}" # e.g. "guard-branch-locking"
 ```
 
 The plan gets **prepended** to the evolving issue body (pushing any prior decision record down). The decision record remains at the bottom for reference.
@@ -153,7 +155,7 @@ If the user says **no**, go to step 8.
 If the user says **yes**, mark the dependency in the title only — do not change labels:
 
 ```sh
-ISSUE_TITLE_UPDATED="{current issue title} [await: #77, #83]"
+ISSUE_TITLE_UPDATED="{current issue title} [await: #77, #83]" # e.g. "Guard branch locking [await: #77, #83]"
 ./tracker.sh issue edit "$ISSUE_ID" --title "$ISSUE_TITLE_UPDATED"
 ```
 

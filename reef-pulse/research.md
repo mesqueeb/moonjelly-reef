@@ -2,12 +2,12 @@
 
 ## Input
 
-This skill requires a specific issue: e.g. `#42` or `research/001-auth-token-rotation`.
+This skill requires a specific issue: e.g. `#42` or `my-feature/001-auth-token-rotation`.
 
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
+ISSUE_ID="{issue-id or -}" # e.g. "#42"
 ```
 
 ## Rules
@@ -48,21 +48,19 @@ Read the issue. It must contain:
 - `pr-branch` in frontmatter (the branch the PR lives on)
 - Research-oriented success criteria or acceptance criteria
 
-Set the post-fetch variables (after reading the issue body):
-
 ```sh
-ISSUE_TITLE="{from issue title}"
-BASE_BRANCH="{from issue frontmatter base-branch field}"
-PR_BRANCH="{from issue frontmatter pr-branch field}"
-FEELING_LUCKY="{true if issue frontmatter has feeling-lucky: true, otherwise false}"
+ISSUE_TITLE="{from issue title}" # e.g. "auth-token-rotation"
+BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
+PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "research/001-auth-token-rotation"
+FEELING_LUCKY="{from issue frontmatter feeling-lucky field, or - if not present}" # e.g. "true"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-research"
 ```
 
 ## 1. Git prep
 
-This is non-negotiable. Every step must pass before you write research artifacts.
+Every step must pass before you write research artifacts.
 
-Enter a worktree forked from $BASE_BRANCH so you start from a clean integration point:
+Enter a worktree forked from `$BASE_BRANCH` so you start from a clean integration point:
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
@@ -87,7 +85,7 @@ Report these variables to the caller and **do not continue**.
 
 ## 2. Read context
 
-Before writing any artifacts, read and understand:
+Read and understand:
 
 - **This issue's acceptance criteria** — this is your checklist. Every criterion must be addressed.
 - **The plan + success criteria** — understand the question the research must answer.
@@ -124,7 +122,6 @@ Decisions made during research that weren't covered by the acceptance criteria o
 ## Research outputs
 
 - `{path/to/artifact.md}` — {what it answers}
-
 ```
 
 ## 5. Open the PR
@@ -136,7 +133,7 @@ Decisions made during research that weren't covered by the acceptance criteria o
 The PR body must start with the "closes" reference, followed by the research report:
 
 ```sh
-CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. #42
+CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. "closes #42 auth-token-rotation"
 REPORT="{research report}"
 PR_BODY_NEW="$CLOSES\n\n$REPORT"
 ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
@@ -149,7 +146,7 @@ The PR targets `$BASE_BRANCH` — the branch it merges into.
 Persist the PR metadata for the newly created PR on the issue body so downstream phases (inspect, rework, merge) can find it:
 
 ```sh
-PR_ID="{from pr create output}" # e.g. #43
+PR_ID="{from pr create output}" # e.g. "#43"
 ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
 # add to frontmatter (if not already): pr-branch: $PR_BRANCH
 # add to frontmatter:  pr-id: $PR_ID
