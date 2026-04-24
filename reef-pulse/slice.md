@@ -2,24 +2,12 @@
 
 ## Input
 
-This skill accepts:
-
-- a specific issue: e.g. `#42` or `my-feature`
-- nothing: look for items labeled `to-slice`. If multiple, pick the first one. If none, hand off with:
-
-  ```sh
-  ISSUE_ID="-"
-  NEXT_PHASE="—"
-  PR_ID="—"
-  SUMMARY="No issues labeled to-slice found."
-  ```
-
-  Report these variables to the caller and **do not continue**.
+This skill requires a specific issue: e.g. `#42` or `my-feature/001-auth-endpoint`.
 
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id or -}" # e.g. "#42"
+ISSUE_ID="{issue-id}" # e.g. "#42"
 ```
 
 ## Rules
@@ -60,21 +48,6 @@ BASE_BRANCH="{from issue frontmatter base-branch field, or - if not present}" # 
 PR_BRANCH="{from issue frontmatter pr-branch field, or - if not present}"     # e.g. "feat/my-feature"
 BEARING="{from issue frontmatter bearing field, or - if not present}"         # e.g. "feature"
 ```
-
-### Guard: refactor and bug bearings skip slicing
-
-RUN ONLY WHEN `"$BEARING" = "refactor"` or `"$BEARING" = "bug"`.
-
-These bearings no longer reach the slice phase — they are already labeled `to-implement` by `reef-scope`.
-
-```sh
-ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="—"
-PR_ID="—"
-SUMMARY="Skipped: $BEARING bearings do not reach the slice phase. The plan issue should already be labeled to-implement."
-```
-
-Report these variables to the caller and **do not continue**.
 
 ### Guard: verify branch frontmatter
 
@@ -128,11 +101,6 @@ Do not write `$ISSUE_BODY_UPDATED` to the issue yet — the delegatee applies it
 
 Break the plan into slices. Each slice is a thin vertical cut through ALL integration layers end-to-end — not a horizontal slice of one layer.
 
-Use `$BEARING` to adjust slice behavior:
-
-- `deep-research` — plan as research-native work
-- `feature`, `refactor`, `bug` — keep their normal slice behavior
-
 Rules:
 
 - Each slice delivers a narrow but COMPLETE path through every layer (schema, API, UI, tests).
@@ -140,11 +108,14 @@ Rules:
 - Prefer many thin slices over few thick ones.
 - Do NOT include specific file names, function names, or implementation details likely to change.
 - DO include durable decisions: route paths, schema shapes, data model names.
-- Surface **implicit prerequisites**. If multiple slices depend on a shared dependency (a new table, a utility module, an API client), that dependency is its own slice and the others are blocked by it. (Prevents painpoint D2.)
-- For refactors: slices must respect the tiny-commit discipline. Each slice leaves the codebase compiling and tests green.
-- If `"$BEARING" = "deep-research"`, draft research questions rather than implementation work. Compact research plans can stay as a single research issue. Larger research plans can be split into angle-based or dependency-based research slices. Acceptance criteria should say what must be answered, clarified, or persisted.
+- Surface **implicit prerequisites**. If multiple slices depend on a shared dependency (a new table, a utility module, an API client, a piece of research), that dependency is its own slice and the others are blocked by it. (Prevents painpoint D2.)
 - If `"$FEELING_LUCKY" = "true"`, produce acceptance criteria and dependencies with best-effort judgment without asking the user follow-up questions.
 
+Use `$BEARING` to adjust slice behavior:
+
+- If `"$BEARING" = "refactor"`, slices must respect the tiny-commit discipline. Each slice leaves the codebase compiling and tests green.
+- If `"$BEARING" = "bug"`, depending on the nature of the plan, in most cases a single slice might be sufficient. The plan's success criteria become the slice's acceptance criteria directly.
+- If `"$BEARING" = "deep-research"`, focus on the research questions, and think how they can be split up from different perspectives or angles. Acceptance criteria should cover what must be answered, clarified, or persisted.
 
 ## 2. Delegate
 
