@@ -127,6 +127,8 @@ Commit your work when implementation is complete.
 
 When implementation is complete, compose the PR description using this template:
 
+The inspector is a different agent session — no context from this conversation carries over. Be explicit and self-contained.
+
 ```markdown
 ## Ambiguous choices
 
