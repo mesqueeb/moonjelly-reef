@@ -1,0 +1,208 @@
+# Writing Style Guide
+
+Conventions for writing phase files and skills in the Moonjelly Reef framework. Phase files are instructions executed by an LLM agent — consistency makes them more predictable.
+
+## Structure
+
+Every skill or phase file follows this top-level order:
+
+1. `## Input` — declare all input variables upfront
+2. `## Rules` — config reading, shell block note, tracker note, AFK or interactive note
+3. `## 0. Fetch context` — first numbered step is always fetching from the tracker
+4. `## 1.`, `## 2.`, … — remaining steps in execution order
+
+Sub-sections within a step use `###`.
+
+## Input section
+
+Declare input variables and anything needed immediately (e.g. `SKILL_DIR`, a lock file path). Optional inputs use `"-"` as the nil sentinel:
+
+preferred:
+
+    ```sh
+    ISSUE_ID="{issue-id or -}" # "-" if nothing provided
+    SKILL_DIR="{base directory for this skill}"
+    ```
+
+anti-pattern: ISSUE_ID="{issue-id}" # if passed directly
+
+All other variables are declared where they are first received or computed — not here.
+
+## Rules section
+
+The Rules section always contains these items, in this order:
+
+1. Config reading — read `.agents/moonjelly-reef/config.md` to learn the tracker type and installed optional skills. State what to do if the file doesn't exist.
+2. Shell block note — `**Shell blocks are literal commands** — execute them as written.`
+3. Tracker note — bullet list of how to translate `./tracker.sh` per tracker type.
+4. Behavior note — either `**AFK skill**` (no human interaction) or nothing (interactive).
+
+## Variable declarations
+
+Declare variables at the point where their value first becomes available — from a fetch or from a computation. Group all variables from a single source together immediately after that source is read, even if some are only used several steps later.
+
+The most common case is the tracker fetch in step 0. Fetch once, then declare every variable you will need from it in a single block:
+
+```sh
+./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+```
+
+```sh
+ISSUE_TITLE="{from issue title}"
+BASE_BRANCH="{from issue frontmatter base-branch field}"
+PR_BRANCH="{from issue frontmatter pr-branch field}"
+WORKTREE_PATH=".worktrees/$ISSUE_TITLE-{phase}"
+```
+
+  anti-pattern:  fetching the issue again later to read a field not extracted the first time
+  anti-pattern:  declaring ISSUE_TITLE in step 0 and BASE_BRANCH in step 3, when both came from the same fetch
+
+When a field may be absent, use a nil sentinel in the placeholder:
+
+```sh
+PARENT_ISSUE="{from issue frontmatter parent-issue field, or - if not present}"
+```
+
+Use `"{from issue frontmatter X field}"` as the placeholder style — it tells the agent exactly where to read the value from.
+
+Variables derived from a computation are declared at the step that computes them.
+
+## Conditionals
+
+Always reference variables with `$VAR` syntax in prose — never bare names:
+
+  preferred:     If `$ISSUE_ID` is a specific ID,
+  anti-pattern:  If you have `ISSUE_ID`:
+  anti-pattern:  If ISSUE_ID is known
+
+**Use intent-expressive prose for positive checks, shell syntax for nil and boolean checks:**
+
+Checking a variable has a meaningful value:
+
+  preferred:     If `$ISSUE_ID` is a specific ID,
+  anti-pattern:  if `"$ISSUE_ID" != "-"`:
+
+Checking a variable is absent (nil sentinel):
+
+  preferred:     If `"$ISSUE_ID" = "-"`,
+  anti-pattern:  If nothing was provided,
+
+Checking a boolean flag:
+
+  preferred:     If `"$IS_SESSION_COMPLETE" = "true"`,
+  anti-pattern:  If IS_SESSION_COMPLETE is true,
+
+Checking a count:
+
+  preferred:     If `"$AGENT_COUNT_PULSE" -gt 0`,
+  anti-pattern:  If AGENT_COUNT_PULSE > 0,
+
+Make both branches of a conditional explicit:
+
+  preferred:     If `"$ISSUE_ID" = "-"`, fetch via PR_ID. If `"$PR_ID" = "-"`, fetch via ISSUE_ID.
+  anti-pattern:  Use whichever identifier you have to look up the other.
+
+## Step guards
+
+Steps that only run under certain conditions open with an explicit guard line. Prefer shell variable checks over prose conditions:
+
+  best:    RUN ONLY WHEN `"$IS_SESSION_COMPLETE" = "true"`.
+  ok:      RUN IF the tracker is `local-tracker-committed`.
+  ok:      RUN ONCE PER SESSION.
+
+The best form uses a shell variable set earlier in the file — unambiguous and machine-checkable. Use prose conditions only when no shell variable captures the condition.
+
+## Boolean flags
+
+Compute booleans explicitly with `if/else` — never embed branching logic as a comment:
+
+preferred:
+
+    ```sh
+    if [ "$AGENT_COUNT_PULSE" -eq 0 ]; then
+      IS_SESSION_COMPLETE=true
+    else
+      IS_SESSION_COMPLETE=false
+      PULSE_NR=$((PULSE_NR + 1))
+    fi
+    ```
+
+anti-pattern:
+
+    ```sh
+    AGENT_COUNT_SESSION=$((AGENT_COUNT_SESSION + AGENT_COUNT_PULSE))
+    PULSE_NR=$((PULSE_NR + 1)) # skip if AGENT_COUNT_PULSE = 0 (session complete)
+    ```
+
+## Sub-agent spawning
+
+Pass context as already-expanded shell variables. For simple values, expand inline:
+
+preferred:
+
+    Dispatch a sub-agent:
+
+    ```
+    Read and follow $SKILL_DIR/implement.md.
+
+    ISSUE_ID="$ISSUE_ID"
+    ```
+
+For complex values, prep the variable first, then pass it:
+
+preferred:
+
+    prep:
+
+    ```sh
+    SENTENCE_BALLPARK="$((PULSE_NR * 2))"
+    ```
+
+    Dispatch a sub-agent:
+
+    ```
+    Read and follow $SKILL_DIR/lore-writer.md.
+
+    SENTENCE_BALLPARK="$SENTENCE_BALLPARK"
+    ```
+
+anti-pattern: Spawn a sub-agent and tell it to process the current issue.
+
+The sub-agent receives unambiguous, already-resolved values — it should never have to infer context from prose.
+
+## Result rows
+
+Define `RESULT_ROW` with named fields, then print it — never describe output with a bare literal block:
+
+preferred:
+
+    ```sh
+    RESULT_ROW="$ISSUE_PHASE_EMOJI  $ISSUE_ID   $SUBAGENT_DURATION   $SUBAGENT_TOKENS   $ISSUE_PHASE › $NEXT_PHASE"
+    ```
+
+    Print each `$RESULT_ROW`. E.g.:
+
+    ```
+    𐃆🐋  #34   3m12s   18k   slice › implement
+      🐙  #55   4m45s   24k   implement › inspect
+      🦀  #53   1m08s    9k   inspect › rework
+    ```
+
+anti-pattern:
+
+    Print the results:
+
+    ```
+    𐃆🐋  #34   3m12s   18k   slice › implement
+      🐙  #55   4m45s   24k   implement › inspect
+      🦀  #53   1m08s    9k   inspect › rework
+    ```
+
+## Tracker abstraction
+
+Always use `./tracker.sh` for issue and PR operations:
+
+  preferred:     ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  anti-pattern:  gh issue view "$ISSUE_ID" --json body,title,labels
+
+The Rules section's tracker note tells the agent how to translate `./tracker.sh` for each tracker type.

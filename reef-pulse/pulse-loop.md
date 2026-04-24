@@ -117,8 +117,6 @@ RUN DURING THIS PULSE-LOOP ITERATION if `"$AGENT_COUNT_PULSE" -gt 0`.
 
 Immediately after dispatching, print each dispatched agent with its phase emoji. Use the phase emoji from the README lore for each phase.
 
-The narwhal (slice phase) always uses both characters `𐃆🐋`, not just the emoji.
-
 For each dispatched issue, capture the display values used for both the dispatch line and the later return-result line:
 
 ```sh
@@ -179,7 +177,7 @@ SUBAGENT_TOOL_USES="{tool use count for the sub-agent}" # if known; otherwise "�
 RESULT_ROW="$ISSUE_PHASE_EMOJI  $ISSUE_ID   $SUBAGENT_DURATION   $SUBAGENT_TOKENS   $ISSUE_PHASE › $NEXT_PHASE"
 ```
 
-Print `$RESULT_ROW`. E.g.:
+Print each `$RESULT_ROW`. E.g.:
 
 ```
 𐃆🐋  #34   3m12s   18k   slice › implement
