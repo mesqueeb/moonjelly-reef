@@ -19,7 +19,7 @@ This skill accepts:
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id or -}" # e.g. "#42"
+ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
 ```
 
 ## Rules
@@ -53,7 +53,7 @@ SUMMARY="Skipped: issue does not carry the to-slice label."
 
 Report these variables to the caller and **do not continue**.
 
-Read the issue. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The frontmatter block tells you the work type, `base-branch`, and `pr-branch`.
+Read the issue. It must contain a plan with `## What does done look like` (from reef-scope). The frontmatter block tells you the work type, `base-branch`, and `pr-branch`.
 
 ```sh
 BASE_BRANCH="{from issue frontmatter base-branch field, or - if not present}" # e.g. "main"
@@ -130,7 +130,7 @@ Rules:
 - If `"$BEARING" = "deep-research"`, draft research questions rather than implementation work. Compact research plans can stay as a single research issue. Larger research plans can be split into angle-based or dependency-based research slices. Acceptance criteria should say what must be answered, clarified, or persisted.
 - If `"$FEELING_LUCKY" = "true"`, produce acceptance criteria and dependencies with best-effort judgment without asking the user follow-up questions.
 
-For small bugs (scope = quick fix in the plan): produce a single slice. The plan's success criteria become the slice's acceptance criteria directly.
+For small bugs (scope = quick fix in the plan): produce a single slice. The items in `## What does done look like` become the slice's acceptance criteria directly.
 
 ## 2. Delegate
 
