@@ -119,7 +119,7 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 Read the current PR body, then append the rework report as a collapsible block. The rework report should include judgment calls, what feedback was addressed, what was changed, and test results.
 
-The inspector is a different agent session — no context from this conversation carries over. Be explicit and self-contained.
+This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
 ```sh
 PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)

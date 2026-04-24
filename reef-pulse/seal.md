@@ -180,7 +180,7 @@ The report goes on a **PR from the `pr-branch` to the `base-branch`** (usually `
 
 The report should be concise and focused on what the human needs to know. Do NOT dump the entire plan — the human can read the plan. Focus on:
 
-The reef-land reviewer is a different agent session — no context from this conversation carries over. Be explicit and self-contained.
+This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
 ```markdown
 ## Final Report

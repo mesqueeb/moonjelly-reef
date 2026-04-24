@@ -156,7 +156,7 @@ Report these variables to the caller and **do not continue**.
 
 Read the current PR body, then append the inspect report as a collapsible block:
 
-The rework agent is a different agent session — no context from this conversation carries over. Be explicit and self-contained.
+This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
 ```sh
 PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#42"
