@@ -22,9 +22,16 @@ Interview the user about the implementation. Be extremely detailed and thorough.
 
 Hammer out the exact scope of the implementation. Work out what you plan to change and what you plan NOT to change.
 
-## 6. Assess test coverage
+## 6. Assess test coverage and nail down testing expectations
 
-Look in the codebase to check for test coverage of this area. If there is insufficient test coverage, ask the user what their plans for testing are.
+Look in the codebase to check for test coverage of this area.
+
+Then ask the user these questions (one at a time, skip any already answered):
+
+- What kind of testing do you expect for this refactor?
+- Is there anything you'd need to see to feel confident this is ready to merge?
+
+Fold the answers into the Testing Decisions section of the plan. Do not create a separate section.
 
 ## 7. Design the commit plan
 
@@ -88,3 +95,15 @@ Testable conditions that must ALL be true for this work to be considered done. E
 A description of the things that are out of scope for this refactor.
 
 </plan-template>
+
+After writing the plan, append the full Q&A transcript from the interview:
+
+```
+<details><summary>Interview log</summary>
+
+{full Q&A transcript}
+
+</details>
+```
+
+When persisting the plan in SKILL.md step 6, use `to-implement` instead of `to-slice`. A refactor is a single branch, single PR — slicing adds overhead with no benefit.
