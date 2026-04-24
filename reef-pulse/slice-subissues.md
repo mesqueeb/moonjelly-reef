@@ -49,10 +49,7 @@ If the plan says to work on the current branch (no new `pr-branch`), skip the br
 
 ## 2. Build the coverage matrix
 
-For each plan item, map it to which slice(s) and which acceptance criterion/criteria cover it.
-
-- **Features**: the left column is all User Stories (US), Implementation Decisions (ID), and Testing Decisions (TD) combined.
-- **Deep-research**: the left column is all Research Questions.
+For each plan item (User Story / Implementation Decision / Testing Decision / ...), map it to which slice(s) and which acceptance criterion/criteria cover it.
 
 Architectural or non-testable IDs that have no direct implementation output should be noted as "covered by design" in the Acceptance Criteria column.
 

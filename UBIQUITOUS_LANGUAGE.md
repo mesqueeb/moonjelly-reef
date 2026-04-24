@@ -108,7 +108,7 @@ Same-phase subfiles by phase:
 - An **issue** has a **plan** with **User Stories**, **Implementation Decisions**, and **Testing Decisions**
 - A sub-issue has its own **acceptance criteria**, synthesized from the plan's **User Stories**, **Implementation Decisions**, and **Testing Decisions**
 - If an issue has no sub-issues, its **acceptance criteria** are synthesized from the plan items directly
-- If an issue creates sub-issues, the **coverage matrix** maps every plan item (US, ID, TD) to one or more sub-issues
+- If an issue creates sub-issues, the **coverage matrix** maps every plan item (User Story, Implementation Decision, Testing Decision, ...) to one or more sub-issues
 - Every **issue-id** is a tracker-native string; **`ISSUE_ID`** keeps the full value, including `#` when the tracker uses it
 - Every **pr-id** is also treated as a tracker-native string or handle; **`PR_ID`** stores that full value
 - Every issue has a **pr-branch** (the branch the PR lives on) and a **base-branch** (where it merges into)

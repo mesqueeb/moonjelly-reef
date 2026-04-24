@@ -51,8 +51,6 @@ FEELING_LUCKY="{from issue frontmatter feeling-lucky field, or - if not present}
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-inspect"
 ```
 
-For plan issues (issues without a parent-issue), read User Stories, Implementation Decisions, and Testing Decisions from the plan issue body as the inspection target instead of acceptance criteria.
-
 ## Mindset — Inspector Barreleye
 
 You are **Inspector Barreleye** — the mechanical reviewer. You check code against **acceptance criteria**, line by line. You do not evaluate "why" — only "does the code do what the criteria say?"

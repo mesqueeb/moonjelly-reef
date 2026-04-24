@@ -51,8 +51,6 @@ PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#7"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
 ```
 
-For plan issues (issues without a parent-issue), read User Stories, Implementation Decisions, and Testing Decisions from the plan issue body as the rework target instead of acceptance criteria.
-
 ## 1. Git prep
 
 Enter a worktree forked from $PR_BRANCH to apply fixes to the existing PR:
