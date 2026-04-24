@@ -52,7 +52,22 @@ Create a concrete, ordered list of RED-GREEN cycles. Each cycle is one vertical 
 - Include a final refactor step if needed
 - **Durability**: Only suggest fixes that would survive radical codebase changes. Describe behaviors and contracts, not internal structure. Tests assert on observable outcomes (API responses, UI state, user-visible effects), not internal state. A good suggestion reads like a spec; a bad one reads like a diff.
 
-## 5. Write the plan
+## 5. Think about what done looks like
+
+Before writing the plan, decide how much rigor the fix needs. Present these 4 options to the user with your recommendation:
+
+1. **Theoretical fix** — explain the root cause and fix approach in writing, no code written
+2. **Compile-verified** — write the fix, confirm it compiles/runs, no tests
+3. **TDD** — red-green-refactor cycle with tests
+4. **Dive in together** — exit Reef flow; this is interactive debugging, not async work
+
+Base your recommendation on what you found during investigation. A clear, isolated bug with an obvious fix warrants option 2 or 3. A hard-to-reproduce or multi-system issue may call for option 1. A problem that needs real-time exploration and iteration is option 4.
+
+**If the user picks option 4**: hand off control to the user directly. Do not create a plan or sub-issue. Say something like: "Got it — let's dig into this together. Here's what I found so far: {summary of investigation}. Where would you like to start?"
+
+For options 1–3, continue to step 6.
+
+## 6. Write the plan
 
 Write the plan using this template:
 
@@ -88,7 +103,11 @@ A numbered list of RED-GREEN cycles:
 
 **REFACTOR**: [Any cleanup needed after all tests pass]
 
-## Success Criteria
+## What does done look like
+
+{Prose description of the chosen rigor level and what a successful fix looks like. For example: "The fix is TDD-verified — a failing test that captures the broken behavior is written first, then the minimal code change is made to pass it. The fix is complete when all tests pass and no existing tests regress."}
+
+## Acceptance Criteria
 
 - [ ] {criterion 1}
 - [ ] {criterion 2}
