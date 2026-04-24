@@ -38,7 +38,37 @@ Fold the answers into the Testing Decisions section of the plan. Do not create a
 
 ## 5. Write the plan
 
-Write the scoped issue so the acceptance criteria describe what must be answered, clarified, or persisted, not what code must be written.
+Write the scoped issue using this template. The acceptance criteria describe what must be answered, clarified, or persisted, not what code must be written.
+
+<plan-template>
+
+## Problem Statement
+
+The question or uncertainty the research must resolve.
+
+## Research Questions
+
+A numbered list of the specific questions this research must answer:
+
+1. {question 1}
+2. {question 2}
+3. {question 3}
+
+Every question must be answerable — it produces a concrete finding, decision, or documented outcome.
+
+## Testing Decisions
+
+What makes this research complete? Include:
+
+- What must be answered or documented for this research to be complete
+- What open questions, if left unanswered, would make the research feel incomplete
+- Who will act on the findings and what they need to move forward
+
+## Out of Scope
+
+What this research does NOT need to answer.
+
+</plan-template>
 
 After writing the plan, append the full Q&A transcript from the interview:
 

@@ -51,7 +51,7 @@ FEELING_LUCKY="{from issue frontmatter feeling-lucky field, or - if not present}
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-inspect"
 ```
 
-For plan issues, read success criteria from the plan issue body instead of acceptance criteria.
+For plan issues (issues without a parent-issue), read User Stories, Implementation Decisions, and Testing Decisions from the plan issue body as the inspection target instead of acceptance criteria.
 
 ## Mindset — Inspector Barreleye
 
@@ -66,7 +66,7 @@ What you do:
 - **Run the full test suite yourself.** Don't trust "all tests pass" in the report.
 - **Do trivial cleanups.** Stale TODOs, leftover debug prints, dead code from debugging, formatting — fix these yourself and commit. Don't ask permission.
 - **Flag substantive gaps.** Missing tests, incomplete behavior, skipped acceptance criteria — these go in review comments, not silent fixes.
-- **Read the ambiguous choices.** The implementer documented decisions they made. Flag anything that drifted too far from the success criteria or that the human should know about.
+- **Read the ambiguous choices.** The implementer documented decisions they made. Flag anything that drifted too far from the plan items or that the human should know about.
 
 You do NOT need to evaluate product direction, user stories, or the problem statement in great detail.
 
@@ -97,9 +97,9 @@ Report these variables to the caller and **do not continue**.
 
 Run the full project test suite. Record the result.
 
-## 2. Check each acceptance criterion
+## 2. Check each acceptance criterion and corresponding plan items
 
-For each acceptance criterion on the issue:
+For each acceptance criterion on the slice issue:
 
 - Read the actual code that implements it. Trace the code path.
 - Confirm the behavior is correct by reading the test that covers it.
@@ -109,12 +109,18 @@ For each acceptance criterion on the issue:
 - Check that the writing is clear, coherent, not overly drawn out, and actually answers the promised angle or question.
 - If `"$FEELING_LUCKY" = "true"`, do not get fussy about fuzzy acceptance criteria — apply the same code-level checks (trace the path, check tests) but judge quality holistically: clarity, simplicity, and obvious polish opportunities.
 
+Also cross-check against the **plan items (US, ID, TD)** that the coverage matrix maps to this slice:
+
+- Read the parent plan issue (if this is a sub-issue) and identify which User Stories, Implementation Decisions, and Testing Decisions this slice was meant to satisfy.
+- Verify the implementation actually satisfies those plan items, not just the AC checkboxes.
+- Flag any drift where the acceptance criteria didn't fully capture what the plan item requires.
+
 ## 3. Review the report
 
 Read the PR description's "Ambiguous choices" section. For each choice:
 
 - Does it make sense given the constraints?
-- Does it drift from the success criteria? If so, is the drift acceptable?
+- Does it drift from the plan items? If so, is the drift acceptable?
 - Would the human want to know about this before merging?
 
 ## 4. Trivial cleanups
