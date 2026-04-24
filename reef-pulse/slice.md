@@ -5,13 +5,13 @@
 This skill accepts:
 
 - a specific issue: e.g. `#42` or `my-feature`
-- nothing: look for items tagged `to-slice`. If multiple, pick the first one. If none, hand off with:
+- nothing: look for items labeled `to-slice`. If multiple, pick the first one. If none, hand off with:
 
   ```sh
   ISSUE_ID="${ISSUE_ID:-—}"
   NEXT_PHASE="—"
   PR_ID="—"
-  SUMMARY="No issues tagged to-slice found."
+  SUMMARY="No issues labeled to-slice found."
   ```
 
   Report these variables to the caller and **do not continue**.
@@ -42,9 +42,20 @@ Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker ty
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
+Verify the issue carries the `to-slice` label. If it does not, hand off with:
+
+```sh
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="—"
+PR_ID="—"
+SUMMARY="Skipped: issue does not carry the to-slice label."
+```
+
+Report these variables to the caller and **do not continue**.
+
 Read the issue. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The frontmatter block tells you the work type, `base-branch`, and `pr-branch`.
 
-Set the post-fetch variables:
+Set the post-fetch variables (after reading the issue body):
 
 ```sh
 BASE_BRANCH="{from issue frontmatter base-branch field}"

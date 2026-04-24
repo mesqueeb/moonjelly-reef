@@ -32,7 +32,7 @@ Use the kebab-case form for canonical domain and frontmatter terms, and the cons
 
 | Term               | Definition                                                                                                             | Aliases to avoid                 |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| **`[await: ...]`** | The issue-title suffix that encodes blockers for work that must wait on other issues to land before it can be promoted | blocked-by field, dependency tag |
+| **`[await: ...]`** | The issue-title suffix that encodes blockers for work that must wait on other issues to land before it can be promoted | blocked-by field, dependency label |
 
 ## Planning
 
@@ -69,7 +69,7 @@ Use the kebab-case form for canonical domain and frontmatter terms, and the cons
 
 | Term            | Definition                                                                                                                                    | Aliases to avoid                  |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| **label**       | A marker on an issue that represents its current state in the lifecycle                                                                       | status, state, tag                |
+| **label** / **labeled** | A marker on an issue that represents its current state in the lifecycle; *labeled* is the canonical verb form                                 | status, state, tag, tagged        |
 | **in-progress** | The parent-issue label meaning slice work is underway on sub-issues and the parent issue is waiting for them to land                          | active, ongoing, underway         |
 | **landed**      | The terminal label — a signal that a piece of work has reached its base branch. Once applied, the issue is considered complete and is closed. | done, completed, merged, finished |
 
@@ -115,9 +115,9 @@ Use the kebab-case form for canonical domain and frontmatter terms, and the cons
 
 ## Example dialogue (phases)
 
-> **Dev:** "This bug is tagged `to-slice`. How does the reef handle it?"
+> **Dev:** "This bug is labeled `to-slice`. How does the reef handle it?"
 >
-> **Domain expert:** "The slice phase reads the plan. If the work stays on the current issue, no sub-issues are created. The issue's **success criteria** become its **acceptance criteria**, and it gets tagged `to-implement` directly."
+> **Domain expert:** "The slice phase reads the plan. If the work stays on the current issue, no sub-issues are created. The issue's **success criteria** become its **acceptance criteria**, and it gets labeled `to-implement` directly."
 >
 > **Dev:** "And if it needs two sub-issues?"
 >

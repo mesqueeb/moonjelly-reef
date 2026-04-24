@@ -2,7 +2,7 @@
 
 ## Input
 
-An issue tagged `to-merge` with an open PR.
+This skill requires a specific issue: e.g. `#42` or `my-feature`.
 
 Set the input as a shell variable:
 
@@ -29,6 +29,17 @@ Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker ty
 ```sh
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
+
+Verify the issue carries the `to-merge` label. If it does not, hand off with:
+
+```sh
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="—"
+PR_ID="—"
+SUMMARY="Skipped: issue does not carry the to-merge label."
+```
+
+Report these variables to the caller and **do not continue**.
 
 Set the post-fetch variables (after reading the issue body):
 

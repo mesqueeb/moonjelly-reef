@@ -5,7 +5,7 @@ You are setting up Moonjelly Reef for this project. This only runs once — when
 Start by printing the banner. Do NOT try to reproduce the art manually — use `cat`:
 
 ```sh
-printf '\033[36m'; cat reef-pulse/banner.txt; printf '\033[0m'
+printf '\033[36m'; cat "$SKILL_DIR/banner.txt"; printf '\033[0m'
 ```
 
 ## Steps
@@ -48,7 +48,7 @@ Present your best guess to the user:
 >
 > Options: `github` · `jira` · `linear` · `clickup` · `local md files` · `other`
 
-The user may also name a tracker not listed (Notion, etc.) — that's fine. Any system that supports creating items, updating descriptions, and tagging/labeling will work.
+The user may also name a tracker not listed (Notion, etc.) — that's fine. Any system that supports creating items, updating descriptions, and labeling will work.
 
 **For each tracker type, verify the tooling:**
 
@@ -72,14 +72,14 @@ If the user chose local, ask:
 
 **If gitignored:**
 
-1. Ask where to store tracker files. Suggest `.agents/moonjelly-reef/tracker/` as default.
+1. Ask where to store tracker files. Suggest `.agents/moonjelly-reef/tracker/` at project root as default.
 2. Offer to add the path to `.gitignore`: "Want me to add `{path}` to `.gitignore`?"
 3. If yes, append the path to `.gitignore` (create the file if needed).
 4. Set tracker type to `local-tracker-gitignored`.
 
 **If committed:**
 
-1. Ask where to store tracker files. Suggest `.agents/moonjelly-reef/tracker/` as default.
+1. Ask where to store tracker files. Suggest `.agents/moonjelly-reef/tracker/` at project root as default.
 2. Verify the chosen path is NOT already in `.gitignore`. If it is, warn the user and ask them to pick a different path or remove the gitignore rule.
 3. Ask which branch to commit tracker updates to. Suggest `main`: "Which branch should tracker updates be committed to? (suggest: `main`)"
 4. Set tracker type to `local-tracker-committed`.
@@ -131,7 +131,7 @@ Reef keeps its temporary git worktrees under `.worktrees/` inside the repo.
 
 ### 5. Write config
 
-Create `.agents/moonjelly-reef/config.md`:
+Create `.agents/moonjelly-reef/config.md` at project root:
 
 ```markdown
 ---
@@ -161,7 +161,7 @@ cp "$SKILL_DIR/world-template.md" .agents/moonjelly-reef/saga/world.md
 
 ### 7. Confirm
 
-> "You're all set. The reef is alive. 🪼"
+> 🪼 "You're all set. The reef is alive."
 >
 > Run the `reef-scope` skill to start working on something, or run the `reef-pulse` skill to scan for existing work.
 >

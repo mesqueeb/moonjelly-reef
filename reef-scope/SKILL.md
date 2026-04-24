@@ -1,44 +1,54 @@
 ---
 name: reef-scope
-description: Scope an issue into a plan with success criteria. Routes between feature, refactor, and bug approaches. The single entry point for turning ideas into plans.
+description: Scope an issue into a plan with success criteria, ready for the Moonjelly Reef to pick up. Route between a feature, refactor, a bug triage or deep research. Turn an ideas into a plan.
 ---
 
 # reef-scope
 
-Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, run the `reef-pulse` skill and follow `reef-pulse/setup.md` first, then return here after.
-
-> **Shell blocks are literal commands** — `./tracker.sh` is a real script next to this file. Execute it as written; do not substitute with raw git commands.
->
-> **Tracker note**: Commands below use `./tracker.sh` syntax. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
-
-## Metrics
-
-Record the start time at invocation:
-
-```sh
-START_TIME="{current UTC timestamp}"
-```
-
 ## Input
 
-This skill accepts:
-
-- a specific issue: for example `reef-scope #42` or `reef-scope my-feature`
-- Nothing: look for items tagged `to-scope`. If multiple, ask the user to pick. If none, ask: "Did you want to scope something new?"
-
-Set the initial variables:
+A specific issue ID, or nothing.
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed or generate, eg.: #42
+ISSUE_ID="{issue-id or -}" # pre-existing and passed or picked, e.g.: #42; "-" if nothing provided
+SKILL_DIR="{base directory for this skill}"
 ```
 
-## 1. Fetch context
+## Rules
+
+Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills. If the file doesn't exist, read and follow `$SKILL_DIR/setup.md` first, then return here.
+
+**Shell blocks are literal commands** — execute them as written.
+
+**Tracker note**:
+
+- For `local-tracker`, run `./tracker.sh` exactly as written.
+- For GitHub, replace `./tracker.sh` with `gh`, then execute the command as written.
+- For other trackers with MCP issue tools, replace `./tracker.sh pr` with `gh pr`, and replace `./tracker.sh issue` with the MCP equivalent for that tracker.
+
+## 0. Fetch context
+
+If `ISSUE_ID` was not provided, look for items labeled `to-scope`:
+
+```sh
+./tracker.sh issue list --label to-scope --json number,title
+```
+
+If multiple, ask the user to pick. If none, ask: "🪼 Did you want to scope something new?"
 
 ```sh
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-## 2. Git prep
+## 1. Prep
+
+Record the start time:
+
+```sh
+START_TIME="{current UTC timestamp}"
+```
+
+Fetch remote and check branch status:
 
 ```sh
 git fetch origin --prune
@@ -50,11 +60,11 @@ Check if the current branch is behind its remote counterpart. If it is, notify t
 
 Wait for the user's response before continuing.
 
-## 3. Write the plan
+## 2. Show interactive route picker
 
-Every `reef-scope` run must show a route picker before you start the interview or write the plan.
+Read the issue title and body fetched in step 0. From that text alone, recommend the single best route.
 
-The route picker always offers exactly these five options:
+Present the picker to the user — mark exactly one route as `(recommended)`:
 
 - `scope a feature`
 - `scope a refactor`
@@ -62,7 +72,7 @@ The route picker always offers exactly these five options:
 - `I'm feeling lucky (hand over to the reef)`
 - `deep research`
 
-If `ISSUE_ID` was provided, `reef-scope` reads only the issue title and body before showing the picker. From that issue text alone, recommend the single best route. The picker marks exactly one route as `(recommended)`.
+Wait for the user to confirm or pick a different route.
 
 Persist the selected route as `bearing` using one of these exact values:
 
@@ -72,7 +82,9 @@ Persist the selected route as `bearing` using one of these exact values:
 - bearing: `feeling-lucky`
 - bearing: `deep-research`
 
-Then follow the route-specific guide:
+## 3. Write the plan
+
+Follow the route-specific guide:
 
 - **Feature**: see [scope-feature.md](scope-feature.md)
 - **Refactor**: see [scope-refactor.md](scope-refactor.md)
@@ -90,7 +102,7 @@ The user confirms or adjusts. Both values are required before continuing.
 
 ## 5. Conflict anticipation
 
-After the branch discussion, scan for in-flight work that might overlap with this plan. List open issues that share the same `base-branch` and are past `to-scope` (i.e., already in-flight: `to-slice`, `in-progress`, `to-implement`, `to-inspect`, `to-rework`, `to-merge`, `to-seal`, `to-land`, `to-await-waves`).
+Scan for in-flight work that might overlap with this plan. List open issues that share the same `base-branch` and are past `to-scope` (i.e., already in-flight: `to-slice`, `in-progress`, `to-implement`, `to-inspect`, `to-rework`, `to-merge`, `to-seal`, `to-land`, `to-await-waves`).
 
 ```sh
 BASE_BRANCH="{from branch discussion}"
@@ -102,7 +114,7 @@ for LABEL in to-slice in-progress to-implement to-inspect to-rework to-merge to-
 done
 ```
 
-For each returned issue, parse the `base-branch` from its frontmatter. Keep only those whose `base-branch` matches the plan's `$BASE_BRANCH`. Skim each matching issue's plan issue body to assess whether it touches overlapping areas (same files, same modules, same concepts).
+For each returned issue, parse the `base-branch` from its frontmatter. Keep only those whose `base-branch` matches the plan's `$BASE_BRANCH`. Skim each matching issue's plan body to assess whether it touches overlapping areas (same files, same modules, same concepts).
 
 ## 6. Persist the plan
 
@@ -113,9 +125,9 @@ BASE_BRANCH="{from branch discussion}"
 PR_BRANCH="{from branch discussion}"
 ```
 
-The plan gets **prepended** to the evolving file (pushing the decision record down) which becomes our ISSUE_BODY variable. The decision record remains at the bottom for reference.
+The plan gets **prepended** to the evolving issue body (pushing any prior decision record down). The decision record remains at the bottom for reference.
 
-The plan issue body starts with frontmatter that downstream phases will read:
+The issue body starts with frontmatter that downstream phases will read:
 
 ```markdown
 ---
@@ -126,13 +138,13 @@ bearing: "{selected bearing}"
 ```
 
 ```sh
-ISSUE_BODY="{plan-content}" # frontmatter + plan issue body from context
+ISSUE_BODY="{frontmatter + plan content}"
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-scope --add-label to-slice
 ```
 
 ## 7. Check for potential overlap in other issues
 
-If overlapping in-flight work is found, surface it to the user:
+If overlapping in-flight work was found in step 5, surface it to the user:
 
 > "From a quick look at current work in progress, this scope might lead to conflicts with #77 and #83. Should this issue wait for them to land?"
 
@@ -145,16 +157,15 @@ ISSUE_TITLE_UPDATED="{current issue title} [await: #77, #83]"
 ./tracker.sh issue edit "$ISSUE_ID" --title "$ISSUE_TITLE_UPDATED"
 ```
 
+If no overlapping work was found, continue silently.
+
 ## 8. Append metrics
 
-Compute the duration from `$START_TIME` to now. Read the current plan issue body, then append a metrics section at the bottom:
+Compute the duration from `$START_TIME` to now. Read the current issue body, then append a metrics section at the bottom:
 
 ```sh
 DURATION="{human-readable duration since START_TIME}" # e.g. "42s", "1m 12s"
-ISSUE_BODY="{current plan issue body with metrics section appended}"
-```
-
-```sh
+ISSUE_BODY="{current issue body with metrics section appended}"
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
 ```
 

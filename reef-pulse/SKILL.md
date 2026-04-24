@@ -1,22 +1,41 @@
 ---
 name: reef-pulse
-description: The Moonjelly Reef orchestrator. A single pulse that scans all issues by label, dispatches reef skills as sub-agents, and exits. Run manually or as a cron.
+description: Run the Moonjelly Reef pulse, an orchestrator to scan and dispatch all automated work on autopilot.
 ---
 
 # reef-pulse
 
-Before starting, read `.agents/moonjelly-reef/config.md` — it tells you the issue tracker type (GitHub, local, Jira, etc.) and any installed optional skills. If the file doesn't exist, read and follow [setup.md](setup.md) first and return here after.
+## Input
 
-> **Shell blocks are literal commands** — `./tracker.sh` is a real script next to this file. Execute it as written; do not substitute with raw git commands.
->
-> **Tracker note**: Commands below use `./tracker.sh` syntax for both issue and PR operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
-
-You are the orchestrator. You scan, dispatch, and exit. You hold no state — labels are the state.
-
-Capture the skill base directory (provided by the harness as "Base directory for this skill: {path}" at invocation time):
+Nothing, or a specific issue ID to focus the pulse on a single issue.
 
 ```sh
+ONLY_ISSUE_ID="{issue-id or -}" # "-" if nothing provided
 SKILL_DIR="{base directory for this skill}"
+```
+
+## Rules
+
+Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills. If the file doesn't exist, stop and tell the user: "🪼 `reef-pulse` requires setup. Run `reef-scope` first to configure the reef."
+
+**Shell blocks are literal commands** — execute them as written.
+
+**Tracker note**:
+
+- For `local-tracker`, run `./tracker.sh` exactly as written.
+- For GitHub, replace `./tracker.sh` with `gh`, then execute the command as written.
+- For other trackers with MCP issue tools, replace `./tracker.sh pr` with `gh pr`, and replace `./tracker.sh issue` with the MCP equivalent for that tracker.
+
+**AFK skill**: this skill runs without human interaction. You are the orchestrator — scan, dispatch, and exit. You hold no state; labels are the state. When in doubt: check the labels, make your best judgment, move on. Never block waiting for human input.
+
+## 0. Fetch context
+
+If `"$ONLY_ISSUE_ID" = "-"`, skip this step — the pulse-loop will scan all labels normally.
+
+If `$ONLY_ISSUE_ID` was provided, fetch that issue. The pulse-loop will process only this issue instead of scanning all labels:
+
+```sh
+./tracker.sh issue view "$ONLY_ISSUE_ID" --json body,title,labels
 ```
 
 ## Session setup

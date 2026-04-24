@@ -2,7 +2,7 @@
 
 ## Input
 
-This skill requires a specific issue: e.g. `#55` or `my-feature/001-auth-endpoint`.
+This skill requires a specific issue: e.g. `#42` or `my-feature/001-auth-endpoint`.
 
 Set the input as a shell variable:
 
@@ -30,7 +30,18 @@ Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker ty
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Set the post-fetch variables (after reading the issue body). Extract from frontmatter — works for single-slice plans and multi-slice sub-issues:
+Verify the issue carries the `to-rework` label. If it does not, hand off with:
+
+```sh
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="—"
+PR_ID="—"
+SUMMARY="Skipped: issue does not carry the to-rework label."
+```
+
+Report these variables to the caller and **do not continue**.
+
+Set the post-fetch variables (after reading the issue body):
 
 ```sh
 ISSUE_TITLE="{from issue title}"

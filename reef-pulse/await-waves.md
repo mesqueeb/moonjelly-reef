@@ -2,7 +2,7 @@
 
 ## Input
 
-This skill requires a specific issue: e.g. `#55` or `1-2`.
+This skill requires a specific issue: e.g. `#42` or `1-2`.
 
 The issue title includes a `[await: ...]` suffix encoding its blockers: e.g. `"auth token storage [await: #55, #56]"`. Blockers are parsed from this suffix — not from the issue body.
 
@@ -24,7 +24,7 @@ Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker ty
 - For GitHub, replace `./tracker.sh` with `gh`, then execute the command as written.
 - For other trackers with MCP issue tools, replace `./tracker.sh pr` with `gh pr`, and replace `./tracker.sh issue` with the MCP equivalent for that tracker.
 
-**AFK skill**: runs without human interaction. No judgment calls expected — if blocked, hand off and do not continue. If dependencies are landed, promote. Never block waiting for human input.
+**AFK skill**: this skill runs without human interaction. No judgment calls expected — if blocked, hand off and do not continue. If dependencies are landed, promote. Never block waiting for human input.
 
 ## 0. Fetch context
 
@@ -32,7 +32,18 @@ Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker ty
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Set the post-fetch variables (after reading the issue title and body):
+Verify the issue carries the `to-await-waves` label. If it does not, hand off with:
+
+```sh
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="—"
+PR_ID="—"
+SUMMARY="Skipped: issue does not carry the to-await-waves label."
+```
+
+Report these variables to the caller and **do not continue**.
+
+Set the post-fetch variables (after reading the issue body):
 
 ```sh
 ISSUE_TITLE="{from issue title, stripping [await: ...] suffix}"

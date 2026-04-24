@@ -2,7 +2,7 @@
 
 ## Input
 
-This skill requires a specific issue: e.g. `#55` or `research/001-auth-token-rotation`.
+This skill requires a specific issue: e.g. `#42` or `research/001-auth-token-rotation`.
 
 Set the input as a shell variable:
 
@@ -29,6 +29,17 @@ Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker ty
 ```sh
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
+
+Verify the issue carries the `to-research` label. If it does not, hand off with:
+
+```sh
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="—"
+PR_ID="—"
+SUMMARY="Skipped: issue does not carry the to-research label."
+```
+
+Report these variables to the caller and **do not continue**.
 
 Read the issue. It must contain:
 

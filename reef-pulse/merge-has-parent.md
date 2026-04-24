@@ -32,7 +32,7 @@ BASE_BRANCH="{from issue frontmatter base-branch field}"
 
 Filter to issues whose `base-branch` frontmatter matches `$BASE_BRANCH` (these are the siblings — all sub-issues of the same parent issue share the same base-branch, which is the parent's pr-branch).
 
-Check: are ALL such issues tagged `landed`? If all siblings are landed, change the parent issue label from `in-progress` to `to-seal` (step 4). If any are still open, do nothing — more work is in progress.
+Check: are ALL such issues labeled `landed`? If all siblings are landed, change the parent issue label from `in-progress` to `to-seal` (step 4). If any are still open, do nothing — more work is in progress.
 
 Note: no need to read the coverage matrix — the `base-branch` match is sufficient to identify all siblings agnostically.
 
@@ -59,7 +59,7 @@ Document judgment calls made during this phase on the PR. Only document decision
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="to-seal" # or "in-progress" if not all issues tagged 'landed'
+NEXT_PHASE="to-seal" # or "in-progress" if not all issues labeled 'landed'
 PR_ID="—" # sub-issue merge does not open the parent issue PR
 SUMMARY="{ISSUE_TITLE} merged — {N} of {total} issues complete"
 ```

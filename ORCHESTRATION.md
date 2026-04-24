@@ -859,7 +859,7 @@ General rules:
 - handoff
   ```sh
   ISSUE_ID="$ISSUE_ID"
-  NEXT_PHASE="to-seal" # or "in-progress" if not all issues tagged 'landed'
+  NEXT_PHASE="to-seal" # or "in-progress" if not all issues labeled 'landed'
   PR_ID="—" # sub-issue merge does not open the parent issue PR
   ```
 

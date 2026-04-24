@@ -30,6 +30,17 @@ Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker ty
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
+Verify the issue carries the `to-seal` label. If it does not, hand off with:
+
+```sh
+ISSUE_ID="$ISSUE_ID"
+NEXT_PHASE="—"
+PR_ID="—"
+SUMMARY="Skipped: issue does not carry the to-seal label."
+```
+
+Report these variables to the caller and **do not continue**.
+
 Read the plan. It must have:
 
 - Success criteria

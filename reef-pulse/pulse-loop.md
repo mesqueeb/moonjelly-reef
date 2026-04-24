@@ -34,6 +34,8 @@ For all sub-agents spawned:
 
 ## 2a. Flow wave
 
+If `"$ONLY_ISSUE_ID"` is set to a specific ID, skip the label scan and use only that issue and its sub-issues. Otherwise scan:
+
 ```sh
 ./tracker.sh issue list --json number,title,labels --limit 100 \
   --search 'label:to-slice OR label:to-implement OR label:to-research OR label:to-inspect OR label:to-rework OR label:to-seal'

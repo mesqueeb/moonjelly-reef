@@ -119,7 +119,7 @@ If you've queued up enough issues with the `reef-scope` skill, running the `reef
 
 Design principles:
 
-- **Testing at source**: each transition includes verification before tagging.
+- **Testing at source**: each transition includes verification before labeling.
 - **Small batches**: slices flow independently and concurrently.
 - **Human = bottleneck**: minimize 🤿 states. Only two: scope, land.
 - **No heroics**: agents that are stuck flag + move on, never spiral.

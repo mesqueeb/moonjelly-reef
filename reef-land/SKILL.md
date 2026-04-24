@@ -1,13 +1,9 @@
 ---
 name: reef-land
-description: Present the final report to the human for review. Human approves (merge to the base branch), requests changes, or sends back for re-probing. Use when an issue is tagged to-land.
+description: Present the final report to the human for review. Human approves (merge to the base branch), requests changes, or sends back for re-probing. Use when an issue is labeled to-land.
 ---
 
 # reef-land
-
-> **Shell blocks are literal commands** — `./tracker.sh` is a real script next to this file. Execute it as written; do not substitute with raw git commands.
->
-> **Tracker note**: Commands below use `./tracker.sh` syntax for both issue and PR operations. For local-tracker projects, run `./tracker.sh` directly. For GitHub, replace `./tracker.sh` with `gh`. For MCP trackers (ClickUp, Jira, Linear), use equivalent MCP tool calls.
 
 ## Input
 
@@ -19,6 +15,18 @@ Determine which you received — a plan issue ID or a PR number/URL. Set whichev
 ISSUE_ID="{issue-id}" # if passed directly or extracted from passed URL
 PR_ID="{pr-id}" # if passed directly or extracted from passed URL
 ```
+
+## Rules
+
+Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type, merge strategy, and any installed optional skills.
+
+**Shell blocks are literal commands** — execute them as written.
+
+**Tracker note**:
+
+- For `local-tracker`, run `./tracker.sh` exactly as written.
+- For GitHub, replace `./tracker.sh` with `gh`, then execute the command as written.
+- For other trackers with MCP issue tools, replace `./tracker.sh pr` with `gh pr`, and replace `./tracker.sh issue` with the MCP equivalent for that tracker.
 
 ## 0. Fetch context
 
@@ -97,7 +105,7 @@ Acknowledge them: "You've left N comments on the PR." Then show a grouped summar
 >
 > 1. Ask away → move to **step 3 (Scope change requests)**
 > 2. Merge first but capture PR concerns and comments in a follow-up issue → move to **step 4 (Capture concerns in follow-up issue)**, then **step 5 (Approve)**, then **step 6 (Status report)**
-> 3. Maybe later (exit) — the issue stays tagged `to-land` for next time.
+> 3. Maybe later (exit) — the issue stays labeled `to-land` for next time.
 
 ### If there are NO active PR comments
 
@@ -106,7 +114,7 @@ Ask the human:
 > 1. Approve — looks good → move to **step 5 (Approve)**, then **step 6 (Status report)**
 > 2. Open the PR in browser — I want to review the code first
 > 3. I have concerns — let's discuss → move to **step 3 (Scope change requests)**
-> 4. Maybe later (exit) — the issue stays tagged `to-land` for next time.
+> 4. Maybe later (exit) — the issue stays labeled `to-land` for next time.
 
 If (2): open the PR in the browser:
 
@@ -195,7 +203,7 @@ Tell the human:
 
 ## 4. Capture concerns in follow-up issue (when chosen in step 2)
 
-Create a new issue with the PR comments and concerns, tagged `to-scope`:
+Create a new issue with the PR comments and concerns, labeled `to-scope`:
 
 ```sh
 FOLLOW_UP_CONTEXT="{summary of PR comments and concerns from step 2}"
@@ -251,6 +259,6 @@ Summarize what happened:
 - That the PR was merged and the plan closed.
 - Whether a follow-up issue was created (and link to it).
 
-If a follow-up issue was created and tagged `to-scope`, suggest:
+If a follow-up issue was created and labeled `to-scope`, suggest:
 
 > "Follow-up issue #{N} is ready for scoping. Want to run the `reef-scope` skill for it now?"
