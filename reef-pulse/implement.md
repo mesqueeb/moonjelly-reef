@@ -7,7 +7,7 @@ This skill requires a specific issue: e.g. `#42` or `my-feature/001-auth-endpoin
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
+ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
 ```
 
 ## Rules
@@ -156,7 +156,7 @@ The PR body must start with the "closes" reference, followed by the implementati
 Document judgment calls in that implementation report. Only include decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
 
 ```sh
-CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g.: #42
+CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. #42
 REPORT="{implementation report}"
 PR_BODY_NEW="$CLOSES\n\n$REPORT"
 ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
@@ -169,7 +169,7 @@ The PR targets `$BASE_BRANCH` — the branch it merges into.
 Persist the PR metadata for the newly created PR on the issue body so downstream phases (inspect, rework, merge) can find it.
 
 ```sh
-PR_ID="{from pr create output}" # e.g.: #43
+PR_ID="{from pr create output}" # e.g. #43
 ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
 # add to frontmatter (if not already): pr-branch: $PR_BRANCH
 # add to frontmatter:  pr-id: $PR_ID

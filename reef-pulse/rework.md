@@ -7,7 +7,7 @@ This skill requires a specific issue: e.g. `#42` or `my-feature/001-auth-endpoin
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
+ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
 ```
 
 ## Rules

@@ -7,7 +7,7 @@ This skill requires a specific issue: e.g. `#42` or `my-feature`.
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
+ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
 ```
 
 ## Rules
@@ -229,7 +229,7 @@ PR_BODY="$PR_BODY\n\n$REPORT"
 **If no PR exists, create and update the plan issue body as well:**
 
 ```sh
-CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g.: #42
+CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. #42
 PR_BODY_NEW="$CLOSES\n\n$REPORT"
 ./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-seal
 # Persist the PR metadata on the plan issue so downstream human review can always find it:

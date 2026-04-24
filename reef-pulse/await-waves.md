@@ -9,7 +9,7 @@ The issue title includes a `[await: ...]` suffix encoding its blockers: e.g. `"a
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
+ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
 ```
 
 ## Rules

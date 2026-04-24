@@ -10,7 +10,7 @@ description: Scope an issue into a plan with success criteria, ready for the Moo
 A specific issue ID, or nothing.
 
 ```sh
-ISSUE_ID="{issue-id or -}" # pre-existing and passed or picked, e.g.: #42; "-" if nothing provided
+ISSUE_ID="{issue-id or -}" # pre-existing and passed or picked, e.g. #42; "-" if nothing provided
 SKILL_DIR="{base directory for this skill}"
 ```
 

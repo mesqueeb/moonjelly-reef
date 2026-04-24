@@ -67,6 +67,49 @@ Use `"{from issue frontmatter X field}"` as the placeholder style — it tells t
 
 Variables derived from a computation are declared at the step that computes them.
 
+## Variable examples
+
+Every placeholder variable should have a `# e.g.` comment showing a realistic value. This tells the agent the expected type and format at a glance:
+
+  preferred:     AGENT_COUNT_SESSION="{session-wide dispatch count so far}" # e.g. 4
+  anti-pattern:  AGENT_COUNT_SESSION="{session-wide dispatch count so far}"
+
+String values must be quoted in the example, exactly as they would appear in a real assignment:
+
+  preferred:     ISSUE_ID="{from the fetched issue}" # e.g. "#42"
+  preferred:     NEXT_PHASE="{from handoff NEXT_PHASE}" # e.g. "to-inspect"
+  anti-pattern:  ISSUE_ID="{from the fetched issue}" # e.g. #42
+
+Numeric values are unquoted:
+
+  preferred:     PULSE_NR="{current pulse number}" # e.g. 2
+  preferred:     SESSION_START_TS="{unix timestamp captured at session start}" # e.g. 1735000000
+
+Skip `# e.g.` only for hardcoded literals (the value is already the example) and computed expressions (the formula is self-evident).
+
+## Agent vs sub-agent
+
+Use "sub-agent" when referring to a spawned agent dispatched by the current session. "Agent" alone is ambiguous — it could mean the main session itself.
+
+  preferred:     Wait for all flow sub-agents to complete before proceeding.
+  preferred:     Dispatch a sub-agent per issue in parallel.
+  anti-pattern:  Wait for all flow agents to complete before proceeding.
+  anti-pattern:  Dispatch an agent per issue in parallel.
+
+Variable names (`AGENT_COUNT_PULSE`, `SUBAGENT_DURATION`) and directory paths (`.agents/`) are exempt — do not rename those.
+
+## Redundant ordering phrases
+
+Do not use phrases like "Before doing anything else," when the step order already makes the sequence clear. The numbered steps are the ordering — prose that restates it adds noise.
+
+  anti-pattern:  Before doing anything else, check for an existing pulse.lock file.
+  preferred:     Check for an existing pulse.lock file.
+
+**Exception: sub-agent waits must always be stated explicitly.** An agent dispatching sub-agents will move on immediately unless told to wait. Never rely on step ordering to imply a wait — always write it out in bold:
+
+  required:  **Wait for all flow agents to complete before proceeding to the ebb wave.**
+  required:  **Wait for the metric-logger sub-agent to complete before proceeding.**
+
 ## Conditionals
 
 Always reference variables with `$VAR` syntax in prose — never bare names:

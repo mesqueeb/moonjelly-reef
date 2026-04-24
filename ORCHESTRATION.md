@@ -243,16 +243,16 @@ General rules:
   ```
 - set-variables — if `"$AGENT_COUNT_PULSE" -gt 0`
   ```sh
-  SUCCESS_COUNT="{from metrics logger handoff}" # e.g.: 2
-  FAIL_COUNT="{from metrics logger handoff}" # e.g.: 0
-  FAIL_IDS="{from metrics logger handoff}" # e.g.: #25, #89
+  SUCCESS_COUNT="{from metrics logger handoff}" # e.g. 2
+  FAIL_COUNT="{from metrics logger handoff}" # e.g. 0
+  FAIL_IDS="{from metrics logger handoff}" # e.g. #25, #89
   ```
 
 ### [slice.md](./reef-pulse/slice.md)
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
+  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
   ```
 - fetch-context
   ```sh
@@ -345,7 +345,7 @@ General rules:
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
+  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
   ```
 - fetch-context
   ```sh
@@ -380,14 +380,14 @@ General rules:
   ```
 - set-variables
   ```sh
-  CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g.: #42
+  CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. #42
   REPORT="{implementation report}"
   PR_BODY_NEW="$CLOSES\n\n$REPORT"
   ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
   ```
 - set-variables
   ```sh
-  PR_ID="{from pr create output}" # e.g.: #43
+  PR_ID="{from pr create output}" # e.g. #43
   ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
   # add to frontmatter (if not already): pr-branch: $PR_BRANCH
   # add to frontmatter:  pr-id: $PR_ID
@@ -408,7 +408,7 @@ General rules:
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
+  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
   ```
 - fetch-context
   ```sh
@@ -437,14 +437,14 @@ General rules:
   ```
 - set-variables
   ```sh
-  CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g.: #42
+  CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. #42
   REPORT="{research report}"
   PR_BODY_NEW="$CLOSES\n\n$REPORT"
   ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
   ```
 - set-variables
   ```sh
-  PR_ID="{from pr create output}" # e.g.: #43
+  PR_ID="{from pr create output}" # e.g. #43
   ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
   # add to frontmatter (if not already): pr-branch: $PR_BRANCH
   # add to frontmatter:  pr-id: $PR_ID
@@ -575,7 +575,7 @@ General rules:
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
+  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
   ```
 - fetch-context
   ```sh
@@ -641,7 +641,7 @@ General rules:
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
+  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
   ```
 - fetch-context
   ```sh
@@ -696,7 +696,7 @@ General rules:
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
+  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
   ```
 - fetch-context
   ```sh
@@ -761,7 +761,7 @@ General rules:
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
+  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
   ```
 - fetch-context
   ```sh
@@ -867,7 +867,7 @@ General rules:
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
+  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
   ```
 - fetch-context
   ```sh
@@ -907,7 +907,7 @@ General rules:
   ```
 - if PR needs creation
   ```sh
-  CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g.: #42
+  CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. #42
   PR_BODY_NEW="$CLOSES\n\n$REPORT"
   ./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-seal
   # Persist the PR metadata on the plan issue so downstream human review can always find it:

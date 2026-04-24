@@ -11,7 +11,7 @@ Nothing, or a specific issue ID to focus the pulse on a single issue.
 
 ```sh
 ONLY_ISSUE_ID="{issue-id or -}" # "-" if nothing provided
-SKILL_DIR="{base directory for this skill}"
+SKILL_DIR="{base directory for this skill}" # e.g. ~/.claude/skills/reef-pulse
 ```
 
 ## Rules
@@ -32,22 +32,22 @@ Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker ty
 
 If `"$ONLY_ISSUE_ID" = "-"`, skip this step — the pulse-loop will scan all labels normally.
 
-If `$ONLY_ISSUE_ID` was provided, fetch that issue. The pulse-loop will process only this issue instead of scanning all labels:
+If `$ONLY_ISSUE_ID` is a specific ID, fetch that issue. The pulse-loop will process only this issue instead of scanning all labels:
 
 ```sh
 ./tracker.sh issue view "$ONLY_ISSUE_ID" --json body,title,labels
 ```
 
-## Session setup
-
-### Acquire lock
-
-Before doing anything else, check for an existing pulse.lock file.
+## 1. Session setup
 
 ```sh
 TRACKER_BRANCH="{from config.md}" # e.g. main
 LOCK_FILE=".agents/moonjelly-reef/pulse.lock"
 ```
+
+### Acquire lock
+
+Check for an existing pulse.lock file.
 
 If the pulse.lock file exists, another pulse may already be running (or a previous session crashed without cleaning up).
 
@@ -56,15 +56,15 @@ If the pulse.lock file exists, another pulse may already be running (or a previo
 
 ### Sync tracker branch (local-tracker-committed only)
 
-RUN IF the tracker is `github`, `local-tracker-gitignored`, or any MCP-based tracker, skip this step.
+RUN IF the tracker is `local-tracker-committed`.
 
-If the tracker type in config is `local-tracker-committed`, the tracker files live in a git-tracked directory on a specific branch. Sync it before scanning. `TRACKER_BRANCH` was already set in the previous step.
+The tracker files live in a git-tracked directory on a specific branch. Sync it before scanning. `TRACKER_BRANCH` was already set above.
 
 ```sh
 git fetch origin "$TRACKER_BRANCH" && git checkout "$TRACKER_BRANCH" && git pull
 ```
 
-### Print session header (first iteration only)
+### Print session header
 
 RUN ONCE PER SESSION.
 
@@ -84,23 +84,23 @@ AGENT_COUNT_SESSION=0
 SESSION_START_TS="$(date +%s)"
 ```
 
-## Start pulse loop
+## 2. Start pulse loop
 
 After the session is initialized, read and follow [`pulse-loop.md`](pulse-loop.md) from top to bottom for the first pulse-loop iteration.
 
-## Repeat pulse loop or finish
+## 3. Repeat pulse loop or finish
 
 After each return from [`pulse-loop.md`](pulse-loop.md), decide whether to invoke another pulse-loop iteration or move to session completion.
 
 **If `"$IS_SESSION_COMPLETE" = "false"` and `"$AGENT_COUNT_PULSE" -gt 0`**: the pulse dispatched automated work in this pulse-loop iteration. Re-run [`pulse-loop.md`](pulse-loop.md) on the main session without asking confirmation. The loop stays on the main session, never as a sub-agent — this keeps the sequence strictly serial (scan, dispatch, wait, scan again) instead of spawning nested agents. Do NOT release the lock between pulse-loop iterations; the lock persists across the entire session. Re-running `pulse-loop.md` means following that file again from top to bottom using the updated shell variables already present in the same session.
 
-**If `"$IS_SESSION_COMPLETE" = "true"`**: no automated work was dispatched this iteration. The pulse has nothing left to do. Continue to the session completion steps below.
+**If `"$IS_SESSION_COMPLETE" = "true"`**: no automated work was dispatched this iteration. The pulse has nothing left to do. Continue to step 4.
 
-## Session Completion
-
-### Print SESSION COMPLETE
+## 4. Session completion
 
 RUN ONLY WHEN `"$IS_SESSION_COMPLETE" = "true"`.
+
+### Print SESSION COMPLETE
 
 First compute the final session duration from the session start timestamp:
 
@@ -130,7 +130,7 @@ Then print the SESSION COMPLETE box with session stats:
 
 ### Print Lore
 
-RUN ONLY WHEN `"$IS_SESSION_COMPLETE" = "true"` and `"$AGENT_COUNT_SESSION" -gt 0`.
+RUN ONLY WHEN `"$AGENT_COUNT_SESSION" -gt 0`.
 
 Prep the lore-writer sub-agent input:
 
@@ -138,12 +138,12 @@ Prep the lore-writer sub-agent input:
 SENTENCE_BALLPARK="$((PULSE_NR * 2))"
 ```
 
-Spawn a sub-agent with:
+Dispatch a sub-agent:
 
 ```
 Read and follow $SKILL_DIR/lore-writer.md.
 
-SENTENCE_BALLPARK=$SENTENCE_BALLPARK
+SENTENCE_BALLPARK="$SENTENCE_BALLPARK"
 ```
 
 The lore-writer sub-agent returns:
@@ -165,10 +165,9 @@ After the sub-agent returns, print the chapter:
 Query for to-land and to-scope issues and say how many there are of those.
 
 ```sh
-# Scan all to-land and to-scope issues in a single query
 ./tracker.sh issue list --json number,title,labels --limit 100 --search 'label:to-land OR label:to-scope'
-X="{the amount of to-land issues}"
-Y="{the amount of to-scope issues}"
+X="{the amount of to-land issues}" # e.g. 3
+Y="{the amount of to-scope issues}" # e.g. 2
 ```
 
 Print:
@@ -181,16 +180,6 @@ Run `reef-land` or `reef-scope` to start. 🤿
 
 ### Release lock
 
-RUN ONLY WHEN `"$IS_SESSION_COMPLETE" = "true"`.
-
 To release the lock, delete the `pulse.lock` file.
 
 Exit.
-
-## Design principles
-
-These are reminders for the LLM executing this skill, not documentation:
-
-- **You are stateless.** You scan labels, dispatch skills, and exit. You do not track what you dispatched last time. Labels are the state.
-- **Don't do the work yourself.** You dispatch skills. You never implement, review, or merge directly.
-- **If a dispatch fails, don't retry.** Report the failure in the summary and move on. The next pulse will pick it up if the label is still set.

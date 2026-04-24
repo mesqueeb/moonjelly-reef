@@ -7,7 +7,7 @@ This skill requires a specific issue: e.g. `#42` or `research/001-auth-token-rot
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed, e.g.: #42
+ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. #42
 ```
 
 ## Rules
@@ -136,7 +136,7 @@ Decisions made during research that weren't covered by the acceptance criteria o
 The PR body must start with the "closes" reference, followed by the research report:
 
 ```sh
-CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g.: #42
+CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. #42
 REPORT="{research report}"
 PR_BODY_NEW="$CLOSES\n\n$REPORT"
 ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
@@ -149,7 +149,7 @@ The PR targets `$BASE_BRANCH` — the branch it merges into.
 Persist the PR metadata for the newly created PR on the issue body so downstream phases (inspect, rework, merge) can find it:
 
 ```sh
-PR_ID="{from pr create output}" # e.g.: #43
+PR_ID="{from pr create output}" # e.g. #43
 ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
 # add to frontmatter (if not already): pr-branch: $PR_BRANCH
 # add to frontmatter:  pr-id: $PR_ID
