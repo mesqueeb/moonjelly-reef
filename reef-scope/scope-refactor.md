@@ -74,15 +74,6 @@ A list of testing decisions that were made. Include:
 - Which modules will be tested
 - Prior art for the tests (i.e. similar types of tests in the codebase)
 
-## Success Criteria
-
-Testable conditions that must ALL be true for this work to be considered done. Each criterion must be mechanically verifiable.
-
-- [ ] {criterion 1}
-- [ ] {criterion 2}
-- [ ] All existing tests still pass
-- [ ] ...
-
 ## Out of Scope
 
 A description of the things that are out of scope for this refactor.

@@ -273,7 +273,7 @@ General rules:
 
 - set-variables
   ```sh
-  ISSUE_BODY="{plan issue body with scoped pr-branch, rewritten bearing, and updated Success & Acceptance criteria}"
+  ISSUE_BODY="{plan issue body with scoped pr-branch, rewritten bearing, and appended Acceptance criteria}"
   ```
 - update-tracker
   ```sh
