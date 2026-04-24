@@ -26,10 +26,7 @@ Hammer out the exact scope of the implementation. Work out what you plan to chan
 
 Look in the codebase to check for test coverage of this area.
 
-Then ask the user these questions (one at a time, skip any already answered):
-
-- What kind of testing do you expect for this refactor?
-- Is there anything you'd need to see to feel confident this is ready to merge?
+If there is insufficient test coverage, ask the user what their expectations are for testing for this refactor. Ask whether there’s anything they’d need to review in order to feel confident signing off on the refactor.
 
 Fold the answers into the Testing Decisions section of the plan. Do not create a separate section.
 
@@ -77,6 +74,7 @@ Do NOT include specific file paths or code snippets. They may end up being outda
 
 A list of testing decisions that were made. Include:
 
+- The user's testing expectations
 - A description of what makes a good test (only test external behavior, not implementation details)
 - Which modules will be tested
 - Prior art for the tests (i.e. similar types of tests in the codebase)
