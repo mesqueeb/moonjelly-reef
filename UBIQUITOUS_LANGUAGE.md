@@ -10,11 +10,11 @@
 
 ## Work hierarchy
 
-| Term          | Definition                                                                                                      | Aliases to avoid                      |
-| ------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| **issue**     | A scoped unit of work tracked by the issue tracker — a bug, feature, or refactor                                | ticket, work item, task, epic, parent |
+| Term          | Definition                                                                                                                             | Aliases to avoid                      |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| **issue**     | A scoped unit of work tracked by the issue tracker — a bug, feature, refactor, or research task                                        | ticket, work item, task, epic, parent |
 | **plan**      | The content written into an issue by reef-scope — User Stories, Implementation Decisions, Testing Decisions, metadata, coverage matrix | spec, design, RFC                     |
-| **sub-issue** | An issue created by the slice phase to implement one slice under a parent issue, also called a "vertical slice" | child task, child ticket, sub task    |
+| **sub-issue** | An issue created by the slice phase to implement one slice under a parent issue, also called a "vertical slice"                        | child task, child ticket, sub task    |
 
 ## Fields and identifiers
 
@@ -30,21 +30,21 @@ Use the kebab-case form for canonical domain and frontmatter terms, and the cons
 
 ## Title suffixes
 
-| Term               | Definition                                                                                                             | Aliases to avoid                 |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| Term               | Definition                                                                                                             | Aliases to avoid                   |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
 | **`[await: ...]`** | The issue-title suffix that encodes blockers for work that must wait on other issues to land before it can be promoted | blocked-by field, dependency label |
 
 ## Planning
 
-| Term                    | Definition                                                                                                                                 | Aliases to avoid                                  |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
-| **problem statement**          | The plan section that describes the issue from the user's perspective                                                                      | bug write-up, design brief                        |
-| **user story** (US)            | A concise statement of user intent and benefit; a numbered plan item used as a coverage anchor for slicing                                 | requirement, use case (when referring to the row) |
-| **implementation decision** (ID) | A plan item recording an architectural or technical choice made during scoping; used as a coverage anchor for slicing                    | design decision, architectural note               |
-| **testing decision** (TD)      | A plan item that records expected testing behavior, rigor level, and what "done" looks like for this issue                                 | test plan, QA notes                               |
-| **decision record**            | The plan section that captures scoping interview choices and constraints that downstream phases may need to revisit                         | notes, design log                                 |
-| **acceptance criteria**        | Slice-level testable conditions synthesized by the slicer from User Stories, Implementation Decisions, and Testing Decisions               | checklist, slice criteria, ACs (never abbreviate) |
-| **coverage matrix**            | A table mapping each plan item (US, ID, TD) to which sub-issue(s) and acceptance criteria cover it — only used when an issue creates sub-issues | traceability matrix, mapping               |
+| Term                             | Definition                                                                                                                                      | Aliases to avoid                                  |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| **problem statement**            | The plan section that describes the issue from the user's perspective                                                                           | bug write-up, design brief                        |
+| **user story** (US)              | A concise statement of user intent and benefit; a numbered plan item used as a coverage anchor for slicing                                      | requirement, use case (when referring to the row) |
+| **implementation decision** (ID) | A plan item recording an architectural or technical choice made during scoping; used as a coverage anchor for slicing                           | design decision, architectural note               |
+| **testing decision** (TD)        | A plan item that records expected testing behavior, rigor level, and what "done" looks like for this issue                                      | test plan, QA notes                               |
+| **decision record**              | The plan section that captures scoping interview choices and constraints that downstream phases may need to revisit                             | notes, design log                                 |
+| **acceptance criteria**          | Slice-level testable conditions synthesized by the slicer from User Stories, Implementation Decisions, and Testing Decisions                    | checklist, slice criteria, ACs (never abbreviate) |
+| **coverage matrix**              | A table mapping each plan item (US, ID, TD) to which sub-issue(s) and acceptance criteria cover it — only used when an issue creates sub-issues | traceability matrix, mapping                      |
 
 ## Report sections
 
@@ -54,24 +54,24 @@ Use the kebab-case form for canonical domain and frontmatter terms, and the cons
 
 ## Phases
 
-| Term                 | Definition                                                                                                                 | Aliases to avoid                           |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| **phase**            | A step in the issue lifecycle, executed by reading an instruction file under `reef-pulse/`                                 | skill (for internal phases), step, stage   |
+| Term                 | Definition                                                                                                                  | Aliases to avoid                           |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| **phase**            | A step in the issue lifecycle, executed by reading an instruction file under `reef-pulse/`                                  | skill (for internal phases), step, stage   |
 | **scope**            | The diver scopes an issue — determines type, writes plan with User Stories, Implementation Decisions, and Testing Decisions | design, spec                               |
-| **slice** (as phase) | Analyze a plan and either keep the work on the current issue or break it into sub-issues                                   | decompose, break down                      |
-| **implement**        | Build a slice using TDD in a worktree, open a PR                                                                           | code, develop, build                       |
-| **inspect**          | Independently verify a slice PR against acceptance criteria                                                                | review, QA, check                          |
-| **rework**           | Fix issues flagged by the inspector                                                                                        | fix, address feedback                      |
-| **merge**            | Merge an approved sub-issue PR into its parent issue's `pr-branch`, or hand off an issue with no parent issue to the diver | land (that's a different phase), integrate |
-| **seal**             | Holistic review of an issue whose work was composed through sub-issues on its `pr-branch`                                  | final review, sign-off                     |
-| **land**             | The diver reviews the finished work and merges to the base branch                                                          | finalise, approve, ship                    |
+| **slice** (as phase) | Analyze a plan and either keep the work on the current issue or break it into sub-issues                                    | decompose, break down                      |
+| **implement**        | Build a slice using TDD in a worktree, open a PR                                                                            | code, develop, build                       |
+| **inspect**          | Independently verify a slice PR against acceptance criteria                                                                 | review, QA, check                          |
+| **rework**           | Fix issues flagged by the inspector                                                                                         | fix, address feedback                      |
+| **merge**            | Merge an approved sub-issue PR into its parent issue's `pr-branch`, or hand off an issue with no parent issue to the diver  | land (that's a different phase), integrate |
+| **seal**             | Holistic review of an issue whose work was composed through sub-issues on its `pr-branch`                                   | final review, sign-off                     |
+| **land**             | The diver reviews the finished work and merges to the base branch                                                           | finalise, approve, ship                    |
 
 ## File types
 
-| Term | Definition | Aliases to avoid |
-| ---- | ---------- | ---------------- |
-| **phase file** | A top-level instruction file executed by the reef for one phase of the lifecycle, e.g. `merge.md`, `slice.md`, `reef-scope/SKILL.md` | skill file (when referring to a phase), step file |
-| **same-phase subfile** | An instruction file delegated to inline (in the same session) from a phase file. It omits `## Rules`, uses `## Input (from context)`, and all its input variables are resolved by the calling phase file. | sub-skill, child phase, router target |
+| Term                   | Definition                                                                                                                                                                                                | Aliases to avoid                                  |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| **phase file**         | A top-level instruction file executed by the reef for one phase of the lifecycle, e.g. `merge.md`, `slice.md`, `reef-scope/SKILL.md`                                                                      | skill file (when referring to a phase), step file |
+| **same-phase subfile** | An instruction file delegated to inline (in the same session) from a phase file. It omits `## Rules`, uses `## Input (from context)`, and all its input variables are resolved by the calling phase file. | sub-skill, child phase, router target             |
 
 Same-phase subfiles by phase:
 
@@ -81,27 +81,27 @@ Same-phase subfiles by phase:
 
 ## Labels
 
-| Term            | Definition                                                                                                                                    | Aliases to avoid                  |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| **label** / **labeled** | A marker on an issue that represents its current state in the lifecycle; *labeled* is the canonical verb form                                 | status, state, tag, tagged        |
-| **in-progress** | The parent-issue label meaning slice work is underway on sub-issues and the parent issue is waiting for them to land                          | active, ongoing, underway         |
-| **landed**      | The terminal label — a signal that a piece of work has reached its base branch. Once applied, the issue is considered complete and is closed. | done, completed, merged, finished |
+| Term                    | Definition                                                                                                                                    | Aliases to avoid                  |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| **label** / **labeled** | A marker on an issue that represents its current state in the lifecycle; _labeled_ is the canonical verb form                                 | status, state, tag, tagged        |
+| **in-progress**         | The parent-issue label meaning slice work is underway on sub-issues and the parent issue is waiting for them to land                          | active, ongoing, underway         |
+| **landed**              | The terminal label — a signal that a piece of work has reached its base branch. Once applied, the issue is considered complete and is closed. | done, completed, merged, finished |
 
 ## Orchestration lifecycle
 
 | Term        | Definition                                                                                 | Aliases to avoid                    |
 | ----------- | ------------------------------------------------------------------------------------------ | ----------------------------------- |
 | **session** | A complete orchestration run — from the first pulse to lock release. May span many pulses. | run, execution                      |
-| **pulse**   | One iteration within a session: scan → dispatch → metrics → recurse-or-exit                 | tick, cycle, run (that's a session) |
+| **pulse**   | One iteration within a session: scan → dispatch → metrics → recurse-or-exit                | tick, cycle, run (that's a session) |
 
 ## Saga system
 
-| Term            | Definition                                                                                                    | Aliases to avoid                            |
-| --------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| **saga**        | The persistent story that accumulates across sessions — the reef's ongoing narrative memory                   | story (too vague), lore (that's the format) |
-| **chapter**     | The session's full lore piece, written once to `chapter-NNN.md` at session end                                | session story, log                          |
-| **thread**      | An ongoing narrative element in `world.md` that persists across sessions and accumulates over time            | plot, arc, storyline                        |
-| **lore writer** | The sub-agent invoked once at session end to write a chapter and update `world.md`                            | story agent, saga writer                    |
+| Term            | Definition                                                                                         | Aliases to avoid                            |
+| --------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| **saga**        | The persistent story that accumulates across sessions — the reef's ongoing narrative memory        | story (too vague), lore (that's the format) |
+| **chapter**     | The session's full lore piece, written once to `chapter-NNN.md` at session end                     | session story, log                          |
+| **thread**      | An ongoing narrative element in `world.md` that persists across sessions and accumulates over time | plot, arc, storyline                        |
+| **lore writer** | The sub-agent invoked once at session end to write a chapter and update `world.md`                 | story agent, saga writer                    |
 
 ## Relationships
 
