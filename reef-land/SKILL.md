@@ -131,7 +131,7 @@ Then say: "Take your time reviewing. Leave any comments on the PR, then let me k
 
 ## 3. Scope change requests
 
-RUN ONLY WHEN there are active PR comments, the human raised concerns during steps 1–2, or the human explicitly requests changes.
+RUN ONLY IF there are active PR comments, the human raised concerns during steps 1–2, or the human explicitly requests changes.
 
 Collect all feedback from:
 

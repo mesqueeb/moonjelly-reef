@@ -51,7 +51,7 @@ BEARING="{from issue frontmatter bearing field, or - if not present}"         # 
 
 ### Guard: verify branch frontmatter
 
-RUN ONLY WHEN `"$BASE_BRANCH" = "-"` or `"$PR_BRANCH" = "-"`.
+RUN ONLY IF `"$BASE_BRANCH" = "-"` or `"$PR_BRANCH" = "-"`.
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-slice --add-label blocked-missing-scope --add-label to-scope

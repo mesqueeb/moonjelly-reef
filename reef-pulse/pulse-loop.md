@@ -126,7 +126,7 @@ ISSUE_ID="$ISSUE_ID"
 
 ## 3. Print dispatched sub-agents
 
-RUN ONLY WHEN `"$AGENT_COUNT_PULSE" -gt 0`.
+RUN ONLY IF `"$AGENT_COUNT_PULSE" -gt 0`.
 
 Immediately after dispatching, print each dispatched sub-agent with its phase emoji. Use the phase emoji from the README lore for each phase.
 
@@ -171,7 +171,7 @@ fi
 
 ## 5. Print all return results
 
-RUN ONLY WHEN `"$AGENT_COUNT_PULSE" -gt 0`.
+RUN ONLY IF `"$AGENT_COUNT_PULSE" -gt 0`.
 
 Collect one execution record per returned sub-agent. Each record is keyed by the returned `ISSUE_ID` and is used for the return-result output and the metrics pageant.
 
@@ -196,7 +196,7 @@ Print each `$RESULT_ROW`. E.g.:
 
 ## 6. Log all sub-agent metrics
 
-RUN ONLY WHEN `"$AGENT_COUNT_PULSE" -gt 0`.
+RUN ONLY IF `"$AGENT_COUNT_PULSE" -gt 0`.
 
 Prep one JSON array for the metric-logger sub-agent that includes the key variables and metrics gathered per sub-agent dispatched in this pulse-loop iteration:
 

@@ -94,7 +94,7 @@ METRICS_TABLE_UPDATED="{current METRICS_TABLE with $METRIC_ROW inserted immediat
 
 ### Write to issue only
 
-RUN ONLY WHEN `"$NEXT_PHASE" != "to-land"`.
+RUN ONLY IF `"$NEXT_PHASE" != "to-land"`.
 
 Write the updated metrics to the issue body only:
 
@@ -123,7 +123,7 @@ SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
 
 ### Move metrics to PR
 
-RUN ONLY WHEN `"$NEXT_PHASE" = "to-land"`.
+RUN ONLY IF `"$NEXT_PHASE" = "to-land"`.
 
 Metrics move from the issue body to the PR body. This is a cut-and-paste flow, not copy-and-merge.
 

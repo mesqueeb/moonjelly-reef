@@ -56,7 +56,7 @@ If the pulse.lock file exists, another pulse may already be running (or a previo
 
 ### Sync tracker branch (local-tracker-committed only)
 
-RUN IF the tracker is `local-tracker-committed`.
+RUN ONLY IF the tracker is `local-tracker-committed`.
 
 The tracker files live in a git-tracked directory on a specific branch. Sync it before scanning. `TRACKER_BRANCH` was already set above.
 
@@ -98,7 +98,7 @@ After each return from [`pulse-loop.md`](pulse-loop.md), decide whether to invok
 
 ## 4. Session completion
 
-RUN ONLY WHEN `"$IS_SESSION_COMPLETE" = "true"`.
+RUN ONLY IF `"$IS_SESSION_COMPLETE" = "true"`.
 
 ### Print SESSION COMPLETE
 
@@ -130,7 +130,7 @@ Print the SESSION COMPLETE box with session stats:
 
 ### Print Lore
 
-RUN ONLY WHEN `"$AGENT_COUNT_SESSION" -gt 0`.
+RUN ONLY IF `"$AGENT_COUNT_SESSION" -gt 0`.
 
 prep:
 

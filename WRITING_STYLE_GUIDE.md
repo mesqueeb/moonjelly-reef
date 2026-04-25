@@ -174,9 +174,15 @@ anti-pattern: Use whichever identifier you have to look up the other.
 
 Steps that only run under certain conditions open with an explicit guard line. Prefer shell variable checks over prose conditions:
 
-best: RUN ONLY WHEN `"$IS_SESSION_COMPLETE" = "true"`.
-ok: RUN IF the tracker is `local-tracker-committed`.
+best: RUN ONLY IF `"$IS_SESSION_COMPLETE" = "true"`.
+ok: RUN ONLY IF the tracker is `local-tracker-committed`.
 ok: RUN ONCE PER SESSION.
+
+Always use `RUN ONLY IF` — never `RUN IF` or `RUN ONLY WHEN`.
+
+  preferred:     RUN ONLY IF `"$IS_SESSION_COMPLETE" = "true"`.
+  anti-pattern:  RUN IF `"$IS_SESSION_COMPLETE" = "true"`.
+  anti-pattern:  RUN ONLY WHEN `"$IS_SESSION_COMPLETE" = "true"`.
 
 The best form uses a shell variable set earlier in the file — unambiguous and machine-checkable. Use prose conditions only when no shell variable captures the condition.
 

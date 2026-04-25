@@ -50,7 +50,7 @@ Close the current issue and update its labels:
 
 ## 4. Update plan label
 
-RUN ONLY WHEN `"$ALL_SIBLINGS_LANDED" = "true"`.
+RUN ONLY IF `"$ALL_SIBLINGS_LANDED" = "true"`.
 
 ```sh
 ./tracker.sh issue edit "$PARENT_ID" --remove-label in-progress --add-label to-seal
