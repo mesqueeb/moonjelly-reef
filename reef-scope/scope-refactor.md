@@ -2,43 +2,43 @@
 
 ## 1. Explore the repo
 
-Explore the repo to verify the user's assertions and understand the current state of the codebase.
+Explore the repo to verify the diver's assertions and understand the current state of the codebase.
 
-## 3. Consider alternatives
+## 2. Consider alternatives
 
 Ask whether they have considered other options, and present other options to them.
 
-## 4. Interview the implementation
+## 3. Interview the implementation
 
-If new information is needed, interview the user about the implementation. Be extremely detailed and thorough.
+If new information is needed, interview the diver about the implementation. Be extremely detailed and thorough.
 
-## 5. Hammer out scope
+## 4. Hammer out scope
 
 Hammer out the exact scope of the implementation. Work out what you plan to change and what you plan NOT to change.
 
-## 6. Assess test coverage and nail down testing expectations
+## 5. Assess test coverage and nail down testing expectations
 
 Look in the codebase to check for test coverage of this area.
 
-If there is insufficient test coverage, ask the user what their expectations are for testing for this refactor. Ask whether there’s anything they’d need to review in order to feel confident signing off on the refactor.
+If there is insufficient test coverage, ask the diver what their expectations are for testing for this refactor. Ask whether there’s anything they’d need to review in order to feel confident signing off on the refactor.
 
 Fold the answers into the Testing Decisions section of the plan. Do not create a separate section.
 
-## 7. Design the commit plan
+## 6. Design the commit plan
 
-Break the implementation into a plan of tiny commits. Remember Martin Fowler's advice to "make each refactoring step as small as possible, so that you can always see the program working."
+Break the implementation into a plan of tiny commits. Remember Martin Fowler’s advice to "make each refactoring step as small as possible, so that you can always see the program working."
 
-## 8. Set the plan content
+## 7. Set the plan content
 
 <plan-template>
 
 ## Problem Statement
 
-The problem that the developer is facing, from the developer's perspective.
+The problem that the diver is facing, from the diver's perspective.
 
 ## Solution
 
-The solution to the problem, from the developer's perspective.
+The solution to the problem, from the diver's perspective.
 
 ## What Won't Change
 
@@ -48,13 +48,13 @@ Explicit scope of what remains untouched. This is as important as what changes.
 
 A LONG, detailed implementation plan. Write the plan in plain English, breaking down the implementation into the tiniest commits possible. Each commit should leave the codebase in a working state.
 
-## Decision Document
+## Decision Record
 
 A list of implementation decisions that were made. This can include:
 
 - The modules that will be built/modified
 - The interfaces of those modules that will be modified
-- Technical clarifications from the developer
+- Technical clarifications from the diver
 - Architectural decisions
 - Schema changes
 - API contracts
@@ -66,7 +66,7 @@ Do NOT include specific file paths or code snippets. They may end up being outda
 
 A list of testing decisions that were made. Include:
 
-- The user's testing expectations
+- The diver's testing expectations
 - A description of what makes a good test (only test external behavior, not implementation details)
 - Which modules will be tested
 - Prior art for the tests (i.e. similar types of tests in the codebase)
@@ -78,5 +78,5 @@ A description of the things that are out of scope for this refactor.
 </plan-template>
 
 ```sh
-NEW_PLAN="{new plan content as per template above}"
+NEW_PLAN="{new plan content as per template above}" # e.g. "## Problem Statement\n\n..."
 ```

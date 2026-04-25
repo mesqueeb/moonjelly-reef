@@ -2,7 +2,7 @@
 
 ## Input
 
-This skill requires a specific issue: e.g. `#42` or `my-feature`.
+This phase requires a specific issue: e.g. `#42` or `my-feature`.
 
 Set the input as a shell variable:
 
@@ -12,9 +12,9 @@ ISSUE_ID="{issue-id}" # e.g. "#42"
 
 ## Rules
 
-Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills.
+Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type.
 
-**Shell blocks are literal commands** — run `./worktree-enter.sh`, `./worktree-exit.sh`, and `./commit.sh` exactly as written.
+**Shell blocks are literal commands** — execute them as written.
 
 **Tracker note**:
 
@@ -52,18 +52,19 @@ Read the plan. It must have:
 ISSUE_TITLE="{from issue title}" # e.g. "My feature title"
 BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
 PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "feat/my-feature"
+PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#43"
 HEADING="{from issue frontmatter heading field, or - if not present}" # e.g. "deep-research"
 FEELING_LUCKY="{from issue frontmatter feeling-lucky field, or - if not present}" # e.g. "true"
-WORKTREE_PATH=".worktrees/$ISSUE_ID-seal"
+WORKTREE_PATH=".worktrees/$ISSUE_TITLE-seal"
 ```
 
 ## Mindset — The Elephant Seal
 
-You are **the Elephant Seal** — the holistic reviewer. Inspector Barreleye already checked the code line-by-line against acceptance criteria. Your job is fundamentally different: you check against **user stories** and the **problem statement** to answer "does this actually solve the user's problem?"
+You are **the Elephant Seal** — the holistic reviewer. Inspector Barreleye already checked the code line-by-line against acceptance criteria. Your job is fundamentally different: you check against **User Stories** and the **problem statement** to answer "does this actually solve the user's problem?"
 
 You are not re-inspecting code. You are:
 
-- **Evaluating from the user's perspective.** Re-read the problem statement and user stories. Walk through the solution as the user would experience it. Does the implemented behavior match what the user needs?
+- **Evaluating from the user's perspective.** Re-read the problem statement and User Stories. Walk through the solution as the user would experience it. Does the implemented behavior match what the user needs?
 - **Reviewing agent decisions for sanity.** Implementers made choices. Do those choices serve the user, or did they optimize for something else?
 - **Looking for integration issues.** For multi-slice: do the slices compose correctly? For single-slice: does the change cohere with the rest of the codebase?
 - **Checking documentation.** Is the change discoverable? Would a new contributor understand what changed and why?
@@ -73,7 +74,7 @@ Think like a CTO doing a final walkthrough before shipping. Product-focused, big
 
 ## 1. Get on the `pr-branch`
 
-Enter a worktree forked from $PR_BRANCH:
+Enter a worktree forked from `$PR_BRANCH`:
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
@@ -90,7 +91,7 @@ Hand off with:
 ```sh
 ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="blocked-with-conflicts"
-PR_ID="—"
+PR_ID="$PR_ID"
 SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
 ```
 
@@ -107,7 +108,7 @@ Not negotiable. Record the result.
 For each User Story, Implementation Decision, and Testing Decision in the plan:
 
 - Read the actual code on the `pr-branch` that satisfies it. Trace the full path — don't check module by module, check end-to-end.
-- Verify from the **consumer's perspective**. If a user story says "the legacy UI must render identically", don't just check that the data is correct — check that it's in the format the legacy UI expects. (Prevents painpoint A4.)
+- Verify from the **consumer's perspective**. If a User Story says "the legacy UI must render identically", don't just check that the data is correct — check that it's in the format the legacy UI expects. (Prevents painpoint A4.)
 - Cross-reference the coverage matrix: which issues were supposed to cover this plan item? Did they actually cover it when composed together?
 
 If `"$HEADING" = "deep-research"`:
@@ -118,7 +119,7 @@ If `"$HEADING" = "deep-research"`:
 If `"$HEADING" != "deep-research"`:
 
 - Apply the normal mechanical quality bar.
-- If `"$FEELING_LUCKY" = "true"`, apply slightly softer strictness — ask whether the outcome makes good sense for the exploratory ticket the human tossed into the reef.
+- If `"$FEELING_LUCKY" = "true"`, apply slightly softer strictness — ask whether the outcome makes good sense for the exploratory issue the diver tossed into the reef.
 
 Mark each criterion: ✓ met, ✗ not met (with explanation).
 
@@ -128,7 +129,7 @@ Read the "Judgment calls" section from each slice's merged PR. For each call:
 
 - Does it make sense?
 - Did it introduce drift from the original plan items or decision record?
-- Would the human want to know about this?
+- Would the diver want to know about this?
 
 ## 5. Check for integration issues
 
@@ -154,11 +155,11 @@ Use your findings from steps 3-5 to tighten the plan before deciding PASS vs GAP
 If you updated the plan's Testing Decisions or Implementation Decisions:
 
 ```sh
-ISSUE_BODY="{plan issue body with updated Testing Decisions or Implementation Decisions}"
-./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+ISSUE_BODY_UPDATED="{plan issue body with updated Testing Decisions or Implementation Decisions}"
+./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED"
 ```
 
-If any gaps need decisions beyond what the plan covers (e.g. the plan itself is ambiguous about a design direction), treat that as a **human decision needed** case. Do NOT send it back to `to-scope`. Keep it moving to `to-land`, make the warning explicit in the seal report, and call out exactly which decision needs human judgment before more automated work should happen.
+If any gaps need decisions beyond what the plan covers (e.g. the plan itself is ambiguous about a design direction), treat that as a **human decision needed** case. Do NOT send it back to `to-scope`. Keep it moving to `to-land`, make the warning explicit in the seal report, and call out exactly which decision needs diver judgment before more automated work should happen.
 
 ## 7. Documentation
 
@@ -176,7 +177,7 @@ Don't document what's obvious from reading the code.
 
 ## 8. Produce the report
 
-The report should be concise and focused on what the human needs to know. Do NOT dump the entire plan — the human can read the plan. Focus on:
+The report should be concise and focused on what the diver needs to know. Do NOT dump the entire plan — the diver can read the plan.
 
 This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
@@ -190,15 +191,15 @@ This output will be read by another agent session — no context from this conve
 
 ### Plan items
 
-- ✓ US1: {user story} — verified: {one-line how}
-- ✓ ID1: {implementation decision} — verified: {one-line how}
-- ✗ TD1: {testing decision} — GAP: {what's wrong}
+- ✓ User Story 1: {user story} — verified: {one-line how}
+- ✓ Implementation Decision 1: {implementation decision} — verified: {one-line how}
+- ✗ Testing Decision 1: {testing decision} — GAP: {what's wrong}
 
 ### Judgment calls
 
-- **{topic}**: chose {X} because {reason}. Drift or human attention needed: {why}.
+- **{topic}**: chose {X} because {reason}. Drift or diver attention needed: {why}.
 
-(Omit if no calls introduced drift or warrant human review.)
+(Omit if no calls introduced drift or warrant diver review.)
 
 ### Integration notes
 
@@ -217,32 +218,31 @@ This output will be read by another agent session — no context from this conve
 
 ### Submit the report
 
-This PR is what the human will ultimately merge or reject.
+This PR is what the diver will ultimately merge or reject.
 
 ```sh
 REPORT="{seal-report}" # e.g. <details><summary><h3>🦭 Seal of approval — {2012/12/21 12:00}</h3></summary>...</details>
 ```
 
-**If PR exists, append:**
+**If `$PR_ID` is a specific ID, append to the existing PR:**
 
 ```sh
-PR_ID="{from pr create output or existing PR}" # e.g. "#43"
 PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
 PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
 ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
 ```
 
-**If no PR exists, create and update the plan issue body as well:**
+**If `"$PR_ID" = "-"`, create a new PR and update the plan issue body as well:**
 
 ```sh
 CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. "closes #42 My feature title"
 PR_BODY_NEW="$CLOSES\n\n$REPORT"
 ./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-seal
-# Persist the PR metadata on the plan issue so downstream human review can always find it:
-PR_ID="{from pr create output or existing PR}" # e.g. "#43"
-ISSUE_BODY="{original issue body with added frontmatter values}"
+# Persist the PR metadata on the plan issue so the diver can always find it:
+PR_ID="{from pr create output}" # e.g. "#43"
+ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
 # add to frontmatter: pr-id: $PR_ID
-./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED"
 ```
 
 ## 9. Label
@@ -261,7 +261,7 @@ ISSUE_BODY="{original issue body with added frontmatter values}"
 ./tracker.sh pr edit "$PR_ID" --remove-label to-seal --add-label to-land --add-label blocked-need-human-input
 ```
 
-**If gaps found (fixable within the plan and without human input needed):**
+**If gaps found (fixable within the plan and without diver input needed):**
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-seal --add-label to-rework
@@ -280,7 +280,7 @@ ISSUE_BODY="{original issue body with added frontmatter values}"
 ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="to-land" # or "to-rework" if gaps found; use to-land for human-decision-needed warnings
 PR_ID="$PR_ID"
-SUMMARY="Seal {PASS|GAPS FOUND|HUMAN DECISION NEEDED} — {one-line summary}"
+SUMMARY="Seal {PASS|GAPS FOUND|HUMAN DECISION NEEDED} — {one-line summary}" # e.g. "Seal PASS — all plan items verified, full suite green"
 ```
 
 Report these four variables to the caller.

@@ -2,21 +2,21 @@
 
 ## Input
 
-This skill requires a specific issue: e.g. `#42` or `1-2`.
+This phase requires a specific issue: e.g. `#42` or `my-feature/001-auth-endpoint`.
 
 The issue title includes a `[await: ...]` suffix encoding its blockers: e.g. `"auth token storage [await: #55, #56]"`. Blockers are parsed from this suffix — not from the issue body.
 
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id or -}" # e.g. "#42"
+ISSUE_ID="{issue-id}" # e.g. "#42"
 ```
 
 ## Rules
 
-Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills.
+Read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file doesn't exist, assume `github` as the tracker type.
 
-**Shell blocks are literal commands** — run `./worktree-enter.sh`, `./worktree-exit.sh`, and `./commit.sh` exactly as written.
+**Shell blocks are literal commands** — execute them as written.
 
 **Tracker note**:
 
@@ -58,10 +58,13 @@ Parse the `[await: ...]` suffix from the issue title. For each blocker ID found,
 
 ```sh
 DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. "#55"
+./tracker.sh issue view "$DEPENDENCY_ID" --json labels
 ```
 
+Accumulate any IDs that are not yet landed:
+
 ```sh
-./tracker.sh issue view "$DEPENDENCY_ID" --json labels
+REMAINING_BLOCKERS="{space-separated list of blocker IDs that do not carry the landed label}" # e.g. "#55 #56"
 ```
 
 **If any dependency does NOT have the `landed` label**: this issue stays `to-await-waves`. Hand off with:
@@ -70,7 +73,7 @@ DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. "#55"
 ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="to-await-waves"
 PR_ID="—"
-SUMMARY="still blocked by #N, #M"
+SUMMARY="still blocked by $REMAINING_BLOCKERS"
 ```
 
 Report these variables to the caller and **do not continue**.
@@ -81,23 +84,23 @@ Report these variables to the caller and **do not continue**.
 
 ## 2. Promote
 
-Strip the `[await: ...]` suffix from the title and flip the label. If `"$HEADING" = "deep-research"`, promote into label `to-research`; otherwise promote into label `to-implement`:
+Strip the `[await: ...]` suffix from the title and flip the label. If `"$HEADING" = "deep-research"`, promote into `to-research`; otherwise promote into `to-implement`:
 
 ```sh
-ISSUE_TITLE="{stripped title without [await: ...] suffix}" # e.g. "auth token storage"
+ISSUE_TITLE_UPDATED="{stripped title without [await: ...] suffix}" # e.g. "auth token storage"
 if [ "$HEADING" = "deep-research" ]; then
   NEXT_LABEL="to-research"
 else
   NEXT_LABEL="to-implement"
 fi
-./tracker.sh issue edit "$ISSUE_ID" --remove-label to-await-waves --add-label "$NEXT_LABEL" --title "$ISSUE_TITLE"
+./tracker.sh issue edit "$ISSUE_ID" --remove-label to-await-waves --add-label "$NEXT_LABEL" --title "$ISSUE_TITLE_UPDATED"
 ```
 
 Promotion is final. The worktree step below is best-effort course correction.
 
 ## 3. Course correction
 
-Enter a worktree forked from $BASE_BRANCH to read up-to-date code (earlier work may have changed the codebase):
+Enter a worktree forked from `$BASE_BRANCH` to read up-to-date code (earlier work may have changed the codebase):
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
@@ -106,7 +109,7 @@ WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "
 Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$BASE_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
 
 ```sh
-./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
+./tracker.sh issue edit "$ISSUE_ID" --remove-label "$NEXT_LABEL" --add-label blocked-with-conflicts
 ```
 
 Hand off with:
@@ -132,9 +135,6 @@ Earlier work may have changed the codebase. Read this issue's acceptance criteri
 
 ```sh
 ISSUE_BODY_UPDATED="{issue body, with updated acceptance criteria if changed}"
-```
-
-```sh
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED"
 ```
 
@@ -148,9 +148,9 @@ ISSUE_BODY_UPDATED="{issue body, with updated acceptance criteria if changed}"
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="to-research" # or "to-implement" or "to-await-waves" depending on heading and blockers
+NEXT_PHASE="$NEXT_LABEL"
 PR_ID="—"
-SUMMARY="{ISSUE_TITLE} is unblocked and ready for research or implementation" # or "still blocked by #N, #M"
+SUMMARY="$ISSUE_TITLE_UPDATED is unblocked and labeled $NEXT_LABEL"
 ```
 
-Report these three variables to the caller.
+Report these variables to the caller.

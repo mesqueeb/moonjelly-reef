@@ -2,7 +2,7 @@
 
 ## Input
 
-This skill requires a specific issue: e.g. `#42` or `my-feature/001-auth-endpoint`.
+This phase requires a specific issue: e.g. `#42` or `my-feature/001-auth-endpoint`.
 
 Set the input as a shell variable:
 
@@ -12,9 +12,9 @@ ISSUE_ID="{issue-id}" # e.g. "#42"
 
 ## Rules
 
-Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills.
+Read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file doesn't exist, assume `github` as the tracker type.
 
-**Shell blocks are literal commands** — run `./worktree-enter.sh`, `./worktree-exit.sh`, and `./commit.sh` exactly as written.
+**Shell blocks are literal commands** — execute them as written.
 
 **Tracker note**:
 
@@ -53,7 +53,7 @@ WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
 
 ## 1. Git prep
 
-Enter a worktree forked from $PR_BRANCH to apply fixes to the existing PR:
+Enter a worktree forked from `$PR_BRANCH` to apply fixes to the existing PR:
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
@@ -95,7 +95,7 @@ Address every comment and gap. For each piece of feedback:
 - If you disagree with the feedback, fix it anyway and add a PR comment explaining your reasoning. Let the inspector decide on the next round. Don't argue — fix.
 - For deep-research, rework means revising the committed research docs to close the flagged gaps.
 - Typical research fixes include answering missed questions, tightening the writing, clarifying conclusions, or adding missing source links.
-- For feeling-lucky, rework may refine the inferred lane or heading if QA surfaced a better interpretation.
+- For feeling-lucky, rework may refine the inferred heading if inspect surfaced a better interpretation.
 
 Do NOT skip any feedback item. If a comment is unclear, make your best interpretation and note what you assumed.
 
@@ -111,6 +111,24 @@ Not a subset. The full project test suite must be green.
 
 ## 6. Update the PR description
 
+If `"$PR_ID" = "-"`, try `./tracker.sh pr list --search` to locate the PR.
+
+If `$PR_ID` is nowhere to be found:
+
+    	```sh
+    	./tracker.sh issue edit "$ISSUE_ID" --add-label pr-missing
+    	```
+
+    	Hand off with:
+
+    	```sh
+    	ISSUE_ID="$ISSUE_ID"
+    	NEXT_PHASE="pr-missing"
+    	PR_ID="—"
+    	SUMMARY="Blocked: PR not found. pr-missing label applied."
+    	```
+
+    	Report these variables to the caller and **do not continue**.
 
 This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
@@ -164,4 +182,4 @@ PR_ID="$PR_ID"
 SUMMARY="Rework complete — addressed review feedback"
 ```
 
-Report these three variables to the caller.
+Report these four variables to the caller.

@@ -1,10 +1,10 @@
 # Triage Issue
 
-Investigate a reported problem, find its root cause, and write a fix plan calibrated to the agreed rigor level. Minimize questions to the user.
+Investigate a reported problem, find its root cause, and write a fix plan calibrated to the agreed rigor level. Minimize questions to the diver.
 
 ## 1. Capture the problem
 
-Get a brief description of the issue from the user. If they haven't provided one, ask ONE question: "What's the problem you're seeing?"
+Get a brief description of the issue from the diver. If they haven't provided one, ask ONE question: "What's the problem you're seeing?"
 
 ## 2. Explore and diagnose
 
@@ -34,20 +34,26 @@ Based on your investigation, determine:
 
 ## 4. What does done look like?
 
-Present these four options to the user. Recommend one based on your investigation findings:
+Present these four options to the diver. Recommend one based on your investigation findings:
 
 1. **Theoretical fix** — fix identified and documented in the plan; no code or tests required
 2. **Compile/Runtime-verified** — fix applied and confirmed to compile/run without errors
 3. **TDD** — failing test written first, then fix applied; all tests pass
 4. **Dive in together** — interactive debugging session; not suitable for AFK Reef flow
 
-Present your investigation findings, then ask which option the user wants. If your investigation was inconclusive or the fix requires live exploration, say so explicitly — that's the signal for option 4.
+Present your investigation findings, then ask which option the diver wants. If your investigation was inconclusive or the fix requires live exploration, say so explicitly — that's the signal for option 4.
 
-If the user picks option 4, do not label the issue `to-implement`. Close out by explaining that this issue needs a live session and won't enter the Reef queue.
+```sh
+RIGOR_OPTION="{chosen option number}" # e.g. "3"
+```
+
+If `"$RIGOR_OPTION" = "4"`, do not label the issue `to-implement`.
+
+Report these variables to the caller and **do not continue**.
 
 ## 5. Design fix plan
 
-**RUN ONLY IF user chose option 2 or 3.**
+**RUN ONLY IF `"$RIGOR_OPTION" = "2"` or `"$RIGOR_OPTION" = "3"`.**
 
 Create a concrete, ordered list of RED-GREEN cycles. Each cycle is one vertical slice:
 
@@ -70,7 +76,7 @@ Rules (apply to both options):
 
 <plan-template>
 
-## Problem
+## Problem Statement
 
 A clear description of the bug or issue, including:
 
@@ -115,5 +121,5 @@ A numbered list of RED-GREEN cycles:
 </plan-template>
 
 ```sh
-NEW_PLAN="{new plan content as per template above}"
+NEW_PLAN="{new plan content as per template above}" # e.g. "## Problem\n\nLogin fails when..."
 ```

@@ -1,16 +1,16 @@
 # Pulse loop
 
-## Input
+## Input (from context)
 
-This file is invoked by [`SKILL.md`](SKILL.md) for each pulse-loop iteration. Before following this file, the main session must already have these shell variables set:
+Context already set by [`SKILL.md`](SKILL.md) before invoking this file:
 
 ```sh
-SKILL_DIR="{base directory for this skill}" # e.g. ~/.claude/skills/reef-pulse
-ONLY_ISSUE_ID="{issue-id or -}" # "-" if nothing provided
+SKILL_DIR="{from context}" # e.g. "~/.claude/skills/reef-pulse"
+ONLY_ISSUE_ID="{from context}" # e.g. "-"
 LOCK_FILE=".agents/moonjelly-reef/pulse.lock"
-PULSE_NR="{current pulse number}" # e.g. 2
-AGENT_COUNT_SESSION="{session-wide dispatch count so far}" # e.g. 4
-SESSION_START_TS="{unix timestamp captured at session start}" # e.g. 1735000000
+PULSE_NR="{from context}" # e.g. 2
+AGENT_COUNT_SESSION="{from context}" # e.g. 4
+SESSION_START_TS="{from context}" # e.g. 1735000000
 ```
 
 ## Rules
@@ -27,11 +27,13 @@ SESSION_START_TS="{unix timestamp captured at session start}" # e.g. 1735000000
 
 Each time [`SKILL.md`](SKILL.md) invokes this file, execute exactly one full pulse-loop iteration. Do not collapse a pulse-loop iteration into a quick rescan or tracker-only follow-up. Each pulse-loop iteration must emit the same pulse transcript structure: pulse header, dispatch lines when applicable, return results when applicable, then return control to [`SKILL.md`](SKILL.md).
 
-```sh
-AGENT_COUNT_PULSE=0 # Reset per pulse-loop; Increment per sub-agent used
-```
-
 ## 1. Print pulse header
+
+Reset the per-pulse dispatch counter, then print the pulse header:
+
+```sh
+AGENT_COUNT_PULSE=0 # Reset per pulse-loop; increment per sub-agent dispatched
+```
 
 Print the pulse header with the current timestamp:
 
@@ -41,13 +43,11 @@ Print the pulse header with the current timestamp:
 
 ## 2. Dispatch Automated Work
 
-For all sub-agents spawned:
-
-**Do NOT ask the user for confirmation. Dispatch immediately.** The labels are the authorization — if an item is labelled for automated work, dispatch it without hesitation.
+**Do NOT ask the diver for confirmation. Dispatch immediately.** The labels are the authorization — if an item is labeled for automated work, dispatch it without hesitation.
 
 **CRITICAL: Do NOT use `isolation: "worktree"` when spawning sub-agents.** Each phase manages its own worktree via `worktree-enter.sh` (fetches from origin, forks from the correct remote branch). Platform isolation bypasses this and causes merge conflicts.
 
-## 2a. Flow wave
+### 2a. Flow wave
 
 If `$ONLY_ISSUE_ID` is a specific ID, skip the label scan and use only that issue and its sub-issues. Otherwise scan:
 
@@ -58,10 +58,20 @@ If `$ONLY_ISSUE_ID` is a specific ID, skip the label scan and use only that issu
 
 Dispatch a sub-agent per issue in parallel. When sub-agent teams are supported in the environment, they can be used to parallelise items linked to the same plan.
 
-Per sub-agent define `FILENAME` and `ISSUE_ID` to pass as its input:
+Per sub-agent define all display and routing variables at dispatch time:
 
 ```sh
 ISSUE_ID="{from the fetched issue}" # e.g. "#42"
+ISSUE_TITLE="{from the fetched issue title}" # e.g. "auth token rotation"
+ISSUE_PHASE="{label that dispatched this issue, without the to- prefix}" # e.g. "implement"
+ISSUE_PHASE_EMOJI="{phase emoji for ISSUE_PHASE}"
+# e.g.
+# ISSUE_PHASE_EMOJI="𐃆🐋" (if label `to-slice`)
+# ISSUE_PHASE_EMOJI="  🐙" (if label `to-implement`)
+# ISSUE_PHASE_EMOJI="  🐬" (if label `to-research`)
+# ISSUE_PHASE_EMOJI="  🧿" (if label `to-inspect`)
+# ISSUE_PHASE_EMOJI="  🦀" (if label `to-rework`)
+# ISSUE_PHASE_EMOJI="  🦭" (if label `to-seal`)
 FILENAME="{based on the label as per the example below}" # e.g. "implement.md"
 # e.g.
 # FILENAME="slice.md" (if label `to-slice`)
@@ -70,6 +80,8 @@ FILENAME="{based on the label as per the example below}" # e.g. "implement.md"
 # FILENAME="inspect.md" (if label `to-inspect`)
 # FILENAME="rework.md" (if label `to-rework`)
 # FILENAME="seal.md" (if label `to-seal`)
+DISPATCH_ROW="$ISSUE_PHASE_EMOJI  $ISSUE_ID  \"$ISSUE_TITLE\""
+AGENT_COUNT_PULSE=$((AGENT_COUNT_PULSE + 1))
 ```
 
 Dispatch a sub-agent:
@@ -82,7 +94,7 @@ ISSUE_ID="$ISSUE_ID"
 
 **Wait for all flow sub-agents to complete before proceeding to the ebb wave.**
 
-## 2b. Ebb wave — dispatch `to-await-waves` and `to-merge`
+### 2b. Ebb wave — dispatch `to-await-waves` and `to-merge`
 
 ```sh
 ./tracker.sh issue list --json number,title,labels --limit 100 \
@@ -104,14 +116,22 @@ DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. "#42"
 
 `to-merge` items do not use the dependency gate above; they simply run during ebb instead of flow.
 
-Per sub-agent define `$FILENAME` and `$ISSUE_ID` to pass as its input:
+Per sub-agent define all display and routing variables at dispatch time:
 
 ```sh
 ISSUE_ID="{from the fetched issue}" # e.g. "#42"
+ISSUE_TITLE="{from the fetched issue title}" # e.g. "auth token rotation"
+ISSUE_PHASE="{label that dispatched this issue, without the to- prefix}" # e.g. "merge"
+ISSUE_PHASE_EMOJI="{phase emoji for ISSUE_PHASE}"
+# e.g.
+# ISSUE_PHASE_EMOJI="  🐢" (if label `to-merge`)
+# ISSUE_PHASE_EMOJI="  🪸" (if label `to-await-waves`)
 FILENAME="{based on the label as per the example below}" # e.g. "merge.md"
 # e.g.
 # FILENAME="await-waves.md" (if label `to-await-waves` and eligible after dependency gate)
 # FILENAME="merge.md" (if label `to-merge`)
+DISPATCH_ROW="$ISSUE_PHASE_EMOJI  $ISSUE_ID  \"$ISSUE_TITLE\""
+AGENT_COUNT_PULSE=$((AGENT_COUNT_PULSE + 1))
 ```
 
 Dispatch a sub-agent:
@@ -128,28 +148,7 @@ ISSUE_ID="$ISSUE_ID"
 
 RUN ONLY IF `"$AGENT_COUNT_PULSE" -gt 0`.
 
-Immediately after dispatching, print each dispatched sub-agent with its phase emoji. Use the phase emoji from the README lore for each phase.
-
-For each dispatched issue, capture the display values used for both the dispatch line and the later return-result line:
-
-```sh
-ISSUE_ID="{from dispatched issue}" # e.g. "#42"
-ISSUE_TITLE="{from dispatched issue title}" # e.g. "auth token rotation"
-ISSUE_PHASE="{label that dispatched this issue, without the to- prefix}" # e.g. "implement"
-ISSUE_PHASE_EMOJI="{phase emoji for ISSUE_PHASE}"
-# e.g.
-# ISSUE_PHASE_EMOJI="𐃆🐋" (if label `to-slice`)
-# ISSUE_PHASE_EMOJI="  🐙" (if label `to-implement`)
-# ISSUE_PHASE_EMOJI="  🐬" (if label `to-research`)
-# ISSUE_PHASE_EMOJI="  🧿" (if label `to-inspect`)
-# ISSUE_PHASE_EMOJI="  🦀" (if label `to-rework`)
-# ISSUE_PHASE_EMOJI="  🐢" (if label `to-merge`)
-# ISSUE_PHASE_EMOJI="  🦭" (if label `to-seal`)
-# ISSUE_PHASE_EMOJI="  🪸" (if label `to-await-waves`)
-DISPATCH_ROW="$ISSUE_PHASE_EMOJI  $ISSUE_ID  \"$ISSUE_TITLE\""
-```
-
-Print `$DISPATCH_ROW`. E.g.:
+Print each `$DISPATCH_ROW` captured at dispatch time. E.g.:
 
 ```
 𐃆🐋  #34  "auth token rotation"
@@ -173,10 +172,12 @@ fi
 
 RUN ONLY IF `"$AGENT_COUNT_PULSE" -gt 0`.
 
-Collect one execution record per returned sub-agent. Each record is keyed by the returned `ISSUE_ID` and is used for the return-result output and the metrics pageant.
+Collect one execution record per returned sub-agent. Each record is keyed by the returned `ISSUE_ID` and is used for the return-result output and metric logging.
 
 ```sh
 ISSUE_ID="{from handoff ISSUE_ID}" # e.g. "#42"
+ISSUE_PHASE="{from dispatch record for this ISSUE_ID}" # e.g. "implement"
+ISSUE_PHASE_EMOJI="{phase emoji for ISSUE_PHASE}" # e.g. "  🐙"
 NEXT_PHASE="{from handoff NEXT_PHASE}" # e.g. "to-inspect"
 PR_ID="{from handoff PR_ID}" # e.g. "#72"; "—" if not returned
 SUMMARY="{from handoff SUMMARY}" # e.g. "PR created"

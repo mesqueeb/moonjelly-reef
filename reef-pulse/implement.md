@@ -2,19 +2,19 @@
 
 ## Input
 
-This skill requires a specific issue: e.g. `#42` or `my-feature/001-auth-endpoint`.
+This phase requires a specific issue: e.g. `#42` or `my-feature/001-auth-endpoint`.
 
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. "#42"
+ISSUE_ID="{issue-id}" # e.g. "#42"
 ```
 
 ## Rules
 
-Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills.
+Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file doesn't exist, assume `github` as the tracker type.
 
-**Shell blocks are literal commands** — run `./worktree-enter.sh`, `./worktree-exit.sh`, and `./commit.sh` exactly as written.
+**Shell blocks are literal commands** — execute them as written.
 
 **Tracker note**:
 
@@ -45,14 +45,15 @@ Read the issue. It must contain:
 
 - `base-branch` in frontmatter (where the PR merges into)
 - `pr-branch` in frontmatter (the branch the PR lives on — chosen during scope for an issue with no `parent-issue`, or assigned during slice creation for an issue with `parent-issue`)
-- Parent issue reference (if this is a sub-issue)
+- `parent-issue` in frontmatter (if this is a sub-issue; absent otherwise)
 
-Set the post-fetch variables (after reading the issue body):
+Set the post-fetch variables:
 
 ```sh
 ISSUE_TITLE="{from issue title}" # e.g. "add auth endpoint"
 BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
 PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "my-feature/001-auth-endpoint"
+PARENT_ISSUE="{from issue frontmatter parent-issue field, or - if not present}" # e.g. "#41"; "-"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-implement"
 ```
 
@@ -118,15 +119,13 @@ Read and understand:
 
 Use the `tdd` skill to implement each entry. If the `tdd` skill is not installed (check config), read and follow [tdd-lite.md](tdd-lite.md) instead.
 
-Run the full project test suite after each red-green cycle — not just the tests you wrote. If an entry needs a human call, make your best judgment instead, note it for the `## Judgment calls` section of the report, and continue. Never silently skip an entry.
+Run the full project test suite after each red-green cycle — not just the tests you wrote. If an entry needs a human call, make your best judgment instead, note it for the `### Judgment calls` section of the report, and continue. Never silently skip an entry.
 
 Commit your work when implementation is complete.
 
 ## 4. Write the report
 
-When implementation is complete, compose the PR description using this template:
-
-This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
+Compose the implementation report using this template. This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
 <report-template>
 <details>
@@ -149,14 +148,18 @@ This output will be read by another agent session — no context from this conve
 </details>
 </report-template>
 
+```sh
+REPORT="{implementation-report}" # e.g. <details><summary><h3>🐙 Workshop report — {2012/12/21 12:00}</h3></summary>...</details>
+```
+
 ## 5. Open the PR
 
 ```sh
 ./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: implementation"
 CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. "closes #42 add auth endpoint"
-REPORT="{implementation-report}" # e.g. <details><summary><h3>🐙 Workshop report — {2012/12/21 12:00}</h3></summary>...</details>
 PR_BODY_NEW="$CLOSES\n\n$REPORT"
 ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
+PR_ID="{from pr create output}" # e.g. "#43"
 ```
 
 ## 6. Update the issue and label
@@ -164,7 +167,6 @@ PR_BODY_NEW="$CLOSES\n\n$REPORT"
 Persist the PR metadata for the newly created PR on the issue body so downstream phases (inspect, rework, merge) can find it.
 
 ```sh
-PR_ID="{from pr create output}" # e.g. "#43"
 ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}" # e.g. "---\npr-branch: my-feature/001\npr-id: #43\n---\n..."
 # add to frontmatter (if not already): pr-branch: $PR_BRANCH
 # add to frontmatter:  pr-id: $PR_ID
@@ -186,4 +188,4 @@ PR_ID="$PR_ID"
 SUMMARY="Implementation complete for $ISSUE_TITLE"
 ```
 
-Report these three variables to the caller.
+Report these four variables to the caller.

@@ -2,7 +2,7 @@
 
 ## Input
 
-This skill requires a specific issue: e.g. `#42` or `my-feature/001-auth-endpoint`.
+This phase requires a specific issue: e.g. `#42` or `my-feature/001-auth-endpoint`.
 
 Set the input as a shell variable:
 
@@ -12,9 +12,9 @@ ISSUE_ID="{issue-id}" # e.g. "#42"
 
 ## Rules
 
-Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills.
+Read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file doesn't exist, assume `github` as the tracker type.
 
-**Shell blocks are literal commands** — run `./worktree-enter.sh`, `./worktree-exit.sh`, and `./commit.sh` exactly as written.
+**Shell blocks are literal commands** — execute them as written.
 
 **Tracker note**:
 
@@ -47,6 +47,7 @@ Set the post-fetch variables (after reading the issue body):
 ISSUE_TITLE="{from issue title}" # e.g. "auth-endpoint"
 BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
 PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "my-feature/001-auth-endpoint"
+PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#42"
 FEELING_LUCKY="{from issue frontmatter feeling-lucky field, or - if not present}" # e.g. "true"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-inspect"
 ```
@@ -64,9 +65,9 @@ What you do:
 - **Run the full test suite yourself.** Don't trust "all tests pass" in the report.
 - **Do trivial cleanups.** Stale TODOs, leftover debug prints, dead code from debugging, formatting — fix these yourself and commit. Don't ask permission.
 - **Flag substantive gaps.** Missing tests, incomplete behavior, entries left unverified — these go in review comments, not silent fixes.
-- **Read the ambiguous choices.** The implementer documented decisions they made. Flag anything that drifted too far from the plan items or that the human should know about.
+- **Read the ambiguous choices.** The implementer documented decisions they made. Flag anything that drifted too far from the plan items or that the diver should know about.
 
-You do NOT need to evaluate product direction, user stories, or the problem statement in great detail.
+You do NOT need to evaluate product direction, User Stories, or the problem statement in great detail.
 
 ## 1. Pull and verify
 
@@ -87,7 +88,7 @@ Hand off with:
 ```sh
 ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="blocked-with-conflicts"
-PR_ID="—"
+PR_ID="$PR_ID"
 SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
 ```
 
@@ -116,7 +117,7 @@ For each entry in the above:
 
 If this is a sub-issue, also cross-check against the plan:
 
-- Read the parent plan issue and identify which User Stories, Implementation Decisions, and Testing Decisions this slice was meant to satisfy.
+- Read the parent issue and identify which User Stories, Implementation Decisions, and Testing Decisions this slice was meant to satisfy.
 - Verify the implementation actually satisfies those plan sections, not just the acceptance criteria.
 - Flag any drift where the acceptance criteria didn't fully capture what the plan requires.
 
@@ -126,7 +127,7 @@ Read the PR description's "Judgment calls" section. For each call:
 
 - Does it make sense given the constraints?
 - Does it drift from the plan items? If so, is the drift acceptable?
-- Would the human want to know about this before merging?
+- Would the diver want to know about this before merging?
 
 ## 4. Trivial cleanups
 
@@ -137,14 +138,15 @@ Do these yourself — commit and push to the `pr-branch`:
 - Remove stale TODO comments that were addressed
 - Add code comments where non-obvious behavior exists
 
+RUN ONLY IF you made cleanup commits in this step:
+
 ```sh
-# Only if you made cleanup commits
 ./commit.sh --branch "$PR_BRANCH" -m "inspect: cleanup"
 ```
 
 ## 5. Update the PR
 
-Set the PR number from the issue body. If not found there, try `./tracker.sh pr list --search`. If PR_ID is nowhere to be found:
+If `"$PR_ID" = "-"`, try `./tracker.sh pr list --search` to locate the PR. If `$PR_ID` is nowhere to be found:
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --add-label pr-missing
@@ -186,9 +188,8 @@ This output will be read by another agent session — no context from this conve
 </report-template>
 
 ```sh
-PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#42"
 PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
-REPORT="{inspection-report}" # e.g. <details><summary><h3>🧿 Inspection review — {2012/12/21 12:00}</h3></summary>...</details>
+REPORT="{inspection-report}" # e.g. <details><summary><h3>🧿 Barreleye inspection — {2012/12/21 12:00}</h3></summary>...</details>
 PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
 ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
 ```
@@ -223,7 +224,7 @@ Leave specific review comments on the PR for each gap. Be precise — tell the i
 ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="to-merge" # or "to-rework" if gaps found
 PR_ID="$PR_ID"
-SUMMARY="{verdict}: {one-line summary of findings}"
+SUMMARY="{verdict}: {one-line summary of findings}" # e.g. "Approved: all checklist entries verified, suite green."
 ```
 
-Report these three variables to the caller.
+Report these variables to the caller.

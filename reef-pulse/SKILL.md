@@ -7,16 +7,22 @@ description: Run the Moonjelly Reef pulse, an orchestrator to scan and dispatch 
 
 ## Input
 
-Nothing, or a specific issue ID to focus the pulse on a single issue.
+Nothing, or a specific issue-id to focus the pulse on a single issue.
 
 ```sh
 ONLY_ISSUE_ID="{issue-id or -}" # "-" if nothing provided
-SKILL_DIR="{base directory for this skill}" # e.g. ~/.claude/skills/reef-pulse
+SKILL_DIR="{base directory for this skill}" # e.g. "~/.claude/skills/reef-pulse"
+LOCK_FILE=".agents/moonjelly-reef/pulse.lock"
 ```
 
 ## Rules
 
-Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills. If the file doesn't exist, stop and tell the user: "🪼 `reef-pulse` requires setup. Run `reef-scope` first to configure the reef."
+Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file doesn't exist, stop and tell the diver: "🪼 `reef-pulse` requires setup. Run `reef-scope` first to configure the reef."
+
+```sh
+TRACKER_TYPE="{from config.md tracker-type field}" # e.g. "github"
+TRACKER_BRANCH="{from config.md tracker-branch field}" # e.g. "main"
+```
 
 **Shell blocks are literal commands** — execute them as written.
 
@@ -40,23 +46,18 @@ If `$ONLY_ISSUE_ID` is a specific ID, fetch that issue. The pulse-loop will proc
 
 ## 1. Session setup
 
-```sh
-TRACKER_BRANCH="{from config.md}" # e.g. "main"
-LOCK_FILE=".agents/moonjelly-reef/pulse.lock"
-```
-
 ### Acquire lock
 
 Check for an existing pulse.lock file.
 
 If the pulse.lock file exists, another pulse may already be running (or a previous session crashed without cleaning up).
 
-- If `pulse.lock` exists, read the start timestamp from it, calculate how long the existing pulse has been running, and report this to the user: "The reef has been pulsing for {elapsed} ~~~ 🪸 🪸 🐠. There may be a lost diver. Pulse again to find them?" In interactive use, ask the user. In cron/autopilot use, override automatically.
-- If `pulse.lock` does not exist (or the user chose to override), create it with a start timestamp (ISO 8601 UTC) and continue.
+- If `pulse.lock` exists, read the start timestamp from it, calculate how long the existing pulse has been running, and report this to the diver: "The reef has been pulsing for {elapsed} ~~~ 🪸 🪸 🐠. There may be a lost diver. Pulse again to find them?" In interactive use, ask the diver. In cron/autopilot use, override automatically.
+- If `pulse.lock` does not exist (or the diver chose to override), create it with a start timestamp (ISO 8601 UTC) and continue.
 
 ### Sync tracker branch (local-tracker-committed only)
 
-RUN ONLY IF the tracker is `local-tracker-committed`.
+RUN ONLY IF `"$TRACKER_TYPE" = "local-tracker-committed"`.
 
 The tracker files live in a git-tracked directory on a specific branch. Sync it before scanning. `TRACKER_BRANCH` was already set above.
 
@@ -106,7 +107,7 @@ Compute the final session duration from the session start timestamp:
 
 ```sh
 SESSION_DURATION_SECS="$(( $(date +%s) - SESSION_START_TS ))"
-SESSION_DURATION="{format SESSION_DURATION_SECS as XmYYs or HhMMmSSs}" # e.g. 17m00s
+SESSION_DURATION="{format SESSION_DURATION_SECS as XmYYs or HhMMmSSs}" # e.g. "17m00s"
 ```
 
 Print the SESSION COMPLETE box with session stats:
@@ -149,7 +150,7 @@ SENTENCE_BALLPARK="$SENTENCE_BALLPARK"
 The lore-writer sub-agent returns:
 
 ```sh
-CHAPTER="{lore prose returned by the storytelling sub-agent}" # e.g. "The tide shifted as three issues moved from implement to inspect..."
+CHAPTER="{lore prose returned by the lore-writer sub-agent}" # e.g. "The tide shifted as three issues moved from implement to inspect..."
 ```
 
 Print the chapter:

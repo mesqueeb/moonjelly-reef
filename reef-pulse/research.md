@@ -2,19 +2,19 @@
 
 ## Input
 
-This skill requires a specific issue: e.g. `#42` or `my-feature/001-auth-token-rotation`.
+This phase requires a specific issue: e.g. `#42` or `my-feature/001-auth-token-rotation`.
 
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id or -}" # e.g. "#42"
+ISSUE_ID="{issue-id}" # e.g. "#42"
 ```
 
 ## Rules
 
-Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills.
+Read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file doesn't exist, assume `github` as the tracker type.
 
-**Shell blocks are literal commands** — run `./worktree-enter.sh`, `./worktree-exit.sh`, and `./commit.sh` exactly as written.
+**Shell blocks are literal commands** — execute them as written.
 
 **Tracker note**:
 
@@ -50,7 +50,6 @@ Read the issue. It must contain:
 ISSUE_TITLE="{from issue title}" # e.g. "auth-token-rotation"
 BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
 PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "research/001-auth-token-rotation"
-FEELING_LUCKY="{from issue frontmatter feeling-lucky field, or - if not present}" # e.g. "true"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-research"
 ```
 
@@ -61,7 +60,7 @@ Every step must pass before you write research artifacts.
 Enter a worktree forked from `$BASE_BRANCH` so you start from a clean integration point:
 
 ```sh
-WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH") # e.g. "ready"
 ```
 
 Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$BASE_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
@@ -110,7 +109,7 @@ When research is complete, compose the PR description using this template:
 
 This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
-<research-template>
+<report-template>
 <details>
 <summary><h3>🐬 Dolphin's findings — {yyyy/MM/dd HH:mm}</h3></summary>
 
@@ -125,19 +124,20 @@ This output will be read by another agent session — no context from this conve
 - `{path/to/artifact.md}` — {what it answers}
 
 </details>
-</research-template>
+</report-template>
+
+```sh
+REPORT="{research-report}" # e.g. <details><summary><h3>🐬 Dolphin's findings — {2012/12/21 12:00}</h3></summary>...</details>
+```
 
 ## 5. Open the PR
 
 ```sh
 ./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: research"
-```
-
-```sh
 CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. "closes #42 auth-token-rotation"
-REPORT="{research-report}" # e.g. <details><summary><h3>🐬 Research report — {2012/12/21 12:00}</h3></summary>...</details>
 PR_BODY_NEW="$CLOSES\n\n$REPORT"
 ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
+PR_ID="{from pr create output}" # e.g. "#43"
 ```
 
 ## 6. Update the issue and label
@@ -145,8 +145,7 @@ PR_BODY_NEW="$CLOSES\n\n$REPORT"
 Persist the PR metadata for the newly created PR on the issue body so downstream phases (inspect, rework, merge) can find it:
 
 ```sh
-PR_ID="{from pr create output}" # e.g. "#43"
-ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
+ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}" # e.g. "---\npr-branch: research/001\npr-id: #43\n---\n..."
 # add to frontmatter (if not already): pr-branch: $PR_BRANCH
 # add to frontmatter:  pr-id: $PR_ID
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED" --remove-label to-research --add-label to-inspect
@@ -167,4 +166,4 @@ PR_ID="$PR_ID"
 SUMMARY="Research complete for $ISSUE_TITLE"
 ```
 
-Report these three variables to the caller.
+Report these variables to the caller.

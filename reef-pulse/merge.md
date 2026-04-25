@@ -2,7 +2,7 @@
 
 ## Input
 
-This skill requires a specific issue: e.g. `#42` or `my-feature`.
+This phase requires a specific issue: e.g. `#42` or `my-feature`.
 
 Set the input as a shell variable:
 
@@ -12,9 +12,13 @@ ISSUE_ID="{issue-id}" # e.g. "#42"
 
 ## Rules
 
-Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills.
+Read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file doesn't exist, assume `github` as the tracker type.
 
-**Shell blocks are literal commands** — run `./worktree-enter.sh`, `./worktree-exit.sh`, and `./commit.sh` exactly as written.
+```sh
+MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}" # e.g. "squash"
+```
+
+**Shell blocks are literal commands** — execute them as written.
 
 **Tracker note**:
 
@@ -66,22 +70,25 @@ Enter a worktree forked from `$PR_BRANCH` so you are testing the `$PR_BRANCH` wi
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
 ```
 
-Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$PR_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$PR_BRANCH` using explicit refspec (no force), then continue.
 
-```sh
-./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
-```
+If unresolvable:
 
-Hand off with:
+    	```sh
+    	./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
+    	./worktree-exit.sh --path "$WORKTREE_PATH"
+    	```
 
-```sh
-ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="blocked-with-conflicts"
-PR_ID="$PR_ID"
-SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
-```
+    	Hand off with:
 
-Report these variables to the caller and **do not continue**.
+    	```sh
+    	ISSUE_ID="$ISSUE_ID"
+    	NEXT_PHASE="blocked-with-conflicts"
+    	PR_ID="$PR_ID"
+    	SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
+    	```
+
+    	Report these variables to the caller and **do not continue**.
 
 Run the full test suite. If tests pass, commit and push:
 
@@ -91,29 +98,35 @@ Run the full test suite. If tests pass, commit and push:
 
 If the test suite fails after merging, label the issue `to-rework`:
 
-```sh
-./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label to-rework
-./tracker.sh pr edit "$PR_ID" --remove-label to-merge --add-label to-rework
-```
+    	```sh
+    	./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label to-rework
+    	./tracker.sh pr edit "$PR_ID" --remove-label to-merge --add-label to-rework
+    	```
+
+    	Clean up the worktree:
+
+    	```sh
+    	./worktree-exit.sh --path "$WORKTREE_PATH"
+    	```
+
+    	Hand off with:
+
+    	```sh
+    	ISSUE_ID="$ISSUE_ID"
+    	NEXT_PHASE="to-rework"
+    	PR_ID="$PR_ID"
+    	SUMMARY="Merge blocked: test suite failed after conflict resolution."
+    	```
+
+    	Report these variables to the caller and **do not continue**.
+
+## 2. Delegate
 
 Clean up the worktree:
 
 ```sh
 ./worktree-exit.sh --path "$WORKTREE_PATH"
 ```
-
-Hand off with:
-
-```sh
-ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="to-rework"
-PR_ID="$PR_ID"
-SUMMARY="Merge blocked: test suite failed after conflict resolution."
-```
-
-Report these variables to the caller and **do not continue**.
-
-## 2. Delegate
 
 If `"$PARENT_ISSUE" = "-"`, read and execute [merge-no-parent.md](merge-no-parent.md) with:
 
@@ -122,10 +135,11 @@ ISSUE_ID="$ISSUE_ID"
 PR_ID="$PR_ID"
 ```
 
-If `$PARENT_ISSUE` is a specific issue ID, read and execute [merge-has-parent.md](merge-has-parent.md) with:
+If `$PARENT_ISSUE` is a specific ID, read and execute [merge-has-parent.md](merge-has-parent.md) with:
 
 ```
 ISSUE_ID="$ISSUE_ID"
+ISSUE_TITLE="$ISSUE_TITLE"
 PARENT_ID="$PARENT_ISSUE"
 PR_ID="$PR_ID"
 BASE_BRANCH="$BASE_BRANCH"

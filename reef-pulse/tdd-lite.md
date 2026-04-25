@@ -4,12 +4,12 @@ Lightweight TDD discipline for when the `tdd` skill is not installed.
 
 ## Workflow
 
-1. **Tracer bullet**: pick the first item from your checklist. Write ONE test that proves the path works end-to-end. Make it fail (RED), then write the minimal code to pass (GREEN). This proves your approach before committing to it.
-2. **Loop**: for each remaining item — one at a time, never write all tests first:
-   - **RED**: write a test for this item. It must fail.
+1. **Tracer bullet**: pick the first acceptance criterion (or plan item if the issue has no sub-issues). Write ONE test that proves the path works end-to-end. Make it fail (RED), then write the minimal code to pass (GREEN). This proves your approach before committing to it.
+2. **Loop**: for each remaining acceptance criterion (or plan item) — one at a time, never write all tests first:
+   - **RED**: write a test for this criterion. It must fail.
    - **GREEN**: write the minimal code to pass. No more.
    - Run the **full project test suite** (not just your new test). Must be green.
-3. **Refactor**: after all items pass, look for refactor opportunities (extract duplication, simplify interfaces). Run full suite after each step. Never refactor while red.
+3. **Refactor**: after all criteria pass, look for refactor opportunities (extract duplication, simplify interfaces). Run full suite after each step. Never refactor while red.
 
 ## Per-cycle checklist
 

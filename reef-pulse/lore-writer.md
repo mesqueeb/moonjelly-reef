@@ -6,8 +6,6 @@
 SENTENCE_BALLPARK="{approximate sentence count to aim for}" # e.g. 8
 ```
 
-You are the reef's storyteller. Each time you are called, you write one chapter of the ongoing saga.
-
 ## 0. Fetch context
 
 Read:
@@ -15,13 +13,18 @@ Read:
 - `.agents/moonjelly-reef/saga/world.md` — current reef setting, active characters, and ongoing threads
 - The most recent `chapter-NNN.md` in `.agents/moonjelly-reef/saga/` (if one exists) — for the prior chapter's context and continuity
 
+```sh
+CHAPTER_NR="{next sequential chapter number}" # e.g. 4
+CHAPTER_FILE=".agents/moonjelly-reef/saga/chapter-$(printf '%03d' $CHAPTER_NR).md"
+```
+
 ## 1. Write the chapter
 
 ```sh
-CHAPTER="{the next chapter of the ongoing saga}"
+CHAPTER="{the next chapter of the ongoing saga}" # e.g. "Pip the mantis shrimp found the broken sensor before anyone else noticed..."
 ```
 
-### Story rules
+### Chapter rules
 
 - Choose one character as the clear center of the chapter
 - Give unnamed but prominent characters fun names
@@ -65,11 +68,9 @@ CHAPTER="{the next chapter of the ongoing saga}"
 
 Persist to disk:
 
-1. Write the chapter to a new file at `.agents/moonjelly-reef/saga/chapter-NNN.md`
+1. Write the chapter to `$CHAPTER_FILE`. If the write fails, skip world.md updates and proceed directly to the handoff — the chapter is still in memory and must still be returned.
 
-- `NNN` in `chapter-NNN.md` should be the next sequential number for the current session
-
-2.  Update `.agents/moonjelly-reef/saga/world.md` when something changed in a lasting way
+2. Update `.agents/moonjelly-reef/saga/world.md` when something changed in a lasting way:
 
 - If a character has shifted in a meaningful, persistent way, update `## Active characters`
 - Update `## Ongoing threads` to reflect what is still quietly in motion after this session
@@ -80,4 +81,10 @@ Return exactly:
 
 ```
 CHAPTER: $CHAPTER
+```
+
+If `$CHAPTER` is empty (chapter could not be produced), return:
+
+```
+CHAPTER: (lore writer could not produce a chapter this session)
 ```

@@ -4,7 +4,9 @@ No-parent merge path — delegated from [merge.md](merge.md).
 
 ## Input (from context)
 
-Context already fetched by `merge.md`. The PR targets the base branch directly — do NOT merge it here. The human merges during the `reef-land` skill.
+Context already fetched by `merge.md`.
+
+The PR targets the base-branch directly — do NOT merge it here. The diver merges during the `reef-land` skill.
 
 ```sh
 ISSUE_ID="{from context}" # e.g. "#42"
@@ -20,13 +22,13 @@ Remove `to-merge`, add `to-seal`:
 ./tracker.sh pr edit "$PR_ID" --remove-label to-merge --add-label to-seal
 ```
 
-## 2. Handoff
+## Handoff
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="to-seal"
 PR_ID="$PR_ID"
-SUMMARY="No parent — forwarding to seal for holistic review"
+SUMMARY="No parent issue — forwarding to seal for holistic review"
 ```
 
 Report these variables to the caller.

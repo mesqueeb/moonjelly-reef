@@ -4,12 +4,11 @@ Single-slice fast path — delegated from [slice.md](slice.md).
 
 ## Input (from context)
 
-Context already fetched and resolved by `slice.md`.
+Context already fetched by `slice.md`.
 
 ```sh
-ISSUE_ID="{from context}"          # e.g. "#42"
-HEADING="{from context}"           # e.g. "feature" — already resolved, never "feeling-lucky"
-FEELING_LUCKY="{from context}"     # e.g. "false"
+ISSUE_ID="{from context}"           # e.g. "#42"
+HEADING="{from context}"            # e.g. "feature" — already resolved, never "feeling-lucky"
 ISSUE_BODY_UPDATED="{from context}" # plan body with frontmatter already cleaned up
 ```
 
@@ -30,7 +29,7 @@ fi
 ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="$NEXT_PHASE"
 PR_ID="—"
-SUMMARY="No sub-issues needed — plan issue moves directly into research or implementation"
+SUMMARY="No sub-issues needed — issue moves directly to $NEXT_PHASE"
 ```
 
 Report these variables to the caller.

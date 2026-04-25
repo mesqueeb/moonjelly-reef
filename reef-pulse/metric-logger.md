@@ -2,8 +2,6 @@
 
 ## Input
 
-Set the input variables:
-
 ```sh
 PHASE_METRIC_RECORDS='[
   # {
@@ -17,17 +15,13 @@ PHASE_METRIC_RECORDS='[
   #   "SUBAGENT_TOOL_USES": 18
   # }
 ]'
-# Variables for loop use:
-SUCCESS_COUNT="0" # mutate on every full record success
-FAIL_COUNT="0" # mutate on every failed record
-FAIL_IDS="" # append ISSUE_ID values for failed records
 ```
 
 ## Rules
 
-Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills.
+Read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills.
 
-**Shell blocks are literal commands** — run `./tracker.sh` exactly as written.
+**Shell blocks are literal commands** — execute them as written.
 
 **Tracker note**:
 
@@ -38,6 +32,14 @@ Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker ty
 **AFK skill**: this skill runs without human interaction. If one record fails validation or a write, report it and continue with the remaining records.
 
 ## 0. Read issue and PR bodies
+
+Initialize loop counters before iterating:
+
+```sh
+SUCCESS_COUNT="0" # mutate on every full record success
+FAIL_COUNT="0" # mutate on every failed record
+FAIL_IDS="" # append ISSUE_ID values for failed records
+```
 
 Handle each record in `$PHASE_METRIC_RECORDS` independently. A failure for one record must not block the rest.
 
@@ -51,6 +53,13 @@ ISSUE_BODY="$(./tracker.sh issue view "$ISSUE_ID" --json body -q .body)"
 if [ "$NEXT_PHASE" = "to-land" ]; then
   PR_BODY="$(./tracker.sh pr view "$PR_ID" --json body -q .body)"
 fi
+```
+
+If either read fails (empty result, command error, issue or PR not found), count the record as failed and continue:
+
+```sh
+FAIL_COUNT=$((FAIL_COUNT + 1))
+FAIL_IDS="${FAIL_IDS:+$FAIL_IDS,}$ISSUE_ID"
 ```
 
 Search the issue body for the full `### 🪼 Pulse metrics` section until `<!-- end metrics table -->`. Work with that section as one variable:
@@ -96,15 +105,10 @@ METRICS_TABLE_UPDATED="{current METRICS_TABLE with $METRIC_ROW inserted immediat
 
 RUN ONLY IF `"$NEXT_PHASE" != "to-land"`.
 
-Write the updated metrics to the issue body only:
+Write the updated metrics to the issue body only. Validate that the rewritten issue body preserves the old body except for the intended metrics insertion, then write it back:
 
 ```sh
 ISSUE_BODY_UPDATED="{current issue body with METRICS_TABLE_UPDATED written back in place}"
-```
-
-Validate that the rewritten issue body preserves the old body except for the intended metrics insertion. If validation passes, write it back:
-
-```sh
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED"
 ```
 
@@ -127,15 +131,10 @@ RUN ONLY IF `"$NEXT_PHASE" = "to-land"`.
 
 Metrics move from the issue body to the PR body. This is a cut-and-paste flow, not copy-and-merge.
 
-Extract the full metrics table from the issue body, add the current seal row, then append a bold `Total` row:
+Extract the full metrics table from the issue body, add the current row (`$METRIC_ROW`), then append a bold `Total` row. Validate that the original PR body stays unchanged, then append the final metrics table to the end of the PR body:
 
 ```sh
 FINAL_METRICS_TABLE="{issue metrics table with $METRIC_ROW appended and a bold Total row added last}"
-```
-
-Validate that the original PR body stays unchanged, then append the final metrics table to the end of the PR body:
-
-```sh
 PR_BODY_UPDATED="{current PR body with FINAL_METRICS_TABLE appended at the end}"
 ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
 ```

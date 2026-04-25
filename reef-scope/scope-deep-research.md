@@ -4,15 +4,15 @@ Use this route when the main task is to investigate, compare, or answer a questi
 
 ## 1. Interview
 
-Grill the user until the research target is sharp enough for downstream phases to execute without guessing.
+Grill the diver until the research target is sharp enough for downstream phases to execute without guessing.
 
 Ask the questions one at a time and make progress without waiting on unnecessary follow-ups.
 
 You must explicitly capture:
 
-- what they want researched
+- what the diver wants researched
 - why it matters
-- what end goal they want answered
+- what end goal the diver wants answered
 
 If the issue already contains strong answers, confirm them briefly instead of re-asking verbatim.
 
@@ -24,9 +24,9 @@ Figure out the core question, what uncertainty needs to be reduced, and what wou
 
 Plan for a durable Markdown deliverable in the repo. If external research will be needed, plan to keep lightweight `Sources:` links near the related findings.
 
-## 4. Nail down completion criteria
+## 4. Nail down Testing Decisions
 
-Ask the user (one at a time, skip any already answered):
+Ask the diver (one at a time, skip any already answered):
 
 - What must be answered or documented for this research to be complete?
 - What open questions, if left unanswered, would make this research feel incomplete?
@@ -52,7 +52,7 @@ A numbered list of the specific questions this research must answer:
 
 Every question must be answerable — it produces a concrete finding, decision, or documented outcome.
 
-## Acceptance Criteria
+## Testing Decisions
 
 What makes this research complete? Include:
 
@@ -67,5 +67,5 @@ What this research does NOT need to answer.
 </plan-template>
 
 ```sh
-NEW_PLAN="{new plan content as per template above}"
+NEW_PLAN="{new plan content as per template above}" # e.g. "## Problem Statement\n\n..."
 ```

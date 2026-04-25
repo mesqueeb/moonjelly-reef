@@ -16,7 +16,7 @@ SKILL_DIR="{base directory for this skill}" # e.g. ".agents/skills/reef-scope"
 
 ## Rules
 
-Read `.agents/moonjelly-reef/config.md` to learn the tracker type and any installed optional skills. If the file doesn't exist, read and follow `$SKILL_DIR/setup.md` first, then return here.
+Read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file doesn't exist, read and follow `$SKILL_DIR/setup.md` first, then return here.
 
 **Shell blocks are literal commands** — execute them as written.
 
@@ -63,19 +63,16 @@ If there are no `to-scope` issues, ask:
 
 ```sh
 START_TIME="{current UTC timestamp}" # e.g. "2026-04-24T09:00:00Z"
-```
-
-```sh
 git fetch origin --prune
 ```
 
-Check if the current branch is behind its remote counterpart. If it is, notify the user:
+Check if the current branch is behind its remote counterpart. If it is, notify the diver:
 
 > "{branch-name} is {N} commits behind origin. Want me to pull first?"
 
-Wait for the user's response before continuing.
+Wait for the diver's response before continuing.
 
-## 2. Show interactive heading picker 🧭
+## 2. Show route picker 🧭
 
 Present an interactive picker and if the issue is known mark exactly one route as `(recommended)`.
 
@@ -87,7 +84,7 @@ Present an interactive picker and if the issue is known mark exactly one route a
 > 4. `deep research`
 > 5. `I'm feeling lucky (toss it in as-is, see what the reef creates)`
 
-Wait for the user to confirm or pick a different route, and set:
+Wait for the diver to confirm or pick a different route, and set:
 
 ```sh
 HEADING="{selected route}"
@@ -103,19 +100,19 @@ HEADING="{selected route}"
 
 Follow the route-specific guide:
 
-- If `$HEADING = "feature"`: see [scope-feature.md](scope-feature.md)
-- If `$HEADING = "refactor"`: see [scope-refactor.md](scope-refactor.md)
-- If `$HEADING = "bug"`: see [triage-issue.md](triage-issue.md)
-- If `$HEADING = "feeling-lucky"`: no guide — go directly to step 4.
-- If `$HEADING = "deep-research"`: see [scope-deep-research.md](scope-deep-research.md)
+- If `"$HEADING" = "feature"`: see [scope-feature.md](scope-feature.md). On return, `$NEW_PLAN` is set.
+- If `"$HEADING" = "refactor"`: see [scope-refactor.md](scope-refactor.md). On return, `$NEW_PLAN` is set.
+- If `"$HEADING" = "bug"`: see [triage-issue.md](triage-issue.md). On return, `$NEW_PLAN` is set. If `triage-issue.md` reported `NEXT_PHASE="—"` (diver chose option 4), do not continue — stop here.
+- If `"$HEADING" = "feeling-lucky"`: no guide — set `NEW_PLAN="$ISSUE_BODY"` and go directly to step 4.
+- If `"$HEADING" = "deep-research"`: see [scope-deep-research.md](scope-deep-research.md). On return, `$NEW_PLAN` is set.
 
 ## 4. Branches
 
-Suggest a "base branch" and a "pr branch" name in a single line. Derive the "base branch" from the current branch and the "pr branch" from the issue title (kebab-case, short). For example:
+Suggest a `base-branch` and a `pr-branch` name in a single line. Derive the `base-branch` from the current branch and the `pr-branch` from the issue title (kebab-case, short). For example:
 
-> "Shall we plan to branch off `main`, with PR branch name `guard-branch-locking`. Good?"
+> "Shall we plan to branch off `main`, with pr-branch `guard-branch-locking`. Good?"
 
-The user confirms or adjusts. Both values are required before continuing.
+The diver confirms or adjusts. Both values are required before continuing.
 
 ```sh
 BASE_BRANCH="{from branch discussion}" # e.g. "main"
@@ -139,15 +136,15 @@ If overlapping work is found, ask:
 > "From a quick look at current work in progress, this scope might lead to conflicts with #77 and #83. Should this issue wait for them to land?"
 
 ```sh
-CONFLICTS="{issue numbers to await, or -}" # e.g. "#77, #83"; "-" if none or user said no
+CONFLICTS="{issue numbers to await, or -}" # e.g. "#77, #83"; "-" if none or diver said no
 ```
 
 ## 6. Persist the plan
 
 ```sh
-if [ "$CONFLICTS" == "-" ]; then
+if [ "$CONFLICTS" = "-" ]; then
   # Set updated title now that you have all the info:
-  ISSUE_TITLE_UPDATED="{updated $ISSUE_TITLE}" # e.g. "ACL based branch locking feature [await: #77, #83]"
+  ISSUE_TITLE_UPDATED="{updated $ISSUE_TITLE}" # e.g. "ACL based branch locking feature"
 else
   # Suffix the title with the await annotation:
   ISSUE_TITLE_UPDATED="{updated $ISSUE_TITLE} [await: $CONFLICTS]" # e.g. "ACL based branch locking feature [await: #77, #83]"
@@ -183,14 +180,14 @@ $INTERVIEW_TRANSCRIPT
 if [ "$HEADING" = "bug" ] || [ "$HEADING" = "refactor" ]; then
   NEXT_PHASE="to-implement"
 else
-  NEXT_PHASE="to-scope"
+  NEXT_PHASE="to-slice"
 fi
 
-./tracker.sh issue edit "$ISSUE_ID" --title "$ISSUE_TITLE_UPDATED" --body "$ISSUE_BODY_UPDATED" --remove-label to-scope --add-label $NEXT_PHASE
+./tracker.sh issue edit "$ISSUE_ID" --title "$ISSUE_TITLE_UPDATED" --body "$ISSUE_BODY_UPDATED" --remove-label to-scope --add-label "$NEXT_PHASE"
 ```
 
 ## Handoff
 
-Tell the user:
+Tell the diver:
 
 > 🧭 Heading set. The plan is charted. Run `reef-pulse` when you're ready to dive in.

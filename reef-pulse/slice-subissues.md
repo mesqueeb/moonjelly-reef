@@ -4,6 +4,8 @@ Multi-slice flow — delegated from [slice.md](slice.md).
 
 ## Input (from context)
 
+Context already fetched by `slice.md`.
+
 ```sh
 ISSUE_ID="{from context}"           # e.g. "#42"
 PR_BRANCH="{from context}"          # e.g. "feat/my-feature"
@@ -19,7 +21,7 @@ WORKTREE_PATH=".worktrees/$ISSUE_ID-slice"
 Enter a worktree forked from `$BASE_BRANCH` to read the codebase for informed slicing decisions:
 
 ```sh
-WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
+WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH") # e.g. "ready"
 ```
 
 Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$PR_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
@@ -45,8 +47,6 @@ If `$PR_BRANCH` does not exist on origin yet, create it:
 git push -u origin "$PR_BRANCH"
 ```
 
-If the plan says to work on the current branch (no new `pr-branch`), skip the branch creation but still create a worktree to read the codebase.
-
 ## 2. Build the coverage matrix
 
 For each User Story, Implementation Decision, and Testing Decision in the plan, map it to which slice(s) cover it and which acceptance criterion in that slice addresses it.
@@ -57,11 +57,11 @@ Architectural or non-testable implementation decisions that have no direct imple
 
 ## Coverage Matrix 🗺️
 
-| Plan Item                                              | Slice                                | Acceptance Criteria                                 |
-| ------------------------------------------------------ | ------------------------------------ | --------------------------------------------------- |
-| US1: Users can log in with email                       | 001 Auth endpoint                    | POST /login returns token; invalid creds return 401 |
-| TD1: Session persists across refresh                   | 002 Token storage                    | token stored in httpOnly cookie                     |
-| ID1: Legacy UI renders identically (covered by design) | 001 Auth endpoint, 003 Legacy compat | covered by design                                   |
+| Plan Item                                                                    | Slice                                | Acceptance Criteria                                 |
+| ---------------------------------------------------------------------------- | ------------------------------------ | --------------------------------------------------- |
+| User Story 1: Users can log in with email                                    | 001 Auth endpoint                    | POST /login returns token; invalid creds return 401 |
+| Testing Decision 1: Session persists across refresh                          | 002 Token storage                    | token stored in httpOnly cookie                     |
+| Implementation Decision 1: Legacy UI renders identically (covered by design) | 001 Auth endpoint, 003 Legacy compat | covered by design                                   |
 
 </coverage-matrix-template>
 
@@ -75,7 +75,7 @@ Verify internally:
 - Are the dependency relationships correct? Are there implicit deps not captured?
 - Does every User Story, Implementation Decision, Testing Decision, and Research Question appear in the coverage matrix?
 
-If anything looks off, adjust the breakdown. Do not ask the user — reef-scope already iterated with the user on the plan. Your job is to slice it mechanically.
+If anything looks off, adjust the breakdown. Do not ask the diver — reef-scope already iterated with the diver on the plan. Your job is to slice it mechanically.
 
 ## 4. Create slices
 
@@ -86,17 +86,15 @@ Assemble each slice body:
 Set `UNBLOCKED` based on whether this slice has any blocking dependencies in the plan:
 
 ```sh
-if [ "{slice has no blockers}" = "true" ]; then
+SLICE_HAS_BLOCKERS="{true if this slice has blocking dependencies, false otherwise}" # e.g. "false"
+if [ "$SLICE_HAS_BLOCKERS" = "false" ]; then
   UNBLOCKED=true
   SLICE_TITLE="{slice-title}" # e.g. "002 Token storage"
 else
   UNBLOCKED=false
   SLICE_TITLE="{slice-title} [await: #{blocker-id}]" # e.g. "002 Token storage [await: #43]"
 fi
-```
-
-```sh
-SLICE_HEADING="{per-slice heading, usually $HEADING unless a slice needs a narrower inferred lane}" # e.g. "implement"
+SLICE_HEADING="{per-slice heading, usually $HEADING unless a slice needs a narrower inferred lane}" # e.g. "feature"
 if [ "$UNBLOCKED" = "true" ] && [ "$SLICE_HEADING" = "deep-research" ]; then
   SLICE_LABEL="to-research"
 elif [ "$UNBLOCKED" = "true" ]; then
@@ -104,7 +102,7 @@ elif [ "$UNBLOCKED" = "true" ]; then
 else
   SLICE_LABEL="to-await-waves"
 fi
-SLICE_PR_BRANCH="{derived from plan issue pr-branch + slice title slug}" # e.g. "feat/my-feature-002-token-storage"
+SLICE_PR_BRANCH="{derived from parent issue pr-branch + slice title slug}" # e.g. "feat/my-feature-002-token-storage"
 ```
 
 If `"$FEELING_LUCKY" = "true"`, use best-effort acceptance criteria without bouncing the work back to scope. For deep-research slices, make them research-native: use research questions or investigation angles as the slice descriptions, and write acceptance criteria around what must be answered, clarified, or persisted.
@@ -128,10 +126,10 @@ Create the slice:
 
 ```sh
 SLICE_BODY="---
-parent-issue: "$ISSUE_ID"
-base-branch: "$PR_BRANCH"
-pr-branch: "$SLICE_PR_BRANCH"
-heading: "$SLICE_HEADING"
+parent-issue: \"$ISSUE_ID\"
+base-branch: \"$PR_BRANCH\"
+pr-branch: \"$SLICE_PR_BRANCH\"
+heading: \"$SLICE_HEADING\"
 
 ---
 
@@ -144,13 +142,13 @@ heading: "$SLICE_HEADING"
 Starting from `$ISSUE_BODY_UPDATED`, append the coverage matrix and a listing of all created sub-issues with their labels. Change label from `to-slice` to `in-progress`.
 
 ```sh
-PARENT_ISSUE_BODY_UPDATED="{$ISSUE_BODY_UPDATED with pr-branch in frontmatter and coverage matrix appended}"
+PARENT_ISSUE_BODY_UPDATED="{$ISSUE_BODY_UPDATED with pr-branch in frontmatter and coverage matrix appended}" # e.g. "---\nparent-issue: ...\n---\n\n## Coverage Matrix 🗺️\n\n..."
 ./tracker.sh issue edit "$ISSUE_ID" --body "$PARENT_ISSUE_BODY_UPDATED" --remove-label to-slice --add-label in-progress
 ```
 
 ## 6. Document judgment calls
 
-Post a comment on the plan issue with this structure:
+Post a comment on the parent issue with this structure:
 
 <judgment-calls-template>
 

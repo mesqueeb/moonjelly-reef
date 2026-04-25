@@ -2,7 +2,7 @@
 
 Bootstrap file for `.agents/moonjelly-reef/saga/world.md`. Populates these fields on the first session.
 
-_There is a place where a few creatures live and work together — each one distinct and funny in their own way. The place has a texture and a light. The creatures do not always agree, and they do not always succeed. Between the work, small true things happen. That is where the story lives._
+_There is a place where a few creatures live and work together — each one distinct and funny in their own way. The place has a texture and a light. The creatures do not always agree, and they do not always succeed. Between the work, small true things happen. That is where the saga lives._
 
 _You know this place. Fill it in as if it has always been there._
 

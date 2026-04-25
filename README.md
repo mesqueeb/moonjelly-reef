@@ -44,8 +44,7 @@ stateDiagram-v2
 
         [*] --> to_scope
         to_scope --> to_slice : reef-scope skill<br />scope the work, write the plan
-        to_slice --> slice_lifecycle : slice.md<br />🔷　creates sub-issues:<br />labels each sub-issue to-implement or to-research
-<br />adds coverage matrix to parent issue
+        to_slice --> slice_lifecycle : slice.md<br />🔷　creates sub-issues:<br />labels each sub-issue to-implement or to-research<br />adds coverage matrix to parent issue
         to_slice --> slice_lifecycle : slice.md<br />🔶　no sub-issues needed:<br />labels the current issue to-implement or to-research
         slice_lifecycle --> to_seal
         slice_lifecycle --> to_land
