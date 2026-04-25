@@ -2,8 +2,6 @@
 
 Use this route when the main task is to investigate, compare, or answer a question rather than jump straight into implementation.
 
-## Input (from context)
-
 ## 1. Interview
 
 Grill the user until the research target is sharp enough for downstream phases to execute without guessing.
@@ -36,9 +34,7 @@ Ask the user (one at a time, skip any already answered):
 
 Fold the answers into the Testing Decisions section of the plan. Do not create a separate section.
 
-## 5. Write the plan
-
-Write the scoped issue using this template. The acceptance criteria describe what must be answered, clarified, or persisted, not what code must be written.
+## 5. Set the plan content
 
 <plan-template>
 
@@ -56,7 +52,7 @@ A numbered list of the specific questions this research must answer:
 
 Every question must be answerable — it produces a concrete finding, decision, or documented outcome.
 
-## Testing Decisions
+## Acceptance Criteria
 
 What makes this research complete? Include:
 
@@ -70,12 +66,6 @@ What this research does NOT need to answer.
 
 </plan-template>
 
-After writing the plan, append the full Q&A transcript from the interview:
-
-```
-<details><summary>Interview log</summary>
-
-{full Q&A transcript}
-
-</details>
+```sh
+NEW_PLAN="{new plan content as per template above}"
 ```

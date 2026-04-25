@@ -2,12 +2,6 @@
 
 Investigate a reported problem, find its root cause, and write a fix plan calibrated to the agreed rigor level. Minimize questions to the user.
 
-## Input (from context)
-
-```sh
-ISSUE_ID="{from context}" # e.g. "#42"
-```
-
 ## 1. Capture the problem
 
 Get a brief description of the issue from the user. If they haven't provided one, ask ONE question: "What's the problem you're seeing?"
@@ -72,9 +66,7 @@ Rules (apply to both options):
 - Include a final refactor step if needed
 - **Durability**: Only suggest fixes that would survive radical codebase changes. Tests and reproduction steps assert on observable outcomes (API responses, UI state, user-visible effects), not internal state.
 
-## 6. Write the plan
-
-Write the plan using this template:
+## 6. Set the plan content
 
 <plan-template>
 
@@ -122,4 +114,6 @@ A numbered list of RED-GREEN cycles:
 
 </plan-template>
 
-When persisting the plan in SKILL.md step 6 (for options 1–3), use `to-implement` instead of `to-slice`. A bug fix is a single branch, single PR — slicing adds overhead with no benefit.
+```sh
+NEW_PLAN="{new plan content as per template above}"
+```

@@ -28,33 +28,42 @@ Read `.agents/moonjelly-reef/config.md` to learn the tracker type and any instal
 
 ## 0. Fetch context
 
-If `"$ISSUE_ID" = "-"`, look for items labeled `to-scope`:
-
 ```sh
-./tracker.sh issue list --label to-scope --json number,title
+if [ "$ISSUE_ID" != "-" ]; then
+  ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+  ISSUE_TITLE="{from issue title}" # e.g. "Guard branch locking"
+  ISSUE_BODY="{from issue body}" # e.g. "## Problem\n\nUsers can't log in..."
+else
+  ./tracker.sh issue list --label to-scope --json number,title
+fi
 ```
 
-If multiple, ask the user to pick. If none, ask: "🪼 Did you want to scope something new?"
+If `$ISSUE_ID` was provided (not `-`), go to step "1. Prep"
 
-Set `ISSUE_ID` to the picked or confirmed issue number. If $ISSUE_ID is a specific ID, use it directly.
+If the user picked a `to-scope` issue from the list:
 
-```sh
-./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
-```
+    ```sh
+    ISSUE_ID="{selected issue}" # e.g. "#42"
+    ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
+    ISSUE_TITLE="{from issue title}" # e.g. "Guard branch locking"
+    ISSUE_BODY="{from issue body}" # e.g. "## Problem\n\nUsers can't log in..."
+    ```
 
-```sh
-ISSUE_BODY="{from issue body}" # e.g. "## Problem\n\nUsers can't log in..."
-```
+If there are no `to-scope` issues, ask:
+
+    > 🗺️📍 Did you want to scope something new?
+
+    ```sh
+    ISSUE_ID="-" # set to "-" to signify a new issue may be created later
+    ISSUE_TITLE="" # set to empty string
+    ISSUE_BODY="" # set to empty string
+    ```
 
 ## 1. Prep
-
-Record the start time:
 
 ```sh
 START_TIME="{current UTC timestamp}" # e.g. "2026-04-24T09:00:00Z"
 ```
-
-Fetch remote and check branch status:
 
 ```sh
 git fetch origin --prune
@@ -66,21 +75,19 @@ Check if the current branch is behind its remote counterpart. If it is, notify t
 
 Wait for the user's response before continuing.
 
-## 2. Set your heading 🧭
+## 2. Show interactive heading picker 🧭
 
-Read the issue title and body fetched in step 0. From that text alone, recommend the single best route.
+Present an interactive picker and if the issue is known mark exactly one route as `(recommended)`.
 
-Present the picker to the user — mark exactly one route as `(recommended)`:
+> Setting our heading 🧭
+>
+> 1. `scope a feature`
+> 2. `scope a refactor`
+> 3. `triage a bug`
+> 4. `deep research`
+> 5. `I'm feeling lucky (toss it in as-is, see what the reef creates)`
 
-- `scope a feature`
-- `scope a refactor`
-- `triage a bug`
-- `I'm feeling lucky (hand over to the reef)`
-- `deep research`
-
-Wait for the user to confirm or pick a different route.
-
-Set the selected route:
+Wait for the user to confirm or pick a different route, and set:
 
 ```sh
 HEADING="{selected route}"
@@ -92,49 +99,63 @@ HEADING="{selected route}"
 # HEADING="deep-research"  (deep research)
 ```
 
-## 3. Write the plan
+## 3. Think out the plan
 
 Follow the route-specific guide:
 
-- **Feature**: see [scope-feature.md](scope-feature.md)
-- **Refactor**: see [scope-refactor.md](scope-refactor.md)
-- **Bug**: see [triage-issue.md](triage-issue.md)
-- **Feeling lucky**: no guide — go directly to step 4.
-- **Deep research**: see [scope-deep-research.md](scope-deep-research.md)
+- If `$HEADING = "feature"`: see [scope-feature.md](scope-feature.md)
+- If `$HEADING = "refactor"`: see [scope-refactor.md](scope-refactor.md)
+- If `$HEADING = "bug"`: see [triage-issue.md](triage-issue.md)
+- If `$HEADING = "feeling-lucky"`: no guide — go directly to step 4.
+- If `$HEADING = "deep-research"`: see [scope-deep-research.md](scope-deep-research.md)
 
 ## 4. Branches
 
-Suggest a base branch and a `pr-branch` name in a single line. Derive the `pr-branch` name from the issue title (kebab-case, short). For example:
+Suggest a "base branch" and a "pr branch" name in a single line. Derive the "base branch" from the current branch and the "pr branch" from the issue title (kebab-case, short). For example:
 
 > "Shall we plan to branch off `main`, with PR branch name `guard-branch-locking`. Good?"
 
 The user confirms or adjusts. Both values are required before continuing.
-
-## 5. Conflict anticipation
-
-Scan for in-flight work that might overlap with this plan. List open issues that share the same `base-branch` and are past `to-scope` (i.e., already in-flight: `to-slice`, `in-progress`, `to-implement`, `to-inspect`, `to-rework`, `to-merge`, `to-seal`, `to-land`, `to-await-waves`).
-
-```sh
-BASE_BRANCH="{from branch discussion}" # e.g. "main"
-for LABEL in to-slice in-progress to-implement to-inspect to-rework to-merge to-seal to-land to-await-waves; do
-  ./tracker.sh issue list --label "$LABEL" --json number,title,body,labels
-done
-```
-
-For each returned issue, parse the `base-branch` from its frontmatter. Keep only those whose `base-branch` matches the plan's `$BASE_BRANCH`. Skim each matching issue's plan body to assess whether it touches overlapping areas (same files, same modules, same concepts).
-
-## 6. Persist the plan
-
-Set variables from the discussion:
 
 ```sh
 BASE_BRANCH="{from branch discussion}" # e.g. "main"
 PR_BRANCH="{from branch discussion}" # e.g. "guard-branch-locking"
 ```
 
-The plan gets **prepended** to the evolving issue body (pushing any prior decision record down). The decision record remains at the bottom for reference.
+## 5. Conflict anticipation
+
+Scan for in-flight work that might overlap with this plan. List open issues that share the same `base-branch` and are past `to-scope` (i.e., already in-flight: `to-slice`, `in-progress`, `to-implement`, `to-inspect`, `to-rework`, `to-merge`, `to-seal`, `to-land`, `to-await-waves`).
 
 ```sh
+for LABEL in to-slice in-progress to-implement to-inspect to-rework to-merge to-seal to-land to-await-waves; do
+  ./tracker.sh issue list --label "$LABEL" --json number,title,body,labels
+done
+```
+
+For each returned issue, parse the `base-branch` from its frontmatter. Keep only those whose `base-branch` matches `$BASE_BRANCH`. Skim each matching issue's plan body to assess whether it touches overlapping areas (same files, same modules, same concepts).
+
+If overlapping work is found, ask:
+
+> "From a quick look at current work in progress, this scope might lead to conflicts with #77 and #83. Should this issue wait for them to land?"
+
+```sh
+CONFLICTS="{issue numbers to await, or -}" # e.g. "#77, #83"; "-" if none or user said no
+```
+
+## 6. Persist the plan
+
+```sh
+if [ "$CONFLICTS" == "-" ]; then
+  # Set updated title now that you have all the info:
+  ISSUE_TITLE_UPDATED="{updated $ISSUE_TITLE}" # e.g. "ACL based branch locking feature [await: #77, #83]"
+else
+  # Suffix the title with the await annotation:
+  ISSUE_TITLE_UPDATED="{updated $ISSUE_TITLE} [await: $CONFLICTS]" # e.g. "ACL based branch locking feature [await: #77, #83]"
+fi
+
+DURATION="{human-readable duration since $START_TIME}" # e.g. "42s", "1m 12s"
+TIMESTAMP="{yyyy/MM/dd HH:mm}" # e.g. "2012/12/21 12:00"
+INTERVIEW_TRANSCRIPT="{full interview Q&A transcript}" # e.g. Q: What are you trying to Build? A: ...
 ISSUE_BODY_UPDATED="---
 base-branch: $BASE_BRANCH
 pr-branch: $PR_BRANCH
@@ -142,52 +163,31 @@ heading: $HEADING
 
 ---
 
-{plan content}
-
-$ISSUE_BODY"
-./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED" --remove-label to-scope --add-label to-slice
-```
-
-## 7. Check for potential overlap in other issues
-
-If overlapping in-flight work was found in step 5, surface it to the user:
-
-> "From a quick look at current work in progress, this scope might lead to conflicts with #77 and #83. Should this issue wait for them to land?"
-
-If the user says **no**, go to step 8.
-
-If the user says **yes**, mark the dependency in the title only — do not change labels:
-
-```sh
-ISSUE_TITLE_UPDATED="{current issue title} [await: #77, #83]" # e.g. "Guard branch locking [await: #77, #83]"
-./tracker.sh issue edit "$ISSUE_ID" --title "$ISSUE_TITLE_UPDATED"
-```
-
-If no overlapping work was found, continue silently.
-
-## 8. Append metrics
-
-Compute the duration from `$START_TIME` to now. Read the current issue body, then append a metrics section at the bottom:
-
-```sh
-DURATION="{human-readable duration since START_TIME}" # e.g. "42s", "1m 12s"
-ISSUE_BODY="{current issue body with metrics section appended}"
-./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
-```
-
-Metrics section format:
-
-<pulse-metrics-template>
+$NEW_PLAN
 
 ### 🪼 Pulse metrics
 
-| Phase | Target     | Duration  | Tokens | Tool uses | Outcome      | Date               |
-| ----- | ---------- | --------- | ------ | --------- | ------------ | ------------------ |
-| scope | #$ISSUE_ID | $DURATION | —      | —         | plan created | {yyyy-MM-dd HH:mm} |
+| Phase | Target     | Duration  | Tokens | Tool uses | Outcome      | Date       |
+| ----- | ---------- | --------- | ------ | --------- | ------------ | ---------- |
+| scope | $ISSUE_ID  | $DURATION | —      | —         | plan created | $TIMESTAMP |
 
 <!-- end metrics table -->
 
-</pulse-metrics-template>
+<details>
+<summary><h3>🤿 Original interview — $TIMESTAMP</h3></summary>
+$INTERVIEW_TRANSCRIPT
+</details>
+
+"
+
+if [ "$HEADING" = "bug" ] || [ "$HEADING" = "refactor" ]; then
+  NEXT_PHASE="to-implement"
+else
+  NEXT_PHASE="to-scope"
+fi
+
+./tracker.sh issue edit "$ISSUE_ID" --title "$ISSUE_TITLE_UPDATED" --body "$ISSUE_BODY_UPDATED" --remove-label to-scope --add-label $NEXT_PHASE
+```
 
 ## Handoff
 

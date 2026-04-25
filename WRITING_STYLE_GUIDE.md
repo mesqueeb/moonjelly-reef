@@ -2,6 +2,29 @@
 
 Conventions for writing phase files and skills in the Moonjelly Reef framework. Phase files are instructions executed by an LLM agent — consistency makes them more predictable.
 
+## First principle: battle vagueness with shell
+
+When a step leaves the agent to figure out _what value_, _when_, or _where_, replace the prose with a shell variable assignment. An agent that reads a shell block cannot misread the order, the format, or the target. An agent that reads prose can.
+
+**vague:** "Record the start time."
+**shell:** `START_TIME="{current UTC timestamp}" # e.g. "2026-04-24T09:00:00Z"`
+
+**vague:** footnote — "when persisting in step 6, use `to-implement` for bugs/refactors"
+**shell:**
+
+```sh
+if [ "$HEADING" = "bug" ] || [ "$HEADING" = "refactor" ]; then
+  NEXT_PHASE="to-implement"
+else
+  NEXT_PHASE="to-slice"
+fi
+```
+
+**vague:** "Set the plan content. Append metrics. Edit title if conflicts found."
+**shell:** one `ISSUE_BODY_UPDATED="..."` block assembling everything, followed by one `./tracker.sh issue edit` call.
+
+All the micro-patterns in this guide are applications of this instinct.
+
 ## Structure
 
 Every skill or phase file follows this top-level order:
@@ -134,6 +157,11 @@ preferred: ISSUE_ID="{from the fetched issue}" # e.g. "#42"
 preferred: NEXT_PHASE="{from handoff NEXT_PHASE}" # e.g. "to-inspect"
 anti-pattern: ISSUE_ID="{from the fetched issue}" # e.g. #42
 
+`$ISSUE_ID` already contains the full tracker-native identifier including `#`. Do not prepend `#` in prose or templates:
+
+preferred: dispatched work for `$ISSUE_ID`
+anti-pattern: dispatched work for `#$ISSUE_ID`
+
 Numeric values are unquoted:
 
 preferred: PULSE_NR="{current pulse number}" # e.g. 2
@@ -203,6 +231,17 @@ Make both branches of a conditional explicit:
 
 preferred: If `"$ISSUE_ID" = "-"`, fetch via PR_ID. If `"$PR_ID" = "-"`, fetch via ISSUE_ID.
 anti-pattern: Use whichever identifier you have to look up the other.
+
+**Shell blocks must contain valid POSIX sh — no pseudo-code.** Three common mistakes:
+
+preferred: `[ "$SOMETHING" = "something" ]`
+anti-pattern: `[$SOMETHING == "something"]` — missing spaces, `==` instead of `=`, unquoted variable
+
+preferred: `[ "$VAR" = "value" ]`
+anti-pattern: `[ $VAR = "value" ]` — unquoted variable breaks on empty or space-containing values
+
+preferred: `if [ "$VAR" = "value" ]; then`
+anti-pattern: `if $VAR == "value"` — no brackets
 
 ## Step guards
 

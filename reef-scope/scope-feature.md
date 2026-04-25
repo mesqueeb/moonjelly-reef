@@ -1,11 +1,5 @@
 # Scoping a feature
 
-## Input (from context)
-
-```sh
-ISSUE_ID="{from context}" # e.g. "#42"
-```
-
 ## 1. Interview
 
 RUN ONLY IF the issue does not have decisions captured yet.
@@ -26,9 +20,7 @@ A deep module (as opposed to a shallow module) is one which encapsulates a lot o
 
 Check with the user that these modules match their expectations. Check with the user which modules they want tests written for.
 
-## 3. Write the plan
-
-Write the plan using this template:
+## 3. Set the plan content
 
 <plan-template>
 
@@ -76,12 +68,6 @@ A description of the things that are out of scope for this feature.
 
 </plan-template>
 
-After writing the plan, append the full Q&A transcript from the interview:
-
-```
-<details><summary>Interview log</summary>
-
-{full Q&A transcript}
-
-</details>
+```sh
+NEW_PLAN="{new plan content as per template above}"
 ```

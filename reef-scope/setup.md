@@ -127,21 +127,20 @@ Reef keeps its temporary git worktrees under `.worktrees/` and its agent files u
 
 ## 5. Write config
 
-Create `.agents/moonjelly-reef/config.md` at project root:
+Fill in as per context:
 
-<config-template>
-
----
+```sh
+CONFIG="---
 tracker: github
 tracker-path: —
 tracker-branch: —
 merge-strategy: squash
 tdd-installed: true
 ubiquitous-language-installed: true
+---"
+```
 
----
-
-</config-template>
+Save `$CONFIG` in `.agents/moonjelly-reef/config.md` at project root:
 
 Values for `tracker`: `github`, `local-tracker-gitignored`, `local-tracker-committed`, `jira`, `linear`, `clickup`, or any custom name.
 

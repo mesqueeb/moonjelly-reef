@@ -57,11 +57,11 @@ Architectural or non-testable implementation decisions that have no direct imple
 
 ## Coverage Matrix 🗺️
 
-| Plan Item                                              | Slice                                | Acceptance Criteria                                        |
-| ------------------------------------------------------ | ------------------------------------ | ---------------------------------------------------------- |
-| US1: Users can log in with email                       | 001 Auth endpoint                    | POST /login returns token; invalid creds return 401        |
-| TD1: Session persists across refresh                   | 002 Token storage                    | token stored in httpOnly cookie                            |
-| ID1: Legacy UI renders identically (covered by design) | 001 Auth endpoint, 003 Legacy compat | covered by design                                          |
+| Plan Item                                              | Slice                                | Acceptance Criteria                                 |
+| ------------------------------------------------------ | ------------------------------------ | --------------------------------------------------- |
+| US1: Users can log in with email                       | 001 Auth endpoint                    | POST /login returns token; invalid creds return 401 |
+| TD1: Session persists across refresh                   | 002 Token storage                    | token stored in httpOnly cookie                     |
+| ID1: Legacy UI renders identically (covered by design) | 001 Auth endpoint, 003 Legacy compat | covered by design                                   |
 
 </coverage-matrix-template>
 
@@ -112,15 +112,6 @@ If `"$FEELING_LUCKY" = "true"`, use best-effort acceptance criteria without boun
 Slice body template:
 
 <slice-body-template>
-
----
-parent-issue: "#$ISSUE_ID"
-base-branch: $PR_BRANCH
-pr-branch: $SLICE_PR_BRANCH
-heading: $SLICE_HEADING
-
----
-
 ## What to build
 
 {description of this vertical slice — end-to-end behavior, not layer-by-layer}
@@ -136,7 +127,15 @@ heading: $SLICE_HEADING
 Create the slice:
 
 ```sh
-SLICE_BODY="{<slice-body-template> above with all \$VARIABLES substituted and prose placeholders filled with slice-specific content}"
+SLICE_BODY="---
+parent-issue: "$ISSUE_ID"
+base-branch: "$PR_BRANCH"
+pr-branch: "$SLICE_PR_BRANCH"
+heading: "$SLICE_HEADING"
+
+---
+
+{<slice-body-template> with content filled in}"
 ./tracker.sh issue create --title "$SLICE_TITLE" --body "$SLICE_BODY" --label "$SLICE_LABEL"
 ```
 

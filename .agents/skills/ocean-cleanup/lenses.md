@@ -2,7 +2,7 @@
 
 ## Lens 1: Writing style
 
-Review this file against `WRITING_STYLE_GUIDE.md` and flag every violation or anti-pattern.
+Read `WRITING_STYLE_GUIDE.md` in full. Then review this file and flag every violation of the rules defined there.
 
 ## Lens 2: Ubiquitous language
 

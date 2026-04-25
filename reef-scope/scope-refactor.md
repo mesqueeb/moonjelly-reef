@@ -1,14 +1,8 @@
 # Scoping a refactor
 
-## Input (from context)
+## 1. Explore the repo
 
-## 1. Capture the problem
-
-Ask the user for a long, detailed description of the problem they want to solve and any potential ideas for solutions.
-
-## 2. Explore the repo
-
-Explore the repo to verify their assertions and understand the current state of the codebase.
+Explore the repo to verify the user's assertions and understand the current state of the codebase.
 
 ## 3. Consider alternatives
 
@@ -16,7 +10,7 @@ Ask whether they have considered other options, and present other options to the
 
 ## 4. Interview the implementation
 
-Interview the user about the implementation. Be extremely detailed and thorough.
+If new information is needed, interview the user about the implementation. Be extremely detailed and thorough.
 
 ## 5. Hammer out scope
 
@@ -34,9 +28,7 @@ Fold the answers into the Testing Decisions section of the plan. Do not create a
 
 Break the implementation into a plan of tiny commits. Remember Martin Fowler's advice to "make each refactoring step as small as possible, so that you can always see the program working."
 
-## 8. Write the plan
-
-Write the plan using this template:
+## 8. Set the plan content
 
 <plan-template>
 
@@ -85,14 +77,6 @@ A description of the things that are out of scope for this refactor.
 
 </plan-template>
 
-After writing the plan, append the full Q&A transcript from the interview:
-
+```sh
+NEW_PLAN="{new plan content as per template above}"
 ```
-<details><summary>Interview log</summary>
-
-{full Q&A transcript}
-
-</details>
-```
-
-When persisting the plan in SKILL.md step 6, use `to-implement` instead of `to-slice`. A refactor is a single branch, single PR — slicing adds overhead with no benefit.
