@@ -31,8 +31,8 @@ General rules:
 - set-variables
   ```sh
   SKILL_DIR="{base directory for this skill}"
-  TRACKER_BRANCH="{from config.md}" # e.g. "main"
   LOCK_FILE=".agents/moonjelly-reef/pulse.lock"
+  TRACKER_BRANCH="{from config.md tracker-branch field}" # e.g. "main"
   ```
 - checkout-tracker-branch — if local-tracker-committed
   ```sh
@@ -61,12 +61,13 @@ General rules:
   ```
 - set-variables
   ```sh
-  START_TIME="{current UTC timestamp}"
+  START_TIME="{current UTC timestamp}" # e.g. "2026-04-24T09:00:00Z"
   ```
 - phase-specific
 - set-variables
   ```sh
-  BASE_BRANCH="{from branch discussion}"
+  BASE_BRANCH="{from branch discussion}" # e.g. "main"
+  PR_BRANCH="{from branch discussion}" # e.g. "guard-branch-locking"
   ```
 - conflict-anticipation — scan in-flight issues on same base-branch and surface overlaps
   ```sh
@@ -74,32 +75,17 @@ General rules:
     ./tracker.sh issue list --label "$LABEL" --json number,title,body,labels
   done
   ```
-- set-variables
-  ```sh
-  BASE_BRANCH="{from branch discussion}"
-  PR_BRANCH="{from branch discussion}"
-  ```
-- update-tracker
-  ```sh
-  ISSUE_BODY="{frontmatter + plan content}"
-  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-scope --add-label to-slice
-  ```
 - set-variables — if overlap should block the scoped issue
   ```sh
-  ISSUE_TITLE_UPDATED="{current issue title} [await: #77, #83]"
-  ```
-- update-tracker — if overlap should block the scoped issue
-  ```sh
-  ./tracker.sh issue edit "$ISSUE_ID" --title "$ISSUE_TITLE_UPDATED"
+  ISSUE_TITLE_UPDATED="{updated $ISSUE_TITLE} [await: $CONFLICTS]" # e.g. "ACL based branch locking feature [await: #77, #83]"
   ```
 - set-variables
   ```sh
-  DURATION="{human-readable duration since START_TIME}" # e.g. "42s", "1m 12s"
-  ISSUE_BODY="{current issue body with metrics section appended}"
+  DURATION="{human-readable duration since $START_TIME}" # e.g. "42s", "1m 12s"
   ```
 - update-tracker
   ```sh
-  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+  ./tracker.sh issue edit "$ISSUE_ID" --title "$ISSUE_TITLE_UPDATED" --body "$ISSUE_BODY_UPDATED" --remove-label to-scope --add-label "$NEXT_PHASE"
   ```
 
 ### [/reef-land](./reef-land/SKILL.md)
@@ -117,32 +103,22 @@ General rules:
   ```
 - set-variables
   ```sh
-  ISSUE_ID="{from PR body or already known}"
-  PR_ID="{from plan issue body or already known}"
-  BASE_BRANCH="{from plan issue body}"
-  PR_BODY="{the PR body content — this contains the seal report}"
+  ISSUE_ID="{from PR body or already known}"  # e.g. "#42"
+  PR_ID="{from issue body or already known}"  # e.g. "#43"
+  BASE_BRANCH="{from issue frontmatter base-branch field, or from PR baseRefName}"  # e.g. "main"
+  PR_BODY="{the PR body content — this contains the seal report}"  # e.g. "closes #42 ...\n\n## Test results\n..."
   ```
 - phase-specific
-- set-variables — if change-requests
-  ```sh
-  PR_BODY="{current PR body with gap report appended in <details><summary> block}"
-  ```
 - update-pr-body — if change-requests
   ```sh
-  ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY"
-  ```
-- update-tracker — if change-requests
-  ```sh
+  PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
+  ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED" --remove-label to-land --add-label to-rework
   ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-land --add-label to-rework
   ```
 - update-plan-body — if change-requests and plan decisions changed
   ```sh
-  PLAN_BODY=$(./tracker.sh issue view "$ISSUE_ID" --json body)
-  ./tracker.sh issue edit "$ISSUE_ID" --body "$PLAN_BODY"
-  ```
-- sync-pr-label — if change-requests
-  ```sh
-  ./tracker.sh pr edit "$PR_ID" --remove-label to-land --add-label to-rework
+  PLAN_BODY=$(./tracker.sh issue view "$ISSUE_ID" --json body -q .body)
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$PLAN_BODY_UPDATED"
   ```
 - set-variables — if follow-up
   ```sh
@@ -249,7 +225,7 @@ General rules:
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id or -}" # e.g. "#42"
+  ISSUE_ID="{issue-id}" # e.g. "#42"
   ```
 - fetch-context
   ```sh
@@ -268,14 +244,10 @@ General rules:
 
 ### [slice-one-issue.md](./reef-pulse/slice-one-issue.md)
 
-- set-variables
-  ```sh
-  ISSUE_BODY="{plan issue body with scoped pr-branch, rewritten heading, and appended Acceptance criteria}"
-  ```
 - update-tracker
   ```sh
   NEXT_PHASE="to-research"
-  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-slice --add-label "$NEXT_PHASE"
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED" --remove-label to-slice --add-label "$NEXT_PHASE"
   ```
 - handoff
   ```sh
@@ -311,8 +283,7 @@ General rules:
   ```sh
   SLICE_TITLE="{slice-title} [await: #{blocker-id}]"
   SLICE_HEADING="{per-slice heading, usually $HEADING unless a slice needs a narrower inferred lane}"
-  SLICE_PR_BRANCH="{derived from plan issue pr-branch + slice title slug}"
-  SLICE_BODY="{slice-body as per the template below, with pr-branch: $SLICE_PR_BRANCH and heading: $SLICE_HEADING}"
+  SLICE_PR_BRANCH="{derived from parent issue pr-branch + slice title slug}" # e.g. "feat/my-feature-002-token-storage"
   ```
 - create-slices
   ```sh
@@ -341,7 +312,7 @@ General rules:
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id}" # pre-existing and passed, e.g. "#42"
+  ISSUE_ID="{issue-id}" # e.g. "#42"
   ```
 - fetch-context
   ```sh
@@ -370,6 +341,10 @@ General rules:
   NEXT_PHASE="to-rework"
   PR_ID="—"
   ```
+- set-variables
+  ```sh
+  REPORT="{implementation-report}" # e.g. <details><summary><h3>🐙 Workshop report — {2012/12/21 12:00}</h3></summary>...</details>
+  ```
 - commit-code
   ```sh
   ./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: implementation"
@@ -377,7 +352,6 @@ General rules:
 - set-variables
   ```sh
   CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. "closes #42 add auth endpoint"
-  REPORT="{implementation report}"
   PR_BODY_NEW="$CLOSES\n\n$REPORT"
   ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
   ```
@@ -404,7 +378,7 @@ General rules:
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id or -}" # e.g. "#42"
+  ISSUE_ID="{issue-id}" # e.g. "#42"
   ```
 - fetch-context
   ```sh
@@ -427,6 +401,10 @@ General rules:
   NEXT_PHASE="blocked-with-conflicts"
   PR_ID="—"
   ```
+- set-variables
+  ```sh
+  REPORT="{research-report}" # e.g. <details><summary><h3>🐬 Dolphin's findings — {2012/12/21 12:00}</h3></summary>...</details>
+  ```
 - commit-code
   ```sh
   ./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: research"
@@ -434,7 +412,6 @@ General rules:
 - set-variables
   ```sh
   CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. "closes #42 auth-token-rotation"
-  REPORT="{research report}"
   PR_BODY_NEW="$CLOSES\n\n$REPORT"
   ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
   ```
@@ -579,9 +556,10 @@ General rules:
   ```
 - set-variables
   ```sh
-  ISSUE_TITLE="{from issue title}"
-  BASE_BRANCH="{from issue frontmatter base-branch field}"
-  PR_BRANCH="{from issue frontmatter pr-branch field}"
+  ISSUE_TITLE="{from issue title}" # e.g. "auth-endpoint"
+  BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
+  PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "my-feature/001-auth-endpoint"
+  PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#42"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-inspect"
   ```
 - enter-worktree
@@ -592,7 +570,7 @@ General rules:
   ```sh
   ISSUE_ID="$ISSUE_ID"
   NEXT_PHASE="blocked-with-conflicts"
-  PR_ID="—"
+  PR_ID="$PR_ID"
   ```
 - commit-code — if cleanup-needed
   ```sh
@@ -606,9 +584,8 @@ General rules:
   ```
 - update-pr-body
   ```sh
-  PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#42"
   PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
-  REPORT="{inspect-report}" # <details><summary><h3>🧿 Inspect review — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+  REPORT="{inspection-report}" # e.g. <details><summary><h3>🧿 Barreleye inspection — {2012/12/21 12:00}</h3></summary>...</details>
   PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
   ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
   ```
@@ -668,7 +645,7 @@ General rules:
 - update-pr-body
   ```sh
   PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
-  REPORT="{rework-report}" # <details><summary><h3>🦀 Rework — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+  REPORT="{rework-report}" # e.g. <details><summary><h3>🦀 Crab's rework — {2012/12/21 12:00}</h3></summary>...</details>
   PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
   ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
   ```
@@ -692,7 +669,7 @@ General rules:
 
 - set-variables
   ```sh
-  ISSUE_ID="{issue-id or -}" # e.g. "#42"
+  ISSUE_ID="{issue-id}" # e.g. "#42"
   ```
 - fetch-context
   ```sh
@@ -722,7 +699,7 @@ General rules:
 - update-tracker
   ```sh
   NEXT_LABEL="to-implement"
-  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-await-waves --add-label "$NEXT_LABEL" --title "$ISSUE_TITLE"
+  ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-await-waves --add-label "$NEXT_LABEL" --title "$ISSUE_TITLE_UPDATED"
   ```
 - enter-worktree
   ```sh
@@ -749,7 +726,7 @@ General rules:
 - handoff
   ```sh
   ISSUE_ID="$ISSUE_ID"
-  NEXT_PHASE="to-research" # or "to-implement" or "to-await-waves" depending on heading and blockers
+  NEXT_PHASE="$NEXT_LABEL"
   PR_ID="—"
   ```
 
@@ -784,10 +761,6 @@ General rules:
   ISSUE_ID="$ISSUE_ID"
   NEXT_PHASE="blocked-with-conflicts"
   PR_ID="$PR_ID"
-  ```
-- commit-code — if merge-needed
-  ```sh
-  ./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts with $BASE_BRANCH"
   ```
 - update-tracker — if tests-fail
   ```sh
@@ -835,7 +808,7 @@ General rules:
   ```
 - check-siblings-and-completion
   ```sh
-  ./tracker.sh issue list --json number,labels,body
+  ./tracker.sh issue list --json labels,body
   ```
 - update-tracker
   ```sh
@@ -850,7 +823,7 @@ General rules:
   ```sh
   ISSUE_ID="$ISSUE_ID"
   NEXT_PHASE="$NEXT_PHASE"
-  PR_ID="-" # sub-issue merge does not open the parent issue PR
+  PR_ID="—" # sub-issue PR was merged and deleted; no PR remains open
   ```
 
 ### [seal.md](./reef-pulse/seal.md)
@@ -868,7 +841,7 @@ General rules:
   ISSUE_TITLE="{from issue title}"
   BASE_BRANCH="{from issue frontmatter base-branch field}"
   PR_BRANCH="{from issue frontmatter pr-branch field}"
-  WORKTREE_PATH=".worktrees/$ISSUE_ID-seal"
+  WORKTREE_PATH=".worktrees/$ISSUE_TITLE-seal"
   ```
 - enter-worktree
   ```sh
@@ -878,7 +851,7 @@ General rules:
   ```sh
   ISSUE_ID="$ISSUE_ID"
   NEXT_PHASE="blocked-with-conflicts"
-  PR_ID="—"
+  PR_ID="$PR_ID"
   ```
 - commit-code — if documentation-added
   ```sh
@@ -886,25 +859,24 @@ General rules:
   ```
 - submit-report
   ```sh
-  REPORT="{seal-report}" # <details><summary><h3>🦭 Seal report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+  REPORT="{seal-report}" # e.g. <details><summary><h3>🦭 Seal of approval — {2012/12/21 12:00}</h3></summary>...</details>
   ```
 - if PR exists
   ```sh
-  PR_ID="{from pr create output or existing PR}"
   PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
-  PR_BODY="$PR_BODY\n\n$REPORT"
-  ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY"
+  PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
+  ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
   ```
 - if PR needs creation
   ```sh
   CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. "closes #42 My feature title"
   PR_BODY_NEW="$CLOSES\n\n$REPORT"
   ./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-seal
-  # Persist the PR metadata on the plan issue so downstream human review can always find it:
-  PR_ID="{from pr create output or existing PR}"
-  ISSUE_BODY="{original issue body with added frontmatter values}"
+  # Persist the PR metadata on the plan issue so the diver can always find it:
+  PR_ID="{from pr create output}" # e.g. "#43"
+  ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
   # add to frontmatter: pr-id: $PR_ID
-  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY"
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED"
   ```
 - update-tracker pass case
   ```sh
