@@ -10,17 +10,15 @@ ISSUE_ID="{from context}" # e.g. "#42"
 
 RUN ONLY IF the issue does not have decisions captured yet.
 
-Before and during the interview, explore the codebase and read related code. If a question can be answered by exploring the codebase, explore the codebase instead.
+Before and during the interview, explore the codebase and read related code. If a question can be answered by reading code, read it instead of asking.
 
-Then interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer.
+Then interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one.
 
-Ask the questions one at a time.
+The conversation should naturally surface what will become Implementation Decisions and Testing Decisions — cover the implementation approach, constraints, and what "done" looks like without making those feel like a separate checklist.
 
-## 2. Explore the repo
+Ask one question at a time. For each question, provide your recommended answer.
 
-Explore the repo to understand the current state of the codebase, if you haven't already.
-
-## 3. Sketch modules
+## 2. Sketch modules
 
 Sketch out the major modules you will need to build or modify. Actively look for opportunities to extract deep modules that can be tested in isolation.
 
@@ -28,7 +26,7 @@ A deep module (as opposed to a shallow module) is one which encapsulates a lot o
 
 Check with the user that these modules match their expectations. Check with the user which modules they want tests written for.
 
-## 4. Write the plan
+## 3. Write the plan
 
 Write the plan using this template:
 
@@ -72,16 +70,18 @@ A list of testing decisions that were made. Include:
 - Which modules will be tested
 - Prior art for the tests (i.e. similar types of tests in the codebase)
 
-## Success Criteria
-
-Testable conditions that must ALL be true for this work to be considered done. Each criterion must be mechanically verifiable.
-
-- [ ] {criterion 1}
-- [ ] {criterion 2}
-- [ ] ...
-
 ## Out of Scope
 
 A description of the things that are out of scope for this feature.
 
 </plan-template>
+
+After writing the plan, append the full Q&A transcript from the interview:
+
+```
+<details><summary>Interview log</summary>
+
+{full Q&A transcript}
+
+</details>
+```

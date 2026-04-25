@@ -51,12 +51,12 @@ Check for an existing pulse.lock file.
 
 If the pulse.lock file exists, another pulse may already be running (or a previous session crashed without cleaning up).
 
-- If `pulse.lock` exists, read the start timestamp from it, calculate how long the existing pulse has been running, and report this to the user: "A pulse has been running for {elapsed}. This may be from a crashed session. Override?" In interactive use, ask the user. In cron/autopilot use, override automatically.
+- If `pulse.lock` exists, read the start timestamp from it, calculate how long the existing pulse has been running, and report this to the user: "The reef has been pulsing for {elapsed} ~~~ 🪸 🪸 🐠. There may be a lost diver. Pulse again to find them?" In interactive use, ask the user. In cron/autopilot use, override automatically.
 - If `pulse.lock` does not exist (or the user chose to override), create it with a start timestamp (ISO 8601 UTC) and continue.
 
 ### Sync tracker branch (local-tracker-committed only)
 
-RUN IF the tracker is `local-tracker-committed`.
+RUN ONLY IF the tracker is `local-tracker-committed`.
 
 The tracker files live in a git-tracked directory on a specific branch. Sync it before scanning. `TRACKER_BRANCH` was already set above.
 
@@ -98,7 +98,7 @@ After each return from [`pulse-loop.md`](pulse-loop.md), decide whether to invok
 
 ## 4. Session completion
 
-RUN ONLY WHEN `"$IS_SESSION_COMPLETE" = "true"`.
+RUN ONLY IF `"$IS_SESSION_COMPLETE" = "true"`.
 
 ### Print SESSION COMPLETE
 
@@ -130,7 +130,7 @@ Print the SESSION COMPLETE box with session stats:
 
 ### Print Lore
 
-RUN ONLY WHEN `"$AGENT_COUNT_SESSION" -gt 0`.
+RUN ONLY IF `"$AGENT_COUNT_SESSION" -gt 0`.
 
 prep:
 

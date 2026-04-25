@@ -270,7 +270,7 @@ General rules:
 
 - set-variables
   ```sh
-  ISSUE_BODY="{$ISSUE_BODY_UPDATED with updated Success & Acceptance criteria}"
+  ISSUE_BODY="{plan issue body with scoped pr-branch, rewritten heading, and appended Acceptance criteria}"
   ```
 - update-tracker
   ```sh
@@ -290,7 +290,7 @@ General rules:
   ```sh
   PR_BRANCH="{from context}"
   BASE_BRANCH="{from context}"
-  BEARING="{from context}"
+  HEADING="{from context}"
   WORKTREE_PATH=".worktrees/$ISSUE_ID-slice"
   ```
 - enter-worktree
@@ -310,9 +310,9 @@ General rules:
 - set-variables
   ```sh
   SLICE_TITLE="{slice-title} [await: #{blocker-id}]"
-  SLICE_BEARING="{per-slice bearing, usually $BEARING unless a slice needs a narrower inferred lane}"
+  SLICE_HEADING="{per-slice heading, usually $HEADING unless a slice needs a narrower inferred lane}"
   SLICE_PR_BRANCH="{derived from plan issue pr-branch + slice title slug}"
-  SLICE_BODY="{slice-body as per the template below, with pr-branch: $SLICE_PR_BRANCH and bearing: $SLICE_BEARING}"
+  SLICE_BODY="{slice-body as per the template below, with pr-branch: $SLICE_PR_BRANCH and heading: $SLICE_HEADING}"
   ```
 - create-slices
   ```sh
@@ -702,7 +702,7 @@ General rules:
   ```sh
   ISSUE_TITLE="{from issue title, stripping [await: ...] suffix}"
   BASE_BRANCH="{from issue frontmatter base-branch field}"
-  BEARING="{from issue frontmatter bearing field}"
+  HEADING="{from issue frontmatter heading field}"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-await-waves"
   ```
 - set-variables
@@ -749,7 +749,7 @@ General rules:
 - handoff
   ```sh
   ISSUE_ID="$ISSUE_ID"
-  NEXT_PHASE="to-research" # or "to-implement" or "to-await-waves" depending on bearing and blockers
+  NEXT_PHASE="to-research" # or "to-implement" or "to-await-waves" depending on heading and blockers
   PR_ID="—"
   ```
 

@@ -1,6 +1,6 @@
 # Triage Issue
 
-Investigate a reported problem, find its root cause, and write a plan with a TDD fix approach. This is a mostly hands-off workflow — minimize questions to the user.
+Investigate a reported problem, find its root cause, and write a fix plan calibrated to the agreed rigor level. Minimize questions to the user.
 
 ## Input (from context)
 
@@ -22,6 +22,7 @@ Deeply investigate the codebase. If your environment supports explorer-style sub
 - **What** related code exists (similar patterns, tests, adjacent modules)
 
 Look at:
+
 - Related source files and their dependencies
 - Existing tests (what's tested, what's missing)
 - Recent changes to affected files (`git log` on relevant files)
@@ -37,22 +38,41 @@ Based on your investigation, determine:
 - What behaviors need to be verified via tests
 - Whether this is a regression, missing feature, or design flaw
 
-## 4. Design TDD fix plan
+## 4. What does done look like?
+
+Present these four options to the user. Recommend one based on your investigation findings:
+
+1. **Theoretical fix** — fix identified and documented in the plan; no code or tests required
+2. **Compile/Runtime-verified** — fix applied and confirmed to compile/run without errors
+3. **TDD** — failing test written first, then fix applied; all tests pass
+4. **Dive in together** — interactive debugging session; not suitable for AFK Reef flow
+
+Present your investigation findings, then ask which option the user wants. If your investigation was inconclusive or the fix requires live exploration, say so explicitly — that's the signal for option 4.
+
+If the user picks option 4, do not label the issue `to-implement`. Close out by explaining that this issue needs a live session and won't enter the Reef queue.
+
+## 5. Design fix plan
+
+**RUN ONLY IF user chose option 2 or 3.**
 
 Create a concrete, ordered list of RED-GREEN cycles. Each cycle is one vertical slice:
 
-- **RED**: Describe a specific test that captures the broken/missing behavior
-- **GREEN**: Describe the minimal code change to make that test pass
+- **Option 2 (Compile/Runtime-verified)**:
+  - **RED**: Describe how to reproduce the issue — compile error, runtime crash, or observable browser/UI behavior
+  - **GREEN**: Describe the fix and how it resolves the reproduction case
 
-### Rules
+- **Option 3 (TDD)**:
+  - **RED**: Describe a specific failing test that captures the broken behavior
+  - **GREEN**: Describe the minimal code change to make that test pass
 
-- Tests verify behavior through public interfaces, not implementation details
-- One test at a time, vertical slices (NOT all tests first, then all code)
-- Each test should survive internal refactors
+Rules (apply to both options):
+
+- Describe behaviors and contracts, not internal structure
+- One cycle at a time
 - Include a final refactor step if needed
-- **Durability**: Only suggest fixes that would survive radical codebase changes. Describe behaviors and contracts, not internal structure. Tests assert on observable outcomes (API responses, UI state, user-visible effects), not internal state. A good suggestion reads like a spec; a bad one reads like a diff.
+- **Durability**: Only suggest fixes that would survive radical codebase changes. Tests and reproduction steps assert on observable outcomes (API responses, UI state, user-visible effects), not internal state.
 
-## 5. Write the plan
+## 6. Write the plan
 
 Write the plan using this template:
 
@@ -61,6 +81,7 @@ Write the plan using this template:
 ## Problem
 
 A clear description of the bug or issue, including:
+
 - What happens (actual behavior)
 - What should happen (expected behavior)
 - How to reproduce (if applicable)
@@ -68,31 +89,37 @@ A clear description of the bug or issue, including:
 ## Root Cause Analysis
 
 Describe what you found during investigation:
+
 - The code path involved
 - Why the current code fails
 - Any contributing factors
 
 Do NOT include specific file paths, line numbers, or implementation details that couple to current code layout. Describe modules, behaviors, and contracts instead. The plan should remain useful even after major refactors.
 
-## TDD Fix Plan
+{IF option 2 or 3:}
+
+## Fix Plan
 
 A numbered list of RED-GREEN cycles:
 
-1. **RED**: Write a test that [describes expected behavior]
-   **GREEN**: [Minimal change to make it pass]
+1. **RED**: [Reproduce the issue / failing test]
+   **GREEN**: [Minimal fix that resolves it]
 
-2. **RED**: Write a test that [describes next behavior]
+2. **RED**: [Next reproduction case / failing test]
    **GREEN**: [Minimal change to make it pass]
 
 ...
 
-**REFACTOR**: [Any cleanup needed after all tests pass]
+{IF option 3: **REFACTOR**: [Any cleanup needed after all tests pass]}
 
-## Success Criteria
+{END IF}
 
-- [ ] {criterion 1}
-- [ ] {criterion 2}
-- [ ] All new tests pass
-- [ ] Existing tests still pass
+## Acceptance Criteria
+
+{Option 1}: `- [ ] Fix applied to the identified code path` and `- [ ] existing tests still pass`
+{Option 2}: `- [ ] Fix applies and compiles/runs without errors` and `- [ ] existing tests still pass`
+{Option 3}: `- [ ] Regression test exists covering the root cause` and `- [ ] All tests pass`
 
 </plan-template>
+
+When persisting the plan in SKILL.md step 6 (for options 1–3), use `to-implement` instead of `to-slice`. A bug fix is a single branch, single PR — slicing adds overhead with no benefit.

@@ -8,37 +8,20 @@ Context already fetched and resolved by `slice.md`.
 
 ```sh
 ISSUE_ID="{from context}"          # e.g. "#42"
-BEARING="{from context}"           # e.g. "feature" — already resolved, never "feeling-lucky"
+HEADING="{from context}"           # e.g. "feature" — already resolved, never "feeling-lucky"
 FEELING_LUCKY="{from context}"     # e.g. "false"
 ISSUE_BODY_UPDATED="{from context}" # plan body with frontmatter already cleaned up
 ```
 
-## 1. Update the plan issue body
-
-No sub-issues are needed — the plan becomes the slice. Skip sub-issues, coverage matrix, and seal.
-
-Starting from `$ISSUE_BODY_UPDATED`:
-
-1. **No sub-issues.** The plan IS the slice.
-2. **Rename `## Success criteria` to `## Success & Acceptance criteria`.** Append the acceptance criteria you drafted for the single slice to that section. Shape them to the lane: for deep-research, criteria must describe what must be answered, clarified, or persisted rather than implementation tasks.
-3. **Route research slices into the research phase.** For deep-research, label the issue to-research instead of to-implement.
-4. **No coverage matrix.** Success criteria and acceptance criteria are 1:1 — the mapping adds no information.
-
-Assemble the updated plan issue body:
+## 1. Label the next phase
 
 ```sh
-ISSUE_BODY="{$ISSUE_BODY_UPDATED with updated Success & Acceptance criteria}"
-```
-
-## 2. Label the next phase
-
-```sh
-if [ "$BEARING" = "deep-research" ]; then
+if [ "$HEADING" = "deep-research" ]; then
   NEXT_PHASE="to-research"
 else
   NEXT_PHASE="to-implement"
 fi
-./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-slice --add-label "$NEXT_PHASE"
+./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED" --remove-label to-slice --add-label "$NEXT_PHASE"
 ```
 
 ## Handoff

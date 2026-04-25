@@ -43,10 +43,8 @@ Report these variables to the caller and **do not continue**.
 
 Read the issue. It must contain:
 
-- Acceptance criteria
 - `base-branch` in frontmatter (where the PR merges into)
 - `pr-branch` in frontmatter (the branch the PR lives on)
-- Research-oriented success criteria or acceptance criteria
 
 ```sh
 ISSUE_TITLE="{from issue title}" # e.g. "auth-token-rotation"
@@ -87,8 +85,8 @@ Report these variables to the caller and **do not continue**.
 
 Read and understand:
 
-- **This issue's acceptance criteria** — this is your checklist. Every criterion must be addressed.
-- **The plan + success criteria** — understand the question the research must answer.
+- **Your research checklist** — in priority order: `## Acceptance criteria` if present; else the `## Research Questions` from the plan. Every item must be answered or documented.
+- **The plan** — understand the question the research must answer (Research Questions, Testing Decisions).
 - **Sibling issues** — awareness of what others are doing or have done. Don't duplicate, don't conflict.
 - **The decision record** — the original decisions that led here.
 
@@ -112,19 +110,22 @@ When research is complete, compose the PR description using this template:
 
 This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
-```markdown
-## Ambiguous choices
+<research-template>
+<details>
+<summary><h3>🐬 Dolphin's findings — {yyyy/MM/dd HH:mm}</h3></summary>
 
-Decisions made during research that weren't covered by the acceptance criteria or where judgment was needed:
+### Judgment calls
 
-- **{topic}**: chose {X} because {reason}. This differs from the plan in that {difference, if any}.
+- **{topic}**: chose {X} because {reason}. Differs from plan: {difference, if any}.
 
-(If no ambiguous choices were made, write "None — research followed the plan exactly.")
+(If none, write "None — research followed the plan exactly.")
 
-## Research outputs
+### Research outputs
 
 - `{path/to/artifact.md}` — {what it answers}
-```
+
+</details>
+</research-template>
 
 ## 5. Open the PR
 
@@ -132,16 +133,12 @@ Decisions made during research that weren't covered by the acceptance criteria o
 ./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: research"
 ```
 
-The PR body must start with the "closes" reference, followed by the research report:
-
 ```sh
 CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. "closes #42 auth-token-rotation"
-REPORT="{research report}"
+REPORT="{research-report}" # e.g. <details><summary><h3>🐬 Research report — {2012/12/21 12:00}</h3></summary>...</details>
 PR_BODY_NEW="$CLOSES\n\n$REPORT"
 ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
 ```
-
-The PR targets `$BASE_BRANCH` — the branch it merges into.
 
 ## 6. Update the issue and label
 

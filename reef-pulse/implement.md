@@ -43,7 +43,6 @@ Report these variables to the caller and **do not continue**.
 
 Read the issue. It must contain:
 
-- Acceptance criteria
 - `base-branch` in frontmatter (where the PR merges into)
 - `pr-branch` in frontmatter (the branch the PR lives on — chosen during scope for an issue with no `parent-issue`, or assigned during slice creation for an issue with `parent-issue`)
 - Parent issue reference (if this is a sub-issue)
@@ -110,16 +109,16 @@ Report these variables to the caller and **do not continue**.
 
 Read and understand:
 
-- **This issue's acceptance criteria** — this is your checklist. Every criterion must be addressed.
-- **The plan + success criteria** — understand the "why" behind this issue.
+- **Your implementation checklist** — in priority order: `## Acceptance criteria` if present; else `## Commits` for a refactor plan; else the User Stories, Implementation Decisions, and Testing Decisions directly. Every item must be addressed.
+- **The plan** — understand the "why" behind this issue (User Stories, Implementation Decisions, Testing Decisions).
 - **Sibling issues** — awareness of what others are doing or have done. Don't duplicate, don't conflict.
 - **The decision record** — the original decisions that led here.
 
 ## 3. Implement with TDD
 
-Use the `tdd` skill to implement the acceptance criteria. If the `tdd` skill is not installed (check config), read and follow [tdd-lite.md](tdd-lite.md) instead.
+Use the `tdd` skill to implement each entry. If the `tdd` skill is not installed (check config), read and follow [tdd-lite.md](tdd-lite.md) instead.
 
-Run the full project test suite after each red-green cycle — not just the tests you wrote. If you get stuck on an acceptance criterion, make your best judgment, document what you decided and why (see "6. Document judgment calls" below), and continue. Never silently skip an acceptance criterion.
+Run the full project test suite after each red-green cycle — not just the tests you wrote. If an entry needs a human call, make your best judgment instead, note it for the `## Judgment calls` section of the report, and continue. Never silently skip an entry.
 
 Commit your work when implementation is complete.
 
@@ -129,42 +128,36 @@ When implementation is complete, compose the PR description using this template:
 
 This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
-```markdown
-## Ambiguous choices
+<report-template>
+<details>
+<summary><h3>🐙 Workshop report — {yyyy/MM/dd HH:mm}</h3></summary>
 
-Decisions made during implementation that weren't covered by the acceptance criteria or where judgment was needed:
+### Judgment calls
 
-- **{topic}**: chose {X} because {reason}. This differs from the plan in that {difference, if any}.
+- **{topic}**: chose {X} because {reason}. Differs from plan: {difference, if any}.
 
-(If no ambiguous choices were made, write "None — implementation followed the plan exactly.")
+(If none, write "None — implementation followed the plan exactly.")
 
-## Test results
+### Test results
 
 {Output of the full test suite run. If too long, summarize: "X tests passed, 0 failed, 0 skipped."}
 
-## Screenshots / video
+### Screenshots / video
 
 {If the app is launchable and the change is visual or user-facing, include a screenshot or screen recording demonstrating the behavior. If not applicable, omit this section entirely.}
-```
+
+</details>
+</report-template>
 
 ## 5. Open the PR
 
 ```sh
 ./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: implementation"
-```
-
-The PR body must start with the "closes" reference, followed by the implementation report:
-
-Document judgment calls in that implementation report. Only include decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
-
-```sh
 CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. "closes #42 add auth endpoint"
-REPORT="{implementation report}" # e.g. "## Ambiguous choices\n\nNone — implementation followed the plan exactly.\n\n## Test results\n\n42 tests passed, 0 failed."
+REPORT="{implementation-report}" # e.g. <details><summary><h3>🐙 Workshop report — {2012/12/21 12:00}</h3></summary>...</details>
 PR_BODY_NEW="$CLOSES\n\n$REPORT"
 ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
 ```
-
-The PR targets `$BASE_BRANCH` — the branch it merges into.
 
 ## 6. Update the issue and label
 

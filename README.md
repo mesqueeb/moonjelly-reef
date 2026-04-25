@@ -43,7 +43,7 @@ stateDiagram-v2
         state "🤿　to-land" as to_land
 
         [*] --> to_scope
-        to_scope --> to_slice : reef-scope skill<br />scope the work, define success criteria
+        to_scope --> to_slice : reef-scope skill<br />scope the work, write the plan
         to_slice --> slice_lifecycle : slice.md<br />🔷　creates sub-issues:<br />labels each sub-issue to-implement or to-research
 <br />adds coverage matrix to parent issue
         to_slice --> slice_lifecycle : slice.md<br />🔶　no sub-issues needed:<br />labels the current issue to-implement or to-research
@@ -93,7 +93,7 @@ stateDiagram-v2
 <details>
 <summary>🤿 <b><code>reef-scope</code></b> — scope an issue</summary>
 
-The single entry point for turning ideas into plans. It always shows a route picker, recommends a route from issue text when an issue is passed in, writes a plan with **success criteria**, and labels `to-slice`.
+The single entry point for turning ideas into plans. It always shows a route picker, recommends a route from issue text when an issue is passed in, writes a plan with User Stories, Implementation Decisions, and Testing Decisions, and labels `to-slice`.
 
 The route picker always offers these five options:
 
@@ -238,7 +238,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 <details>
 <summary>🌊 <b><code>to-seal</code></b> 🏷️</summary>
 
-Holistic review of the current issue's `pr-branch` — checking the composed whole, not the parts. Verify every success criterion end-to-end, run the full suite, produce the aggregate report, label `to-land` or `to-rework` on gaps.
+Holistic review of the current issue's `pr-branch` — checking the composed whole, not the parts. Verify every plan item (User Stories, Implementation Decisions, Testing Decisions) end-to-end, run the full suite, produce the aggregate report, label `to-land` or `to-rework` on gaps.
 
 | source file | [`reef-pulse/seal.md`](reef-pulse/seal.md) |
 | :---------- | :----------------------------------------- |

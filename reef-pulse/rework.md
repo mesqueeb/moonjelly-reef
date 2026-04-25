@@ -51,8 +51,6 @@ PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#7"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
 ```
 
-For plan issues, read success criteria from the plan issue body instead of acceptance criteria.
-
 ## 1. Git prep
 
 Enter a worktree forked from $PR_BRANCH to apply fixes to the existing PR:
@@ -86,7 +84,7 @@ Also read the gap report from the PR body (`<details><summary>` blocks written b
 
 Also re-read:
 
-- The issue's acceptance criteria or plan's success criteria
+- The issue's acceptance criteria (if present), or the plan's User Stories, Implementation Decisions, Testing Decisions, Commits, or Research Questions — whichever applies
 - The gap classification from the seal report if present (missing coverage, incomplete implementation, integration gap, planning gap)
 
 ## 3. Fix
@@ -97,7 +95,7 @@ Address every comment and gap. For each piece of feedback:
 - If you disagree with the feedback, fix it anyway and add a PR comment explaining your reasoning. Let the inspector decide on the next round. Don't argue — fix.
 - For deep-research, rework means revising the committed research docs to close the flagged gaps.
 - Typical research fixes include answering missed questions, tightening the writing, clarifying conclusions, or adding missing source links.
-- For feeling-lucky, rework may refine the inferred lane or bearing if QA surfaced a better interpretation.
+- For feeling-lucky, rework may refine the inferred lane or heading if QA surfaced a better interpretation.
 
 Do NOT skip any feedback item. If a comment is unclear, make your best interpretation and note what you assumed.
 
@@ -105,37 +103,53 @@ Do NOT skip any feedback item. If a comment is unclear, make your best interpret
 
 Not a subset. The full project test suite must be green.
 
-## 5. Document judgment calls
-
-Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
-
-## 6. Push fixes
+## 5. Push fixes
 
 ```sh
 ./commit.sh --branch "$PR_BRANCH" -m "rework: address review feedback"
 ```
 
-## 7. Update the PR description
+## 6. Update the PR description
 
-Read the current PR body, then append the rework report as a collapsible block. The rework report should include judgment calls, what feedback was addressed, what was changed, and test results.
 
 This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
+<report-template>
+<details>
+<summary><h3>🦀 Crab's rework — {yyyy/MM/dd HH:mm}</h3></summary>
+
+### Judgment calls
+
+- **{topic}**: chose {X} because {reason}. Differs from plan: {difference, if any}.
+
+(If none, write "None.")
+
+### Feedback addressed
+
+- **{feedback item}**: {what was changed}
+
+### Test results
+
+{X tests passed, 0 failed.}
+
+</details>
+</report-template>
+
 ```sh
 PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
-REPORT="{rework-report}" # <details><summary><h3>🦀 Rework — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+REPORT="{rework-report}" # e.g. <details><summary><h3>🦀 Crab's rework — {2012/12/21 12:00}</h3></summary>...</details>
 PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
 ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
 ```
 
-## 8. Label
+## 7. Label
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-rework --add-label to-inspect
 ./tracker.sh pr edit "$PR_ID" --remove-label to-rework --add-label to-inspect
 ```
 
-## 9. Clean up
+## 8. Clean up
 
 ```sh
 ./worktree-exit.sh --path "$WORKTREE_PATH"

@@ -10,11 +10,11 @@
 
 ## Work hierarchy
 
-| Term          | Definition                                                                                                      | Aliases to avoid                      |
-| ------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| **issue**     | A scoped unit of work tracked by the issue tracker — a bug, feature, or refactor                                | ticket, work item, task, epic, parent |
-| **plan**      | The content written into an issue by reef-scope — success criteria, metadata, coverage matrix                   | spec, design, RFC                     |
-| **sub-issue** | An issue created by the slice phase to implement one slice under a parent issue, also called a "vertical slice" | child task, child ticket, sub task    |
+| Term          | Definition                                                                                                                             | Aliases to avoid                      |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| **issue**     | A scoped unit of work tracked by the issue tracker — a bug, feature, refactor, or research task                                        | ticket, work item, task, epic, parent |
+| **plan**      | The content written into an issue by reef-scope — User Stories, Implementation Decisions, Testing Decisions, metadata, coverage matrix | spec, design, RFC                     |
+| **sub-issue** | An issue created by the slice phase to implement one slice under a parent issue, also called a "vertical slice"                        | child task, child ticket, sub task    |
 
 ## Fields and identifiers
 
@@ -30,47 +30,48 @@ Use the kebab-case form for canonical domain and frontmatter terms, and the cons
 
 ## Title suffixes
 
-| Term               | Definition                                                                                                             | Aliases to avoid                 |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| Term               | Definition                                                                                                             | Aliases to avoid                   |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
 | **`[await: ...]`** | The issue-title suffix that encodes blockers for work that must wait on other issues to land before it can be promoted | blocked-by field, dependency label |
 
 ## Planning
 
-| Term                    | Definition                                                                                                                                 | Aliases to avoid                                  |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
-| **problem statement**   | The plan section that describes the issue from the user's perspective                                                                      | bug write-up, design brief                        |
-| **user story**          | A concise statement of user intent and benefit used to validate whether the planned solution solves the user's problem                     | requirement, use case (when referring to the row) |
-| **decision record**     | The plan section that captures scoping decisions and constraints that downstream phases may need to revisit                                | notes, design log                                 |
-| **success criteria**    | Plan-level testable conditions that define when the entire issue is done                                                                   | requirements, specs, definition of done           |
-| **acceptance criteria** | Issue-level testable conditions that define when one implementation unit is done; on a parent issue they are written onto each sub-issue   | checklist, slice criteria, ACs (never abbreviate) |
-| **coverage matrix**     | A table mapping each success criterion to which sub-issue(s) and acceptance criteria cover it — only used when an issue creates sub-issues | traceability matrix, mapping                      |
+| Term                             | Definition                                                                                                                                                                         | Aliases to avoid                                  |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| **problem statement**            | The plan section that describes the issue from the user's perspective                                                                                                              | bug write-up, design brief                        |
+| **user story** (US)              | A concise statement of user intent and benefit; a numbered plan item used as a coverage anchor for slicing                                                                         | requirement, use case (when referring to the row) |
+| **implementation decision** (ID) | A plan item recording an architectural or technical choice made during scoping; used as a coverage anchor for slicing                                                              | design decision, architectural note               |
+| **testing decision** (TD)        | A plan item that records expected testing behavior, rigor level, and what "done" looks like for this issue                                                                         | test plan, QA notes                               |
+| **decision record**              | The plan section that captures scoping interview choices and constraints that downstream phases may need to revisit                                                                | notes, design log                                 |
+| **acceptance criteria**          | Testable conditions written into a sub-issue by the slicer, synthesized from the User Stories, Implementation Decisions, and Testing Decisions assigned to that slice              | checklist, slice criteria, ACs (never abbreviate) |
+| **coverage matrix**              | A table mapping each User Story, Implementation Decision, and Testing Decision to which sub-issue(s) and acceptance criteria cover it — only used when an issue creates sub-issues | traceability matrix, mapping                      |
 
 ## Report sections
 
-| Term                  | Definition                                                                                                            | Aliases to avoid          |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| **Ambiguous choices** | The PR-report section where an agent records judgment calls not explicitly covered by the plan or acceptance criteria | assumptions, random notes |
+| Term               | Definition                                                                                                    | Aliases to avoid                                                        |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Judgment calls** | The report section where an agent records decisions not explicitly covered by the plan or acceptance criteria | ambiguous choices, agent decisions to review, assumptions, random notes |
 
 ## Phases
 
-| Term                 | Definition                                                                                                                 | Aliases to avoid                           |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| **phase**            | A step in the issue lifecycle, executed by reading an instruction file under `reef-pulse/`                                 | skill (for internal phases), step, stage   |
-| **scope**            | The diver scopes an issue — determines type, writes plan with success criteria                                             | design, spec                               |
-| **slice** (as phase) | Analyze a plan and either keep the work on the current issue or break it into sub-issues                                   | decompose, break down                      |
-| **implement**        | Build a slice using TDD in a worktree, open a PR                                                                           | code, develop, build                       |
-| **inspect**          | Independently verify a slice PR against acceptance criteria                                                                | review, QA, check                          |
-| **rework**           | Fix issues flagged by the inspector                                                                                        | fix, address feedback                      |
-| **merge**            | Merge an approved sub-issue PR into its parent issue's `pr-branch`, or hand off an issue with no parent issue to the diver | land (that's a different phase), integrate |
-| **seal**             | Holistic review of an issue whose work was composed through sub-issues on its `pr-branch`                                  | final review, sign-off                     |
-| **land**             | The diver reviews the finished work and merges to the base branch                                                          | finalise, approve, ship                    |
+| Term                 | Definition                                                                                                                  | Aliases to avoid                           |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| **phase**            | A step in the issue lifecycle, executed by reading an instruction file under `reef-pulse/`                                  | skill (for internal phases), step, stage   |
+| **scope**            | The diver scopes an issue — determines type, writes plan with User Stories, Implementation Decisions, and Testing Decisions | design, spec                               |
+| **slice** (as phase) | Analyze a plan and either keep the work on the current issue or break it into sub-issues                                    | decompose, break down                      |
+| **implement**        | Build a slice using TDD in a worktree, open a PR                                                                            | code, develop, build                       |
+| **inspect**          | Independently verify a slice PR against its checklist and plan                                                              | review, QA, check                          |
+| **rework**           | Fix issues flagged by the inspector                                                                                         | fix, address feedback                      |
+| **merge**            | Merge an approved sub-issue PR into its parent issue's `pr-branch`, or hand off an issue with no parent issue to the diver  | land (that's a different phase), integrate |
+| **seal**             | Holistic review of an issue whose work was composed through sub-issues on its `pr-branch`                                   | final review, sign-off                     |
+| **land**             | The diver reviews the finished work and merges to the base branch                                                           | finalise, approve, ship                    |
 
 ## File types
 
-| Term | Definition | Aliases to avoid |
-| ---- | ---------- | ---------------- |
-| **phase file** | A top-level instruction file executed by the reef for one phase of the lifecycle, e.g. `merge.md`, `slice.md`, `reef-scope/SKILL.md` | skill file (when referring to a phase), step file |
-| **same-phase subfile** | An instruction file delegated to inline (in the same session) from a phase file. It omits `## Rules`, uses `## Input (from context)`, and all its input variables are resolved by the calling phase file. | sub-skill, child phase, router target |
+| Term                   | Definition                                                                                                                                                                                                | Aliases to avoid                                  |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| **phase file**         | A top-level instruction file executed by the reef for one phase of the lifecycle, e.g. `merge.md`, `slice.md`, `reef-scope/SKILL.md`                                                                      | skill file (when referring to a phase), step file |
+| **same-phase subfile** | An instruction file delegated to inline (in the same session) from a phase file. It omits `## Rules`, uses `## Input (from context)`, and all its input variables are resolved by the calling phase file. | sub-skill, child phase, router target             |
 
 Same-phase subfiles by phase:
 
@@ -80,34 +81,34 @@ Same-phase subfiles by phase:
 
 ## Labels
 
-| Term            | Definition                                                                                                                                    | Aliases to avoid                  |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| **label** / **labeled** | A marker on an issue that represents its current state in the lifecycle; *labeled* is the canonical verb form                                 | status, state, tag, tagged        |
-| **in-progress** | The parent-issue label meaning slice work is underway on sub-issues and the parent issue is waiting for them to land                          | active, ongoing, underway         |
-| **landed**      | The terminal label — a signal that a piece of work has reached its base branch. Once applied, the issue is considered complete and is closed. | done, completed, merged, finished |
+| Term                    | Definition                                                                                                                                    | Aliases to avoid                  |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| **label** / **labeled** | A marker on an issue that represents its current state in the lifecycle; _labeled_ is the canonical verb form                                 | status, state, tag, tagged        |
+| **in-progress**         | The parent-issue label meaning slice work is underway on sub-issues and the parent issue is waiting for them to land                          | active, ongoing, underway         |
+| **landed**              | The terminal label — a signal that a piece of work has reached its base branch. Once applied, the issue is considered complete and is closed. | done, completed, merged, finished |
 
 ## Orchestration lifecycle
 
 | Term        | Definition                                                                                 | Aliases to avoid                    |
 | ----------- | ------------------------------------------------------------------------------------------ | ----------------------------------- |
 | **session** | A complete orchestration run — from the first pulse to lock release. May span many pulses. | run, execution                      |
-| **pulse**   | One iteration within a session: scan → dispatch → metrics → recurse-or-exit                 | tick, cycle, run (that's a session) |
+| **pulse**   | One iteration within a session: scan → dispatch → metrics → recurse-or-exit                | tick, cycle, run (that's a session) |
 
 ## Saga system
 
-| Term            | Definition                                                                                                    | Aliases to avoid                            |
-| --------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| **saga**        | The persistent story that accumulates across sessions — the reef's ongoing narrative memory                   | story (too vague), lore (that's the format) |
-| **chapter**     | The session's full lore piece, written once to `chapter-NNN.md` at session end                                | session story, log                          |
-| **thread**      | An ongoing narrative element in `world.md` that persists across sessions and accumulates over time            | plot, arc, storyline                        |
-| **lore writer** | The sub-agent invoked once at session end to write a chapter and update `world.md`                            | story agent, saga writer                    |
+| Term            | Definition                                                                                         | Aliases to avoid                            |
+| --------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| **saga**        | The persistent story that accumulates across sessions — the reef's ongoing narrative memory        | story (too vague), lore (that's the format) |
+| **chapter**     | The session's full lore piece, written once to `chapter-NNN.md` at session end                     | session story, log                          |
+| **thread**      | An ongoing narrative element in `world.md` that persists across sessions and accumulates over time | plot, arc, storyline                        |
+| **lore writer** | The sub-agent invoked once at session end to write a chapter and update `world.md`                 | story agent, saga writer                    |
 
 ## Relationships
 
-- An **issue** has a **plan** with one set of **success criteria**
-- A sub-issue has its own **acceptance criteria**, derived from the plan's **success criteria**
-- If an issue has no sub-issues, its **success criteria** and **acceptance criteria** describe the same work directly
-- If an issue creates sub-issues, the **coverage matrix** maps every **success criterion** to one or more sub-issues
+- An **issue** has a **plan** with **User Stories**, **Implementation Decisions**, and **Testing Decisions**
+- A sub-issue has its own **acceptance criteria**, synthesized by the slicer from the User Stories, Implementation Decisions, and Testing Decisions assigned to that slice
+- If an issue has no sub-issues, the plan's own sections (User Stories, Implementation Decisions, and Testing Decisions; or Commits for refactors; or Research Questions for deep-research; or triage-written acceptance criteria for bugs) are the checklist — no synthesis step
+- If an issue creates sub-issues, the **coverage matrix** maps every plan item (User Story, Implementation Decision, Testing Decision, ...) to one or more sub-issues
 - Every **issue-id** is a tracker-native string; **`ISSUE_ID`** keeps the full value, including `#` when the tracker uses it
 - Every **pr-id** is also treated as a tracker-native string or handle; **`PR_ID`** stores that full value
 - Every issue has a **pr-branch** (the branch the PR lives on) and a **base-branch** (where it merges into)
@@ -130,7 +131,7 @@ Same-phase subfiles by phase:
 
 > **Dev:** "This bug is labeled `to-slice`. How does the reef handle it?"
 >
-> **Domain expert:** "The slice phase reads the plan. If the work stays on the current issue, no sub-issues are created. The issue's **success criteria** become its **acceptance criteria**, and it gets labeled `to-implement` directly."
+> **Domain expert:** "The slice phase reads the plan. If the work stays on the current issue, no sub-issues are created — the issue gets labeled `to-implement` directly. The plan's own User Stories, Implementation Decisions, and Testing Decisions are the checklist for implement and inspect."
 >
 > **Dev:** "And if it needs two sub-issues?"
 >
@@ -164,8 +165,10 @@ Same-phase subfiles by phase:
 - **"feature branch"**, **"work branch"**, **"issue branch"**, or **"target branch"** — do not use. The correct terms are **pr-branch** (the branch the PR lives on) and **base-branch** (where it merges into). Not all issues are features, and "target" is ambiguous once you realize base-branch serves that role for sub-issues.
 - **"merge to main"** — do not use as the generic description of landing. The correct term is **merge to the base branch**. Some repos do not use `main`, and for sub-issues the relevant destination is the issue's `base-branch`, which may be a parent issue's `pr-branch`.
 - **"blocked-by"** — do not use as a dependency mechanism. The canonical dependency encoding is the **`[await: ...]`** issue-title suffix used with `to-await-waves`.
-- **"user story"** vs **"success criterion"** — a **user story** captures user intent and benefit; a **success criterion** is the mechanically verifiable condition used to decide whether the issue is done. Do not use them interchangeably.
-- **"decision record"** vs **"Ambiguous choices"** — the **decision record** lives in the plan and captures scoping decisions; **Ambiguous choices** lives in a PR report and captures implementation-time judgment calls. Do not collapse them into one concept.
-- **"AC"** or **"SC"** — do not abbreviate. Always write **acceptance criteria** and **success criteria** in full. Abbreviations create ambiguity across contexts and hurt readability.
+- **"user story"** vs **"acceptance criteria"** — a **user story** is a plan item that captures user intent and benefit; **acceptance criteria** are the slicer's concrete, testable conditions written into a sub-issue for a specific slice. For issues with no sub-issues, the plan's own sections serve as the checklist directly — no acceptance criteria are synthesized. Do not use them interchangeably.
+- **"success criteria"** — do not use as a plan-level section name. Plans contain **User Stories**, **Implementation Decisions**, and **Testing Decisions**. The term "success criteria" lives only in the glossary for legacy reference; it must not appear as a `##` section header in any plan or skill file.
+- **"decision record"** vs **"Judgment calls"** — the **decision record** lives in the plan and captures scoping decisions; **Judgment calls** lives in a report and captures implementation-time decisions. Do not collapse them into one concept.
+- **"AC"** — do not abbreviate. Always write **acceptance criteria** in full. Abbreviations create ambiguity across contexts and hurt readability.
+- **"US", "ID", "TD"** — do not abbreviate. Always write **user story**, **implementation decision**, and **testing decision** in full. Using initials as shorthand creates unnecessary jargon and makes the terms harder to read in context.
 - **"plan"** vs **"parent issue"** — use **plan** for the content written into an issue, and **parent issue** only when you need to describe the relationship between one issue and its sub-issues.
 - **"work item"** — do not use. The correct term is **issue**. "Work item" is generic project-management speak; **issue** is concrete and tracker-agnostic (GitHub Issues, Jira issues, Linear issues, local markdown files are all "issues").

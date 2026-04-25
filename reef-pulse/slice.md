@@ -2,24 +2,12 @@
 
 ## Input
 
-This skill accepts:
-
-- a specific issue: e.g. `#42` or `my-feature`
-- nothing: look for items labeled `to-slice`. If multiple, pick the first one. If none, hand off with:
-
-  ```sh
-  ISSUE_ID="-"
-  NEXT_PHASE="—"
-  PR_ID="—"
-  SUMMARY="No issues labeled to-slice found."
-  ```
-
-  Report these variables to the caller and **do not continue**.
+This skill requires a specific issue: e.g. `#42` or `my-feature/001-auth-endpoint`.
 
 Set the input as a shell variable:
 
 ```sh
-ISSUE_ID="{issue-id or -}" # e.g. "#42"
+ISSUE_ID="{issue-id}" # e.g. "#42"
 ```
 
 ## Rules
@@ -53,17 +41,17 @@ SUMMARY="Skipped: issue does not carry the to-slice label."
 
 Report these variables to the caller and **do not continue**.
 
-Read the issue. It must contain a plan with success criteria (from reef-scope). Success criteria are plan-level; this skill breaks them into **acceptance criteria** per slice. The frontmatter block tells you the work type, `base-branch`, and `pr-branch`.
+Read the issue. It must contain a plan with User Stories, Implementation Decisions, and Testing Decisions (from reef-scope). If the plan needs multiple slices, this skill synthesizes those plan items into **acceptance criteria** per sub-issue. The frontmatter block tells you the work type, `base-branch`, and `pr-branch`.
 
 ```sh
 BASE_BRANCH="{from issue frontmatter base-branch field, or - if not present}" # e.g. "main"
 PR_BRANCH="{from issue frontmatter pr-branch field, or - if not present}"     # e.g. "feat/my-feature"
-BEARING="{from issue frontmatter bearing field, or - if not present}"         # e.g. "feature"
+HEADING="{from issue frontmatter heading field, or - if not present}"         # e.g. "feature"
 ```
 
 ### Guard: verify branch frontmatter
 
-RUN ONLY WHEN `"$BASE_BRANCH" = "-"` or `"$PR_BRANCH" = "-"`.
+RUN ONLY IF `"$BASE_BRANCH" = "-"` or `"$PR_BRANCH" = "-"`.
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-slice --add-label blocked-missing-scope --add-label to-scope
@@ -80,22 +68,22 @@ SUMMARY="Stopped: plan frontmatter is missing base-branch or pr-branch. Re-run /
 
 Report these variables to the caller and **do not continue**.
 
-### Resolve bearing
+### Resolve heading
 
-If `"$BEARING" = "feeling-lucky"`, this is the first phase allowed to deeply interpret the ticket. Infer the real lane (`feature`, `refactor`, `bug`, or `deep-research`) from the issue title, body, and codebase context. Then:
+If `"$HEADING" = "feeling-lucky"`, this is the first phase allowed to deeply interpret the ticket. Infer the real lane (`feature`, `refactor`, `bug`, or `deep-research`) from the issue title, body, and codebase context. Then:
 
 ```sh
-BEARING="{inferred lane}"  # e.g. "feature" — replaces "feeling-lucky"
+HEADING="{inferred lane}"  # e.g. "feature" — replaces "feeling-lucky"
 FEELING_LUCKY="true"
 ```
 
-Rewrite the plan issue body frontmatter: replace `bearing: feeling-lucky` with `bearing: $BEARING` and add `feeling-lucky: true` as a separate line.
+Rewrite the plan issue body frontmatter: replace `heading: feeling-lucky` with `heading: $HEADING` and add `feeling-lucky: true` as a separate line.
 
 ```sh
 ISSUE_BODY_UPDATED="{issue body with rewritten frontmatter}"
 # e.g.
 # ...original content...
-# bearing: "feature"
+# heading: "feature"
 # feeling-lucky: "true"
 # ...original content...
 ```
@@ -113,11 +101,6 @@ Do not write `$ISSUE_BODY_UPDATED` to the issue yet — the delegatee applies it
 
 Break the plan into slices. Each slice is a thin vertical cut through ALL integration layers end-to-end — not a horizontal slice of one layer.
 
-Use `$BEARING` to adjust slice behavior:
-
-- `deep-research` — plan as research-native work
-- `feature`, `refactor`, `bug` — keep their normal slice behavior
-
 Rules:
 
 - Each slice delivers a narrow but COMPLETE path through every layer (schema, API, UI, tests).
@@ -125,16 +108,18 @@ Rules:
 - Prefer many thin slices over few thick ones.
 - Do NOT include specific file names, function names, or implementation details likely to change.
 - DO include durable decisions: route paths, schema shapes, data model names.
-- Surface **implicit prerequisites**. If multiple slices depend on a shared dependency (a new table, a utility module, an API client), that dependency is its own slice and the others are blocked by it. (Prevents painpoint D2.)
-- For refactors: slices must respect the tiny-commit discipline. Each slice leaves the codebase compiling and tests green.
-- If `"$BEARING" = "deep-research"`, draft research questions rather than implementation work. Compact research plans can stay as a single research issue. Larger research plans can be split into angle-based or dependency-based research slices. Acceptance criteria should say what must be answered, clarified, or persisted.
+- Surface **implicit prerequisites**. If multiple slices depend on a shared dependency (a new table, a utility module, an API client, a piece of research), that dependency is its own slice and the others are blocked by it. (Prevents painpoint D2.)
 - If `"$FEELING_LUCKY" = "true"`, produce acceptance criteria and dependencies with best-effort judgment without asking the user follow-up questions.
 
-For small bugs (scope = quick fix in the plan): produce a single slice. The plan's success criteria become the slice's acceptance criteria directly.
+Use `$HEADING` to adjust slice behavior:
+
+- If `"$HEADING" = "refactor"`, slices must respect the tiny-commit discipline. Each slice leaves the codebase compiling and tests green.
+- If `"$HEADING" = "bug"`, depending on the nature of the plan, in most cases a single slice might be sufficient. The plan's acceptance criteria (written by triage) become the sub-issue's acceptance criteria directly.
+- If `"$HEADING" = "deep-research"`, focus on the research questions, and think how they can be split up from different perspectives or angles. Acceptance criteria should cover what must be answered, clarified, or persisted.
 
 ## 2. Delegate
 
-Pass `ISSUE_BODY_UPDATED`, `BEARING`, and `FEELING_LUCKY` through context to the delegatee.
+Pass `ISSUE_BODY_UPDATED`, `HEADING`, and `FEELING_LUCKY` through context to the delegatee.
 
 Check: **did you produce exactly 1 slice?**
 

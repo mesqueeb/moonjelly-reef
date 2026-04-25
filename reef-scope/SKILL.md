@@ -1,6 +1,6 @@
 ---
 name: reef-scope
-description: Scope an issue into a plan with success criteria, ready for the Moonjelly Reef to pick up. Route between a feature, refactor, a bug triage or deep research. Turn an ideas into a plan.
+description: Scope an issue into a plan, ready for the Moonjelly Reef to pick up. Route between a feature, refactor, a bug triage or deep research. Turn an idea into a plan.
 ---
 
 # reef-scope
@@ -42,6 +42,10 @@ Set `ISSUE_ID` to the picked or confirmed issue number. If $ISSUE_ID is a specif
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
+```sh
+ISSUE_BODY="{from issue body}" # e.g. "## Problem\n\nUsers can't log in..."
+```
+
 ## 1. Prep
 
 Record the start time:
@@ -62,7 +66,7 @@ Check if the current branch is behind its remote counterpart. If it is, notify t
 
 Wait for the user's response before continuing.
 
-## 2. Show interactive route picker
+## 2. Set your heading 🧭
 
 Read the issue title and body fetched in step 0. From that text alone, recommend the single best route.
 
@@ -79,13 +83,13 @@ Wait for the user to confirm or pick a different route.
 Set the selected route:
 
 ```sh
-BEARING="{selected route}"
+HEADING="{selected route}"
 # e.g.
-# BEARING="feature"        (scope a feature)
-# BEARING="refactor"       (scope a refactor)
-# BEARING="bug"            (triage a bug)
-# BEARING="feeling-lucky"  (I'm feeling lucky)
-# BEARING="deep-research"  (deep research)
+# HEADING="feature"        (scope a feature)
+# HEADING="refactor"       (scope a refactor)
+# HEADING="bug"            (triage a bug)
+# HEADING="feeling-lucky"  (I'm feeling lucky)
+# HEADING="deep-research"  (deep research)
 ```
 
 ## 3. Write the plan
@@ -130,20 +134,18 @@ PR_BRANCH="{from branch discussion}" # e.g. "guard-branch-locking"
 
 The plan gets **prepended** to the evolving issue body (pushing any prior decision record down). The decision record remains at the bottom for reference.
 
-The issue body starts with frontmatter that downstream phases will read:
-
-```markdown
----
+```sh
+ISSUE_BODY_UPDATED="---
 base-branch: $BASE_BRANCH
 pr-branch: $PR_BRANCH
-bearing: "{selected bearing}"
+heading: $HEADING
 
 ---
-```
 
-```sh
-ISSUE_BODY="{frontmatter + plan content}"
-./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY" --remove-label to-scope --add-label to-slice
+{plan content}
+
+$ISSUE_BODY"
+./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED" --remove-label to-scope --add-label to-slice
 ```
 
 ## 7. Check for potential overlap in other issues
@@ -175,7 +177,8 @@ ISSUE_BODY="{current issue body with metrics section appended}"
 
 Metrics section format:
 
-```markdown
+<pulse-metrics-template>
+
 ### 🪼 Pulse metrics
 
 | Phase | Target     | Duration  | Tokens | Tool uses | Outcome      | Date               |
@@ -183,10 +186,11 @@ Metrics section format:
 | scope | #$ISSUE_ID | $DURATION | —      | —         | plan created | {yyyy-MM-dd HH:mm} |
 
 <!-- end metrics table -->
-```
+
+</pulse-metrics-template>
 
 ## Handoff
 
 Tell the user:
 
-> 🪼 The plan is charted. Run `reef-pulse` when you're ready to dive in.
+> 🧭 Heading set. The plan is charted. Run `reef-pulse` when you're ready to dive in.
