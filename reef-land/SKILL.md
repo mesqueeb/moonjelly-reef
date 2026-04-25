@@ -104,12 +104,10 @@ Using `$PR_BODY` (already fetched), give the diver a brief summary:
 
 ### If there are active PR comments
 
-Acknowledge them: "You've left N comments on the PR." Then show a grouped summary of the comments. Then ask:
+Acknowledge them: "You've left N comments on the PR." Then ask:
 
-> I'd like to ask some questions so I can understand your concerns and change requests accurately.
->
-> 1. Ask away → move to **step 3 (Clarify change requests)**
-> 2. Merge first but capture PR concerns and comments in a follow-up issue → move to **step 4 (Capture concerns in follow-up issue)**, then **step 5 (Approve)**, then **step 6 (Status report)**
+> 1. I'll investigate the comments, then we'll decide: gap report, fix right now, or clean merge → move to **step 3 (Clarify change requests)**
+> 2. Merge first and capture PR concerns in a follow-up issue → move to **step 4 (Capture concerns in follow-up issue)**, then **step 5 (Approve)**, then **step 6 (Status report)**
 > 3. Maybe later (exit) — the issue stays labeled `to-land` for next time.
 
 ### If there are NO active PR comments
