@@ -8,7 +8,7 @@ Multi-slice flow — delegated from [slice.md](slice.md).
 ISSUE_ID="{from context}"           # e.g. "#42"
 PR_BRANCH="{from context}"          # e.g. "feat/my-feature"
 BASE_BRANCH="{from context}"        # e.g. "main"
-BEARING="{from context}"            # e.g. "feature" — already resolved, never "feeling-lucky"
+HEADING="{from context}"            # e.g. "feature" — already resolved, never "feeling-lucky"
 FEELING_LUCKY="{from context}"      # e.g. "true"
 ISSUE_BODY_UPDATED="{from context}" # plan body with frontmatter already cleaned up
 WORKTREE_PATH=".worktrees/$ISSUE_ID-slice"
@@ -96,8 +96,8 @@ fi
 ```
 
 ```sh
-SLICE_BEARING="{per-slice bearing, usually $BEARING unless a slice needs a narrower inferred lane}" # e.g. "implement"
-if [ "$UNBLOCKED" = "true" ] && [ "$SLICE_BEARING" = "deep-research" ]; then
+SLICE_HEADING="{per-slice heading, usually $HEADING unless a slice needs a narrower inferred lane}" # e.g. "implement"
+if [ "$UNBLOCKED" = "true" ] && [ "$SLICE_HEADING" = "deep-research" ]; then
   SLICE_LABEL="to-research"
 elif [ "$UNBLOCKED" = "true" ]; then
   SLICE_LABEL="to-implement"
@@ -117,7 +117,7 @@ Slice body template:
 parent-issue: "#$ISSUE_ID"
 base-branch: $PR_BRANCH
 pr-branch: $SLICE_PR_BRANCH
-bearing: $SLICE_BEARING
+heading: $SLICE_HEADING
 
 ---
 
@@ -136,7 +136,7 @@ bearing: $SLICE_BEARING
 Create the slice:
 
 ```sh
-SLICE_BODY="{slice-body as per the template below, with pr-branch: $SLICE_PR_BRANCH and bearing: $SLICE_BEARING}"
+SLICE_BODY="{slice-body as per the template below, with pr-branch: $SLICE_PR_BRANCH and heading: $SLICE_HEADING}"
 ./tracker.sh issue create --title "$SLICE_TITLE" --body "$SLICE_BODY" --label "$SLICE_LABEL"
 ```
 

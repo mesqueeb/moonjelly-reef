@@ -46,7 +46,7 @@ Read the issue. It must contain a plan with User Stories, Implementation Decisio
 ```sh
 BASE_BRANCH="{from issue frontmatter base-branch field, or - if not present}" # e.g. "main"
 PR_BRANCH="{from issue frontmatter pr-branch field, or - if not present}"     # e.g. "feat/my-feature"
-BEARING="{from issue frontmatter bearing field, or - if not present}"         # e.g. "feature"
+HEADING="{from issue frontmatter heading field, or - if not present}"         # e.g. "feature"
 ```
 
 ### Guard: verify branch frontmatter
@@ -68,22 +68,22 @@ SUMMARY="Stopped: plan frontmatter is missing base-branch or pr-branch. Re-run /
 
 Report these variables to the caller and **do not continue**.
 
-### Resolve bearing
+### Resolve heading
 
-If `"$BEARING" = "feeling-lucky"`, this is the first phase allowed to deeply interpret the ticket. Infer the real lane (`feature`, `refactor`, `bug`, or `deep-research`) from the issue title, body, and codebase context. Then:
+If `"$HEADING" = "feeling-lucky"`, this is the first phase allowed to deeply interpret the ticket. Infer the real lane (`feature`, `refactor`, `bug`, or `deep-research`) from the issue title, body, and codebase context. Then:
 
 ```sh
-BEARING="{inferred lane}"  # e.g. "feature" — replaces "feeling-lucky"
+HEADING="{inferred lane}"  # e.g. "feature" — replaces "feeling-lucky"
 FEELING_LUCKY="true"
 ```
 
-Rewrite the plan issue body frontmatter: replace `bearing: feeling-lucky` with `bearing: $BEARING` and add `feeling-lucky: true` as a separate line.
+Rewrite the plan issue body frontmatter: replace `heading: feeling-lucky` with `heading: $HEADING` and add `feeling-lucky: true` as a separate line.
 
 ```sh
 ISSUE_BODY_UPDATED="{issue body with rewritten frontmatter}"
 # e.g.
 # ...original content...
-# bearing: "feature"
+# heading: "feature"
 # feeling-lucky: "true"
 # ...original content...
 ```
@@ -111,15 +111,15 @@ Rules:
 - Surface **implicit prerequisites**. If multiple slices depend on a shared dependency (a new table, a utility module, an API client, a piece of research), that dependency is its own slice and the others are blocked by it. (Prevents painpoint D2.)
 - If `"$FEELING_LUCKY" = "true"`, produce acceptance criteria and dependencies with best-effort judgment without asking the user follow-up questions.
 
-Use `$BEARING` to adjust slice behavior:
+Use `$HEADING` to adjust slice behavior:
 
-- If `"$BEARING" = "refactor"`, slices must respect the tiny-commit discipline. Each slice leaves the codebase compiling and tests green.
-- If `"$BEARING" = "bug"`, depending on the nature of the plan, in most cases a single slice might be sufficient. The plan's acceptance criteria (written by triage) become the sub-issue's acceptance criteria directly.
-- If `"$BEARING" = "deep-research"`, focus on the research questions, and think how they can be split up from different perspectives or angles. Acceptance criteria should cover what must be answered, clarified, or persisted.
+- If `"$HEADING" = "refactor"`, slices must respect the tiny-commit discipline. Each slice leaves the codebase compiling and tests green.
+- If `"$HEADING" = "bug"`, depending on the nature of the plan, in most cases a single slice might be sufficient. The plan's acceptance criteria (written by triage) become the sub-issue's acceptance criteria directly.
+- If `"$HEADING" = "deep-research"`, focus on the research questions, and think how they can be split up from different perspectives or angles. Acceptance criteria should cover what must be answered, clarified, or persisted.
 
 ## 2. Delegate
 
-Pass `ISSUE_BODY_UPDATED`, `BEARING`, and `FEELING_LUCKY` through context to the delegatee.
+Pass `ISSUE_BODY_UPDATED`, `HEADING`, and `FEELING_LUCKY` through context to the delegatee.
 
 Check: **did you produce exactly 1 slice?**
 

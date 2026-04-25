@@ -66,7 +66,7 @@ Check if the current branch is behind its remote counterpart. If it is, notify t
 
 Wait for the user's response before continuing.
 
-## 2. Show interactive route picker
+## 2. Set your heading 🧭
 
 Read the issue title and body fetched in step 0. From that text alone, recommend the single best route.
 
@@ -83,13 +83,13 @@ Wait for the user to confirm or pick a different route.
 Set the selected route:
 
 ```sh
-BEARING="{selected route}"
+HEADING="{selected route}"
 # e.g.
-# BEARING="feature"        (scope a feature)
-# BEARING="refactor"       (scope a refactor)
-# BEARING="bug"            (triage a bug)
-# BEARING="feeling-lucky"  (I'm feeling lucky)
-# BEARING="deep-research"  (deep research)
+# HEADING="feature"        (scope a feature)
+# HEADING="refactor"       (scope a refactor)
+# HEADING="bug"            (triage a bug)
+# HEADING="feeling-lucky"  (I'm feeling lucky)
+# HEADING="deep-research"  (deep research)
 ```
 
 ## 3. Write the plan
@@ -138,7 +138,7 @@ The plan gets **prepended** to the evolving issue body (pushing any prior decisi
 ISSUE_BODY_UPDATED="---
 base-branch: $BASE_BRANCH
 pr-branch: $PR_BRANCH
-bearing: $BEARING
+heading: $HEADING
 
 ---
 
@@ -193,4 +193,4 @@ Metrics section format:
 
 Tell the user:
 
-> 🪼 The plan is charted. Run `reef-pulse` when you're ready to dive in.
+> 🧭 Heading set. The plan is charted. Run `reef-pulse` when you're ready to dive in.

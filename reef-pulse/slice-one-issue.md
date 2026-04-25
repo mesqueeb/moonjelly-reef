@@ -8,7 +8,7 @@ Context already fetched and resolved by `slice.md`.
 
 ```sh
 ISSUE_ID="{from context}"          # e.g. "#42"
-BEARING="{from context}"           # e.g. "feature" — already resolved, never "feeling-lucky"
+HEADING="{from context}"           # e.g. "feature" — already resolved, never "feeling-lucky"
 FEELING_LUCKY="{from context}"     # e.g. "false"
 ISSUE_BODY_UPDATED="{from context}" # plan body with frontmatter already cleaned up
 ```
@@ -16,7 +16,7 @@ ISSUE_BODY_UPDATED="{from context}" # plan body with frontmatter already cleaned
 ## 1. Label the next phase
 
 ```sh
-if [ "$BEARING" = "deep-research" ]; then
+if [ "$HEADING" = "deep-research" ]; then
   NEXT_PHASE="to-research"
 else
   NEXT_PHASE="to-implement"

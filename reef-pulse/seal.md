@@ -52,7 +52,7 @@ Read the plan. It must have:
 ISSUE_TITLE="{from issue title}" # e.g. "My feature title"
 BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
 PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "feat/my-feature"
-BEARING="{from issue frontmatter bearing field, or - if not present}" # e.g. "deep-research"
+HEADING="{from issue frontmatter heading field, or - if not present}" # e.g. "deep-research"
 FEELING_LUCKY="{from issue frontmatter feeling-lucky field, or - if not present}" # e.g. "true"
 WORKTREE_PATH=".worktrees/$ISSUE_ID-seal"
 ```
@@ -110,12 +110,12 @@ For each User Story, Implementation Decision, and Testing Decision in the plan:
 - Verify from the **consumer's perspective**. If a user story says "the legacy UI must render identically", don't just check that the data is correct — check that it's in the format the legacy UI expects. (Prevents painpoint A4.)
 - Cross-reference the coverage matrix: which issues were supposed to cover this plan item? Did they actually cover it when composed together?
 
-If `"$BEARING" = "deep-research"`:
+If `"$HEADING" = "deep-research"`:
 
 - Review the written research holistically against the end goal, not just the slice acceptance criteria.
 - Check whether the full research answer is coherent, complete enough for the promised question, and sensible as a whole.
 
-If `"$BEARING" != "deep-research"`:
+If `"$HEADING" != "deep-research"`:
 
 - Apply the normal mechanical quality bar.
 - If `"$FEELING_LUCKY" = "true"`, apply slightly softer strictness — ask whether the outcome makes good sense for the exploratory ticket the human tossed into the reef.
