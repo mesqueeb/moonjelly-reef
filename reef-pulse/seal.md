@@ -228,8 +228,8 @@ REPORT="{seal-report}" # e.g. <details><summary><h3>🦭 Seal of approval — {2
 ```sh
 PR_ID="{from pr create output or existing PR}" # e.g. "#43"
 PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
-PR_BODY="$PR_BODY\n\n$REPORT"
-./tracker.sh pr edit "$PR_ID" --body "$PR_BODY"
+PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
+./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
 ```
 
 **If no PR exists, create and update the plan issue body as well:**

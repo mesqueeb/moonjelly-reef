@@ -136,7 +136,7 @@ heading: $SLICE_HEADING
 Create the slice:
 
 ```sh
-SLICE_BODY="{slice-body as per the template below, with pr-branch: $SLICE_PR_BRANCH and heading: $SLICE_HEADING}"
+SLICE_BODY="{<slice-body-template> above with all \$VARIABLES substituted and prose placeholders filled with slice-specific content}"
 ./tracker.sh issue create --title "$SLICE_TITLE" --body "$SLICE_BODY" --label "$SLICE_LABEL"
 ```
 

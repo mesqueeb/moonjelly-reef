@@ -114,13 +114,13 @@ This output will be read by another agent session — no context from this conve
 <details>
 <summary><h3>🐬 Dolphin's findings — {yyyy/MM/dd HH:mm}</h3></summary>
 
-## Judgment calls
+### Judgment calls
 
 - **{topic}**: chose {X} because {reason}. Differs from plan: {difference, if any}.
 
 (If none, write "None — research followed the plan exactly.")
 
-## Research outputs
+### Research outputs
 
 - `{path/to/artifact.md}` — {what it answers}
 
@@ -139,7 +139,6 @@ REPORT="{research-report}" # e.g. <details><summary><h3>🐬 Research report —
 PR_BODY_NEW="$CLOSES\n\n$REPORT"
 ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
 ```
-
 
 ## 6. Update the issue and label
 

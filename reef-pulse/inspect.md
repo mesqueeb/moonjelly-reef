@@ -161,7 +161,6 @@ SUMMARY="Blocked: PR not found. pr-missing label applied."
 
 Report these variables to the caller and **do not continue**.
 
-
 This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
 <report-template>
