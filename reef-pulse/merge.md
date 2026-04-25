@@ -56,7 +56,7 @@ PARENT_ISSUE="{from issue frontmatter parent-issue field, or - if not present}" 
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-merge"
 ```
 
-## 1. Pre-merge check
+## 1. Git prep
 
 Check the merge state of the PR:
 
@@ -64,7 +64,7 @@ Check the merge state of the PR:
 ./tracker.sh pr view "$PR_ID" --json mergeStateStatus -q .mergeStateStatus
 ```
 
-Enter a worktree forked from `$PR_BRANCH` so you are testing the `$PR_BRANCH` with the latest `$BASE_BRANCH` merged in:
+This is non-negotiable. Enter a worktree with the exact command below:
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
@@ -90,11 +90,9 @@ If unresolvable:
 
     	Report these variables to the caller and **do not continue**.
 
-Run the full test suite. If tests pass, commit and push:
+## 2. Run tests
 
-```sh
-./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts with $BASE_BRANCH"
-```
+Run the full test suite. If tests pass, continue to step 3.
 
 If the test suite fails after merging, label the issue `to-rework`:
 
@@ -115,12 +113,12 @@ If the test suite fails after merging, label the issue `to-rework`:
     	ISSUE_ID="$ISSUE_ID"
     	NEXT_PHASE="to-rework"
     	PR_ID="$PR_ID"
-    	SUMMARY="Merge blocked: test suite failed after conflict resolution."
+    	SUMMARY="Merge blocked: test suite failed."
     	```
 
     	Report these variables to the caller and **do not continue**.
 
-## 2. Delegate
+## 3. Delegate
 
 Clean up the worktree:
 
