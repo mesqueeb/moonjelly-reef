@@ -268,23 +268,49 @@ _Example:_
 
 > **Claude Code only.** Codex cannot retrieve token counts or durations from dispatched sub-agents, so metrics will be limited when running the reef on Codex.
 
+## Autopilot
+
+Run the reef on autopilot so it pulses while you're away. If you've queued up enough issues with the `reef-scope` skill, running the `reef-pulse` skill will keep the reef pulsing recursively until no automated work remains.
+
+**Remote Machine Cron**
+
+You could also set up a remote machine with eg. a Claude Code cron that continuously runs pulses. When a pulse is running already, when the cron pulses, we have a lock to prevent double work.
+
+For example in Claude Code you can do something like:
+
+```sh
+CronCreate cron="7 * * * *" prompt="Run the reef-pulse skill." durable=true
+```
+
+Then if you scope new issues on your main machine, the remote machine will be picked up by the reef at least once an hour.
+
 ## Orchestration accuracy
 
 Every phase has explicit, tested boundaries. [`ORCHESTRATION.md`](ORCHESTRATION.md) is the single source of truth — it declares the variables, context sources, code persistence, and tracker updates for every phase in the correct order. [`tests/orchestration.test.sh`](tests/orchestration.test.sh) verifies that each phase file follows that contract; if a phase drifts, the test catches it.
 
 All git operations run through shell scripts (`worktree-enter.sh`, `worktree-exit.sh`, `commit.sh`) so sub-agents never have to reason about git orchestration themselves.
 
-## Autopilot
+**Script and tracker contracts**
 
-Run the reef on autopilot so it pulses while you're away. If you've queued up enough issues with the `reef-scope` skill, running the `reef-pulse` skill will keep the reef pulsing recursively until no automated work remains.
+Every reef phase calls the same three shell scripts for git work and the same `tracker.sh`-or-`gh` interface for metadata. The tables below map each operation to what actually happens per tracker — gaps surface here.
 
-## Remote Machine Cron
+**Git scripts** — tracker-agnostic, identical for every setup:
 
-You could also set up a remote machine with eg. a Claude Code cron that continuously runs pulses. When a pulse is running already, when the cron pulses, we have a lock to prevent double work.
+| Script                                                     | Effect                                                                                             |
+| :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------- |
+| `commit.sh --branch B -m M`                                | Stage all changes, commit, push to `origin/B`. Must run inside a worktree.                         |
+| `worktree-enter.sh --fork-from B --pull-latest L --path P` | Create a detached-HEAD worktree from `origin/B`. If `B ≠ L`, merge latest from `L` and push clean. |
+| `worktree-exit.sh --path P`                                | Remove the worktree. Fails if anything is uncommitted or untracked.                                |
 
-```sh
-CronCreate cron="7 * * * *" prompt="Run the reef-pulse skill." durable=true
-```
+**Tracker operations** — behavior differs by tracker type:
+
+| Operation                                                                                    | `local-tracker`                                                                                                           | `github`                                                                        | `clickup`                                                                                     |
+| :------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------- |
+| `tracker.sh issue` create / view / edit / close / list                                       | Reads and writes `[label] plan.md` or `[label] slice.md` files on disk. Labels are `[label]` filename prefixes.           | `gh issue` — issue body + labels via GitHub API.                                | ClickUp MCP tools — task body + status/tags. Issues live in ClickUp; code still lives in git. |
+| `tracker.sh pr` create / view / edit                                                         | Reads and writes `[label] progress.md` files on disk. Labels are `[label]` filename prefixes, mirroring plan/slice files. | `gh pr` — PR body + labels via GitHub API.                                      | `gh pr` — same as GitHub. ClickUp has no PR concept; PRs live in the git host.                |
+| `tracker.sh pr merge` (slice → parent pr-branch in `to-merge`; final landing in `reef-land`) | Local `git checkout $base && git merge $head`. Changes a branch in the **main repo** directly — not inside a worktree.    | `gh pr merge` — server-side merge on GitHub. No local git state changes.        | `gh pr merge` — same as GitHub.                                                               |
+| PR review threads                                                                            | Not fetched — Simply call `reef-land` to discuss with the agent directly.                                                 | `gh api graphql` — fetches live review threads and inline comments from GitHub. | `gh api graphql` — same as GitHub (PR lives in git host).                                     |
+| Open PR in browser                                                                           | Opens `progress.md` in the default app (`xdg-open` on Linux, `open` on macOS).                                            | Opens the GitHub PR URL in the browser.                                         | Opens the GitHub PR URL in the browser — same as GitHub.                                      |
 
 ## Companion skill
 

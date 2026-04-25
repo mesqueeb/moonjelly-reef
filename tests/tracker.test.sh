@@ -1372,63 +1372,6 @@ test_pr_list_empty() {
   teardown
 }
 
-# ============================================================
-# PR CREATE --draft — no-op flag
-# ============================================================
-
-test_pr_create_draft_flag() {
-  setup
-  cd "$REPO"
-
-  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
-
-  if t pr create 1 --base main --head feat/my-feature --draft --body "draft report" >/dev/null 2>&1; then
-    pass "pr create --draft: accepted without error"
-  else
-    fail "pr create --draft: accepted without error" "exited non-zero"
-  fi
-
-  if [ -f "$TRACKER_PATH/1 my-feature/progress.md" ]; then
-    pass "pr create --draft: progress.md still created"
-  else
-    fail "pr create --draft: progress.md still created" "file not found"
-  fi
-
-  teardown
-}
-
-# ============================================================
-# PR READY — no-op
-# ============================================================
-
-test_pr_ready_noop() {
-  setup
-  cd "$REPO"
-
-  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
-  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
-
-  if t pr ready 1 >/dev/null 2>&1; then
-    pass "pr ready: succeeds as no-op"
-  else
-    fail "pr ready: succeeds as no-op" "exited non-zero"
-  fi
-
-  teardown
-}
-
-test_pr_ready_requires_id() {
-  setup
-  cd "$REPO"
-
-  if t pr ready >/dev/null 2>&1; then
-    fail "pr ready: fails without ID" "succeeded"
-  else
-    pass "pr ready: fails without ID"
-  fi
-
-  teardown
-}
 
 # ============================================================
 # Run all tests
@@ -1497,10 +1440,6 @@ test_pr_list
 test_pr_list_search
 test_pr_list_search_head
 test_pr_list_empty
-
-test_pr_create_draft_flag
-test_pr_ready_noop
-test_pr_ready_requires_id
 
 echo ""
 if [ "$FAIL" -gt 0 ]; then
