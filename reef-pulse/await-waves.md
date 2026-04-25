@@ -32,7 +32,7 @@ Read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file d
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Verify the issue carries the `to-await-waves` label. If it does not, hand off with:
+Verify the issue carries the `to-await-waves` label. If it does not, hand off and report these variables to the caller — **do not continue**:
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
@@ -40,8 +40,6 @@ NEXT_PHASE="—"
 PR_ID="—"
 SUMMARY="Skipped: issue does not carry the to-await-waves label."
 ```
-
-Report these variables to the caller and **do not continue**.
 
 Set the post-fetch variables (after reading the issue body):
 
@@ -67,7 +65,7 @@ Accumulate any IDs that are not yet landed:
 REMAINING_BLOCKERS="{space-separated list of blocker IDs that do not carry the landed label}" # e.g. "#55 #56"
 ```
 
-**If any dependency does NOT have the `landed` label**: this issue stays `to-await-waves`. Hand off with:
+**If any dependency does NOT have the `landed` label**: this issue stays `to-await-waves`. Hand off and report these variables to the caller — **do not continue**:
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
@@ -75,8 +73,6 @@ NEXT_PHASE="to-await-waves"
 PR_ID="—"
 SUMMARY="still blocked by $REMAINING_BLOCKERS"
 ```
-
-Report these variables to the caller and **do not continue**.
 
 **If the `[await: ...]` suffix is missing or malformed**: treat as "no blockers found" and continue to step 2 (safe fallback).
 
@@ -98,30 +94,41 @@ fi
 
 Promotion is final. The worktree step below is best-effort course correction.
 
-## 3. Course correction
+## 3. Git prep
 
-Enter a worktree forked from `$BASE_BRANCH` to read up-to-date code (earlier work may have changed the codebase):
+This is non-negotiable. Enter a worktree with the exact command below:
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
 ```
 
-Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$BASE_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree.
+
+If resolved:
 
 ```sh
-./tracker.sh issue edit "$ISSUE_ID" --remove-label "$NEXT_LABEL" --add-label blocked-with-conflicts
+./commit.sh --branch "$BASE_BRANCH" -m "merge: resolve conflicts 🌊"
 ```
 
-Hand off with:
+Then continue.
 
-```sh
-ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="blocked-with-conflicts"
-PR_ID="—"
-SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
-```
+If unresolvable:
 
-Report these variables to the caller and **do not continue**.
+    ```sh
+    ./tracker.sh issue edit "$ISSUE_ID" --remove-label "$NEXT_LABEL" --add-label blocked-with-conflicts
+    ./worktree-exit.sh --path "$WORKTREE_PATH"
+    ```
+
+    Hand off and report these variables to the caller — **do not continue**:
+
+    ```sh
+    ISSUE_ID="$ISSUE_ID"
+    NEXT_PHASE="blocked-with-conflicts"
+    PR_ID="—"
+    SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
+    ```
+
+## 4. Course correction
 
 Earlier work may have changed the codebase. Read this issue's acceptance criteria and compare against the current state of the code:
 
@@ -138,7 +145,7 @@ ISSUE_BODY_UPDATED="{issue body, with updated acceptance criteria if changed}"
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED"
 ```
 
-## 4. Clean up
+## 5. Clean up
 
 ```sh
 ./worktree-exit.sh --path "$WORKTREE_PATH"

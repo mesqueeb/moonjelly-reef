@@ -30,7 +30,9 @@ Read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file d
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Verify the issue carries the `to-inspect` label. If it does not, hand off with:
+Verify the issue carries the `to-inspect` label.
+
+If it does not, hand off and report these variables to the caller — **do not continue**:
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
@@ -39,9 +41,7 @@ PR_ID="—"
 SUMMARY="Skipped: issue does not carry the to-inspect label."
 ```
 
-Report these variables to the caller and **do not continue**.
-
-Set the post-fetch variables (after reading the issue body):
+Else set the post-fetch variables (after reading the issue body):
 
 ```sh
 ISSUE_TITLE="{from issue title}" # e.g. "auth-endpoint"
@@ -63,40 +63,51 @@ What you do:
 - **Check the implementation against each entry in your checklist.** Read the code. Does it actually do what the entry says? Don't just read the PR description — it may be optimistic.
 - **Spot drift from the plan.** The implementation may differ from the plan. That might be fine (the implementer found a better way) or it might be a gap. Surface it either way.
 - **Run the full test suite yourself.** Don't trust "all tests pass" in the report.
-- **Do trivial cleanups.** Stale TODOs, leftover debug prints, dead code from debugging, formatting — fix these yourself and commit. Don't ask permission.
+- **Do trivial cleanups.** Stale TODOs, leftover debug prints, dead code from debugging, formatting — fix these yourself. Don't ask permission.
 - **Flag substantive gaps.** Missing tests, incomplete behavior, entries left unverified — these go in review comments, not silent fixes.
 - **Read the ambiguous choices.** The implementer documented decisions they made. Flag anything that drifted too far from the plan items or that the diver should know about.
 
 You do NOT need to evaluate product direction, User Stories, or the problem statement in great detail.
 
-## 1. Pull and verify
+## 1. Git prep
 
-Enter a worktree forked from $PR_BRANCH to review the implementation without disturbing the main checkout:
+This is non-negotiable. Enter a worktree with the exact command below:
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
 ```
 
-Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$PR_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree.
+
+If resolved:
 
 ```sh
-./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
+./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts 🌊"
 ```
 
-Hand off with:
+Then continue.
 
-```sh
-ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="blocked-with-conflicts"
-PR_ID="$PR_ID"
-SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
-```
+If unresolvable:
 
-Report these variables to the caller and **do not continue**.
+    ```sh
+    ./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
+    ./worktree-exit.sh --path "$WORKTREE_PATH"
+    ```
+
+    Hand off and report these variables to the caller — **do not continue**:
+
+    ```sh
+    ISSUE_ID="$ISSUE_ID"
+    NEXT_PHASE="blocked-with-conflicts"
+    PR_ID="$PR_ID"
+    SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
+    ```
+
+## 2. Run tests
 
 Run the full project test suite. Record the result.
 
-## 2. Check the checklist and plan
+## 3. Check the checklist and plan
 
 Verify against whichever is present on the issue — in priority order:
 
@@ -121,7 +132,7 @@ If this is a sub-issue, also cross-check against the plan:
 - Verify the implementation actually satisfies those plan sections, not just the acceptance criteria.
 - Flag any drift where the acceptance criteria didn't fully capture what the plan requires.
 
-## 3. Review the report
+## 4. Review the report
 
 Read the PR description's "Judgment calls" section. For each call:
 
@@ -129,9 +140,9 @@ Read the PR description's "Judgment calls" section. For each call:
 - Does it drift from the plan items? If so, is the drift acceptable?
 - Would the diver want to know about this before merging?
 
-## 4. Trivial cleanups
+## 5. Trivial cleanups
 
-Do these yourself — commit and push to the `pr-branch`:
+Do these yourself — use `commit.sh` to commit and push to the `pr-branch`:
 
 - Remove debug prints, console.logs, commented-out code
 - Fix formatting, remove trailing whitespace
@@ -144,26 +155,27 @@ RUN ONLY IF you made cleanup commits in this step:
 ./commit.sh --branch "$PR_BRANCH" -m "inspect: cleanup"
 ```
 
-## 5. Update the PR
+## 6. Update the PR
 
-If `"$PR_ID" = "-"`, try `./tracker.sh pr list --search` to locate the PR. If `$PR_ID` is nowhere to be found:
+If `"$PR_ID" = "-"`, try `./tracker.sh pr list --search` to locate the PR.
 
-```sh
-./tracker.sh issue edit "$ISSUE_ID" --add-label pr-missing
-```
+If `$PR_ID` is nowhere to be found:
 
-Hand off with:
+    ```sh
+    ./tracker.sh issue edit "$ISSUE_ID" --add-label pr-missing
+    ./worktree-exit.sh --path "$WORKTREE_PATH"
+    ```
 
-```sh
-ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="pr-missing"
-PR_ID="—"
-SUMMARY="Blocked: PR not found. pr-missing label applied."
-```
+    Hand off and report these variables to the caller — **do not continue**:
 
-Report these variables to the caller and **do not continue**.
+    ```sh
+    ISSUE_ID="$ISSUE_ID"
+    NEXT_PHASE="pr-missing"
+    PR_ID="—"
+    SUMMARY="Blocked: PR not found. pr-missing label applied."
+    ```
 
-This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
+Else write the report which will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
 <report-template>
 <details>
@@ -194,7 +206,7 @@ PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
 ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
 ```
 
-## 6. Verdict
+## 7. Verdict
 
 **If all entries are verified and the suite is green:**
 

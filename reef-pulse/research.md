@@ -30,7 +30,9 @@ Read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file d
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Verify the issue carries the `to-research` label. If it does not, hand off with:
+Verify the issue carries the `to-research` label.
+
+If it does not, hand off and report these variables to the caller — **do not continue**:
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
@@ -39,9 +41,7 @@ PR_ID="—"
 SUMMARY="Skipped: issue does not carry the to-research label."
 ```
 
-Report these variables to the caller and **do not continue**.
-
-Read the issue. It must contain:
+Else read the issue. It must contain:
 
 - `base-branch` in frontmatter (where the PR merges into)
 - `pr-branch` in frontmatter (the branch the PR lives on)
@@ -55,30 +55,37 @@ WORKTREE_PATH=".worktrees/$ISSUE_TITLE-research"
 
 ## 1. Git prep
 
-Every step must pass before you write research artifacts.
-
-Enter a worktree forked from `$BASE_BRANCH` so you start from a clean integration point:
+This is non-negotiable. Enter a worktree with the exact command below:
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH") # e.g. "ready"
 ```
 
-Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$BASE_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree.
+
+If resolved:
 
 ```sh
-./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
+./commit.sh --branch "$BASE_BRANCH" -m "merge: resolve conflicts 🌊"
 ```
 
-Hand off with:
+Then continue.
 
-```sh
-ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="blocked-with-conflicts"
-PR_ID="—"
-SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
-```
+If unresolvable:
 
-Report these variables to the caller and **do not continue**.
+    ```sh
+    ./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
+    ./worktree-exit.sh --path "$WORKTREE_PATH"
+    ```
+
+    Hand off and report these variables to the caller — **do not continue**:
+
+    ```sh
+    ISSUE_ID="$ISSUE_ID"
+    NEXT_PHASE="blocked-with-conflicts"
+    PR_ID="—"
+    SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
+    ```
 
 ## 2. Read context
 
@@ -100,8 +107,6 @@ Research outputs must:
 - clearly answer the promised question, angle, or uncertainty from the issue
 
 If external research is unnecessary, say so in the artifact and skip source links for that section. If the issue reveals follow-up questions, capture them in the artifact instead of leaving them implicit.
-
-Commit your work when the research artifacts are complete.
 
 ## 4. Write the report
 

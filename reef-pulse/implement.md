@@ -30,7 +30,9 @@ Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker ty
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Verify the issue carries the `to-implement` label. If it does not, hand off with:
+Verify the issue carries the `to-implement` label.
+
+If it does not, hand off and report these variables to the caller — **do not continue**:
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
@@ -39,9 +41,7 @@ PR_ID="—"
 SUMMARY="Skipped: issue does not carry the to-implement label."
 ```
 
-Report these variables to the caller and **do not continue**.
-
-Read the issue. It must contain:
+Else read the issue. It must contain:
 
 - `base-branch` in frontmatter (where the PR merges into)
 - `pr-branch` in frontmatter (the branch the PR lives on — chosen during scope for an issue with no `parent-issue`, or assigned during slice creation for an issue with `parent-issue`)
@@ -59,30 +59,39 @@ WORKTREE_PATH=".worktrees/$ISSUE_TITLE-implement"
 
 ## 1. Git prep
 
-This is non-negotiable. Every step must pass before writing any code.
-
-Enter a worktree forked from `$BASE_BRANCH` so you start from a clean integration point:
+This is non-negotiable. Enter a worktree with the exact command below:
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH") # e.g. "ready"
 ```
 
-Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$BASE_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree.
+
+If resolved:
 
 ```sh
-./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
+./commit.sh --branch "$BASE_BRANCH" -m "merge: resolve conflicts 🌊"
 ```
 
-Hand off with:
+Then continue.
 
-```sh
-ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="blocked-with-conflicts"
-PR_ID="—"
-SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
-```
+If unresolvable:
 
-Report these variables to the caller and **do not continue**.
+    ```sh
+    ./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
+    ./worktree-exit.sh --path "$WORKTREE_PATH"
+    ```
+
+    Hand off and report these variables to the caller — **do not continue**:
+
+    ```sh
+    ISSUE_ID="$ISSUE_ID"
+    NEXT_PHASE="blocked-with-conflicts"
+    PR_ID="—"
+    SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
+    ```
+
+## 2. Initial verification
 
 Verify:
 
@@ -91,22 +100,21 @@ Verify:
 
 If the baseline is already broken, do not try to fix pre-existing failures. Label the issue `to-rework`:
 
-```sh
-./tracker.sh issue edit "$ISSUE_ID" --remove-label to-implement --add-label to-rework
-```
+    ```sh
+    ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-implement --add-label to-rework
+    ./worktree-exit.sh --path "$WORKTREE_PATH"
+    ```
 
-Hand off with:
+    Hand off and report these variables to the caller — **do not continue**:
 
-```sh
-ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="to-rework"
-PR_ID="—"
-SUMMARY="Blocked: baseline broken before implementation started. Pre-existing failures must be fixed first. (Prevents painpoint D1.)"
-```
+    ```sh
+    ISSUE_ID="$ISSUE_ID"
+    NEXT_PHASE="to-rework"
+    PR_ID="—"
+    SUMMARY="Blocked: baseline broken before implementation started. Pre-existing failures must be fixed first. (Prevents painpoint D1.)"
+    ```
 
-Report these variables to the caller and **do not continue**.
-
-## 2. Read context
+## 3. Read context
 
 Read and understand:
 
@@ -115,15 +123,13 @@ Read and understand:
 - **Sibling issues** — awareness of what others are doing or have done. Don't duplicate, don't conflict.
 - **The decision record** — the original decisions that led here.
 
-## 3. Implement with TDD
+## 4. Implement with TDD
 
 Use the `tdd` skill to implement each entry. If the `tdd` skill is not installed (check config), read and follow [tdd-lite.md](tdd-lite.md) instead.
 
 Run the full project test suite after each red-green cycle — not just the tests you wrote. If an entry needs a human call, make your best judgment instead, note it for the `### Judgment calls` section of the report, and continue. Never silently skip an entry.
 
-Commit your work when implementation is complete.
-
-## 4. Write the report
+## 5. Write the report
 
 Compose the implementation report using this template. This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
@@ -152,7 +158,7 @@ Compose the implementation report using this template. This output will be read 
 REPORT="{implementation-report}" # e.g. <details><summary><h3>🐙 Workshop report — {2012/12/21 12:00}</h3></summary>...</details>
 ```
 
-## 5. Open the PR
+## 6. Open the PR
 
 ```sh
 ./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: implementation"
@@ -162,7 +168,7 @@ PR_BODY_NEW="$CLOSES\n\n$REPORT"
 PR_ID="{from pr create output}" # e.g. "#43"
 ```
 
-## 6. Update the issue and label
+## 7. Update the issue and label
 
 Persist the PR metadata for the newly created PR on the issue body so downstream phases (inspect, rework, merge) can find it.
 
@@ -173,7 +179,7 @@ ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}" # e.g. 
 ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED" --remove-label to-implement --add-label to-inspect
 ```
 
-## 7. Clean up
+## 8. Clean up
 
 ```sh
 ./worktree-exit.sh --path "$WORKTREE_PATH"

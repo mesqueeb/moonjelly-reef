@@ -24,14 +24,14 @@ Review all `./tracker.sh` calls. Are there any bare `gh` calls? Are `--json` fie
 
 First read the state machine in `README.md`. Then review every label transition in this file. Does each one correspond to a valid edge in the state machine?
 
-## Lens 7: Worktree hygiene
+## Lens 7: Git hygiene
 
-Review all `worktree-enter.sh` calls. Is `--fork-from` pointing at the correct branch for this phase (base branch vs PR branch)? Is `worktree-exit.sh` called on every exit path, including early blocked handoffs?
+Review all git-related shell calls for correctness and completeness:
 
-## Lens 8: Acceptance criteria quality
+- **Worktree enter/exit**: Are all `worktree-enter.sh` calls present before any work begins (including before any commit or push)? Is `--fork-from` pointing at the correct branch for this phase (base branch vs PR branch)? Is `worktree-exit.sh` called on every exit path, including early blocked handoffs?
+- **Commits**: Are all commits made via `commit.sh`? Flag any bare `git commit` or `git push` calls, and any prose instructions that vaguely say things like "commit and push" without referencing an explicit shell command.
+- **PR operations**: Are all PR-related operations (create, update, merge, view) done via `tracker.sh pr …`? Flag any bare `gh pr` calls or vague prose like "open a PR" or "merge the PR" without an explicit `tracker.sh pr` command.
 
-Review the acceptance criteria or done criteria. Are they outcome-oriented and independently verifiable by a fresh agent? Flag anything that is an implementation step disguised as an outcome.
-
-## Lens 9: Prose clarity
+## Lens 8: Prose clarity
 
 Review all prose instructions. Are there any steps a sub-agent could misread or execute ambiguously? Flag vague steps, implicit assumptions, or anything that relies on the agent using its own judgment without guidance.

@@ -30,16 +30,16 @@ Read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file d
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Verify the issue carries the `to-slice` label. If it does not, hand off with:
+Verify the issue carries the `to-slice` label.
 
-```sh
-ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="—"
-PR_ID="—"
-SUMMARY="Skipped: issue does not carry the to-slice label."
-```
+If it does not, hand off and report these variables to the caller — **do not continue**:
 
-Report these variables to the caller and **do not continue**.
+    	```sh
+    	ISSUE_ID="$ISSUE_ID"
+    	NEXT_PHASE="—"
+    	PR_ID="—"
+    	SUMMARY="Skipped: issue does not carry the to-slice label."
+    	```
 
 Read the issue. It must contain a plan with User Stories, Implementation Decisions, and Testing Decisions (from reef-scope). If the plan needs multiple slices, this phase synthesizes those plan items into **acceptance criteria** per sub-issue. The frontmatter block tells you the work type, `base-branch`, and `pr-branch`.
 
@@ -58,7 +58,7 @@ RUN ONLY IF `"$BASE_BRANCH" = "-"` or `"$PR_BRANCH" = "-"`.
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-slice --add-label blocked-missing-scope --add-label to-scope
 ```
 
-Then hand off with:
+Then hand off and report these variables to the caller — **do not continue**:
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
@@ -66,8 +66,6 @@ NEXT_PHASE="blocked-missing-scope"
 PR_ID="—"
 SUMMARY="Stopped: plan frontmatter is missing base-branch or pr-branch. Re-run /reef-scope to fix."
 ```
-
-Report these variables to the caller and **do not continue**.
 
 ### Resolve heading
 

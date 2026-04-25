@@ -34,7 +34,9 @@ MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}" # 
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Verify the issue carries the `to-merge` label. If it does not, hand off with:
+Verify the issue carries the `to-merge` label.
+
+If it does not, hand off and report these variables to the caller — **do not continue**:
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
@@ -43,9 +45,7 @@ PR_ID="—"
 SUMMARY="Skipped: issue does not carry the to-merge label."
 ```
 
-Report these variables to the caller and **do not continue**.
-
-Set the post-fetch variables (after reading the issue body):
+Else set the post-fetch variables (after reading the issue body):
 
 ```sh
 ISSUE_TITLE="{from issue title}" # e.g. "my-feature"
@@ -70,25 +70,31 @@ This is non-negotiable. Enter a worktree with the exact command below:
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
 ```
 
-Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$PR_BRANCH` using explicit refspec (no force), then continue.
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree.
+
+If resolved:
+
+```sh
+./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts 🌊"
+```
+
+Then continue.
 
 If unresolvable:
 
-    	```sh
-    	./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
-    	./worktree-exit.sh --path "$WORKTREE_PATH"
-    	```
+    ```sh
+    ./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
+    ./worktree-exit.sh --path "$WORKTREE_PATH"
+    ```
 
-    	Hand off with:
+    Hand off and report these variables to the caller — **do not continue**:
 
-    	```sh
-    	ISSUE_ID="$ISSUE_ID"
-    	NEXT_PHASE="blocked-with-conflicts"
-    	PR_ID="$PR_ID"
-    	SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
-    	```
-
-    	Report these variables to the caller and **do not continue**.
+    ```sh
+    ISSUE_ID="$ISSUE_ID"
+    NEXT_PHASE="blocked-with-conflicts"
+    PR_ID="$PR_ID"
+    SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
+    ```
 
 ## 2. Run tests
 
@@ -96,27 +102,20 @@ Run the full test suite. If tests pass, continue to step 3.
 
 If the test suite fails after merging, label the issue `to-rework`:
 
-    	```sh
-    	./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label to-rework
-    	./tracker.sh pr edit "$PR_ID" --remove-label to-merge --add-label to-rework
-    	```
+    ```sh
+    ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-merge --add-label to-rework
+    ./tracker.sh pr edit "$PR_ID" --remove-label to-merge --add-label to-rework
+    ./worktree-exit.sh --path "$WORKTREE_PATH"
+    ```
 
-    	Clean up the worktree:
+    Hand off and report these variables to the caller — **do not continue**:
 
-    	```sh
-    	./worktree-exit.sh --path "$WORKTREE_PATH"
-    	```
-
-    	Hand off with:
-
-    	```sh
-    	ISSUE_ID="$ISSUE_ID"
-    	NEXT_PHASE="to-rework"
-    	PR_ID="$PR_ID"
-    	SUMMARY="Merge blocked: test suite failed."
-    	```
-
-    	Report these variables to the caller and **do not continue**.
+    ```sh
+    ISSUE_ID="$ISSUE_ID"
+    NEXT_PHASE="to-rework"
+    PR_ID="$PR_ID"
+    SUMMARY="Merge blocked: test suite failed."
+    ```
 
 ## 3. Delegate
 

@@ -47,9 +47,11 @@ Present your investigation findings, then ask which option the diver wants. If y
 RIGOR_OPTION="{chosen option number}" # e.g. "3"
 ```
 
-If `"$RIGOR_OPTION" = "4"`, do not label the issue `to-implement`.
+If `"$RIGOR_OPTION" = "4"`, set the handoff variable and stop here — **do not continue**:
 
-Report these variables to the caller and **do not continue**.
+```sh
+NEXT_PHASE="—"
+```
 
 ## 5. Design fix plan
 

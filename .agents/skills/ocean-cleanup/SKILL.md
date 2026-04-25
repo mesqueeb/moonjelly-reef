@@ -1,6 +1,7 @@
 ---
 name: ocean-cleanup
 description: Run all 9 quality lenses against every phase and skill file in the Moonjelly Reef. For each lens, dispatches one sub-agent per file in parallel, then advances to the next lens. Use when doing a periodic quality review of the reef's phase files.
+internal: true
 ---
 
 # Reef Review
@@ -75,7 +76,7 @@ echo "$LENS_NR" > "$PROGRESS_FILE"
 LENS_NR=$((LENS_NR + 1))
 ```
 
-After `$LENS_NR` > 9:
+After `$LENS_NR` > 8:
 
 ```sh
 rm "$PROGRESS_FILE"

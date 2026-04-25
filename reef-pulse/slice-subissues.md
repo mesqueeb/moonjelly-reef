@@ -16,35 +16,22 @@ ISSUE_BODY_UPDATED="{from context}" # plan body with frontmatter already cleaned
 WORKTREE_PATH=".worktrees/$ISSUE_ID-slice"
 ```
 
-## 1. Enter worktree
+## 1. Git prep
 
-Enter a worktree forked from `$BASE_BRANCH` to read the codebase for informed slicing decisions:
+This is non-negotiable. Enter a worktree with the exact command below:
 
 ```sh
+# Worktree gives a clean view of $BASE_BRANCH without switching branches in the main checkout — needed for reading fresh code and for initialising $PR_BRANCH.
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH") # e.g. "ready"
 ```
 
-Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$PR_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+Read the output. On `ready`: continue.
+
+If `$PR_BRANCH` does not exist on origin yet, initialise it:
 
 ```sh
-./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
-```
-
-Hand off with:
-
-```sh
-ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="blocked-with-conflicts"
-PR_ID="—"
-SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
-```
-
-Report these variables to the caller and **do not continue**.
-
-If `$PR_BRANCH` does not exist on origin yet, create it:
-
-```sh
-git push -u origin "$PR_BRANCH"
+# Not a commit — creates the remote branch pointer at the current HEAD
+git push origin "HEAD:refs/heads/$PR_BRANCH"
 ```
 
 ## 2. Build the coverage matrix

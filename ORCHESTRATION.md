@@ -267,17 +267,13 @@ General rules:
   ```
 - enter-worktree
   ```sh
+  # Worktree gives a clean view of $BASE_BRANCH without switching branches in the main checkout — needed for reading fresh code and for initialising $PR_BRANCH.
   WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
-  ```
-- handoff — if blocked-with-conflicts
-  ```sh
-  ISSUE_ID="$ISSUE_ID"
-  NEXT_PHASE="blocked-with-conflicts"
-  PR_ID="—"
   ```
 - create-remote-branch
   ```sh
-  git push -u origin "$PR_BRANCH"
+  # Not a commit — creates the remote branch pointer at the current HEAD
+  git push origin "HEAD:refs/heads/$PR_BRANCH"
   ```
 - set-variables
   ```sh

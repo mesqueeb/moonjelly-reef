@@ -30,7 +30,9 @@ Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker ty
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Verify the issue carries the `to-seal` label. If it does not, hand off with:
+Verify the issue carries the `to-seal` label.
+
+If it does not, hand off and report these variables to the caller — **do not continue**:
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
@@ -39,9 +41,7 @@ PR_ID="—"
 SUMMARY="Skipped: issue does not carry the to-seal label."
 ```
 
-Report these variables to the caller and **do not continue**.
-
-Read the plan. It must have:
+Else read the issue body. It must have:
 
 - User Stories, Implementation Decisions, and Testing Decisions
 - Coverage matrix (if multi-slice)
@@ -72,32 +72,41 @@ You are not re-inspecting code. You are:
 
 Think like a CTO doing a final walkthrough before shipping. Product-focused, big-picture, judgment-oriented.
 
-## 1. Get on the `pr-branch`
+## 1. Git prep
 
-Enter a worktree forked from `$PR_BRANCH`:
+This is non-negotiable. Enter a worktree with the exact command below:
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
 ```
 
-Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to `origin/$PR_BRANCH` using explicit refspec (no force), then continue. If unresolvable:
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree.
+
+If resolved:
 
 ```sh
-./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
+./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts 🌊"
 ```
 
-Hand off with:
+Then continue.
 
-```sh
-ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="blocked-with-conflicts"
-PR_ID="$PR_ID"
-SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
-```
+If unresolvable:
 
-Report these variables to the caller and **do not continue**.
+    ```sh
+    ./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
+    ./worktree-exit.sh --path "$WORKTREE_PATH"
+    ```
 
-Verify you have the latest — all slice PRs should be merged into this `pr-branch`.
+    Hand off and report these variables to the caller — **do not continue**:
+
+    ```sh
+    ISSUE_ID="$ISSUE_ID"
+    NEXT_PHASE="blocked-with-conflicts"
+    PR_ID="$PR_ID"
+    SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
+    ```
+
+Else verify you have the latest — all slice PRs should be merged into this `pr-branch`.
 
 ## 2. Run the full test suite
 

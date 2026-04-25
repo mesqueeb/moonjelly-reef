@@ -21,19 +21,19 @@ MERGE_STRATEGY="{from context}" # e.g. "squash"
 ./tracker.sh pr merge "$PR_ID" --"$MERGE_STRATEGY" --delete-branch
 ```
 
-If the merge command fails, hand off with:
+If the merge command succeeds:
+
+```sh
+./tracker.sh pr edit "$PR_ID" --remove-label to-merge --add-label landed
+```
+
+If the merge command fails, hand off and report these variables to the caller — **do not continue**:
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
 NEXT_PHASE="to-merge"
 PR_ID="$PR_ID"
 SUMMARY="Blocked: pr merge failed. Retry after resolving the underlying cause."
-```
-
-Report these variables to the caller and **do not continue**.
-
-```sh
-./tracker.sh pr edit "$PR_ID" --remove-label to-merge --add-label landed
 ```
 
 ## 2. Check siblings

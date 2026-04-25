@@ -30,7 +30,9 @@ Read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file d
 ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 ```
 
-Verify the issue carries the `to-rework` label. If it does not, hand off with:
+Verify the issue carries the `to-rework` label.
+
+If it does not, hand off and report these variables to the caller — **do not continue**:
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
@@ -39,9 +41,7 @@ PR_ID="—"
 SUMMARY="Skipped: issue does not carry the to-rework label."
 ```
 
-Report these variables to the caller and **do not continue**.
-
-Set the post-fetch variables (after reading the issue body):
+Else set the post-fetch variables (after reading the issue body):
 
 ```sh
 ISSUE_TITLE="{from issue title}" # e.g. "001-auth-endpoint"
@@ -53,28 +53,37 @@ WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
 
 ## 1. Git prep
 
-Enter a worktree forked from `$PR_BRANCH` to apply fixes to the existing PR:
+This is non-negotiable. Enter a worktree with the exact command below:
 
 ```sh
 WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
 ```
 
-Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree. If resolved, commit the merge and push to the working branch using explicit refspec (no force), then continue. If unresolvable:
+Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to resolve the conflicts in the worktree.
+
+If resolved:
 
 ```sh
-./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
+./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts 🌊"
 ```
 
-Hand off with:
+Then continue.
 
-```sh
-ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="blocked-with-conflicts"
-PR_ID="$PR_ID"
-SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
-```
+If unresolvable:
 
-Report these variables to the caller and **do not continue**.
+    ```sh
+    ./tracker.sh issue edit "$ISSUE_ID" --add-label blocked-with-conflicts
+    ./worktree-exit.sh --path "$WORKTREE_PATH"
+    ```
+
+    Hand off and report these variables to the caller — **do not continue**:
+
+    ```sh
+    ISSUE_ID="$ISSUE_ID"
+    NEXT_PHASE="blocked-with-conflicts"
+    PR_ID="$PR_ID"
+    SUMMARY="Blocked: unresolvable merge conflicts. Resolve manually before retrying."
+    ```
 
 ## 2. Read all feedback
 
@@ -115,22 +124,21 @@ If `"$PR_ID" = "-"`, try `./tracker.sh pr list --search` to locate the PR.
 
 If `$PR_ID` is nowhere to be found:
 
-    	```sh
-    	./tracker.sh issue edit "$ISSUE_ID" --add-label pr-missing
-    	```
+    ```sh
+    ./tracker.sh issue edit "$ISSUE_ID" --add-label pr-missing
+    ./worktree-exit.sh --path "$WORKTREE_PATH"
+    ```
 
-    	Hand off with:
+    Hand off and report these variables to the caller — **do not continue**:
 
-    	```sh
-    	ISSUE_ID="$ISSUE_ID"
-    	NEXT_PHASE="pr-missing"
-    	PR_ID="—"
-    	SUMMARY="Blocked: PR not found. pr-missing label applied."
-    	```
+    ```sh
+    ISSUE_ID="$ISSUE_ID"
+    NEXT_PHASE="pr-missing"
+    PR_ID="—"
+    SUMMARY="Blocked: PR not found. pr-missing label applied."
+    ```
 
-    	Report these variables to the caller and **do not continue**.
-
-This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
+Else write the report which will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
 <report-template>
 <details>
