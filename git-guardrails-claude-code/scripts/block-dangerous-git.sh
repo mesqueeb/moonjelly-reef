@@ -43,15 +43,15 @@ if echo "$COMMAND" | grep -qE "git branch -D"; then
   fi
 fi
 
-# git push: if any worktree exists, block pushing from the main checkout
+# git commit / git push: if any worktree exists, block from the main checkout
 # (keep agents in their lane). Force-push is already covered above.
-if echo "$COMMAND" | grep -qE "git push"; then
+if echo "$COMMAND" | grep -qE "git commit|git push"; then
   GIT_DIR=$(git rev-parse --git-dir 2>/dev/null)
   GIT_COMMON=$(git rev-parse --git-common-dir 2>/dev/null)
   WORKTREE_COUNT=$(git worktree list 2>/dev/null | wc -l | tr -d ' ')
 
   if [ "$GIT_DIR" = "$GIT_COMMON" ] && [ "${WORKTREE_COUNT:-0}" -gt 1 ]; then
-    echo "BLOCKED: at least one worktree exists, so agents are only allowed to push from worktree branches. Switch to a worktree to push." >&2
+    echo "BLOCKED: at least one worktree exists, so agents are only allowed to commit and push from worktree branches. Switch to a worktree first." >&2
     exit 2
   fi
 fi
