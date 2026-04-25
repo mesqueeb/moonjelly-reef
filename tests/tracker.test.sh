@@ -905,23 +905,64 @@ test_pr_edit_body() {
   teardown
 }
 
-test_pr_edit_label_noop() {
+test_pr_create_with_label() {
   setup
   cd "$REPO"
 
   t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
-  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" --label to-inspect >/dev/null 2>&1
 
-  if t pr edit 1 --add-label to-inspect >/dev/null 2>&1; then
-    pass "pr edit: --add-label is silent no-op"
+  if [ -f "$TRACKER_PATH/1 my-feature/[to-inspect] progress.md" ]; then
+    pass "pr create --label: label in filename"
   else
-    fail "pr edit: --add-label is silent no-op" "exited non-zero"
+    fail "pr create --label: label in filename" "file not found"
   fi
 
-  if t pr edit 1 --remove-label to-implement >/dev/null 2>&1; then
-    pass "pr edit: --remove-label is silent no-op"
+  teardown
+}
+
+test_pr_edit_label() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" --label to-merge >/dev/null 2>&1
+  t pr edit 1 --remove-label to-merge --add-label to-seal >/dev/null 2>&1
+
+  if [ -f "$TRACKER_PATH/1 my-feature/[to-seal] progress.md" ]; then
+    pass "pr edit label: renamed to new label"
   else
-    fail "pr edit: --remove-label is silent no-op" "exited non-zero"
+    fail "pr edit label: renamed to new label" "file not found"
+  fi
+
+  if [ -f "$TRACKER_PATH/1 my-feature/[to-merge] progress.md" ]; then
+    fail "pr edit label: old labeled file removed" "old file still exists"
+  else
+    pass "pr edit label: old labeled file removed"
+  fi
+
+  content="$(cat "$TRACKER_PATH/1 my-feature/[to-seal] progress.md")"
+  if echo "$content" | grep -q "report"; then
+    pass "pr edit label: body preserved"
+  else
+    fail "pr edit label: body preserved" "got: $content"
+  fi
+
+  teardown
+}
+
+test_pr_view_labels() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" --label to-seal >/dev/null 2>&1
+  output="$(t pr view 1 --json labels 2>/dev/null)"
+
+  if echo "$output" | grep -q '"to-seal"'; then
+    pass "pr view labels: returns label from filename"
+  else
+    fail "pr view labels: returns label from filename" "got: $output"
   fi
 
   teardown
@@ -1135,13 +1176,13 @@ test_pr_create_gh_compat() {
     fail "pr create gh-compat: returns issue ID" "got: $id"
   fi
 
-  if [ -f "$TRACKER_PATH/1 my-feature/progress.md" ]; then
-    pass "pr create gh-compat: creates progress.md"
+  if [ -f "$TRACKER_PATH/1 my-feature/[to-inspect] progress.md" ]; then
+    pass "pr create gh-compat: creates labeled progress.md"
   else
-    fail "pr create gh-compat: creates progress.md" "file not found"
+    fail "pr create gh-compat: creates labeled progress.md" "file not found"
   fi
 
-  content="$(cat "$TRACKER_PATH/1 my-feature/progress.md")"
+  content="$(cat "$TRACKER_PATH/1 my-feature/[to-inspect] progress.md")"
   if echo "$content" | grep -q "^head: feat/my-feature"; then
     pass "pr create gh-compat: frontmatter has head"
   else
@@ -1165,10 +1206,10 @@ test_pr_create_gh_compat_slice() {
     fail "pr create gh-compat slice: returns slice ID" "got: $id"
   fi
 
-  if [ -f "$TRACKER_PATH/1 my-feature/slices/1-1 auth-endpoint/progress.md" ]; then
-    pass "pr create gh-compat slice: creates progress.md"
+  if [ -f "$TRACKER_PATH/1 my-feature/slices/1-1 auth-endpoint/[to-inspect] progress.md" ]; then
+    pass "pr create gh-compat slice: creates labeled progress.md"
   else
-    fail "pr create gh-compat slice: creates progress.md" "file not found"
+    fail "pr create gh-compat slice: creates labeled progress.md" "file not found"
   fi
 
   teardown
@@ -1291,6 +1332,31 @@ test_pr_list_search() {
   teardown
 }
 
+test_pr_list_search_head() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t issue create --title "other-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
+  t pr create 2 --base main --head feat/other --body "report" >/dev/null 2>&1
+  output="$(t pr list --search "head:feat/my-feature" --json number,title 2>/dev/null)"
+
+  if echo "$output" | grep -q '"1"'; then
+    pass "pr list head: syntax: finds matching PR"
+  else
+    fail "pr list head: syntax: finds matching PR" "got: $output"
+  fi
+
+  if echo "$output" | grep -q '"2"'; then
+    fail "pr list head: syntax: excludes non-matching PR" "found 2 in output"
+  else
+    pass "pr list head: syntax: excludes non-matching PR"
+  fi
+
+  teardown
+}
+
 test_pr_list_empty() {
   setup
   cd "$REPO"
@@ -1301,6 +1367,64 @@ test_pr_list_empty() {
     pass "pr list: returns empty array when no PRs"
   else
     fail "pr list: returns empty array when no PRs" "got: $output"
+  fi
+
+  teardown
+}
+
+# ============================================================
+# PR CREATE --draft — no-op flag
+# ============================================================
+
+test_pr_create_draft_flag() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+
+  if t pr create 1 --base main --head feat/my-feature --draft --body "draft report" >/dev/null 2>&1; then
+    pass "pr create --draft: accepted without error"
+  else
+    fail "pr create --draft: accepted without error" "exited non-zero"
+  fi
+
+  if [ -f "$TRACKER_PATH/1 my-feature/progress.md" ]; then
+    pass "pr create --draft: progress.md still created"
+  else
+    fail "pr create --draft: progress.md still created" "file not found"
+  fi
+
+  teardown
+}
+
+# ============================================================
+# PR READY — no-op
+# ============================================================
+
+test_pr_ready_noop() {
+  setup
+  cd "$REPO"
+
+  t issue create --title "my-feature" --body "plan content" --label to-implement >/dev/null 2>&1
+  t pr create 1 --base main --head feat/my-feature --body "report" >/dev/null 2>&1
+
+  if t pr ready 1 >/dev/null 2>&1; then
+    pass "pr ready: succeeds as no-op"
+  else
+    fail "pr ready: succeeds as no-op" "exited non-zero"
+  fi
+
+  teardown
+}
+
+test_pr_ready_requires_id() {
+  setup
+  cd "$REPO"
+
+  if t pr ready >/dev/null 2>&1; then
+    fail "pr ready: fails without ID" "succeeded"
+  else
+    pass "pr ready: fails without ID"
   fi
 
   teardown
@@ -1350,10 +1474,12 @@ test_committed_close_pushes
 
 test_pr_create_plan
 test_pr_create_slice
+test_pr_create_with_label
 test_pr_view_fields
 test_pr_view_comments_reviews
+test_pr_view_labels
 test_pr_edit_body
-test_pr_edit_label_noop
+test_pr_edit_label
 test_pr_merge_squash
 test_pr_merge_regular
 test_pr_merge_deletes_head_branch_locally
@@ -1369,7 +1495,12 @@ test_pr_view_number_field
 test_pr_view_web_noop
 test_pr_list
 test_pr_list_search
+test_pr_list_search_head
 test_pr_list_empty
+
+test_pr_create_draft_flag
+test_pr_ready_noop
+test_pr_ready_requires_id
 
 echo ""
 if [ "$FAIL" -gt 0 ]; then

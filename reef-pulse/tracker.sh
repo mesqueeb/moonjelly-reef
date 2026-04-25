@@ -10,10 +10,11 @@
 #   tracker.sh issue create [--title "..."] [--body "..."] [--label X] [--parent <id>]
 #   tracker.sh issue close  <id>
 #   tracker.sh issue list   [--label X] [--json number,title] [--limit N]
-#   tracker.sh pr create    [<id>] --base X [--head Y] --body B [--title T] [--label L]
+#   tracker.sh pr create    [<id>] --base X [--head Y] --body B [--title T] [--label L] [--draft]
 #   tracker.sh pr view      <id> --json body,headRefName,baseRefName [--web] [-q .field]
 #   tracker.sh pr edit      <id> [--body "..."] [--add-label X] [--remove-label X]
 #   tracker.sh pr merge     <id> [--squash] [--delete-branch]
+#   tracker.sh pr ready     <id>
 #   tracker.sh pr list      [--search Q] [--json fields] [--limit N]
 set -eu
 
@@ -180,6 +181,12 @@ resolve_progress_file() {
   if [ -z "$_dir" ]; then
     return 1
   fi
+  for _pf in "$_dir"/\[*\]\ progress.md; do
+    if [ -f "$_pf" ]; then
+      echo "$_pf"
+      return 0
+    fi
+  done
   _pf="$_dir/progress.md"
   if [ -f "$_pf" ]; then
     echo "$_pf"
@@ -514,8 +521,8 @@ pr_create() {
   _base=""
   _head=""
   _body=""
-  _title=""  # accepted for gh compatibility, ignored
-  _label=""  # accepted for gh compatibility, ignored
+  _title=""  # accepted for gh compatibility, used for ID resolution only
+  _label=""
 
   # First positional arg (if not a flag) is the ID
   if [ $# -gt 0 ]; then
@@ -532,6 +539,7 @@ pr_create() {
       --body)  [ $# -lt 2 ] && { echo "Error: --body requires a value" >&2; exit 1; }; _body="$2"; shift 2 ;;
       --title) [ $# -lt 2 ] && { echo "Error: --title requires a value" >&2; exit 1; }; _title="$2"; shift 2 ;;
       --label) [ $# -lt 2 ] && { echo "Error: --label requires a value" >&2; exit 1; }; _label="$2"; shift 2 ;;
+      --draft) shift ;;  # accepted for gh compatibility, ignored (local tracker has no draft state)
       *) echo "Error: unknown argument: $1" >&2; exit 1 ;;
     esac
   done
@@ -586,10 +594,20 @@ pr_create() {
     exit 1
   fi
 
-  _progress="$_dir/progress.md"
-  printf '%s\n%s\n%s\n%s\n%s' "---" "head: $_head" "base: $_base" "---" "" > "$_progress"
+  if [ -n "$_label" ]; then
+    _progress="$_dir/[$_label] progress.md"
+  else
+    _progress="$_dir/progress.md"
+  fi
+  {
+    printf '%s\n' "---"
+    printf '%s\n' "head: $_head"
+    printf '%s\n' "base: $_base"
+    printf '%s\n' "---"
+    printf '\n'
+  } > "$_progress"
   if [ -n "$_body" ]; then
-    printf '\n%s' "$_body" >> "$_progress"
+    printf '%s' "$_body" >> "$_progress"
   fi
 
   # Output the issue ID (analogous to gh pr create returning the PR number)
@@ -638,6 +656,7 @@ pr_view() {
   # Parse frontmatter
   _head="$(sed -n 's/^head: *//p' "$_progress" | head -1)"
   _base="$(sed -n 's/^base: *//p' "$_progress" | head -1)"
+  _labels="$(basename "$_progress" | sed -n 's/^\[\([^]]*\)\] progress\.md$/\1/p')"
 
   # Parse body (everything after the closing ---)
   _body="$(awk 'BEGIN{n=0} /^---$/{n++; next} n>=2{print}' "$_progress")"
@@ -663,6 +682,7 @@ pr_view() {
       baseRefName)      _json="$_json\"baseRefName\":\"$(json_escape "$_base")\"" ;;
       number)           _json="$_json\"number\":\"$(json_escape "$_id")\"" ;;
       mergeStateStatus) _json="$_json\"mergeStateStatus\":\"CLEAN\"" ;;
+      labels)           _json="$_json\"labels\":[\"$(json_escape "$_labels")\"]" ;;
       *)                _json="$_json\"$_field\":null" ;;
     esac
   done
@@ -678,6 +698,7 @@ pr_view() {
       baseRefName)      printf '%s' "$_base" ;;
       number)           printf '%s' "$_id" ;;
       mergeStateStatus) printf '%s' "CLEAN" ;;
+      labels)           printf '%s' "$_labels" ;;
       *)                printf 'null' ;;
     esac
   else
@@ -700,8 +721,7 @@ pr_edit() {
     esac
   done
 
-  # --add-label and --remove-label are silent no-ops for local PRs
-  if [ -z "$_body" ]; then
+  if [ -z "$_body" ] && [ -z "$_add_label" ] && [ -z "$_remove_label" ]; then
     return 0
   fi
 
@@ -711,12 +731,33 @@ pr_edit() {
     exit 1
   fi
 
-  # Preserve frontmatter, replace body
-  _head="$(sed -n 's/^head: *//p' "$_progress" | head -1)"
-  _base="$(sed -n 's/^base: *//p' "$_progress" | head -1)"
+  # Rename file for label changes (mirrors how issue edit renames plan.md)
+  if [ -n "$_add_label" ] || [ -n "$_remove_label" ]; then
+    _dir="$(dirname "$_progress")"
+    if [ -n "$_add_label" ]; then
+      _new_progress="$_dir/[$_add_label] progress.md"
+    else
+      _new_progress="$_dir/progress.md"
+    fi
+    if [ "$_progress" != "$_new_progress" ]; then
+      mv "$_progress" "$_new_progress"
+      _progress="$_new_progress"
+    fi
+  fi
 
-  printf '%s\n%s\n%s\n%s\n%s' "---" "head: $_head" "base: $_base" "---" "" > "$_progress"
-  printf '\n%s' "$_body" >> "$_progress"
+  # Update body if requested
+  if [ -n "$_body" ]; then
+    _head="$(sed -n 's/^head: *//p' "$_progress" | head -1)"
+    _base="$(sed -n 's/^base: *//p' "$_progress" | head -1)"
+    {
+      printf '%s\n' "---"
+      printf '%s\n' "head: $_head"
+      printf '%s\n' "base: $_base"
+      printf '%s\n' "---"
+      printf '\n'
+    } > "$_progress"
+    printf '%s' "$_body" >> "$_progress"
+  fi
 }
 
 pr_merge() {
@@ -765,6 +806,33 @@ pr_merge() {
   fi
 }
 
+pr_ready() {
+  # No-op for local tracker — draft state is not tracked locally.
+  : "${1:-}"
+}
+
+# Returns 0 if a PR matches the --search query, 1 if not.
+# Supports GitHub-compatible "head:branch-name" syntax for exact branch matching,
+# or falls back to substring match against "$head $title" for plain strings.
+pr_matches_search() {
+  _ms_head="$1"
+  _ms_title="$2"
+  _ms_query="$3"
+  case "$_ms_query" in
+    *head:*)
+      _ms_branch="${_ms_query#*head:}"
+      _ms_branch="${_ms_branch%% *}"
+      [ "$_ms_head" = "$_ms_branch" ]
+      ;;
+    *)
+      case "$_ms_head $_ms_title" in
+        *${_ms_query}*) return 0 ;;
+        *) return 1 ;;
+      esac
+      ;;
+  esac
+}
+
 pr_list() {
   _search=""
   _json_flag=""
@@ -785,7 +853,7 @@ pr_list() {
   printf '['
 
   # Search plans
-  for _pf in "$TRACKER_PATH"/*/progress.md; do
+  for _pf in "$TRACKER_PATH"/*/\[*\]\ progress.md "$TRACKER_PATH"/*/progress.md; do
     [ -f "$_pf" ] || continue
     if [ -n "$_limit" ] && [ "$_count" -ge "$_limit" ]; then break; fi
     _dir="$(dirname "$_pf")"
@@ -793,12 +861,8 @@ pr_list() {
     _num="$(echo "$_dirname" | sed 's/ .*//')"
     _title="$(extract_title "$_dir")"
     _head="$(sed -n 's/^head: *//p' "$_pf" | head -1)"
-    # If --search is given, filter by head branch or title match
     if [ -n "$_search" ]; then
-      case "$_head $_title" in
-        *${_search}*) ;; # match
-        *) continue ;;
-      esac
+      pr_matches_search "$_head" "$_title" "$_search" || continue
     fi
     if [ "$_first" -eq 1 ]; then _first=0; else printf ','; fi
     json_list_item "$_num" "$_title"
@@ -806,7 +870,7 @@ pr_list() {
   done
 
   # Search slices
-  for _pf in "$TRACKER_PATH"/*/slices/*/progress.md; do
+  for _pf in "$TRACKER_PATH"/*/slices/*/\[*\]\ progress.md "$TRACKER_PATH"/*/slices/*/progress.md; do
     [ -f "$_pf" ] || continue
     if [ -n "$_limit" ] && [ "$_count" -ge "$_limit" ]; then break; fi
     _dir="$(dirname "$_pf")"
@@ -815,10 +879,7 @@ pr_list() {
     _title="$(extract_title "$_dir")"
     _head="$(sed -n 's/^head: *//p' "$_pf" | head -1)"
     if [ -n "$_search" ]; then
-      case "$_head $_title" in
-        *${_search}*) ;; # match
-        *) continue ;;
-      esac
+      pr_matches_search "$_head" "$_title" "$_search" || continue
     fi
     if [ "$_first" -eq 1 ]; then _first=0; else printf ','; fi
     json_list_item "$_num" "$_title"
@@ -891,6 +952,9 @@ case "$CMD_GROUP" in
         if [ $# -lt 1 ]; then echo "Error: pr merge requires an ID" >&2; exit 1; fi
         pr_merge "$@"
         ;;
+      ready)
+        if [ $# -lt 1 ]; then echo "Error: pr ready requires an ID" >&2; exit 1; fi
+        pr_ready "$@" ;;
       list) pr_list "$@" ;;
       *) echo "Error: unknown pr subcommand: $SUBCMD" >&2; exit 1 ;;
     esac

@@ -63,7 +63,7 @@ Close the current issue and update its labels:
 ./tracker.sh issue close "$ISSUE_ID"
 ```
 
-## 4. Update parent issue label
+## 5. Update parent issue label
 
 RUN ONLY IF `"$ALL_SIBLINGS_LANDED" = "true"`.
 

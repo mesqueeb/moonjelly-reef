@@ -32,21 +32,18 @@ Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker ty
 
 Verify the issue carries the `to-seal` label.
 
-If it does not, hand off and report these variables to the caller — **do not continue**:
+If it does not:
 
-```sh
-ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="—"
-PR_ID="—"
-SUMMARY="Skipped: issue does not carry the to-seal label."
-```
+    Hand off and report these variables to the caller — **do not continue**:
 
-Else read the issue body. It must have:
+    ```sh
+    ISSUE_ID="$ISSUE_ID"
+    NEXT_PHASE="—"
+    PR_ID="—"
+    SUMMARY="Skipped: issue does not carry the to-seal label."
+    ```
 
-- User Stories, Implementation Decisions, and Testing Decisions
-- Coverage matrix (if multi-slice)
-- `pr-branch` in frontmatter
-- Slice PRs with "Judgment calls" sections
+Else set the post-fetch variables (after reading the issue body):
 
 ```sh
 ISSUE_TITLE="{from issue title}" # e.g. "My feature title"
@@ -57,6 +54,15 @@ HEADING="{from issue frontmatter heading field, or - if not present}" # e.g. "de
 FEELING_LUCKY="{from issue frontmatter feeling-lucky field, or - if not present}" # e.g. "true"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-seal"
 ```
+
+If `$PR_ID` is not present on the issue frontmatter:
+
+    ```sh
+    if [ "$PR_ID" = "-" ]; then
+      ./tracker.sh pr list --search "head:$PR_BRANCH" --json number
+      PR_ID="{located PR, or - if not found}" # e.g. "#43"
+    fi
+    ```
 
 ## Mindset — The Elephant Seal
 
@@ -188,7 +194,7 @@ When you find non-obvious behavior worth documenting during your holistic review
 
 Don't document what's obvious from reading the code.
 
-## 8. Produce the report
+## 8. Write the report
 
 The report should be concise and focused on what the diver needs to know. Do NOT dump the entire plan — the diver can read the plan.
 
@@ -231,31 +237,22 @@ This output will be read by another agent session — no context from this conve
 
 ### Submit the report
 
-This PR is what the diver will ultimately merge or reject.
-
 ```sh
 REPORT="{seal-report}" # e.g. <details><summary><h3>🦭 Seal of approval — {2012/12/21 12:00}</h3></summary>...</details>
-```
-
-**If `$PR_ID` is a specific ID, append to the existing PR:**
-
-```sh
-PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
-PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
-./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
-```
-
-**If `"$PR_ID" = "-"`, create a new PR and update the plan issue body as well:**
-
-```sh
-CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. "closes #42 My feature title"
-PR_BODY_NEW="$CLOSES\n\n$REPORT"
-./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-seal
-# Persist the PR metadata on the plan issue so the diver can always find it:
-PR_ID="{from pr create output}" # e.g. "#43"
-ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
-# add to frontmatter: pr-id: $PR_ID
-./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED"
+if [ "$PR_ID" = "-" ]; then
+  CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. "closes #42 My feature title"
+  PR_BODY_NEW="$CLOSES\n\n$REPORT"
+  ./tracker.sh pr create --base "$BASE_BRANCH" --head "$PR_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-seal
+  # Persist the PR metadata on the plan issue so the diver can always find it:
+  PR_ID="{from pr create output}" # e.g. "#43"
+  ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
+  # add to frontmatter: pr-id: $PR_ID
+  ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED"
+else
+  PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
+  PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
+  ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
+fi
 ```
 
 ## 9. Label

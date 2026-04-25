@@ -481,7 +481,7 @@ General rules:
   TOKENS="${SUBAGENT_TOKENS:-—}"
   TOOL_USES="${SUBAGENT_TOOL_USES:-—}"
   OUTCOME="${SUMMARY:-${NEXT_PHASE#to-}}"
-  METRICS_DATE="$(date '+%Y-%m-%d %H:%M')"
+  METRICS_DATE="$(date '+%Y/%m/%d %H:%M')"
   METRIC_ROW="| $PHASE | $TARGET | $DURATION | $TOKENS | $TOOL_USES | $OUTCOME | $METRICS_DATE |"
   ```
 - set-variables

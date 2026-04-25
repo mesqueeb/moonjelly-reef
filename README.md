@@ -12,12 +12,12 @@ Prep the work with `/reef-scope`, run `/reef-pulse` before bed, and wake up to p
 
 Most orchestration frameworks front-load complexity: dozens of new terms, external databases, and a CLI to install before you can do anything. Moonjelly Reef is just a skill. Drop it in, run `/reef-pulse`, and go to bed. The reef QA-loops until everything is polished, then waits for you to land it.
 
-|                       | RUFLO                                                               | GASTOWN                                             | Moonjelly Reef                                                      |
-| :-------------------- | :------------------------------------------------------------------ | :-------------------------------------------------- | :------------------------------------------------------------------ |
+|                       | RUFLO                                                               | GASTOWN                                                         | Moonjelly Reef                                                      |
+| :-------------------- | :------------------------------------------------------------------ | :-------------------------------------------------------------- | :------------------------------------------------------------------ |
 | **Concepts to learn** | ~137 skills, 16 agent types, swarm topologies, consensus algorithms | framework-specific terms: beads, polecats, convoys, hooks, rigs | self-explanatory labels: `to-scope`, `to-implement`, `to-land`      |
-| **Install**           | npm, ~340 MB, MCP config                                            | Go, Dolt, beads CLI, tmux, sqlite3                  | `npx skills add mesqueeb/moonjelly-reef`                            |
-| **State storage**     | custom vector DB, SQLite, knowledge graph                           | Dolt DB, beads CLI, git worktrees                   | labels on GitHub or any issue tracker                               |
-| **Theme**             | no theme (boring)                                                   | complex and incoherent theme                        | ocean theme, doesn't get in the way — label names are plain English |
+| **Install**           | npm, ~340 MB, MCP config                                            | Go, Dolt, beads CLI, tmux, sqlite3                              | `npx skills add mesqueeb/moonjelly-reef`                            |
+| **State storage**     | custom vector DB, SQLite, knowledge graph                           | Dolt DB, beads CLI, git worktrees                               | labels on GitHub or any issue tracker                               |
+| **Theme**             | no theme (boring)                                                   | complex and incoherent theme                                    | ocean theme, doesn't get in the way — label names are plain English |
 
 ## Install
 

@@ -32,14 +32,16 @@ Read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file d
 
 Verify the issue carries the `to-rework` label.
 
-If it does not, hand off and report these variables to the caller — **do not continue**:
+If it does not:
 
-```sh
-ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="—"
-PR_ID="—"
-SUMMARY="Skipped: issue does not carry the to-rework label."
-```
+    Hand off and report these variables to the caller — **do not continue**:
+
+    ```sh
+    ISSUE_ID="$ISSUE_ID"
+    NEXT_PHASE="—"
+    PR_ID="—"
+    SUMMARY="Skipped: issue does not carry the to-rework label."
+    ```
 
 Else set the post-fetch variables (after reading the issue body):
 
@@ -50,6 +52,31 @@ PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "feat/001-auth-endpo
 PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#7"
 WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
 ```
+
+If `$PR_ID` is not present on the issue frontmatter:
+
+    ```sh
+    if [ "$PR_ID" = "-" ]; then
+    ./tracker.sh pr list --search "head:$PR_BRANCH" --json number
+    PR_ID="{located PR, or - if not found}" # e.g. "#55"
+    fi
+    ```
+
+If `$PR_ID` is nowhere to be found:
+
+    ```sh
+    ./tracker.sh issue edit "$ISSUE_ID" --add-label pr-missing
+    ./worktree-exit.sh --path "$WORKTREE_PATH"
+    ```
+
+    Hand off and report these variables to the caller — **do not continue**:
+
+    ```sh
+    ISSUE_ID="$ISSUE_ID"
+    NEXT_PHASE="pr-missing"
+    PR_ID="—"
+    SUMMARY="Blocked: PR not found. pr-missing label applied."
+    ```
 
 ## 1. Git prep
 
@@ -120,25 +147,7 @@ Not a subset. The full project test suite must be green.
 
 ## 6. Update the PR description
 
-If `"$PR_ID" = "-"`, try `./tracker.sh pr list --search` to locate the PR.
-
-If `$PR_ID` is nowhere to be found:
-
-    ```sh
-    ./tracker.sh issue edit "$ISSUE_ID" --add-label pr-missing
-    ./worktree-exit.sh --path "$WORKTREE_PATH"
-    ```
-
-    Hand off and report these variables to the caller — **do not continue**:
-
-    ```sh
-    ISSUE_ID="$ISSUE_ID"
-    NEXT_PHASE="pr-missing"
-    PR_ID="—"
-    SUMMARY="Blocked: PR not found. pr-missing label applied."
-    ```
-
-Else write the report which will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
+Write the report which will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
 <report-template>
 <details>
