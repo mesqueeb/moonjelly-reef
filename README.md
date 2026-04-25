@@ -4,9 +4,20 @@
 
 # Moonjelly Reef
 
-An orchestration framework for AI agent workflows. A short-lived pulse scans for work, dispatches skills, and goes back to sleep. State lives in labels. The reef does the rest.
+Minimal AI orchestration. Scope a ticket, and the reef handles the rest — splitting, implementing, reviewing, and polishing a PR for you to land.
 
-This framework is **Issue tracker agnostic**. GitHub Issues or simply local MD files. It can also handle others like Jira, ClickUp, Linear, as long as you have an MCP installed for those.
+Prep the work with `/reef-scope`, run `/reef-pulse` before bed, and wake up to polished PRs waiting to land. The reef does its own QA loops, task management, all from a simple skill.
+
+## Motivation
+
+Most orchestration frameworks front-load complexity: dozens of new terms, external databases, and a CLI to install before you can do anything. Moonjelly Reef is just a skill. Drop it in, run `/reef-pulse`, and go to bed. The reef QA-loops until everything is polished, then waits for you to land it.
+
+|                       | RUFLO                                                               | GASTOWN                                             | Moonjelly Reef                                                      |
+| :-------------------- | :------------------------------------------------------------------ | :-------------------------------------------------- | :------------------------------------------------------------------ |
+| **Concepts to learn** | ~137 skills, 16 agent types, swarm topologies, consensus algorithms | framework-specific terms: beads, polecats, convoys, hooks, rigs | self-explanatory labels: `to-scope`, `to-implement`, `to-land`      |
+| **Install**           | npm, ~340 MB, MCP config                                            | Go, Dolt, beads CLI, tmux, sqlite3                  | `npx skills add mesqueeb/moonjelly-reef`                            |
+| **State storage**     | custom vector DB, SQLite, knowledge graph                           | Dolt DB, beads CLI, git worktrees                   | labels on GitHub or any issue tracker                               |
+| **Theme**             | no theme (boring)                                                   | complex and incoherent theme                        | ocean theme, doesn't get in the way — label names are plain English |
 
 ## Install
 
@@ -14,15 +25,11 @@ This framework is **Issue tracker agnostic**. GitHub Issues or simply local MD f
 npx skills add mesqueeb/moonjelly-reef
 ```
 
-On first run, reef-pulse will prompt you to mention which issue tracker you want to use.
-
-## 🪼 The moonjelly pulse
-
-> _Through Moonjelly's pulse, the reef is orchestrated, creatures are set in motion, and Moonjelly recedes._
-
-The moonjelly is the orchestrator. Label-driven orchestrator that routes work to different sub-agents based on labels and keeps looping until no automated work remains. It holds no state — labels are the state.
+On first run, trigger `/reef-scope`. It helps you get set up, then it asks if you want to scope some work.
 
 ## State machine
+
+> You only touch two steps (scope and land). The reef handles everything in between.
 
 > 🤿 = human (the diver)
 > 🌊 = automated (the reef)
@@ -92,14 +99,14 @@ stateDiagram-v2
 <details>
 <summary>🤿 <b><code>reef-scope</code></b> — scope an issue</summary>
 
-The single entry point for turning ideas into plans. It always shows a route picker, recommends a route from issue text when an issue is passed in, writes a plan with User Stories, Implementation Decisions, and Testing Decisions, and labels `to-slice`.
+The single entry point for turning ideas into plans. It always starts by asking what kind of work this is — recommending one if an issue is passed in — then writes a plan with User Stories, Implementation Decisions, and Testing Decisions, and labels `to-slice` — or `to-implement` directly for bugs and refactors (which skip slicing).
 
-The route picker always offers these five options:
+Five work types to choose from:
 
 - `scope a feature`
 - `scope a refactor`
 - `triage a bug`
-- `I'm feeling lucky (hand over to the reef)`
+- `I'm feeling lucky (toss it in as-is, see what the reef creates)`
 - `deep research`
 
 | source file | [`reef-scope/SKILL.md`](reef-scope/SKILL.md) |
@@ -237,7 +244,7 @@ Fix every issue flagged by the inspector. Address all PR comments, run the full 
 <details>
 <summary>🌊 <b><code>to-seal</code></b> 🏷️</summary>
 
-Holistic review of the current issue's `pr-branch` — checking the composed whole, not the parts. Verify every plan item (User Stories, Implementation Decisions, Testing Decisions) end-to-end, run the full suite, produce the aggregate report, label `to-land` or `to-rework` on gaps.
+Holistic review of the current issue's `pr-branch` — checking the composed whole, not the parts. Verifies that the issue is actually solved end-to-end, runs the full suite, produces the aggregate report. Label `to-land` on pass, `to-rework` if fixable gaps found, or `to-land` + `blocked-need-human-input` if a decision beyond the plan is needed.
 
 | source file | [`reef-pulse/seal.md`](reef-pulse/seal.md) |
 | :---------- | :----------------------------------------- |
@@ -248,22 +255,24 @@ Holistic review of the current issue's `pr-branch` — checking the composed who
 
 ## Phase metrics
 
-Every phase tracks its duration and token usage. Metrics are written exclusively by reef-pulse after each dispatched sub-agent completes — individual phase files do not self-report metrics. Metrics accumulate in a single table on the plan issue (and the plan PR once one exists), giving the reviewer a complete cost/time breakdown from scoping through landing. reef-scope is the only exception: because it runs in the user's session (not as a sub-agent), it records its own wall-clock duration on the plan issue. Once the issue is landed, a bold **Total** row sums durations and tokens across the entire lifecycle.
+reef-pulse writes a running metrics table to the plan issue after each phase completes, giving a full cost and time breakdown from scope to land. Once the issue is landed, a bold **Total** row is added.
+
+_Example:_
+
+| Phase       | Target | Duration | Tokens  | Tool uses | Outcome                                | Date             |
+| ----------- | ------ | -------- | ------- | --------- | -------------------------------------- | ---------------- |
+| await-waves | #191   | 1m39s    | 43,050  | 24        | unblocked, ready for implementation    | 2026/04/24 19:07 |
+| implement   | #191   | 13m09s   | 125,782 | 128       | implementation complete                | 2026/04/24 19:21 |
+| inspect     | #191   | 2m57s    | 54,399  | 37        | PASS — 8 criteria met, 476 tests green | 2026/04/24 19:30 |
+| merge       | #191   | 1m38s    | 20,983  | 16        | merged into parent pr-branch           | 2026/04/24 19:32 |
+
+> **Claude Code only.** Codex cannot retrieve token counts or durations from dispatched sub-agents, so metrics will be limited when running the reef on Codex.
 
 ## Orchestration accuracy
 
-The reason this orchestration framework works is explicit boundaries. Each phase has four well-defined concerns:
+Every phase has explicit, tested boundaries. [`ORCHESTRATION.md`](ORCHESTRATION.md) is the single source of truth — it declares the variables, context sources, code persistence, and tracker updates for every phase in the correct order. [`tests/orchestration.test.sh`](tests/orchestration.test.sh) verifies that each phase file follows that contract; if a phase drifts, the test catches it.
 
-1. **Variables** — what each phase needs is declared up front.
-2. **Context source** — where each phase reads its input (tracker issue, PR, plan issue body) is well-defined.
-3. **Code persistence** — where code changes get committed and pushed is well-defined.
-4. **Progress metadata** — where labels, issue bodies, and PR bodies get updated is well-defined.
-
-[`ORCHESTRATION.md`](ORCHESTRATION.md) is the single source of truth for these four concerns across all phases. It outlines purely the deterministic orchestration boundaries in a holistic view — not the phase logic itself, just the variables, context fetches, commits, PR operations, and tracker updates in their correct order.
-
-[`tests/test-orchestration.sh`](tests/test-orchestration.sh) verifies that each phase's `.md` instructions include these deterministic parts of the orchestration in the correct order. If a phase drifts — missing a variable declaration, reordering a commit and PR create, or dropping a tracker update — the test catches it.
-
-To further ensure no sub-agent messes up worktree creation, branch targeting, or commit flow, all git operations are wrapped in shell scripts (`worktree-enter.sh`, `worktree-exit.sh`, `commit.sh`) with extra sanitisation. Reef keeps its temporary worktrees under `.worktrees/` inside the repo, and `base-branch` values and paths are passed via shell variables so that sub-agents never have to reason about git orchestration themselves.
+All git operations run through shell scripts (`worktree-enter.sh`, `worktree-exit.sh`, `commit.sh`) so sub-agents never have to reason about git orchestration themselves.
 
 ## Autopilot
 
