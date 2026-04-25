@@ -31,18 +31,18 @@ if [ ! -d "$WORKTREE_PATH" ]; then
 fi
 
 # Check for uncommitted changes (staged or unstaged)
-if ! git -C "$WORKTREE_PATH" diff --quiet 2>/dev/null; then
+if ! git -C "$WORKTREE_PATH" diff --quiet ; then
   echo "Error: worktree has unstaged changes: $WORKTREE_PATH" >&2
   exit 1
 fi
 
-if ! git -C "$WORKTREE_PATH" diff --cached --quiet 2>/dev/null; then
+if ! git -C "$WORKTREE_PATH" diff --cached --quiet ; then
   echo "Error: worktree has staged changes: $WORKTREE_PATH" >&2
   exit 1
 fi
 
 # Check for untracked files
-if [ -n "$(git -C "$WORKTREE_PATH" ls-files --others --exclude-standard 2>/dev/null)" ]; then
+if [ -n "$(git -C "$WORKTREE_PATH" ls-files --others --exclude-standard )" ]; then
   echo "Error: worktree has untracked files: $WORKTREE_PATH" >&2
   exit 1
 fi

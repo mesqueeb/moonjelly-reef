@@ -53,9 +53,9 @@ fi
 
 mkdir -p "$(dirname "$WORKTREE_PATH")"
 
-git fetch origin --prune >/dev/null 2>&1
+git fetch origin --prune >/dev/null
 
-git worktree add "$WORKTREE_PATH" "origin/${FORK_FROM}" --detach >/dev/null 2>&1
+git worktree add "$WORKTREE_PATH" "origin/${FORK_FROM}" --detach >/dev/null
 
 ABS_PATH="$(cd "$WORKTREE_PATH" && pwd -P)"
 echo "$ABS_PATH"
@@ -82,7 +82,7 @@ COMMIT_COUNT="$(git -C "$ABS_PATH" rev-list "$MERGE_BASE".."$LATEST_SHA" | wc -l
 # Attempt the merge (staying detached HEAD)
 if git -C "$ABS_PATH" merge --no-edit "$LATEST_SHA" >/dev/null 2>&1; then
   # Clean merge — push to origin using explicit refspec (no force)
-  git -C "$ABS_PATH" push origin "HEAD:refs/heads/${FORK_FROM}" >/dev/null 2>&1
+  git -C "$ABS_PATH" push origin "HEAD:refs/heads/${FORK_FROM}" >/dev/null
   echo "synced: pulled $COMMIT_COUNT commits from $PULL_LATEST into $FORK_FROM"
   exit 0
 else
