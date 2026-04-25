@@ -43,10 +43,8 @@ Report these variables to the caller and **do not continue**.
 
 Read the issue. It must contain:
 
-- Acceptance criteria
 - `base-branch` in frontmatter (where the PR merges into)
 - `pr-branch` in frontmatter (the branch the PR lives on)
-- Research-oriented acceptance criteria or Research Questions
 
 ```sh
 ISSUE_TITLE="{from issue title}" # e.g. "auth-token-rotation"
@@ -87,7 +85,7 @@ Report these variables to the caller and **do not continue**.
 
 Read and understand:
 
-- **This issue's acceptance criteria** — this is your checklist. Every criterion must be addressed.
+- **Your research checklist** — in priority order: `## Acceptance criteria` if present; else the `## Research Questions` from the plan. Every item must be answered or documented.
 - **The plan** — understand the question the research must answer (Research Questions, Testing Decisions).
 - **Sibling issues** — awareness of what others are doing or have done. Don't duplicate, don't conflict.
 - **The decision record** — the original decisions that led here.
@@ -115,7 +113,7 @@ This output will be read by another agent session — no context from this conve
 ```markdown
 ## Ambiguous choices
 
-Decisions made during research that weren't covered by the acceptance criteria or where judgment was needed:
+Decisions made during research that weren't covered by the plan or acceptance criteria, or where judgment was needed:
 
 - **{topic}**: chose {X} because {reason}. This differs from the plan in that {difference, if any}.
 

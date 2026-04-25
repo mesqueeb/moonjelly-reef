@@ -149,7 +149,7 @@ For each concern or comment:
 5. When asking, lead with your recommended answer that demonstrates the investigation.
 6. Confirm your understanding of what change is needed.
 7. Propose how it maps to work: code change? Restructuring? Naming fix?
-8. Check whether it relates to an existing plan item (US, ID, TD) or needs a new one.
+8. Check whether it relates to an existing User Story, Implementation Decision, or Testing Decision in the plan, or needs a new one.
 
 Ask questions one at a time.
 

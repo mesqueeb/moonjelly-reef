@@ -49,18 +49,18 @@ If the plan says to work on the current branch (no new `pr-branch`), skip the br
 
 ## 2. Build the coverage matrix
 
-For each plan item (User Story / Implementation Decision / Testing Decision / ...), map it to which slice(s) and which acceptance criterion/criteria cover it.
+For each User Story, Implementation Decision, and Testing Decision in the plan, map it to which slice(s) cover it and which acceptance criterion in that slice addresses it.
 
-Architectural or non-testable IDs that have no direct implementation output should be noted as "covered by design" in the Acceptance Criteria column.
+Architectural or non-testable implementation decisions that have no direct implementation output should be noted as "covered by design" in the Acceptance Criteria column.
 
 ```markdown
 ## Coverage Matrix
 
-| Plan Item                                                | Slice                                | Acceptance Criteria                                           |
-| -------------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------- |
-| US1: Users can log in with email                         | 001 Auth endpoint                    | AC1: POST /login returns token, AC2: invalid creds return 401 |
-| TD1: Session persists across refresh                     | 002 Token storage                    | AC1: token stored in httpOnly cookie                          |
-| ID1: Legacy UI renders identically (covered by design)   | 001 Auth endpoint, 003 Legacy compat | covered by design                                             |
+| Plan Item                                              | Slice                                | Acceptance Criteria                                        |
+| ------------------------------------------------------ | ------------------------------------ | ---------------------------------------------------------- |
+| US1: Users can log in with email                       | 001 Auth endpoint                    | POST /login returns token; invalid creds return 401        |
+| TD1: Session persists across refresh                   | 002 Token storage                    | token stored in httpOnly cookie                            |
+| ID1: Legacy UI renders identically (covered by design) | 001 Auth endpoint, 003 Legacy compat | covered by design                                          |
 ```
 
 **Verify completeness**: every plan item must appear in at least one row. If any item is uncovered, either add it to an existing slice's acceptance criteria or create a new slice. Do not proceed with gaps. (Prevents painpoint A3.)
@@ -71,7 +71,7 @@ Verify internally:
 
 - Is the granularity reasonable? (prefer many thin slices over few thick ones)
 - Are the dependency relationships correct? Are there implicit deps not captured?
-- Does every plan item (US, ID, TD or Research Question) appear in the coverage matrix?
+- Does every User Story, Implementation Decision, Testing Decision, and Research Question appear in the coverage matrix?
 
 If anything looks off, adjust the breakdown. Do not ask the user — reef-scope already iterated with the user on the plan. Your job is to slice it mechanically.
 

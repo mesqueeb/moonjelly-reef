@@ -36,15 +36,15 @@ Use the kebab-case form for canonical domain and frontmatter terms, and the cons
 
 ## Planning
 
-| Term                             | Definition                                                                                                                                      | Aliases to avoid                                  |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| **problem statement**            | The plan section that describes the issue from the user's perspective                                                                           | bug write-up, design brief                        |
-| **user story** (US)              | A concise statement of user intent and benefit; a numbered plan item used as a coverage anchor for slicing                                      | requirement, use case (when referring to the row) |
-| **implementation decision** (ID) | A plan item recording an architectural or technical choice made during scoping; used as a coverage anchor for slicing                           | design decision, architectural note               |
-| **testing decision** (TD)        | A plan item that records expected testing behavior, rigor level, and what "done" looks like for this issue                                      | test plan, QA notes                               |
-| **decision record**              | The plan section that captures scoping interview choices and constraints that downstream phases may need to revisit                             | notes, design log                                 |
-| **acceptance criteria**          | Slice-level testable conditions synthesized by the slicer from User Stories, Implementation Decisions, and Testing Decisions                    | checklist, slice criteria, ACs (never abbreviate) |
-| **coverage matrix**              | A table mapping each plan item (US, ID, TD) to which sub-issue(s) and acceptance criteria cover it — only used when an issue creates sub-issues | traceability matrix, mapping                      |
+| Term                             | Definition                                                                                                                                                                         | Aliases to avoid                                  |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| **problem statement**            | The plan section that describes the issue from the user's perspective                                                                                                              | bug write-up, design brief                        |
+| **user story** (US)              | A concise statement of user intent and benefit; a numbered plan item used as a coverage anchor for slicing                                                                         | requirement, use case (when referring to the row) |
+| **implementation decision** (ID) | A plan item recording an architectural or technical choice made during scoping; used as a coverage anchor for slicing                                                              | design decision, architectural note               |
+| **testing decision** (TD)        | A plan item that records expected testing behavior, rigor level, and what "done" looks like for this issue                                                                         | test plan, QA notes                               |
+| **decision record**              | The plan section that captures scoping interview choices and constraints that downstream phases may need to revisit                                                                | notes, design log                                 |
+| **acceptance criteria**          | Testable conditions written into a sub-issue by the slicer, synthesized from the User Stories, Implementation Decisions, and Testing Decisions assigned to that slice              | checklist, slice criteria, ACs (never abbreviate) |
+| **coverage matrix**              | A table mapping each User Story, Implementation Decision, and Testing Decision to which sub-issue(s) and acceptance criteria cover it — only used when an issue creates sub-issues | traceability matrix, mapping                      |
 
 ## Report sections
 
@@ -60,7 +60,7 @@ Use the kebab-case form for canonical domain and frontmatter terms, and the cons
 | **scope**            | The diver scopes an issue — determines type, writes plan with User Stories, Implementation Decisions, and Testing Decisions | design, spec                               |
 | **slice** (as phase) | Analyze a plan and either keep the work on the current issue or break it into sub-issues                                    | decompose, break down                      |
 | **implement**        | Build a slice using TDD in a worktree, open a PR                                                                            | code, develop, build                       |
-| **inspect**          | Independently verify a slice PR against acceptance criteria                                                                 | review, QA, check                          |
+| **inspect**          | Independently verify a slice PR against its checklist and plan                                                              | review, QA, check                          |
 | **rework**           | Fix issues flagged by the inspector                                                                                         | fix, address feedback                      |
 | **merge**            | Merge an approved sub-issue PR into its parent issue's `pr-branch`, or hand off an issue with no parent issue to the diver  | land (that's a different phase), integrate |
 | **seal**             | Holistic review of an issue whose work was composed through sub-issues on its `pr-branch`                                   | final review, sign-off                     |
@@ -106,8 +106,8 @@ Same-phase subfiles by phase:
 ## Relationships
 
 - An **issue** has a **plan** with **User Stories**, **Implementation Decisions**, and **Testing Decisions**
-- A sub-issue has its own **acceptance criteria**, synthesized from the plan's **User Stories**, **Implementation Decisions**, and **Testing Decisions**
-- If an issue has no sub-issues, its **acceptance criteria** are synthesized from the plan items directly
+- A sub-issue has its own **acceptance criteria**, synthesized by the slicer from the User Stories, Implementation Decisions, and Testing Decisions assigned to that slice
+- If an issue has no sub-issues, the plan's own sections (User Stories, Implementation Decisions, and Testing Decisions; or Commits for refactors; or Research Questions for deep-research; or triage-written acceptance criteria for bugs) are the checklist — no synthesis step
 - If an issue creates sub-issues, the **coverage matrix** maps every plan item (User Story, Implementation Decision, Testing Decision, ...) to one or more sub-issues
 - Every **issue-id** is a tracker-native string; **`ISSUE_ID`** keeps the full value, including `#` when the tracker uses it
 - Every **pr-id** is also treated as a tracker-native string or handle; **`PR_ID`** stores that full value
@@ -131,7 +131,7 @@ Same-phase subfiles by phase:
 
 > **Dev:** "This bug is labeled `to-slice`. How does the reef handle it?"
 >
-> **Domain expert:** "The slice phase reads the plan. If the work stays on the current issue, no sub-issues are created. The slicer synthesizes **acceptance criteria** from the plan's **User Stories**, **Implementation Decisions**, and **Testing Decisions**, and the issue gets labeled `to-implement` directly."
+> **Domain expert:** "The slice phase reads the plan. If the work stays on the current issue, no sub-issues are created — the issue gets labeled `to-implement` directly. The plan's own User Stories, Implementation Decisions, and Testing Decisions are the checklist for implement and inspect."
 >
 > **Dev:** "And if it needs two sub-issues?"
 >
@@ -165,9 +165,10 @@ Same-phase subfiles by phase:
 - **"feature branch"**, **"work branch"**, **"issue branch"**, or **"target branch"** — do not use. The correct terms are **pr-branch** (the branch the PR lives on) and **base-branch** (where it merges into). Not all issues are features, and "target" is ambiguous once you realize base-branch serves that role for sub-issues.
 - **"merge to main"** — do not use as the generic description of landing. The correct term is **merge to the base branch**. Some repos do not use `main`, and for sub-issues the relevant destination is the issue's `base-branch`, which may be a parent issue's `pr-branch`.
 - **"blocked-by"** — do not use as a dependency mechanism. The canonical dependency encoding is the **`[await: ...]`** issue-title suffix used with `to-await-waves`.
-- **"user story"** vs **"acceptance criteria"** — a **user story** is a plan item that captures user intent and benefit; **acceptance criteria** are the slicer's concrete, testable synthesis of the plan's User Stories, Implementation Decisions, and Testing Decisions. Do not use them interchangeably.
+- **"user story"** vs **"acceptance criteria"** — a **user story** is a plan item that captures user intent and benefit; **acceptance criteria** are the slicer's concrete, testable conditions written into a sub-issue for a specific slice. For issues with no sub-issues, the plan's own sections serve as the checklist directly — no acceptance criteria are synthesized. Do not use them interchangeably.
 - **"success criteria"** — do not use as a plan-level section name. Plans contain **User Stories**, **Implementation Decisions**, and **Testing Decisions**. The term "success criteria" lives only in the glossary for legacy reference; it must not appear as a `##` section header in any plan or skill file.
 - **"decision record"** vs **"Ambiguous choices"** — the **decision record** lives in the plan and captures scoping decisions; **Ambiguous choices** lives in a PR report and captures implementation-time judgment calls. Do not collapse them into one concept.
 - **"AC"** — do not abbreviate. Always write **acceptance criteria** in full. Abbreviations create ambiguity across contexts and hurt readability.
+- **"US", "ID", "TD"** — do not abbreviate. Always write **user story**, **implementation decision**, and **testing decision** in full. Using initials as shorthand creates unnecessary jargon and makes the terms harder to read in context.
 - **"plan"** vs **"parent issue"** — use **plan** for the content written into an issue, and **parent issue** only when you need to describe the relationship between one issue and its sub-issues.
 - **"work item"** — do not use. The correct term is **issue**. "Work item" is generic project-management speak; **issue** is concrete and tracker-agnostic (GitHub Issues, Jira issues, Linear issues, local markdown files are all "issues").

@@ -41,7 +41,7 @@ SUMMARY="Skipped: issue does not carry the to-slice label."
 
 Report these variables to the caller and **do not continue**.
 
-Read the issue. It must contain a plan with User Stories, Implementation Decisions, and Testing Decisions (from reef-scope). This skill synthesizes those plan items into **acceptance criteria** per slice. The frontmatter block tells you the work type, `base-branch`, and `pr-branch`.
+Read the issue. It must contain a plan with User Stories, Implementation Decisions, and Testing Decisions (from reef-scope). If the plan needs multiple slices, this skill synthesizes those plan items into **acceptance criteria** per sub-issue. The frontmatter block tells you the work type, `base-branch`, and `pr-branch`.
 
 ```sh
 BASE_BRANCH="{from issue frontmatter base-branch field, or - if not present}" # e.g. "main"
@@ -114,7 +114,7 @@ Rules:
 Use `$BEARING` to adjust slice behavior:
 
 - If `"$BEARING" = "refactor"`, slices must respect the tiny-commit discipline. Each slice leaves the codebase compiling and tests green.
-- If `"$BEARING" = "bug"`, depending on the nature of the plan, in most cases a single slice might be sufficient. The plan's success criteria become the slice's acceptance criteria directly.
+- If `"$BEARING" = "bug"`, depending on the nature of the plan, in most cases a single slice might be sufficient. The plan's acceptance criteria (written by triage) become the sub-issue's acceptance criteria directly.
 - If `"$BEARING" = "deep-research"`, focus on the research questions, and think how they can be split up from different perspectives or angles. Acceptance criteria should cover what must be answered, clarified, or persisted.
 
 ## 2. Delegate

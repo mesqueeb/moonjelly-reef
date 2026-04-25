@@ -43,7 +43,6 @@ Report these variables to the caller and **do not continue**.
 
 Read the issue. It must contain:
 
-- Acceptance criteria
 - `base-branch` in frontmatter (where the PR merges into)
 - `pr-branch` in frontmatter (the branch the PR lives on — chosen during scope for an issue with no `parent-issue`, or assigned during slice creation for an issue with `parent-issue`)
 - Parent issue reference (if this is a sub-issue)
@@ -110,16 +109,16 @@ Report these variables to the caller and **do not continue**.
 
 Read and understand:
 
-- **This issue's acceptance criteria** — this is your checklist. Every criterion must be addressed.
+- **Your implementation checklist** — in priority order: `## Acceptance criteria` if present; else `## Commits` for a refactor plan; else the User Stories, Implementation Decisions, and Testing Decisions directly. Every item must be addressed.
 - **The plan** — understand the "why" behind this issue (User Stories, Implementation Decisions, Testing Decisions).
 - **Sibling issues** — awareness of what others are doing or have done. Don't duplicate, don't conflict.
 - **The decision record** — the original decisions that led here.
 
 ## 3. Implement with TDD
 
-Use the `tdd` skill to implement the acceptance criteria. If the `tdd` skill is not installed (check config), read and follow [tdd-lite.md](tdd-lite.md) instead.
+Use the `tdd` skill to implement each entry. If the `tdd` skill is not installed (check config), read and follow [tdd-lite.md](tdd-lite.md) instead.
 
-Run the full project test suite after each red-green cycle — not just the tests you wrote. If you get stuck on an acceptance criterion, make your best judgment, document what you decided and why (see "6. Document judgment calls" below), and continue. Never silently skip an acceptance criterion.
+Run the full project test suite after each red-green cycle — not just the tests you wrote. If you get stuck on an entry, make your best judgment, document what you decided and why (see "6. Document judgment calls" below), and continue. Never silently skip an entry.
 
 Commit your work when implementation is complete.
 
@@ -132,7 +131,7 @@ This output will be read by another agent session — no context from this conve
 ```markdown
 ## Ambiguous choices
 
-Decisions made during implementation that weren't covered by the acceptance criteria or where judgment was needed:
+Decisions made during implementation that weren't covered by the plan or acceptance criteria, or where judgment was needed:
 
 - **{topic}**: chose {X} because {reason}. This differs from the plan in that {difference, if any}.
 

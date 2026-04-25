@@ -84,7 +84,7 @@ Also read the gap report from the PR body (`<details><summary>` blocks written b
 
 Also re-read:
 
-- The issue's acceptance criteria or the plan's User Stories, Implementation Decisions, and Testing Decisions
+- The issue's acceptance criteria (if present), or the plan's User Stories, Implementation Decisions, Testing Decisions, Commits, or Research Questions — whichever applies
 - The gap classification from the seal report if present (missing coverage, incomplete implementation, integration gap, planning gap)
 
 ## 3. Fix
