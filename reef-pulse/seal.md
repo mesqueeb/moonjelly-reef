@@ -112,6 +112,8 @@ Else verify you have the latest — all slice PRs should be merged into this `pr
 
 Not negotiable. Record the result.
 
+If any tests fail: run each failing test against `$BASE_BRANCH`. If a test passes on `$BASE_BRANCH` and fails on `$PR_BRANCH`, it is a **regression introduced by this PR** — not pre-existing. Do not trust any upstream agent's characterization of test failures. Form your own judgment from the diff.
+
 ## 3. Check every plan item holistically
 
 For each User Story, Implementation Decision, and Testing Decision in the plan:
@@ -139,6 +141,8 @@ Read the "Judgment calls" section from each slice's merged PR. For each call:
 - Does it make sense?
 - Did it introduce drift from the original plan items or decision record?
 - Would the diver want to know about this?
+
+If any judgment call characterizes test failures as "pre-existing" or "existing before this change", cross-check against your own step 2 results. Your independent verification takes precedence over any upstream claim.
 
 ## 5. Check for integration issues
 

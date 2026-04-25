@@ -87,9 +87,9 @@ If unresolvable:
 
 ## 2. Read all feedback
 
-Read every review comment on the PR. Read the full conversation — don't just skim.
+Read the last `<details>` block in the PR body — that is the authoritative list of what to fix. Also read any direct PR review comments.
 
-Also read the gap report from the PR body (`<details><summary>` blocks written by seal or reef-land) if present.
+Read earlier `<details>` blocks only if the last report references prior context you need, or if a review comment points back to earlier findings.
 
 Also re-read:
 

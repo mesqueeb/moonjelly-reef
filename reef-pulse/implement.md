@@ -129,6 +129,8 @@ Use the `tdd` skill to implement each entry. If the `tdd` skill is not installed
 
 Run the full project test suite after each red-green cycle — not just the tests you wrote. If an entry needs a human call, make your best judgment instead, note it for the `### Judgment calls` section of the report, and continue. Never silently skip an entry.
 
+If any tests fail after implementation: run each failing test against `$BASE_BRANCH`. If the test also fails on `$BASE_BRANCH`, it is pre-existing — say so and include the evidence in the report. If the test passes on `$BASE_BRANCH` and fails on `$PR_BRANCH`, it is a regression you introduced — do not call it pre-existing.
+
 ## 5. Write the report
 
 Compose the implementation report using this template. This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
