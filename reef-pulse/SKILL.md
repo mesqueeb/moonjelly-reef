@@ -51,7 +51,7 @@ Check for an existing pulse.lock file.
 
 If the pulse.lock file exists, another pulse may already be running (or a previous session crashed without cleaning up).
 
-- If `pulse.lock` exists, read the start timestamp from it, calculate how long the existing pulse has been running, and report this to the user: "A pulse has been running for {elapsed}. This may be from a crashed session. Override?" In interactive use, ask the user. In cron/autopilot use, override automatically.
+- If `pulse.lock` exists, read the start timestamp from it, calculate how long the existing pulse has been running, and report this to the user: "The reef has been pulsing for {elapsed} ~~~ 🪸 🪸 🐠. There may be a lost diver. Pulse again to find them?" In interactive use, ask the user. In cron/autopilot use, override automatically.
 - If `pulse.lock` does not exist (or the user chose to override), create it with a start timestamp (ISO 8601 UTC) and continue.
 
 ### Sync tracker branch (local-tracker-committed only)

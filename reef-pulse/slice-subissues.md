@@ -53,15 +53,17 @@ For each User Story, Implementation Decision, and Testing Decision in the plan, 
 
 Architectural or non-testable implementation decisions that have no direct implementation output should be noted as "covered by design" in the Acceptance Criteria column.
 
-```markdown
-## Coverage Matrix
+<coverage-matrix-template>
+
+## Coverage Matrix 🗺️
 
 | Plan Item                                              | Slice                                | Acceptance Criteria                                        |
 | ------------------------------------------------------ | ------------------------------------ | ---------------------------------------------------------- |
 | US1: Users can log in with email                       | 001 Auth endpoint                    | POST /login returns token; invalid creds return 401        |
 | TD1: Session persists across refresh                   | 002 Token storage                    | token stored in httpOnly cookie                            |
 | ID1: Legacy UI renders identically (covered by design) | 001 Auth endpoint, 003 Legacy compat | covered by design                                          |
-```
+
+</coverage-matrix-template>
 
 **Verify completeness**: every plan item must appear in at least one row. If any item is uncovered, either add it to an existing slice's acceptance criteria or create a new slice. Do not proceed with gaps. (Prevents painpoint A3.)
 
@@ -109,7 +111,8 @@ If `"$FEELING_LUCKY" = "true"`, use best-effort acceptance criteria without boun
 
 Slice body template:
 
-```markdown
+<slice-body-template>
+
 ---
 parent-issue: "#$ISSUE_ID"
 base-branch: $PR_BRANCH
@@ -127,7 +130,8 @@ bearing: $SLICE_BEARING
 - [ ] {criterion 1}
 - [ ] {criterion 2}
 - [ ] {criterion 3}
-```
+
+</slice-body-template>
 
 Create the slice:
 
@@ -147,7 +151,17 @@ PARENT_ISSUE_BODY_UPDATED="{$ISSUE_BODY_UPDATED with pr-branch in frontmatter an
 
 ## 6. Document judgment calls
 
-Document judgment calls made during this phase as a comment on the plan. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
+Post a comment on the plan issue with this structure:
+
+<judgment-calls-template>
+
+### Judgment calls
+
+- **{topic}**: chose {X} because {reason}. Differs from plan: {difference, if any}.
+
+(If none, write "None.")
+
+</judgment-calls-template>
 
 ## 7. Clean up
 

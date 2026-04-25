@@ -123,13 +123,14 @@ Ask the user:
 Reef keeps its temporary git worktrees under `.worktrees/` and its agent files under `.agents/moonjelly-reef/` inside the repo.
 
 1. Check whether `.agents/moonjelly-reef/` and `.worktrees/` are already in `.gitignore`. For each that isn't, append it to `.gitignore` (create the file if needed).
-2. Tell the user what was added, e.g.: "Added `.agents/moonjelly-reef/` and `.worktrees/` to `.gitignore`, so reef's agent files and temporary worktrees won't show up as untracked files."
+2. Tell the user what was added, e.g. "Added `.agents/moonjelly-reef/` and `.worktrees/` to `.gitignore`, so reef's agent files and temporary worktrees won't show up as untracked files."
 
 ## 5. Write config
 
 Create `.agents/moonjelly-reef/config.md` at project root:
 
-```markdown
+<config-template>
+
 ---
 tracker: github
 tracker-path: —
@@ -139,7 +140,8 @@ tdd-installed: true
 ubiquitous-language-installed: true
 
 ---
-```
+
+</config-template>
 
 Values for `tracker`: `github`, `local-tracker-gitignored`, `local-tracker-committed`, `jira`, `linear`, `clickup`, or any custom name.
 

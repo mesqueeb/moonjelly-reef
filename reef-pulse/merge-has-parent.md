@@ -56,10 +56,6 @@ RUN ONLY IF `"$ALL_SIBLINGS_LANDED" = "true"`.
 ./tracker.sh issue edit "$PARENT_ID" --remove-label in-progress --add-label to-seal
 ```
 
-## 5. Document judgment calls
-
-Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
-
 ## Handoff
 
 ```sh

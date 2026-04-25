@@ -118,7 +118,7 @@ Read and understand:
 
 Use the `tdd` skill to implement each entry. If the `tdd` skill is not installed (check config), read and follow [tdd-lite.md](tdd-lite.md) instead.
 
-Run the full project test suite after each red-green cycle — not just the tests you wrote. If you get stuck on an entry, make your best judgment, document what you decided and why (see "6. Document judgment calls" below), and continue. Never silently skip an entry.
+Run the full project test suite after each red-green cycle — not just the tests you wrote. If an entry needs a human call, make your best judgment instead, note it for the `## Judgment calls` section of the report, and continue. Never silently skip an entry.
 
 Commit your work when implementation is complete.
 
@@ -128,42 +128,36 @@ When implementation is complete, compose the PR description using this template:
 
 This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
-```markdown
-## Ambiguous choices
+<report-template>
+<details>
+<summary><h3>🐙 Workshop report — {yyyy/MM/dd HH:mm}</h3></summary>
 
-Decisions made during implementation that weren't covered by the plan or acceptance criteria, or where judgment was needed:
+### Judgment calls
 
-- **{topic}**: chose {X} because {reason}. This differs from the plan in that {difference, if any}.
+- **{topic}**: chose {X} because {reason}. Differs from plan: {difference, if any}.
 
-(If no ambiguous choices were made, write "None — implementation followed the plan exactly.")
+(If none, write "None — implementation followed the plan exactly.")
 
-## Test results
+### Test results
 
 {Output of the full test suite run. If too long, summarize: "X tests passed, 0 failed, 0 skipped."}
 
-## Screenshots / video
+### Screenshots / video
 
 {If the app is launchable and the change is visual or user-facing, include a screenshot or screen recording demonstrating the behavior. If not applicable, omit this section entirely.}
-```
+
+</details>
+</report-template>
 
 ## 5. Open the PR
 
 ```sh
 ./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: implementation"
-```
-
-The PR body must start with the "closes" reference, followed by the implementation report:
-
-Document judgment calls in that implementation report. Only include decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
-
-```sh
 CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. "closes #42 add auth endpoint"
-REPORT="{implementation report}" # e.g. "## Ambiguous choices\n\nNone — implementation followed the plan exactly.\n\n## Test results\n\n42 tests passed, 0 failed."
+REPORT="{implementation-report}" # e.g. <details><summary><h3>🐙 Workshop report — {2012/12/21 12:00}</h3></summary>...</details>
 PR_BODY_NEW="$CLOSES\n\n$REPORT"
 ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
 ```
-
-The PR targets `$BASE_BRANCH` — the branch it merges into.
 
 ## 6. Update the issue and label
 

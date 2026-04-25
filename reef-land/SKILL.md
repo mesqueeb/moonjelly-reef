@@ -127,7 +127,11 @@ If (2): open the PR in the browser:
 ./tracker.sh pr view "$PR_ID" --web
 ```
 
-Then say: "Take your time reviewing. Leave any comments on the PR, then let me know when you're ready to continue." Wait for the human. When they return, re-check for comments and return to the top of step 2.
+Then say:
+
+> 🪼 Take your time diving in. Leave any comments on the PR, then surface when you're ready.
+
+Wait for the human. When they return, re-check for comments and return to the top of step 2.
 
 ## 3. Scope change requests
 
@@ -166,9 +170,9 @@ The gap report goes on the PR body in a `<details><summary>` block. Rework has n
 
 Append the gap report to the current PR body. Include original PR review comments (quoted, with file:line) and the refined context from your discussion.
 
-```markdown
+<report-template>
 <details>
-<summary><h3>📝 Change requests from human review — {yyyy/MM/dd HH:mm}</h3></summary>
+<summary><h3>🤿 Diver's notes — {yyyy/MM/dd HH:mm}</h3></summary>
 
 ### Gaps
 
@@ -183,30 +187,30 @@ Append the gap report to the current PR body. Include original PR review comment
 - [ ] {new criterion}
 
 </details>
-```
+</report-template>
 
 Write this to the PR and update the label:
 
 ```sh
-PR_BODY="{current PR body with gap report appended in <details><summary> block}"
-```
-
-```sh
-./tracker.sh pr edit "$PR_ID" --body "$PR_BODY"
+REPORT="{gap-report}" # e.g. <details><summary><h3>📝 Change requests from human review — {2012/12/21 12:00}</h3></summary>...</details>
+PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
+PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
+./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-land --add-label to-rework
 ```
 
 If the discussion changed any plan-level User Stories, Implementation Decisions, or Testing Decisions, also update the plan body:
 
 ```sh
-PLAN_BODY=$(./tracker.sh issue view "$ISSUE_ID" --json body)
-./tracker.sh issue edit "$ISSUE_ID" --body "$PLAN_BODY"
+PLAN_BODY=$(./tracker.sh issue view "$ISSUE_ID" --json body -q .body)
+PLAN_BODY_UPDATED="{original plan body with updated User Stories, Implementation Decisions, or Testing Decisions}" # e.g. "---\n...\n---\n\n## Problem Statement\n\n..."
+./tracker.sh issue edit "$ISSUE_ID" --body "$PLAN_BODY_UPDATED"
 ./tracker.sh pr edit "$PR_ID" --remove-label to-land --add-label to-rework
 ```
 
 Tell the human:
 
-> "Change requests scoped and written to the PR. The reef will pick this up on the next pulse and rework them on the existing PR."
+> "Change requests charted. 🪼 The reef will carry them on the next pulse."
 
 ## 4. Capture concerns in follow-up issue (when chosen in step 2)
 

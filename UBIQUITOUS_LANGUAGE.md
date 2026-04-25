@@ -48,9 +48,9 @@ Use the kebab-case form for canonical domain and frontmatter terms, and the cons
 
 ## Report sections
 
-| Term                  | Definition                                                                                                            | Aliases to avoid          |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| **Ambiguous choices** | The PR-report section where an agent records judgment calls not explicitly covered by the plan or acceptance criteria | assumptions, random notes |
+| Term               | Definition                                                                                                    | Aliases to avoid                                                        |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Judgment calls** | The report section where an agent records decisions not explicitly covered by the plan or acceptance criteria | ambiguous choices, agent decisions to review, assumptions, random notes |
 
 ## Phases
 
@@ -167,7 +167,7 @@ Same-phase subfiles by phase:
 - **"blocked-by"** — do not use as a dependency mechanism. The canonical dependency encoding is the **`[await: ...]`** issue-title suffix used with `to-await-waves`.
 - **"user story"** vs **"acceptance criteria"** — a **user story** is a plan item that captures user intent and benefit; **acceptance criteria** are the slicer's concrete, testable conditions written into a sub-issue for a specific slice. For issues with no sub-issues, the plan's own sections serve as the checklist directly — no acceptance criteria are synthesized. Do not use them interchangeably.
 - **"success criteria"** — do not use as a plan-level section name. Plans contain **User Stories**, **Implementation Decisions**, and **Testing Decisions**. The term "success criteria" lives only in the glossary for legacy reference; it must not appear as a `##` section header in any plan or skill file.
-- **"decision record"** vs **"Ambiguous choices"** — the **decision record** lives in the plan and captures scoping decisions; **Ambiguous choices** lives in a PR report and captures implementation-time judgment calls. Do not collapse them into one concept.
+- **"decision record"** vs **"Judgment calls"** — the **decision record** lives in the plan and captures scoping decisions; **Judgment calls** lives in a report and captures implementation-time decisions. Do not collapse them into one concept.
 - **"AC"** — do not abbreviate. Always write **acceptance criteria** in full. Abbreviations create ambiguity across contexts and hurt readability.
 - **"US", "ID", "TD"** — do not abbreviate. Always write **user story**, **implementation decision**, and **testing decision** in full. Using initials as shorthand creates unnecessary jargon and makes the terms harder to read in context.
 - **"plan"** vs **"parent issue"** — use **plan** for the content written into an issue, and **parent issue** only when you need to describe the relationship between one issue and its sub-issues.

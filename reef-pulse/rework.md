@@ -103,37 +103,53 @@ Do NOT skip any feedback item. If a comment is unclear, make your best interpret
 
 Not a subset. The full project test suite must be green.
 
-## 5. Document judgment calls
-
-Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
-
-## 6. Push fixes
+## 5. Push fixes
 
 ```sh
 ./commit.sh --branch "$PR_BRANCH" -m "rework: address review feedback"
 ```
 
-## 7. Update the PR description
+## 6. Update the PR description
 
-Read the current PR body, then append the rework report as a collapsible block. The rework report should include judgment calls, what feedback was addressed, what was changed, and test results.
 
 This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
+<report-template>
+<details>
+<summary><h3>🦀 Crab's rework — {yyyy/MM/dd HH:mm}</h3></summary>
+
+### Judgment calls
+
+- **{topic}**: chose {X} because {reason}. Differs from plan: {difference, if any}.
+
+(If none, write "None.")
+
+### Feedback addressed
+
+- **{feedback item}**: {what was changed}
+
+### Test results
+
+{X tests passed, 0 failed.}
+
+</details>
+</report-template>
+
 ```sh
 PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
-REPORT="{rework-report}" # <details><summary><h3>🦀 Rework — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+REPORT="{rework-report}" # e.g. <details><summary><h3>🦀 Crab's rework — {2012/12/21 12:00}</h3></summary>...</details>
 PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
 ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
 ```
 
-## 8. Label
+## 7. Label
 
 ```sh
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-rework --add-label to-inspect
 ./tracker.sh pr edit "$PR_ID" --remove-label to-rework --add-label to-inspect
 ```
 
-## 9. Clean up
+## 8. Clean up
 
 ```sh
 ./worktree-exit.sh --path "$WORKTREE_PATH"

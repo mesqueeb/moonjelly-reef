@@ -46,7 +46,7 @@ Read the plan. It must have:
 - User Stories, Implementation Decisions, and Testing Decisions
 - Coverage matrix (if multi-slice)
 - `pr-branch` in frontmatter
-- Slice PRs with "Ambiguous choices" sections
+- Slice PRs with "Judgment calls" sections
 
 ```sh
 ISSUE_TITLE="{from issue title}" # e.g. "My feature title"
@@ -124,7 +124,7 @@ Mark each criterion: ✓ met, ✗ not met (with explanation).
 
 ## 4. Review all agent decisions
 
-Read the "Ambiguous choices" section from each slice's merged PR. For each decision:
+Read the "Judgment calls" section from each slice's merged PR. For each call:
 
 - Does it make sense?
 - Did it introduce drift from the original plan items or decision record?
@@ -176,13 +176,14 @@ Don't document what's obvious from reading the code.
 
 ## 8. Produce the report
 
-The report goes on a **PR from the `pr-branch` to the `base-branch`** (usually `main` for issues with no parent issue). This PR is what the human will ultimately merge or reject.
-
 The report should be concise and focused on what the human needs to know. Do NOT dump the entire plan — the human can read the plan. Focus on:
 
 This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
-```markdown
+<report-template>
+<details>
+<summary><h3>🦭 Seal of approval — {yyyy/MM/dd HH:mm}</h3></summary>
+
 ## Final Report
 
 ### Status: {PASS / GAPS FOUND / HUMAN DECISION NEEDED}
@@ -193,9 +194,11 @@ This output will be read by another agent session — no context from this conve
 - ✓ ID1: {implementation decision} — verified: {one-line how}
 - ✗ TD1: {testing decision} — GAP: {what's wrong}
 
-### Agent decisions to review
+### Judgment calls
 
-{List only decisions that introduced drift, resolved ambiguity, or that the human should sanity-check. Do not include routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier. Omit if not applicable.}
+- **{topic}**: chose {X} because {reason}. Drift or human attention needed: {why}.
+
+(Omit if no calls introduced drift or warrant human review.)
 
 ### Integration notes
 
@@ -208,14 +211,16 @@ This output will be read by another agent session — no context from this conve
 ### Screenshots / video
 
 {If the app is launchable and the feature is visible, include screenshots or a screen recording demonstrating the end-to-end behavior. Omit if not applicable.}
-```
+
+</details>
+</report-template>
 
 ### Submit the report
 
-Format the report as a collapsible block with local timestamp (`yyyy/MM/dd HH:mm`):
+This PR is what the human will ultimately merge or reject.
 
 ```sh
-REPORT="{seal-report}" # <details><summary><h3>🦭 Seal report — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+REPORT="{seal-report}" # e.g. <details><summary><h3>🦭 Seal of approval — {2012/12/21 12:00}</h3></summary>...</details>
 ```
 
 **If PR exists, append:**

@@ -87,6 +87,40 @@ Use `"{from issue frontmatter X field}"` as the placeholder style — it tells t
 
 Variables derived from a computation are declared at the step that computes them.
 
+## Updating fetched content
+
+When a variable holds a modified version of something fetched, name it with the `_UPDATED` suffix. Never reuse the original variable name — it makes the before/after relationship explicit:
+
+preferred: PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
+anti-pattern: PR_BODY="$PR_BODY\n\n$REPORT"
+
+This applies to any fetched content: `PR_BODY_UPDATED`, `ISSUE_BODY_UPDATED`, `PLAN_BODY_UPDATED`, `ISSUE_TITLE_UPDATED`, etc.
+
+## Shell block grouping
+
+Keep logically related commands in a single `sh` block. Only split into separate blocks when there is a meaningful pause — prose explanation, a conditional branch, or a step boundary between them:
+
+preferred:
+
+    ```sh
+    REPORT="{phase-report}" # e.g. ...
+    PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
+    PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
+    ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
+    ```
+
+anti-pattern:
+
+    ```sh
+    REPORT="{phase-report}" # e.g. ...
+    PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
+    PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
+    ```
+
+    ```sh
+    ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
+    ```
+
 ## Variable examples
 
 Every placeholder variable should have a `# e.g.` comment showing a realistic value. This tells the agent the expected type and format at a glance:
@@ -180,9 +214,9 @@ ok: RUN ONCE PER SESSION.
 
 Always use `RUN ONLY IF` — never `RUN IF` or `RUN ONLY WHEN`.
 
-  preferred:     RUN ONLY IF `"$IS_SESSION_COMPLETE" = "true"`.
-  anti-pattern:  RUN IF `"$IS_SESSION_COMPLETE" = "true"`.
-  anti-pattern:  RUN ONLY WHEN `"$IS_SESSION_COMPLETE" = "true"`.
+preferred: RUN ONLY IF `"$IS_SESSION_COMPLETE" = "true"`.
+anti-pattern: RUN IF `"$IS_SESSION_COMPLETE" = "true"`.
+anti-pattern: RUN ONLY WHEN `"$IS_SESSION_COMPLETE" = "true"`.
 
 The best form uses a shell variable set earlier in the file — unambiguous and machine-checkable. Use prose conditions only when no shell variable captures the condition.
 
@@ -270,6 +304,59 @@ anti-pattern:
     𐃆🐋  #34   3m12s   18k   slice › implement
       🐙  #55   4m45s   24k   implement › inspect
       🦀  #53   1m08s    9k   inspect › rework
+    ```
+
+## Template blocks
+
+When a step requires the agent to produce a specific piece of structured content — a PR description, issue body, config file, coverage matrix — show the expected structure using a named XML-style tag:
+
+preferred:
+
+    <pr-description-template>
+
+    ## Judgment calls
+
+    - **{topic}**: chose {X} because {reason}.
+
+    </pr-description-template>
+
+anti-pattern:
+
+    ```markdown
+    ## Judgment calls
+
+    - **{topic}**: chose {X} because {reason}.
+    ```
+
+The tag name describes what the content is for. A code fence says "here is some markdown" — a named tag says "here is the template for X." Name the tag after the content's purpose: `<plan-template>`, `<pr-description-template>`, `<slice-body-template>`, `<config-template>`, `<coverage-matrix-template>`, etc.
+
+## Report templates
+
+Reports are collapsible blocks appended to a PR body after a phase completes (inspect, rework, seal, gap reports). Use `<report-template>` with `<details>/<summary>` inside so the agent knows the full output structure including the wrapper:
+
+    <report-template>
+    <details>
+    <summary><h3>{emoji} {Phase name} — {yyyy/MM/dd HH:mm}</h3></summary>
+
+    ### Section
+
+    {content}
+
+    </details>
+    </report-template>
+
+The `REPORT=` variable immediately below the template shows the expected shape via `# e.g.`. Use `{2012/12/21 12:00}` as the example date — it is obviously fake and cannot be mistaken for a real timestamp:
+
+preferred: REPORT="{phase-report}" # e.g. <details><summary><h3>🧿 Inspect review — {2012/12/21 12:00}</h3></summary>...</details>
+anti-pattern: REPORT="{phase-report}"
+anti-pattern: REPORT="{phase-report}" # wrap content in a <details> block
+
+Then fetch the current PR body and append:
+
+    ```sh
+    PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
+    PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
+    ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
     ```
 
 ## Tracker abstraction

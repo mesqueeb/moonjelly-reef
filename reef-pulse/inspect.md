@@ -122,7 +122,7 @@ If this is a sub-issue, also cross-check against the plan:
 
 ## 3. Review the report
 
-Read the PR description's "Ambiguous choices" section. For each choice:
+Read the PR description's "Judgment calls" section. For each call:
 
 - Does it make sense given the constraints?
 - Does it drift from the plan items? If so, is the drift acceptable?
@@ -142,11 +142,7 @@ Do these yourself — commit and push to the `pr-branch`:
 ./commit.sh --branch "$PR_BRANCH" -m "inspect: cleanup"
 ```
 
-## 5. Document judgment calls
-
-Document judgment calls made during this phase on the PR. Only document decisions that deviate from the plan, resolve ambiguity, or would surprise the human — not routine implementation choices. If a decision is best explained next to the code it affects, write a code comment instead. If your context was compacted during this session, scan pre-compaction reference files for judgment calls made earlier.
-
-## 6. Update the PR
+## 5. Update the PR
 
 Set the PR number from the issue body. If not found there, try `./tracker.sh pr list --search`. If PR_ID is nowhere to be found:
 
@@ -165,19 +161,40 @@ SUMMARY="Blocked: PR not found. pr-missing label applied."
 
 Report these variables to the caller and **do not continue**.
 
-Read the current PR body, then append the inspect report as a collapsible block:
 
 This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
+
+<report-template>
+<details>
+<summary><h3>🧿 Barreleye inspection — {yyyy/MM/dd HH:mm}</h3></summary>
+
+### Judgment calls
+
+- **{topic}**: chose {X} because {reason}. Differs from plan: {difference, if any}.
+
+(If none, write "None.")
+
+### Checklist
+
+- ✓ {entry} — {one-line how verified}
+- ✗ {entry} — GAP: {what's wrong}
+
+### Test results
+
+{X tests passed, 0 failed.}
+
+</details>
+</report-template>
 
 ```sh
 PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#42"
 PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
-REPORT="{inspect-report}" # <details><summary><h3>🧿 Inspect review — {yyyy/MM/dd HH:mm}</h3></summary>{report-content}</details>
+REPORT="{inspection-report}" # e.g. <details><summary><h3>🧿 Inspection review — {2012/12/21 12:00}</h3></summary>...</details>
 PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
 ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
 ```
 
-## 7. Verdict
+## 6. Verdict
 
 **If all entries are verified and the suite is green:**
 
