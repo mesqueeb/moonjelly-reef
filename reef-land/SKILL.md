@@ -193,9 +193,13 @@ The gap report goes on the PR body in a `<details><summary>` block. Rework has n
 
 Append the gap report to the current PR body. Include original PR review comments (quoted, with file:line) and the refined context from your discussion.
 
+```sh
+TIMESTAMP=$(date +"%Y/%m/%d %H:%M")
+```
+
 <report-template>
 <details>
-<summary><h3>🤿 Diver's notes — {yyyy/MM/dd HH:mm}</h3></summary>
+<summary><h3>🤿 Diver's notes — $TIMESTAMP</h3></summary>
 
 ### Gaps
 
