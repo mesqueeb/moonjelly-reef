@@ -21,11 +21,20 @@ set -eu
 # ============================================================
 
 find_config() {
-  ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || {
+  # Determine the main working tree root. When running from a linked worktree
+  # (e.g. a phase-agent on a PR branch), --git-common-dir returns an absolute
+  # path; dirname of that is the main working tree. From the main working tree
+  # itself it returns ".git" (relative), so we fall back to --show-toplevel.
+  _gcd="$(git rev-parse --git-common-dir 2>/dev/null)" || {
     echo "Error: not inside a git repository" >&2
     exit 1
   }
-  CONFIG="$ROOT/.agents/moonjelly-reef/config.md"
+  case "$_gcd" in
+    /*) MAIN_ROOT="$(dirname "$_gcd")" ;;
+    *)  MAIN_ROOT="$(git rev-parse --show-toplevel)" ;;
+  esac
+  ROOT="$(git rev-parse --show-toplevel)"
+  CONFIG="$MAIN_ROOT/.agents/moonjelly-reef/config.md"
   if [ ! -f "$CONFIG" ]; then
     echo "Error: config not found at $CONFIG" >&2
     exit 1
@@ -44,10 +53,10 @@ read_config() {
     exit 1
   fi
 
-  # Resolve tracker path relative to repo root
+  # Resolve tracker path relative to the main working tree
   case "$_raw_path" in
     /*) TRACKER_PATH="$_raw_path" ;;
-    *)  TRACKER_PATH="$ROOT/$_raw_path" ;;
+    *)  TRACKER_PATH="$MAIN_ROOT/$_raw_path" ;;
   esac
 
   IS_COMMITTED=false
@@ -62,23 +71,17 @@ read_config() {
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-committed_enter() {
-  mkdir -p "$ROOT/.worktrees"
-  WORKTREE_TMP="$ROOT/.worktrees/tracker-$$"
-  "$SCRIPT_DIR/worktree-enter.sh" --fork-from "$TRACKER_BRANCH" --pull-latest "$TRACKER_BRANCH" --path "$WORKTREE_TMP" >/dev/null 2>&1
-  # Re-resolve TRACKER_PATH relative to the worktree
-  case "$_raw_path" in
-    /*) ;; # absolute path, no change
-    *)  TRACKER_PATH="$WORKTREE_TMP/$_raw_path" ;;
-  esac
-  cd "$WORKTREE_TMP"
-}
-
-committed_exit() {
+committed_write() {
   _msg="$1"
-  "$SCRIPT_DIR/commit.sh" --branch "$TRACKER_BRANCH" -m "$_msg" >/dev/null 2>&1
-  cd "$ROOT"
-  "$SCRIPT_DIR/worktree-exit.sh" --path "$WORKTREE_TMP" >/dev/null 2>&1
+  (
+    cd "$MAIN_ROOT"
+    if git diff --quiet 2>/dev/null && git diff --cached --quiet 2>/dev/null && [ -z "$(git ls-files --others --exclude-standard 2>/dev/null)" ]; then
+      return 0
+    fi
+    git add -A
+    git commit -m "$_msg"
+    "$SCRIPT_DIR/push.sh" --branch "$TRACKER_BRANCH"
+  )
 }
 
 # ============================================================
@@ -859,9 +862,8 @@ case "$CMD_GROUP" in
   issue)
     case "$SUBCMD" in
       create)
-        if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
         _output="$(cmd_create "$@")"
-        if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: create $_output"; fi
+        if [ "$IS_COMMITTED" = true ]; then committed_write "tracker: create $_output"; fi
         echo "$_output"
         ;;
       view)
@@ -869,15 +871,13 @@ case "$CMD_GROUP" in
         cmd_view "$@" ;;
       edit)
         if [ $# -lt 1 ]; then echo "Error: issue edit requires an ID" >&2; exit 1; fi
-        if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
         cmd_edit "$@"
-        if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: edit $1"; fi
+        if [ "$IS_COMMITTED" = true ]; then committed_write "tracker: edit $1"; fi
         ;;
       close)
         if [ $# -lt 1 ]; then echo "Error: issue close requires an ID" >&2; exit 1; fi
-        if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
         cmd_close "$@"
-        if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: close $1"; fi
+        if [ "$IS_COMMITTED" = true ]; then committed_write "tracker: close $1"; fi
         ;;
       list) cmd_list "$@" ;;
       *) echo "Error: unknown issue subcommand: $SUBCMD" >&2; exit 1 ;;
@@ -886,18 +886,16 @@ case "$CMD_GROUP" in
   pr)
     case "$SUBCMD" in
       create)
-        if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
         pr_create "$@"
-        if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: pr create"; fi
+        if [ "$IS_COMMITTED" = true ]; then committed_write "tracker: pr create"; fi
         ;;
       view)
         if [ $# -lt 1 ]; then echo "Error: pr view requires an ID" >&2; exit 1; fi
         pr_view "$@" ;;
       edit)
         if [ $# -lt 1 ]; then echo "Error: pr edit requires an ID" >&2; exit 1; fi
-        if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
         pr_edit "$@"
-        if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: pr edit $1"; fi
+        if [ "$IS_COMMITTED" = true ]; then committed_write "tracker: pr edit $1"; fi
         ;;
       list) pr_list "$@" ;;
       *) echo "Error: unknown pr subcommand: $SUBCMD" >&2; exit 1 ;;

@@ -66,7 +66,7 @@ Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to re
 If resolved:
 
 ```sh
-./commit.sh --branch "$BASE_BRANCH" -m "merge: resolve conflicts 🌊"
+./commit-push.sh --branch "$BASE_BRANCH" -m "merge: resolve conflicts 🌊"
 ```
 
 Then continue.
@@ -138,7 +138,7 @@ REPORT="{research-report}" # e.g. <details><summary><h3>🐬 Dolphin's findings 
 ## 5. Open the PR
 
 ```sh
-./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: research"
+./commit-push.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: research"
 CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. "closes #42 auth-token-rotation"
 PR_BODY_NEW="$CLOSES\n\n$REPORT"
 ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect

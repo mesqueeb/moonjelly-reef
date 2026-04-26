@@ -91,7 +91,7 @@ Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to re
 If resolved:
 
 ```sh
-./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts 🌊"
+./commit-push.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts 🌊"
 ```
 
 Then continue.
@@ -142,7 +142,7 @@ Not a subset. The full project test suite must be green.
 ## 5. Push fixes
 
 ```sh
-./commit.sh --branch "$PR_BRANCH" -m "rework: address review feedback"
+./commit-push.sh --branch "$PR_BRANCH" -m "rework: address review feedback"
 ```
 
 ## 6. Update the PR description

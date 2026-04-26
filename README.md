@@ -288,9 +288,9 @@ Then if you scope new issues on your main machine, the remote machine will be pi
 
 Every phase has explicit, tested boundaries. [`ORCHESTRATION.md`](ORCHESTRATION.md) is the single source of truth — it declares the variables, context sources, code persistence, and tracker updates for every phase in the correct order. [`tests/orchestration.test.sh`](tests/orchestration.test.sh) verifies that each phase file follows that contract; if a phase drifts, the test catches it.
 
-All git operations run through shell scripts (`worktree-enter.sh`, `worktree-exit.sh`, `commit.sh`, `merge.sh`) so sub-agents never have to reason about git orchestration themselves.
+All git operations run through shell scripts (`worktree-enter.sh`, `worktree-exit.sh`, `commit-push.sh`, `push.sh`, `fetch.sh`, `merge.sh`) so sub-agents never have to reason about git orchestration themselves.
 
-**Script and tracker contracts**
+**Tracker and git contracts**
 
 Every reef phase calls the same shell scripts for git work and `tracker.sh` / `merge.sh` for metadata. Tracker translation is a single global rule:
 
@@ -298,16 +298,9 @@ Every reef phase calls the same shell scripts for git work and `tracker.sh` / `m
 - For GitHub, replace `./tracker.sh` and `./merge.sh` with `gh`.
 - For other trackers with MCP issue tools, replace `./tracker.sh issue` with their MCP equivalent and `./tracker.sh pr` / `./merge.sh pr` with `gh pr`.
 
-**Git scripts** — behavior differs when no remote is present (`local-tracker`):
+### Tracker operations
 
-| Operation           | `local-tracker`                                                                                | `github`                                                                                                | `clickup`                               |
-| :------------------ | :--------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ | :-------------------------------------- |
-| `commit.sh`         | stage all, commit locally. No remote — push to `origin/B` fails; error surfaced, script exits. | Stage all, commit, push to `origin/B`.                                                                  | same as GitHub.                         |
-| `worktree-enter.sh` | no remote — `git fetch origin` fails; error surfaced, script exits.                            | Fetch, create detached-HEAD worktree from `origin/B`. If `B ≠ L`, merge latest from `L` and push clean. | Same as GitHub.                         |
-| `worktree-exit.sh`  | remove worktree locally. Fails if uncommitted or untracked. No remote needed.                  | same                                                                                                    | same                                    |
-| `merge.sh pr merge` | local git merge via shell script. Reads base branch from `progress.md`.                        | becomes `gh pr merge`                                                                                   | becomes `gh pr merge` — Same as GitHub. |
-
-**Tracker operations** — behavior differs by tracker type:
+Tracker type (chosen at setup) determines what handles issues and PRs — `local-tracker` keeps everything on disk, while `github` and `clickup` delegate to their respective APIs.
 
 | Operation                                               | `local-tracker`                                                                                                           | `github`                                                                        | `clickup`                                                                                             |
 | :------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------- |
@@ -315,6 +308,21 @@ Every reef phase calls the same shell scripts for git work and `tracker.sh` / `m
 | `tracker.sh pr` create / view / edit                    | reads and writes `[label] progress.md` files on disk. Labels are `[label]` filename prefixes, mirroring plan/slice files. | becomes `gh pr` — PR body + labels via GitHub API.                              | becomes `gh pr` — same as GitHub. ClickUp has no PR concept; PRs live in the git host.                |
 | `tracker.sh pr view` with `--web` to open PR in browser | opens `progress.md` in the default app (`xdg-open` on Linux, `open` on macOS).                                            | becomes `gh pr view` — Opens the GitHub PR URL in the browser.                  | becomes `gh pr view` — Same as GitHub.                                                                |
 | `gh api graphql` for PR review threads                  | not fetched — Simply call `reef-land` to discuss with the agent directly.                                                 | `gh api graphql` — fetches live review threads and inline comments from GitHub. | `gh api graphql` — same as GitHub (PR lives in git host).                                             |
+
+### Git operations
+
+Remote presence determines how git scripts behave — scripts auto-detect whether `origin` is configured and skip remote ops when absent.
+
+| Operation           | no remote origin                                                                                                           | with remote origin                                                                                                          |
+| :------------------ | :------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------- |
+| `commit-push.sh`    | Stage all, commit, advances local branch ref.                                                                              | Stage all, commit, push to `origin/branch`.                                                                                 |
+| `worktree-enter.sh` | Create worktree from local `fork-from`. If fork-from ≠ pull-latest, merge pull-latest (push skipped).                      | Fetch, create detached-HEAD worktree from `origin/fork-from`. If fork-from ≠ pull-latest, merge pull-latest and push clean. |
+| `worktree-exit.sh`  | Remove worktree locally. Fails if uncommitted or untracked.                                                                | same                                                                                                                        |
+| `merge.sh pr merge` | Local git merge. Reads base branch from `progress.md`. (For `github` / `clickup` trackers: becomes `gh pr merge` instead.) | same                                                                                                                        |
+
+### Track progress in local md files
+
+At setup you can choose to use local md files to track your issues, plans and progress (rather than GitHub or others). When you do so, you are asked whether you want those md files git-committed or git-ignored. If git-committed, the Setup Guard in every skill ensures `tracker-branch` is checked out before any work begins. `tracker.sh` always resolves reads and writes to that main working tree — even when called from a PR-branch worktree — by detecting its location via `git rev-parse --git-common-dir`. After each write, it commits and pushes directly on `tracker-branch`.
 
 ## Companion skill
 

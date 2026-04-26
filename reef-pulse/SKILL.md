@@ -15,14 +15,34 @@ SKILL_DIR="{base directory for this skill}" # e.g. "~/.claude/skills/reef-pulse"
 LOCK_FILE=".agents/moonjelly-reef/pulse.lock"
 ```
 
-## Rules
+## Setup Guard
 
-Before starting, read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file doesn't exist, stop and tell the diver: "🪼 `reef-pulse` requires setup. Run `reef-scope` first to configure the reef."
+Read `.agents/moonjelly-reef/config.md`. If the file doesn't exist, stop and tell the diver: "🪼 `reef-pulse` requires setup. Run `reef-scope` first to configure the reef."
 
 ```sh
-TRACKER_TYPE="{from config.md tracker-type field}" # e.g. "github"
-TRACKER_BRANCH="{from config.md tracker-branch field}" # e.g. "main"
+TRACKER_TYPE="{from .agents/moonjelly-reef/config.md tracker field}" # e.g. "local-tracker-committed"
+TRACKER_BRANCH="{from .agents/moonjelly-reef/config.md tracker-branch field, or empty string if not set}"
 ```
+
+If `"$TRACKER_TYPE" != "local-tracker-committed"`, skip the rest of this section.
+
+If `"$TRACKER_BRANCH"` is empty or missing from config, warn the user — **do not continue**:
+
+> ⚠️ `tracker-branch` is not set in `.agents/moonjelly-reef/config.md`. Please add it, then try again.
+
+```sh
+CURRENT_BRANCH="$(git branch --show-current)"
+```
+
+If `"$CURRENT_BRANCH" != "$TRACKER_BRANCH"`, warn the user — **do not continue**:
+
+> ⚠️ Current branch is `$CURRENT_BRANCH` but the tracker branch is `$TRACKER_BRANCH`. Please run `git checkout $TRACKER_BRANCH` first, then try again.
+
+```sh
+./pull.sh --branch "$TRACKER_BRANCH"
+```
+
+## Rules
 
 **Shell blocks are literal commands** — execute them as written.
 
@@ -54,16 +74,6 @@ If the pulse.lock file exists, another pulse may already be running (or a previo
 
 - If `pulse.lock` exists, read the start timestamp from it, calculate how long the existing pulse has been running, and report this to the diver: "The reef has been pulsing for {elapsed} ~~~ 🪸 🪸 🐠. There may be a lost diver. Pulse again to find them?" In interactive use, ask the diver. In cron/autopilot use, override automatically.
 - If `pulse.lock` does not exist (or the diver chose to override), create it with a start timestamp (ISO 8601 UTC) and continue.
-
-### Sync tracker branch (local-tracker-committed only)
-
-RUN ONLY IF `"$TRACKER_TYPE" = "local-tracker-committed"`.
-
-The tracker files live in a git-tracked directory on a specific branch. Sync it before scanning. `TRACKER_BRANCH` was already set above.
-
-```sh
-git fetch origin "$TRACKER_BRANCH" && git checkout "$TRACKER_BRANCH" && git pull
-```
 
 ### Print session header
 

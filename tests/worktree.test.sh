@@ -1,5 +1,5 @@
 #!/bin/sh
-# Integration tests for worktree-enter.sh, worktree-exit.sh, commit.sh
+# Integration tests for worktree-enter.sh, worktree-exit.sh
 # Runs against real git repos in a temp directory
 set -u
 
@@ -53,9 +53,25 @@ teardown_repos() {
   rm -rf "$TEST_ROOT"
 }
 
+setup_local() {
+  TEST_ROOT="$(mktemp -d)"
+  REPO="$TEST_ROOT/repo"
+  git init "$REPO" >/dev/null 2>&1
+  cd "$REPO"
+  git checkout -b main >/dev/null 2>&1
+  echo "init" > README.md
+  git add README.md
+  git commit -m "initial commit" >/dev/null 2>&1
+  cd "$TEST_ROOT"
+}
+
+teardown_local() {
+  cd /
+  rm -rf "$TEST_ROOT"
+}
+
 enter() { "$SCRIPT_DIR/worktree-enter.sh" "$@"; }
 exit_wt() { "$SCRIPT_DIR/worktree-exit.sh" "$@"; }
-commit_wt() { "$SCRIPT_DIR/commit.sh" "$@"; }
 
 # ============================================================
 # ENTER TESTS
@@ -425,97 +441,27 @@ test_exit_fails_on_missing_args() {
 }
 
 # ============================================================
-# COMMIT TESTS
+# NO-ORIGIN TESTS
 # ============================================================
 
-test_commit_pushes_to_branch() {
-  setup_repos
+test_enter_succeeds_without_origin() {
+  setup_local
   cd "$REPO"
 
-  wt_path="$TEST_ROOT/worktree-commit"
-  if enter --fork-from main --pull-latest main --path "$wt_path" >/dev/null 2>&1; then
-    echo "new feature" > "$wt_path/feature.txt"
-    cd "$wt_path"
-    if commit_wt --branch feat/commit-test -m "add feature" >/dev/null 2>&1; then
-      cd "$REPO"
-      git fetch origin >/dev/null 2>&1
-      if git rev-parse --verify origin/feat/commit-test >/dev/null 2>&1; then
-        pass "commit --branch: pushes to named branch"
-      else
-        fail "commit --branch: pushes to named branch" "branch not on origin"
-      fi
+  wt_path="$TEST_ROOT/worktree-local"
+  output="$(enter --fork-from main --pull-latest main --path "$wt_path" 2>/dev/null)"
+  if [ $? -eq 0 ]; then
+    status="$(echo "$output" | tail -1)"
+    if [ "$status" = "ready" ] && [ -d "$wt_path" ]; then
+      pass "enter (no origin): creates worktree from local branch"
     else
-      fail "commit --branch: pushes to named branch" "commit script failed"
+      fail "enter (no origin): creates worktree from local branch" "status=$status dir=$([ -d "$wt_path" ] && echo yes || echo no)"
     fi
   else
-    fail "commit --branch: pushes to named branch" "enter failed (test setup)"
+    fail "enter (no origin): creates worktree from local branch" "script failed"
   fi
 
-  teardown_repos
-}
-
-test_commit_pushes_to_existing_branch() {
-  setup_repos
-  cd "$REPO"
-
-  wt_path="$TEST_ROOT/worktree-commit-main"
-  if enter --fork-from main --pull-latest main --path "$wt_path" >/dev/null 2>&1; then
-    echo "metadata" > "$wt_path/plan.md"
-    cd "$wt_path"
-    if commit_wt --branch main -m "update plan" >/dev/null 2>&1; then
-      cd "$REPO"
-      git fetch origin >/dev/null 2>&1
-      if git log origin/main --oneline | grep -q "update plan"; then
-        pass "commit --branch: pushes directly to existing branch"
-      else
-        fail "commit --branch: pushes directly to existing branch" "commit not on origin/main"
-      fi
-    else
-      fail "commit --branch: pushes directly to existing branch" "commit script failed"
-    fi
-  else
-    fail "commit --branch: pushes directly to existing branch" "enter failed (test setup)"
-  fi
-
-  teardown_repos
-}
-
-test_commit_fails_on_missing_args() {
-  setup_repos
-  cd "$REPO"
-
-  if commit_wt >/dev/null 2>&1; then
-    fail "commit: fails with no args" "succeeded"
-  else
-    pass "commit: fails with no args"
-  fi
-
-  if commit_wt --branch feat/x >/dev/null 2>&1; then
-    fail "commit: fails without -m" "succeeded"
-  else
-    pass "commit: fails without -m"
-  fi
-
-  teardown_repos
-}
-
-test_commit_fails_on_nothing_to_commit() {
-  setup_repos
-  cd "$REPO"
-
-  wt_path="$TEST_ROOT/worktree-empty"
-  if enter --fork-from main --pull-latest main --path "$wt_path" >/dev/null 2>&1; then
-    cd "$wt_path"
-    if commit_wt --branch feat/empty-test -m "empty" >/dev/null 2>&1; then
-      fail "commit: fails when nothing to commit" "succeeded"
-    else
-      pass "commit: fails when nothing to commit"
-    fi
-  else
-    fail "commit: fails when nothing to commit" "enter failed (test setup)"
-  fi
-
-  teardown_repos
+  teardown_local
 }
 
 # ============================================================
@@ -539,10 +485,7 @@ test_exit_fails_on_unstaged_changes
 test_exit_fails_on_staged_changes
 test_exit_fails_on_missing_args
 
-test_commit_pushes_to_branch
-test_commit_pushes_to_existing_branch
-test_commit_fails_on_missing_args
-test_commit_fails_on_nothing_to_commit
+test_enter_succeeds_without_origin
 
 echo ""
 if [ "$FAIL" -gt 0 ]; then

@@ -75,7 +75,7 @@ Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to re
 If resolved:
 
 ```sh
-./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts 🌊"
+./commit-push.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts 🌊"
 ```
 
 Then continue.

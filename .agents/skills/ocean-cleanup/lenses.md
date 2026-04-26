@@ -29,7 +29,7 @@ First read the state machine in `README.md`. Then review every label transition 
 Review all git-related shell calls for correctness and completeness:
 
 - **Worktree enter/exit**: Are all `worktree-enter.sh` calls present before any work begins (including before any commit or push)? Is `--fork-from` pointing at the correct branch for this phase (base branch vs PR branch)? Is `worktree-exit.sh` called on every exit path, including early blocked handoffs?
-- **Commits**: Are all commits made via `commit.sh`? Flag any bare `git commit` or `git push` calls, and any prose instructions that vaguely say things like "commit and push" without referencing an explicit shell command.
+- **Commits**: Are all commits made via `commit-push.sh`? Flag any bare `git commit` or `git push` calls, and any prose instructions that vaguely say things like "commit and push" without referencing an explicit shell command.
 - **PR operations**: Are all PR-related operations (create, update, merge, view) done via `tracker.sh pr …`? Flag any bare `gh pr` calls or vague prose like "open a PR" or "merge the PR" without an explicit `tracker.sh pr` command.
 
 ## Lens 8: Prose clarity

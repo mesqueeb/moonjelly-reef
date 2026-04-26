@@ -14,9 +14,34 @@ ISSUE_ID="{issue-id or -}" # e.g. "#42"; "-" if nothing provided
 SKILL_DIR="{base directory for this skill}" # e.g. ".agents/skills/reef-scope"
 ```
 
-## Rules
+## Setup Guard
 
 Read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file doesn't exist, read and follow `$SKILL_DIR/setup.md` first, then return here.
+
+```sh
+TRACKER_TYPE="{from .agents/moonjelly-reef/config.md tracker field}" # e.g. "local-tracker-committed"
+TRACKER_BRANCH="{from .agents/moonjelly-reef/config.md tracker-branch field, or empty string if not set}"
+```
+
+If `"$TRACKER_TYPE" != "local-tracker-committed"`, skip the rest of this section.
+
+If `"$TRACKER_BRANCH"` is empty or missing from config, warn the user — **do not continue**:
+
+> ⚠️ `tracker-branch` is not set in `.agents/moonjelly-reef/config.md`. Please add it, then try again.
+
+```sh
+CURRENT_BRANCH="$(git branch --show-current)"
+```
+
+If `"$CURRENT_BRANCH" != "$TRACKER_BRANCH"`, warn the user — **do not continue**:
+
+> ⚠️ Current branch is `$CURRENT_BRANCH` but the tracker branch is `$TRACKER_BRANCH`. Please run `git checkout $TRACKER_BRANCH` first, then try again.
+
+```sh
+./pull.sh --branch "$TRACKER_BRANCH"
+```
+
+## Rules
 
 **Shell blocks are literal commands** — execute them as written.
 
@@ -63,7 +88,7 @@ If there are no `to-scope` issues, ask:
 
 ```sh
 START_TIME="{current UTC timestamp}" # e.g. "2026-04-24T09:00:00Z"
-git fetch origin --prune
+./fetch.sh
 ```
 
 Check if the current branch is behind its remote counterpart. If it is, notify the diver:

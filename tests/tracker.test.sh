@@ -1,11 +1,12 @@
 #!/bin/sh
-# Integration tests for reef-pulse/tracker.sh
+# Integration tests for reef-pulse/tracker.sh and reef-pulse/merge.sh
 # Runs against real temp directories with mock config
 set -u
 
 TESTS_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$TESTS_DIR/.."
 TRACKER="$REPO_ROOT/reef-pulse/tracker.sh"
+MERGE="$REPO_ROOT/reef-pulse/merge.sh"
 SCRIPT_DIR="$REPO_ROOT/reef-pulse/scripts"
 PASS=0
 FAIL=0
@@ -738,6 +739,29 @@ test_committed_view_no_worktree() {
   teardown
 }
 
+setup_committed_local() {
+  TEST_ROOT="$(mktemp -d)"
+  REPO="$TEST_ROOT/repo"
+  TRACKER_PATH=".agents/moonjelly-reef/tracker"
+
+  git init "$REPO" >/dev/null 2>&1
+  cd "$REPO"
+  git checkout -b main >/dev/null 2>&1
+  echo "init" > README.md
+  mkdir -p "$TRACKER_PATH"
+  mkdir -p ".agents/moonjelly-reef"
+  cat > ".agents/moonjelly-reef/config.md" <<CONF
+---
+tracker: local-tracker-committed
+tracker-path: $TRACKER_PATH
+tracker-branch: main
+---
+CONF
+  git add -A
+  git commit -m "initial commit" >/dev/null 2>&1
+  cd "$TEST_ROOT"
+}
+
 test_committed_close_pushes() {
   setup_committed
 
@@ -750,6 +774,184 @@ test_committed_close_pushes() {
     pass "committed close: pushes to tracker branch"
   else
     fail "committed close: pushes to tracker branch" "log: $log"
+  fi
+
+  teardown
+}
+
+# ============================================================
+# COMMITTED MODE — write from linked worktree (phase agent scenario)
+# ============================================================
+
+setup_committed_from_worktree() {
+  TEST_ROOT="$(mktemp -d)"
+  ORIGIN="$TEST_ROOT/origin.git"
+  REPO="$TEST_ROOT/repo"
+  TRACKER_PATH=".agents/moonjelly-reef/tracker"
+  WORKTREE="$TEST_ROOT/pr-worktree"
+
+  git init --bare "$ORIGIN" >/dev/null 2>&1
+  git clone "$ORIGIN" "$REPO" >/dev/null 2>&1
+  cd "$REPO"
+  git checkout -b main >/dev/null 2>&1
+  echo "init" > README.md
+  mkdir -p "$TRACKER_PATH"
+  mkdir -p ".agents/moonjelly-reef"
+  cat > ".agents/moonjelly-reef/config.md" <<CONF
+---
+tracker: local-tracker-committed
+tracker-path: $TRACKER_PATH
+tracker-branch: main
+---
+CONF
+  git add -A
+  git commit -m "initial commit" >/dev/null 2>&1
+  git push -u origin main >/dev/null 2>&1
+
+  git checkout -b feat/my-feature >/dev/null 2>&1
+  echo "feature" > feature.txt
+  git add feature.txt
+  git commit -m "feature work" >/dev/null 2>&1
+  git checkout main >/dev/null 2>&1
+
+  git worktree add "$WORKTREE" feat/my-feature >/dev/null 2>&1
+}
+
+test_committed_write_from_worktree() {
+  setup_committed_from_worktree
+
+  # Simulate a phase agent: call tracker.sh from inside a PR-branch worktree
+  cd "$WORKTREE"
+  t issue create --title "my-feature" --label to-implement >/dev/null 2>&1
+
+  # File must land in the MAIN working tree (tracker-branch), not the worktree
+  if [ -f "$REPO/$TRACKER_PATH/1 my-feature/[to-implement] plan.md" ]; then
+    pass "write from worktree: creates file in main working tree"
+  else
+    fail "write from worktree: creates file in main working tree" "file not found in $REPO/$TRACKER_PATH"
+  fi
+
+  if [ -f "$WORKTREE/$TRACKER_PATH/1 my-feature/[to-implement] plan.md" ]; then
+    fail "write from worktree: does NOT create file in worktree" "file found in worktree $WORKTREE"
+  else
+    pass "write from worktree: does NOT create file in worktree"
+  fi
+
+  # Change must be committed to tracker-branch (origin/main)
+  git -C "$REPO" fetch origin >/dev/null 2>&1
+  if git -C "$REPO" log origin/main --oneline | grep -q "tracker:"; then
+    pass "write from worktree: commit lands on tracker branch"
+  else
+    fail "write from worktree: commit lands on tracker branch" "no tracker commit on origin/main"
+  fi
+
+  teardown
+}
+
+test_committed_read_from_worktree() {
+  setup_committed_from_worktree
+
+  # Create an issue from the main working tree
+  cd "$REPO"
+  t issue create --title "main-issue" --body "reef content" --label to-implement >/dev/null 2>&1
+
+  # Read from a PR-branch worktree — must see the same data
+  cd "$WORKTREE"
+  output="$(t issue view 1 --json body,title,labels 2>/dev/null)"
+
+  if echo "$output" | grep -q '"main-issue"'; then
+    pass "read from worktree: sees issue from main working tree"
+  else
+    fail "read from worktree: sees issue from main working tree" "got: $output"
+  fi
+
+  if echo "$output" | grep -q 'reef content'; then
+    pass "read from worktree: body matches"
+  else
+    fail "read from worktree: body matches" "got: $output"
+  fi
+
+  teardown
+}
+
+# ============================================================
+# COMMITTED MODE — no origin
+# ============================================================
+
+test_committed_create_without_origin() {
+  setup_committed_local
+  cd "$REPO"
+
+  if t issue create --title "my-feature" --label to-scope >/dev/null 2>&1; then
+    if git log --oneline | grep -q "tracker:"; then
+      pass "committed create (no origin): commits tracker changes locally"
+    else
+      fail "committed create (no origin): commits tracker changes locally" "no tracker commit in local git log"
+    fi
+  else
+    fail "committed create (no origin): commits tracker changes locally" "script failed"
+  fi
+
+  teardown
+}
+
+# ============================================================
+# MERGE — no origin
+# ============================================================
+
+setup_merge_local() {
+  TEST_ROOT="$(mktemp -d)"
+  REPO="$TEST_ROOT/repo"
+  TRACKER_PATH="$TEST_ROOT/tracker"
+
+  git init "$REPO" >/dev/null 2>&1
+  cd "$REPO"
+  git checkout -b main >/dev/null 2>&1
+  echo "init" > README.md
+  git add README.md
+  git commit -m "initial commit" >/dev/null 2>&1
+
+  git checkout -b feat/my-feature >/dev/null 2>&1
+  echo "feature work" > feature.txt
+  git add feature.txt
+  git commit -m "add feature" >/dev/null 2>&1
+  git checkout main >/dev/null 2>&1
+
+  mkdir -p "$TRACKER_PATH"
+  mkdir -p "$REPO/.agents/moonjelly-reef"
+  cat > "$REPO/.agents/moonjelly-reef/config.md" <<CONF
+---
+tracker: local-tracker-gitignored
+tracker-path: $TRACKER_PATH
+tracker-branch: —
+---
+CONF
+
+  mkdir -p "$TRACKER_PATH/1 my-feature"
+  echo "plan content" > "$TRACKER_PATH/1 my-feature/[to-inspect] plan.md"
+  cat > "$TRACKER_PATH/1 my-feature/progress.md" <<PROGRESS
+---
+head: feat/my-feature
+base: main
+---
+
+implementation report
+PROGRESS
+  cd "$TEST_ROOT"
+}
+
+test_merge_pr_merge_without_origin() {
+  setup_merge_local
+  cd "$REPO"
+
+  if "$MERGE" pr merge feat/my-feature --merge >/dev/null 2>&1; then
+    if [ -f "feature.txt" ]; then
+      pass "merge (no origin): local merge succeeds without remote"
+    else
+      fail "merge (no origin): local merge succeeds without remote" "feature.txt not found on main"
+    fi
+  else
+    fail "merge (no origin): local merge succeeds without remote" "script failed"
   fi
 
   teardown
@@ -1027,7 +1229,7 @@ test_pr_merge_squash() {
   setup_merge
   cd "$REPO"
 
-  t pr merge 1 --squash --delete-branch >/dev/null 2>&1
+  "$MERGE" pr merge feat/my-feature --squash --delete-branch >/dev/null 2>&1
 
   # Should be on main with the feature file present
   current_branch="$(git rev-parse --abbrev-ref HEAD)"
@@ -1058,7 +1260,7 @@ test_pr_merge_regular() {
   setup_merge
   cd "$REPO"
 
-  t pr merge 1 --delete-branch >/dev/null 2>&1
+  "$MERGE" pr merge feat/my-feature --delete-branch >/dev/null 2>&1
 
   if [ -f "feature.txt" ]; then
     pass "pr merge regular: feature file present after merge"
@@ -1081,7 +1283,7 @@ test_pr_merge_deletes_head_branch_locally() {
   setup_merge
   cd "$REPO"
 
-  t pr merge 1 --squash --delete-branch >/dev/null 2>&1
+  "$MERGE" pr merge feat/my-feature --squash --delete-branch >/dev/null 2>&1
 
   if git rev-parse --verify feat/my-feature >/dev/null 2>&1; then
     fail "pr merge: deletes head branch locally" "branch still exists"
@@ -1096,7 +1298,7 @@ test_pr_merge_deletes_head_branch_from_origin() {
   setup_merge
   cd "$REPO"
 
-  t pr merge 1 --squash --delete-branch >/dev/null 2>&1
+  "$MERGE" pr merge feat/my-feature --squash --delete-branch >/dev/null 2>&1
 
   git fetch origin --prune >/dev/null 2>&1
   if git rev-parse --verify origin/feat/my-feature >/dev/null 2>&1; then
@@ -1114,7 +1316,7 @@ test_pr_merge_no_progress_fails() {
 
   t issue create --title "no-pr" --label to-implement >/dev/null 2>&1
 
-  if t pr merge 1 --squash --delete-branch >/dev/null 2>&1; then
+  if "$MERGE" pr merge feat/no-pr --squash --delete-branch >/dev/null 2>&1; then
     fail "pr merge: fails without progress.md" "succeeded"
   else
     pass "pr merge: fails without progress.md"
@@ -1127,7 +1329,7 @@ test_pr_merge_commit_message() {
   setup_merge
   cd "$REPO"
 
-  t pr merge 1 --squash --delete-branch >/dev/null 2>&1
+  "$MERGE" pr merge feat/my-feature --squash --delete-branch >/dev/null 2>&1
 
   msg="$(git log -1 --format='%s')"
   if echo "$msg" | grep -q "feat/my-feature"; then
@@ -1410,10 +1612,13 @@ test_list_search_or_labels
 test_list_search_includes_labels_field
 test_list_search_includes_slices
 
+test_committed_write_from_worktree
+test_committed_read_from_worktree
 test_committed_create_pushes
 test_committed_edit_pushes
 test_committed_view_no_worktree
 test_committed_close_pushes
+test_committed_create_without_origin
 
 test_pr_create_plan
 test_pr_create_slice
@@ -1429,6 +1634,7 @@ test_pr_merge_deletes_head_branch_locally
 test_pr_merge_deletes_head_branch_from_origin
 test_pr_merge_no_progress_fails
 test_pr_merge_commit_message
+test_merge_pr_merge_without_origin
 test_pr_dispatch
 test_pr_create_gh_compat
 test_pr_create_gh_compat_slice

@@ -109,7 +109,7 @@ Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to re
 If resolved:
 
 ```sh
-./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts 🌊"
+./commit-push.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts 🌊"
 ```
 
 Then continue.
@@ -169,7 +169,7 @@ Read the PR description's "Judgment calls" section. For each call:
 
 ## 5. Trivial cleanups
 
-Do these yourself — use `commit.sh` to commit and push to the `pr-branch`:
+Do these yourself — use `commit-push.sh` to commit and push to the `pr-branch`:
 
 - Remove debug prints, console.logs, commented-out code
 - Fix formatting, remove trailing whitespace
@@ -179,7 +179,7 @@ Do these yourself — use `commit.sh` to commit and push to the `pr-branch`:
 RUN ONLY IF you made cleanup commits in this step:
 
 ```sh
-./commit.sh --branch "$PR_BRANCH" -m "inspect: cleanup"
+./commit-push.sh --branch "$PR_BRANCH" -m "inspect: cleanup"
 ```
 
 ## 6. Update the PR description

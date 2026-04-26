@@ -53,9 +53,18 @@ fi
 
 mkdir -p "$(dirname "$WORKTREE_PATH")"
 
-git fetch origin --prune >/dev/null
+HAS_ORIGIN=false
+git remote get-url origin >/dev/null 2>&1 && HAS_ORIGIN=true
 
-git worktree add "$WORKTREE_PATH" "origin/${FORK_FROM}" --detach >/dev/null
+if [ "$HAS_ORIGIN" = true ]; then
+  git fetch origin --prune >/dev/null
+fi
+
+BRANCH_REF="${FORK_FROM}"
+if [ "$HAS_ORIGIN" = true ]; then
+  BRANCH_REF="origin/${FORK_FROM}"
+fi
+git worktree add "$WORKTREE_PATH" "$BRANCH_REF" --detach >/dev/null
 
 ABS_PATH="$(cd "$WORKTREE_PATH" && pwd -P)"
 echo "$ABS_PATH"
@@ -67,7 +76,11 @@ if [ "$FORK_FROM" = "$PULL_LATEST" ]; then
 fi
 
 # Different branches — check if already up to date
-LATEST_SHA="$(git rev-parse "origin/${PULL_LATEST}")"
+LATEST_REF="${PULL_LATEST}"
+if [ "$HAS_ORIGIN" = true ]; then
+  LATEST_REF="origin/${PULL_LATEST}"
+fi
+LATEST_SHA="$(git rev-parse "$LATEST_REF")"
 MERGE_BASE="$(git -C "$ABS_PATH" merge-base HEAD "$LATEST_SHA")"
 
 if [ "$LATEST_SHA" = "$MERGE_BASE" ]; then
@@ -82,7 +95,9 @@ COMMIT_COUNT="$(git -C "$ABS_PATH" rev-list "$MERGE_BASE".."$LATEST_SHA" | wc -l
 # Attempt the merge (staying detached HEAD)
 if git -C "$ABS_PATH" merge --no-edit "$LATEST_SHA" >/dev/null 2>&1; then
   # Clean merge — push to origin using explicit refspec (no force)
-  git -C "$ABS_PATH" push origin "HEAD:refs/heads/${FORK_FROM}" >/dev/null
+  if [ "$HAS_ORIGIN" = true ]; then
+    git -C "$ABS_PATH" push origin "HEAD:refs/heads/${FORK_FROM}" >/dev/null
+  fi
   echo "synced: pulled $COMMIT_COUNT commits from $PULL_LATEST into $FORK_FROM"
   exit 0
 else

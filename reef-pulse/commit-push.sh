@@ -1,14 +1,16 @@
 #!/bin/sh
-# commit.sh — stage, commit, and push changes from a worktree
+# commit-push.sh — stage, commit, and push changes from a worktree
 #
 # Usage:
-#   commit.sh --branch {name} -m {message}
+#   commit-push.sh --branch {name} -m {message}
 #
-# --branch: the remote branch to push to (origin/{branch})
+# --branch: the branch to push to
 # -m:       commit message
 #
 # Must be run from inside the worktree.
 set -eu
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 BRANCH=""
 MESSAGE=""
@@ -27,7 +29,7 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -z "$BRANCH" ] || [ -z "$MESSAGE" ]; then
-  echo "Usage: commit.sh --branch {name} -m {message}" >&2
+  echo "Usage: commit-push.sh --branch {name} -m {message}" >&2
   exit 1
 fi
 
@@ -35,7 +37,7 @@ fi
 GIT_DIR=$(git rev-parse --git-dir 2>/dev/null)
 GIT_COMMON=$(git rev-parse --git-common-dir 2>/dev/null)
 if [ "$GIT_DIR" = "$GIT_COMMON" ]; then
-  echo "Error: commit.sh must be run from a worktree, not the main repo." >&2
+  echo "Error: commit-push.sh must be run from a worktree, not the main repo." >&2
   exit 1
 fi
 
@@ -47,4 +49,4 @@ fi
 
 git add -A
 git commit -m "$MESSAGE"
-git push origin "HEAD:refs/heads/${BRANCH}"
+"$SCRIPT_DIR/push.sh" --branch "$BRANCH"

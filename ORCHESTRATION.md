@@ -33,11 +33,12 @@ General rules:
   ```sh
   SKILL_DIR="{base directory for this skill}"
   LOCK_FILE=".agents/moonjelly-reef/pulse.lock"
-  TRACKER_BRANCH="{from config.md tracker-branch field}" # e.g. "main"
   ```
-- checkout-tracker-branch — if local-tracker-committed
+- setup-guard
   ```sh
-  git fetch origin "$TRACKER_BRANCH" && git checkout "$TRACKER_BRANCH" && git pull
+  TRACKER_TYPE="{from .agents/moonjelly-reef/config.md tracker field}"
+  TRACKER_BRANCH="{from .agents/moonjelly-reef/config.md tracker-branch field, or empty string if not set}"
+  CURRENT_BRANCH="$(git branch --show-current)"
   ```
 - set-variables
   ```sh
@@ -55,6 +56,12 @@ General rules:
 - set-variables
   ```sh
   ISSUE_ID="{issue-id or -}" # e.g. "#42"; "-" if nothing provided
+  ```
+- setup-guard
+  ```sh
+  TRACKER_TYPE="{from .agents/moonjelly-reef/config.md tracker field}"
+  TRACKER_BRANCH="{from .agents/moonjelly-reef/config.md tracker-branch field, or empty string if not set}"
+  CURRENT_BRANCH="$(git branch --show-current)"
   ```
 - fetch-context
   ```sh
@@ -95,8 +102,13 @@ General rules:
   ```sh
   ISSUE_ID="{issue-id or -}" # e.g. "#42"
   PR_ID="{pr-id or -}"       # e.g. "#43"
+  ```
+- setup-guard
+  ```sh
   TRACKER_TYPE="{from .agents/moonjelly-reef/config.md tracker field}"
+  TRACKER_BRANCH="{from .agents/moonjelly-reef/config.md tracker-branch field, or empty string if not set}"
   MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}"
+  CURRENT_BRANCH="$(git branch --show-current)"
   ```
 - fetch-context
   ```sh
@@ -142,10 +154,10 @@ General rules:
   ```
 - pull
   ```sh
-  git fetch origin --prune
+  ./fetch.sh
   CURRENT=$(git branch --show-current)
   if [ "$CURRENT" = "$BASE_BRANCH" ]; then
-    git pull --ff-only origin "$BASE_BRANCH"
+    ./pull.sh --branch "$BASE_BRANCH"
   fi
   ```
 - update-tracker — if approved
@@ -277,8 +289,7 @@ General rules:
   ```
 - create-remote-branch
   ```sh
-  # Not a commit — creates the remote branch pointer at the current HEAD
-  git push origin "HEAD:refs/heads/$PR_BRANCH"
+  ./push.sh --branch "$PR_BRANCH"
   ```
 - set-variables
   ```sh
@@ -348,7 +359,7 @@ General rules:
   ```
 - commit-code
   ```sh
-  ./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: implementation"
+  ./commit-push.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: implementation"
   ```
 - set-variables
   ```sh
@@ -408,7 +419,7 @@ General rules:
   ```
 - commit-code
   ```sh
-  ./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: research"
+  ./commit-push.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: research"
   ```
 - set-variables
   ```sh
@@ -580,7 +591,7 @@ General rules:
   ```
 - commit-code — if cleanup-needed
   ```sh
-  ./commit.sh --branch "$PR_BRANCH" -m "inspect: cleanup"
+  ./commit-push.sh --branch "$PR_BRANCH" -m "inspect: cleanup"
   ```
 - update-pr-body
   ```sh
@@ -640,7 +651,7 @@ General rules:
   ```
 - commit-code
   ```sh
-  ./commit.sh --branch "$PR_BRANCH" -m "rework: address review feedback"
+  ./commit-push.sh --branch "$PR_BRANCH" -m "rework: address review feedback"
   ```
 - update-pr-body
   ```sh
@@ -855,7 +866,7 @@ General rules:
   ```
 - commit-code — if documentation-added
   ```sh
-  ./commit.sh --branch "$PR_BRANCH" -m "seal: add documentation"
+  ./commit-push.sh --branch "$PR_BRANCH" -m "seal: add documentation"
   ```
 - submit-report
   ```sh

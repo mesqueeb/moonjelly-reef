@@ -91,7 +91,7 @@ Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to re
 If resolved:
 
 ```sh
-./commit.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts 🌊"
+./commit-push.sh --branch "$PR_BRANCH" -m "merge: resolve conflicts 🌊"
 ```
 
 Then continue.
@@ -187,7 +187,7 @@ When you find non-obvious behavior worth documenting during your holistic review
 1. **Code comments first.** If it can be clarified with a comment next to the code or above a test, add it yourself and push directly to the `pr-branch`:
 
 ```sh
-./commit.sh --branch "$PR_BRANCH" -m "seal: add documentation"
+./commit-push.sh --branch "$PR_BRANCH" -m "seal: add documentation"
 ```
 
 2. **Outside-of-code docs if warranted.** If the behavior is significant enough to document beyond a code comment, check the repo's `AGENTS.md`/`CLAUDE.md` for a documentation locations section. If it exists, follow it. If it doesn't, create a brief entry.

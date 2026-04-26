@@ -16,14 +16,35 @@ ISSUE_ID="{issue-id or -}" # e.g. "#42"
 PR_ID="{pr-id or -}"       # e.g. "#43"
 ```
 
-## Rules
+## Setup Guard
 
 Read `.agents/moonjelly-reef/config.md` to learn the tracker type and merge strategy.
 
 ```sh
-TRACKER_TYPE="{from .agents/moonjelly-reef/config.md tracker field}" # e.g. "github"
+TRACKER_TYPE="{from .agents/moonjelly-reef/config.md tracker field}" # e.g. "local-tracker-committed"
+TRACKER_BRANCH="{from .agents/moonjelly-reef/config.md tracker-branch field, or empty string if not set}"
 MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}" # e.g. "squash"
 ```
+
+If `"$TRACKER_TYPE" != "local-tracker-committed"`, skip the rest of this section.
+
+If `"$TRACKER_BRANCH"` is empty or missing from config, warn the user — **do not continue**:
+
+> ⚠️ `tracker-branch` is not set in `.agents/moonjelly-reef/config.md`. Please add it, then try again.
+
+```sh
+CURRENT_BRANCH="$(git branch --show-current)"
+```
+
+If `"$CURRENT_BRANCH" != "$TRACKER_BRANCH"`, warn the user — **do not continue**:
+
+> ⚠️ Current branch is `$CURRENT_BRANCH` but the tracker branch is `$TRACKER_BRANCH`. Please run `git checkout $TRACKER_BRANCH` first, then try again.
+
+```sh
+./pull.sh --branch "$TRACKER_BRANCH"
+```
+
+## Rules
 
 **Shell blocks are literal commands** — execute them as written.
 
@@ -244,10 +265,10 @@ Merge the PR using the strategy from config:
 Pull the merged changes into the current branch if it matches the base branch:
 
 ```sh
-git fetch origin --prune
+./fetch.sh
 CURRENT=$(git branch --show-current)
 if [ "$CURRENT" = "$BASE_BRANCH" ]; then
-  git pull --ff-only origin "$BASE_BRANCH"
+  ./pull.sh --branch "$BASE_BRANCH"
 fi
 ```
 

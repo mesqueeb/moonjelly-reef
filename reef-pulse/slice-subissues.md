@@ -27,11 +27,10 @@ WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$BASE_BRANCH" --pull-latest "
 
 Read the output. On `ready`: continue.
 
-If `$PR_BRANCH` does not exist on origin yet, initialise it:
+If `$PR_BRANCH` does not exist yet, initialise it:
 
 ```sh
-# Not a commit — creates the remote branch pointer at the current HEAD
-git push origin "HEAD:refs/heads/$PR_BRANCH"
+./push.sh --branch "$PR_BRANCH"
 ```
 
 ## 2. Build the coverage matrix

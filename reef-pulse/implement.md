@@ -70,7 +70,7 @@ Read the output. On `ready` or `synced`: continue. On `conflicts`: attempt to re
 If resolved:
 
 ```sh
-./commit.sh --branch "$BASE_BRANCH" -m "merge: resolve conflicts 🌊"
+./commit-push.sh --branch "$BASE_BRANCH" -m "merge: resolve conflicts 🌊"
 ```
 
 Then continue.
@@ -163,7 +163,7 @@ REPORT="{implementation-report}" # e.g. <details><summary><h3>🐙 Workshop repo
 ## 6. Open the PR
 
 ```sh
-./commit.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: implementation"
+./commit-push.sh --branch "$PR_BRANCH" -m "$ISSUE_TITLE: implementation"
 CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. "closes #42 add auth endpoint"
 PR_BODY_NEW="$CLOSES\n\n$REPORT"
 ./tracker.sh pr create --base "$BASE_BRANCH" --title "$ISSUE_TITLE" --body "$PR_BODY_NEW" --label to-inspect
