@@ -28,9 +28,9 @@ TRACKER_BRANCH="{from config.md tracker-branch field}" # e.g. "main"
 
 **Tracker note**:
 
-- For `local-tracker`, run `./tracker.sh` exactly as written.
-- For GitHub, replace `./tracker.sh` with `gh`, then execute the command as written.
-- For other trackers with MCP issue tools, replace `./tracker.sh pr` with `gh pr`, and replace `./tracker.sh issue` with the MCP equivalent for that tracker.
+- For local-tracker, run `./tracker.sh` and `./merge.sh` exactly as written.
+- For GitHub, replace `./tracker.sh` and `./merge.sh` with `gh`
+- For other trackers with MCP issue tools, replace `./tracker.sh issue` with their MCP equivalent and `./tracker.sh pr` and `./merge.sh pr` with `gh pr`
 
 **AFK skill**: this skill runs without human interaction. You are the orchestrator — scan, dispatch, and exit. You hold no state; labels are the state. When in doubt: check the labels, make your best judgment, move on. Never block waiting for human input.
 

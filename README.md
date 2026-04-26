@@ -288,29 +288,33 @@ Then if you scope new issues on your main machine, the remote machine will be pi
 
 Every phase has explicit, tested boundaries. [`ORCHESTRATION.md`](ORCHESTRATION.md) is the single source of truth — it declares the variables, context sources, code persistence, and tracker updates for every phase in the correct order. [`tests/orchestration.test.sh`](tests/orchestration.test.sh) verifies that each phase file follows that contract; if a phase drifts, the test catches it.
 
-All git operations run through shell scripts (`worktree-enter.sh`, `worktree-exit.sh`, `commit.sh`) so sub-agents never have to reason about git orchestration themselves.
+All git operations run through shell scripts (`worktree-enter.sh`, `worktree-exit.sh`, `commit.sh`, `merge.sh`) so sub-agents never have to reason about git orchestration themselves.
 
 **Script and tracker contracts**
 
-Every reef phase calls the same three shell scripts for git work and the same `tracker.sh`-or-`gh` interface for metadata. The tables below map each operation to what actually happens per tracker — gaps surface here.
+Every reef phase calls the same shell scripts for git work and `tracker.sh` / `merge.sh` for metadata. Tracker translation is a single global rule:
 
-**Git scripts** — tracker-agnostic, identical for every setup:
+- For `local-tracker`, run `./tracker.sh` and `./merge.sh` exactly as written.
+- For GitHub, replace `./tracker.sh` and `./merge.sh` with `gh`.
+- For other trackers with MCP issue tools, replace `./tracker.sh issue` with their MCP equivalent and `./tracker.sh pr` / `./merge.sh pr` with `gh pr`.
 
-| Script                                                     | Effect                                                                                             |
-| :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------- |
-| `commit.sh --branch B -m M`                                | Stage all changes, commit, push to `origin/B`. Must run inside a worktree.                         |
-| `worktree-enter.sh --fork-from B --pull-latest L --path P` | Create a detached-HEAD worktree from `origin/B`. If `B ≠ L`, merge latest from `L` and push clean. |
-| `worktree-exit.sh --path P`                                | Remove the worktree. Fails if anything is uncommitted or untracked.                                |
+**Git scripts** — behavior differs when no remote is present (`local-tracker`):
+
+| Operation           | `local-tracker`                                                                                | `github`                                                                                                | `clickup`                               |
+| :------------------ | :--------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ | :-------------------------------------- |
+| `commit.sh`         | stage all, commit locally. No remote — push to `origin/B` fails; error surfaced, script exits. | Stage all, commit, push to `origin/B`.                                                                  | same as GitHub.                         |
+| `worktree-enter.sh` | no remote — `git fetch origin` fails; error surfaced, script exits.                            | Fetch, create detached-HEAD worktree from `origin/B`. If `B ≠ L`, merge latest from `L` and push clean. | Same as GitHub.                         |
+| `worktree-exit.sh`  | remove worktree locally. Fails if uncommitted or untracked. No remote needed.                  | same                                                                                                    | same                                    |
+| `merge.sh pr merge` | local git merge via shell script. Reads base branch from `progress.md`.                        | becomes `gh pr merge`                                                                                   | becomes `gh pr merge` — Same as GitHub. |
 
 **Tracker operations** — behavior differs by tracker type:
 
-| Operation                                                                                    | `local-tracker`                                                                                                           | `github`                                                                        | `clickup`                                                                                     |
-| :------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------- |
-| `tracker.sh issue` create / view / edit / close / list                                       | Reads and writes `[label] plan.md` or `[label] slice.md` files on disk. Labels are `[label]` filename prefixes.           | `gh issue` — issue body + labels via GitHub API.                                | ClickUp MCP tools — task body + status/tags. Issues live in ClickUp; code still lives in git. |
-| `tracker.sh pr` create / view / edit                                                         | Reads and writes `[label] progress.md` files on disk. Labels are `[label]` filename prefixes, mirroring plan/slice files. | `gh pr` — PR body + labels via GitHub API.                                      | `gh pr` — same as GitHub. ClickUp has no PR concept; PRs live in the git host.                |
-| `tracker.sh pr merge` (slice → parent pr-branch in `to-merge`; final landing in `reef-land`) | Local `git checkout $base && git merge $head`. Changes a branch in the **main repo** directly — not inside a worktree.    | `gh pr merge` — server-side merge on GitHub. No local git state changes.        | `gh pr merge` — same as GitHub.                                                               |
-| PR review threads                                                                            | Not fetched — Simply call `reef-land` to discuss with the agent directly.                                                 | `gh api graphql` — fetches live review threads and inline comments from GitHub. | `gh api graphql` — same as GitHub (PR lives in git host).                                     |
-| Open PR in browser                                                                           | Opens `progress.md` in the default app (`xdg-open` on Linux, `open` on macOS).                                            | Opens the GitHub PR URL in the browser.                                         | Opens the GitHub PR URL in the browser — same as GitHub.                                      |
+| Operation                                               | `local-tracker`                                                                                                           | `github`                                                                        | `clickup`                                                                                             |
+| :------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------- |
+| `tracker.sh issue` create / view / edit / close / list  | reads and writes `[label] plan.md` or `[label] slice.md` files on disk. Labels are `[label]` filename prefixes.           | becomes `gh issue` — issue body + labels via GitHub API.                        | becomes ClickUp MCP tools — task body + status/tags. Issues live in ClickUp; code still lives in git. |
+| `tracker.sh pr` create / view / edit                    | reads and writes `[label] progress.md` files on disk. Labels are `[label]` filename prefixes, mirroring plan/slice files. | becomes `gh pr` — PR body + labels via GitHub API.                              | becomes `gh pr` — same as GitHub. ClickUp has no PR concept; PRs live in the git host.                |
+| `tracker.sh pr view` with `--web` to open PR in browser | opens `progress.md` in the default app (`xdg-open` on Linux, `open` on macOS).                                            | becomes `gh pr view` — Opens the GitHub PR URL in the browser.                  | becomes `gh pr view` — Same as GitHub.                                                                |
+| `gh api graphql` for PR review threads                  | not fetched — Simply call `reef-land` to discuss with the agent directly.                                                 | `gh api graphql` — fetches live review threads and inline comments from GitHub. | `gh api graphql` — same as GitHub (PR lives in git host).                                             |
 
 ## Companion skill
 

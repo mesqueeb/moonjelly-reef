@@ -4,6 +4,7 @@ This file captures the orchestration contract for each skill/phase.
 It is intentionally narrow: only record the external I/O and durable side effects that must stay stable across implementations.
 
 That means things like:
+
 - tracker reads and writes via `./tracker.sh`
 - worktree entry/exit calls
 - commit calls
@@ -105,6 +106,7 @@ General rules:
   ```sh
   ISSUE_ID="{from PR body or already known}"  # e.g. "#42"
   PR_ID="{from issue body or already known}"  # e.g. "#43"
+  PR_BRANCH="{from PR headRefName}"           # e.g. "feat/my-feature"
   BASE_BRANCH="{from issue frontmatter base-branch field, or from PR baseRefName}"  # e.g. "main"
   PR_BODY="{the PR body content — this contains the seal report}"  # e.g. "closes #42 ...\n\n## Test results\n..."
   ```
@@ -134,7 +136,7 @@ General rules:
   ```
 - pr-merge — if approved
   ```sh
-  ./tracker.sh pr merge "$PR_ID" --"$MERGE_STRATEGY" --delete-branch
+  ./merge.sh pr merge "$PR_BRANCH" --"$MERGE_STRATEGY" --delete-branch
   ./tracker.sh pr edit "$PR_ID" --remove-label to-land --add-label landed
   ```
 - pull
@@ -209,11 +211,13 @@ General rules:
   ]'
   ```
 - metrics-subagent — if `"$AGENT_COUNT_PULSE" -gt 0`
+
   ```sh
   Read and follow $SKILL_DIR/metric-logger.md.
 
   PHASE_METRIC_RECORDS="$PHASE_METRIC_RECORDS"
   ```
+
 - set-variables — if `"$AGENT_COUNT_PULSE" -gt 0`
   ```sh
   SUCCESS_COUNT="{from metrics logger handoff}" # e.g. 2
@@ -430,7 +434,6 @@ General rules:
   PR_ID="$PR_ID"
   ```
 
-
 ### [metric-logger.md](./reef-pulse/metric-logger.md)
 
 - set-variables
@@ -558,6 +561,12 @@ General rules:
   PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#42"
   WORKTREE_PATH=".worktrees/$ISSUE_TITLE-inspect"
   ```
+- handoff — if pr-missing
+  ```sh
+  ISSUE_ID="$ISSUE_ID"
+  NEXT_PHASE="pr-missing"
+  PR_ID="—"
+  ```
 - enter-worktree
   ```sh
   WORKTREE_STATUS=$(./worktree-enter.sh --fork-from "$PR_BRANCH" --pull-latest "$BASE_BRANCH" --path "$WORKTREE_PATH")
@@ -571,12 +580,6 @@ General rules:
 - commit-code — if cleanup-needed
   ```sh
   ./commit.sh --branch "$PR_BRANCH" -m "inspect: cleanup"
-  ```
-- handoff — if pr-missing
-  ```sh
-  ISSUE_ID="$ISSUE_ID"
-  NEXT_PHASE="pr-missing"
-  PR_ID="—"
   ```
 - update-pr-body
   ```sh
@@ -794,12 +797,12 @@ General rules:
   ```sh
   PARENT_ID="{from context}" # e.g. "#3"
   PR_ID="{from context}" # e.g. "#7"
-  BASE_BRANCH="{from context}" # e.g. "feat/my-feature"
+  PR_BRANCH="{from context}" # e.g. "feat/my-feature"
   MERGE_STRATEGY="{from context}" # e.g. "squash"
   ```
-- pr-merge
+- pr-merge – if approved
   ```sh
-  ./tracker.sh pr merge "$PR_ID" --"$MERGE_STRATEGY" --delete-branch
+  ./merge.sh pr merge "$PR_BRANCH" --"$MERGE_STRATEGY" --delete-branch
   ./tracker.sh pr edit "$PR_ID" --remove-label to-merge --add-label landed
   ```
 - check-siblings-and-completion
@@ -857,12 +860,6 @@ General rules:
   ```sh
   REPORT="{seal-report}" # e.g. <details><summary><h3>🦭 Seal of approval — {2012/12/21 12:00}</h3></summary>...</details>
   ```
-- if PR exists
-  ```sh
-  PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
-  PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
-  ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
-  ```
 - if PR needs creation
   ```sh
   CLOSES="closes $ISSUE_ID $ISSUE_TITLE" # e.g. "closes #42 My feature title"
@@ -873,6 +870,12 @@ General rules:
   ISSUE_BODY_UPDATED="{original issue body with added frontmatter values}"
   # add to frontmatter: pr-id: $PR_ID
   ./tracker.sh issue edit "$ISSUE_ID" --body "$ISSUE_BODY_UPDATED"
+  ```
+- if PR exists
+  ```sh
+  PR_BODY=$(./tracker.sh pr view "$PR_ID" --json body -q .body)
+  PR_BODY_UPDATED="$PR_BODY\n\n$REPORT"
+  ./tracker.sh pr edit "$PR_ID" --body "$PR_BODY_UPDATED"
   ```
 - update-tracker pass case
   ```sh

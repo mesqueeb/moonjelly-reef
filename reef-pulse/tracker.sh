@@ -13,7 +13,6 @@
 #   tracker.sh pr create    [<id>] --base X [--head Y] --body B [--title T] [--label L]
 #   tracker.sh pr view      <id> --json body,headRefName,baseRefName [--web] [-q .field]
 #   tracker.sh pr edit      <id> [--body "..."] [--add-label X] [--remove-label X]
-#   tracker.sh pr merge     <id> [--squash] [--delete-branch]
 #   tracker.sh pr list      [--search Q] [--json fields] [--limit N]
 set -eu
 
@@ -763,52 +762,6 @@ pr_edit() {
   fi
 }
 
-pr_merge() {
-  _id="$1"; shift
-  _squash=false
-  _delete_branch=false
-
-  while [ $# -gt 0 ]; do
-    case "$1" in
-      --squash) _squash=true; shift ;;
-      --delete-branch) _delete_branch=true; shift ;;
-      *) echo "Error: unknown argument: $1" >&2; exit 1 ;;
-    esac
-  done
-
-  _progress="$(resolve_progress_file "$_id")" || { echo "Error: progress.md not found for $_id" >&2; exit 1; }
-  if [ -z "$_progress" ]; then
-    echo "Error: progress.md not found for $_id" >&2
-    exit 1
-  fi
-
-  # Read head and base from frontmatter
-  _head="$(sed -n 's/^head: *//p' "$_progress" | head -1)"
-  _base="$(sed -n 's/^base: *//p' "$_progress" | head -1)"
-
-  if [ -z "$_head" ] || [ -z "$_base" ]; then
-    echo "Error: progress.md missing head or base frontmatter" >&2
-    exit 1
-  fi
-
-  # Checkout the base branch
-  git checkout "$_base" >/dev/null 2>&1
-
-  # Perform the merge
-  if [ "$_squash" = true ]; then
-    git merge --squash "$_head" >/dev/null 2>&1
-    git commit -m "Squash merge $_head into $_base" >/dev/null 2>&1
-  else
-    git merge --no-ff "$_head" -m "Merge $_head into $_base" >/dev/null 2>&1
-  fi
-
-  # Delete the head branch if requested
-  if [ "$_delete_branch" = true ]; then
-    git branch -D "$_head" >/dev/null 2>&1 || true
-    git push origin --delete "$_head" >/dev/null 2>&1 || true
-  fi
-}
-
 # Returns 0 if a PR matches the --search query, 1 if not.
 # Supports GitHub-compatible "head:branch-name" syntax for exact branch matching,
 # or falls back to substring match against "$head $title" for plain strings.
@@ -945,10 +898,6 @@ case "$CMD_GROUP" in
         if [ "$IS_COMMITTED" = true ]; then committed_enter; fi
         pr_edit "$@"
         if [ "$IS_COMMITTED" = true ]; then committed_exit "tracker: pr edit $1"; fi
-        ;;
-      merge)
-        if [ $# -lt 1 ]; then echo "Error: pr merge requires an ID" >&2; exit 1; fi
-        pr_merge "$@"
         ;;
       list) pr_list "$@" ;;
       *) echo "Error: unknown pr subcommand: $SUBCMD" >&2; exit 1 ;;

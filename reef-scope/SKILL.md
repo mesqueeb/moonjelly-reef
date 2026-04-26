@@ -22,9 +22,9 @@ Read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file d
 
 **Tracker note**:
 
-- For `local-tracker`, run `./tracker.sh` exactly as written.
-- For GitHub, replace `./tracker.sh` with `gh`, then execute the command as written.
-- For other trackers with MCP issue tools, replace `./tracker.sh pr` with `gh pr`, and replace `./tracker.sh issue` with the MCP equivalent for that tracker.
+- For local-tracker, run `./tracker.sh` and `./merge.sh` exactly as written.
+- For GitHub, replace `./tracker.sh` and `./merge.sh` with `gh`
+- For other trackers with MCP issue tools, replace `./tracker.sh issue` with their MCP equivalent and `./tracker.sh pr` and `./merge.sh pr` with `gh pr`
 
 ## 0. Fetch context
 

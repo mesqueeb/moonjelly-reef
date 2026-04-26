@@ -11,14 +11,14 @@ ISSUE_ID="{from context}" # e.g. "#42"
 ISSUE_TITLE="{from context}" # e.g. "my-feature"
 PARENT_ID="{from context}" # e.g. "#3"
 PR_ID="{from context}" # e.g. "#7"
-BASE_BRANCH="{from context}" # e.g. "feat/my-feature"
+PR_BRANCH="{from context}" # e.g. "feat/my-feature"
 MERGE_STRATEGY="{from context}" # e.g. "squash"
 ```
 
 ## 1. Merge
 
 ```sh
-./tracker.sh pr merge "$PR_ID" --"$MERGE_STRATEGY" --delete-branch
+./merge.sh pr merge "$PR_BRANCH" --"$MERGE_STRATEGY" --delete-branch
 ```
 
 If the merge command succeeds:
@@ -27,14 +27,16 @@ If the merge command succeeds:
 ./tracker.sh pr edit "$PR_ID" --remove-label to-merge --add-label landed
 ```
 
-If the merge command fails, hand off and report these variables to the caller — **do not continue**:
+If the merge command fails:
 
-```sh
-ISSUE_ID="$ISSUE_ID"
-NEXT_PHASE="to-merge"
-PR_ID="$PR_ID"
-SUMMARY="Blocked: pr merge failed. Retry after resolving the underlying cause."
-```
+    Hand off and report these variables to the caller — **do not continue**:
+
+    ```sh
+    ISSUE_ID="$ISSUE_ID"
+    NEXT_PHASE="to-merge"
+    PR_ID="$PR_ID"
+    SUMMARY="Blocked: pr merge failed. Retry after resolving the underlying cause."
+    ```
 
 ## 2. Check siblings
 

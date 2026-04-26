@@ -28,9 +28,9 @@ MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}" # 
 
 **Tracker note**:
 
-- For `local-tracker`, run `./tracker.sh` exactly as written.
-- For GitHub, replace `./tracker.sh` with `gh`, then execute the command as written.
-- For other trackers with MCP issue tools, replace `./tracker.sh pr` with `gh pr`, and replace `./tracker.sh issue` with the MCP equivalent for that tracker.
+- For local-tracker, run `./tracker.sh` and `./merge.sh` exactly as written.
+- For GitHub, replace `./tracker.sh` and `./merge.sh` with `gh`
+- For other trackers with MCP issue tools, replace `./tracker.sh issue` with their MCP equivalent and `./tracker.sh pr` and `./merge.sh pr` with `gh pr`
 
 ## 0. Fetch context
 
@@ -51,6 +51,7 @@ Set all variables from the fetched data:
 ```sh
 ISSUE_ID="{from PR body or already known}"  # e.g. "#42"
 PR_ID="{from issue body or already known}"  # e.g. "#43"
+PR_BRANCH="{from PR headRefName}"           # e.g. "feat/my-feature"
 BASE_BRANCH="{from issue frontmatter base-branch field, or from PR baseRefName}"  # e.g. "main"
 PR_BODY="{the PR body content — this contains the seal report}"  # e.g. "closes #42 ...\n\n## Test results\n..."
 ```
@@ -232,7 +233,7 @@ If the PR cannot be merged (conflicts, failing checks, branch protection), tell 
 Merge the PR using the strategy from config:
 
 ```sh
-./tracker.sh pr merge "$PR_ID" --"$MERGE_STRATEGY" --delete-branch
+./merge.sh pr merge "$PR_BRANCH" --"$MERGE_STRATEGY" --delete-branch
 ./tracker.sh pr edit "$PR_ID" --remove-label to-land --add-label landed
 ./tracker.sh issue edit "$ISSUE_ID" --remove-label to-land --add-label landed
 ```
