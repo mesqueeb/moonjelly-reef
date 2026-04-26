@@ -21,6 +21,7 @@ PR_ID="{pr-id or -}"       # e.g. "#43"
 Read `.agents/moonjelly-reef/config.md` to learn the tracker type and merge strategy.
 
 ```sh
+TRACKER_TYPE="{from .agents/moonjelly-reef/config.md tracker field}" # e.g. "github"
 MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}" # e.g. "squash"
 ```
 
@@ -59,30 +60,32 @@ PR_BODY="{the PR body content — this contains the seal report}"  # e.g. "close
 Fetch PR review threads and filter to only active (unresolved + current) comments:
 
 ```sh
-OWNER=$(gh repo view --json owner --jq '.owner.login')
-REPO=$(gh repo view --json name --jq '.name')
+case "$TRACKER_TYPE" in local-tracker*) ;; *)
+  OWNER=$(gh repo view --json owner --jq '.owner.login')
+  REPO=$(gh repo view --json name --jq '.name')
 
-gh api graphql \
-  -f owner="$OWNER" -f repo="$REPO" -F number="$PR_ID" \
-  -f query='
-query($owner: String!, $repo: String!, $number: Int!) {
-  repository(owner: $owner, name: $repo) {
-    pullRequest(number: $number) {
-      comments(first: 50) {
-        nodes { body author { login } createdAt }
-      }
-      reviewThreads(first: 100) {
-        nodes {
-          isResolved
-          isOutdated
-          comments(first: 5) {
-            nodes { body path line author { login } }
+  gh api graphql \
+    -f owner="$OWNER" -f repo="$REPO" -F number="$PR_ID" \
+    -f query='
+  query($owner: String!, $repo: String!, $number: Int!) {
+    repository(owner: $owner, name: $repo) {
+      pullRequest(number: $number) {
+        comments(first: 50) {
+          nodes { body author { login } createdAt }
+        }
+        reviewThreads(first: 100) {
+          nodes {
+            isResolved
+            isOutdated
+            comments(first: 5) {
+              nodes { body path line author { login } }
+            }
           }
         }
       }
     }
-  }
-}'
+  }'
+;; esac
 ```
 
 From the result, filter with jq:

@@ -95,6 +95,7 @@ General rules:
   ```sh
   ISSUE_ID="{issue-id or -}" # e.g. "#42"
   PR_ID="{pr-id or -}"       # e.g. "#43"
+  TRACKER_TYPE="{from .agents/moonjelly-reef/config.md tracker field}"
   MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}"
   ```
 - fetch-context
