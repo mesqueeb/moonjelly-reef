@@ -4,7 +4,7 @@
 
 ## What Is Moonjelly Reef?
 
-Moonjelly Reef is a minimal orchestration system for LLMs. You scope a ticket, run `/reef-pulse` before you go to bed, and wake up to polished PRs waiting for your approval.
+[Moonjelly Reef](https://github.com/mesqueeb/moonjelly-reef) is a minimal orchestration ~system~ skill for LLMs. You scope some tasks, run a skill before you go to bed, and wake up to polished PRs waiting for your approval.
 
 That's it. That's the pitch.
 
@@ -107,4 +107,4 @@ npx skills add mesqueeb/moonjelly-reef
 
 Run `/reef-scope` first: it walks you through setup, then asks if you want to scope some work. That's really all you need. `/reef-scope` to scope some work, `/reef-pulse` before going to bed. Try to scope at least a couple of tasks, so you can feel the true might of the reef.
 
-The reef is magnificent, the water is warm. Come dive. 🤿
+[Moonjelly Reef](https://github.com/mesqueeb/moonjelly-reef) is magnificent, the water is warm. Come dive. 🤿
