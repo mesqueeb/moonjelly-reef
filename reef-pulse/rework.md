@@ -149,9 +149,13 @@ Not a subset. The full project test suite must be green.
 
 Write the report which will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
+```sh
+TIMESTAMP=$(date +"%Y/%m/%d %H:%M")
+```
+
 <report-template>
 <details>
-<summary><h3>🦀 Crab's rework — {yyyy/MM/dd HH:mm}</h3></summary>
+<summary><h3>🦀 Crab's rework — $TIMESTAMP</h3></summary>
 
 ### Judgment calls
 

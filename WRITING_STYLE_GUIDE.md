@@ -373,9 +373,15 @@ The tag name describes what the content is for. A code fence says "here is some 
 
 Reports are collapsible blocks appended to a PR body after a phase completes (inspect, rework, seal, gap reports). Use `<report-template>` with `<details>/<summary>` inside so the agent knows the full output structure including the wrapper:
 
+Before the template, set the timestamp in a `sh` code block:
+
+    ```sh
+    TIMESTAMP=$(date +"%Y/%m/%d %H:%M")
+    ```
+
     <report-template>
     <details>
-    <summary><h3>{emoji} {Phase name} — {yyyy/MM/dd HH:mm}</h3></summary>
+    <summary><h3>{emoji} {Phase name} — $TIMESTAMP</h3></summary>
 
     ### Section
 

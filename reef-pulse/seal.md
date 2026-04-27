@@ -200,9 +200,13 @@ The report should be concise and focused on what the diver needs to know. Do NOT
 
 This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
+```sh
+TIMESTAMP=$(date +"%Y/%m/%d %H:%M")
+```
+
 <report-template>
 <details>
-<summary><h3>🦭 Seal of approval — {yyyy/MM/dd HH:mm}</h3></summary>
+<summary><h3>🦭 Seal of approval — $TIMESTAMP</h3></summary>
 
 ## Final Report
 

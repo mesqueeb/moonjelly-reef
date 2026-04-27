@@ -135,9 +135,13 @@ If any tests fail after implementation: run each failing test against `$BASE_BRA
 
 Compose the implementation report using this template. This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
+```sh
+TIMESTAMP=$(date +"%Y/%m/%d %H:%M")
+```
+
 <report-template>
 <details>
-<summary><h3>🐙 Workshop report — {yyyy/MM/dd HH:mm}</h3></summary>
+<summary><h3>🐙 Workshop report — $TIMESTAMP</h3></summary>
 
 ### Judgment calls
 
