@@ -12,12 +12,11 @@ Prep the work with `/reef-scope`, run `/reef-pulse` before bed, and wake up to p
 
 Most orchestration frameworks front-load complexity: dozens of new terms, external databases, and a CLI to install before you can do anything. Moonjelly Reef is just a skill. Drop it in, run `/reef-pulse`, and go to bed. The reef QA-loops until everything is polished, then waits for you to land it.
 
-|                       | RUFLO                                                               | GASTOWN                                                         | Moonjelly Reef                                                      |
-| :-------------------- | :------------------------------------------------------------------ | :-------------------------------------------------------------- | :------------------------------------------------------------------ |
-| **Concepts to learn** | ~137 skills, 16 agent types, swarm topologies, consensus algorithms | framework-specific terms: beads, polecats, convoys, hooks, rigs | self-explanatory labels: `to-scope`, `to-implement`, `to-land`      |
-| **Install**           | npm, ~340 MB, MCP config                                            | Go, Dolt, beads CLI, tmux, sqlite3                              | `npx skills add mesqueeb/moonjelly-reef`                            |
-| **State storage**     | custom vector DB, SQLite, knowledge graph                           | Dolt DB, beads CLI, git worktrees                               | labels on GitHub or any issue tracker                               |
-| **Theme**             | no theme (boring)                                                   | complex and incoherent theme                                    | ocean theme, doesn't get in the way — label names are plain English |
+|                       | 🪼 Moonjelly Reef                                                                  | RUFLO                                                               | GASTOWN                                                         | GSD                                                                              |
+| :-------------------- | :--------------------------------------------------------------------------------- | :------------------------------------------------------------------ | :-------------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| **Concepts to learn** | Just 3 skills.                                                                     | ~137 skills, 16 agent types, swarm topologies, consensus algorithms | framework-specific terms: beads, polecats, convoys, hooks, rigs | ~86 skills, spec-driven methodology, `.planning/` schema, 5-step sequence        |
+| **Install**           | Add 3 skills.<br />(`npx skills add mesqueeb/moonjelly-reef`)                      | npm, ~340 MB, MCP config                                            | Go, Dolt, beads CLI, tmux, sqlite3                              | 86 skill files, gsd-sdk CLI, NodeJS (multi-provider AI runtime, native binaries) |
+| **State storage**     | Issue labels<br />(you can choose GitHub, other issue trackers, or local md files) | custom vector DB, SQLite, knowledge graph                           | Dolt DB, beads CLI, git worktrees                               | `.planning/` dir tree — 88 auto-created subdirs                                  |
 
 ## Install
 
@@ -122,14 +121,6 @@ Five work types to choose from:
 Runs pulse iterations inside one short-lived session: scan labels, route work to the appropriate sub-agent, recurse while automated work remains, then exit. Holds no state — labels are the state. Run it manually or from cron; the skill handles the same pulse flow either way.
 
 If you've queued up enough issues with the `reef-scope` skill, running the `reef-pulse` skill will make the reef start the work, recursively pulsing through all automated phases until no automated work remains.
-
-Design principles:
-
-- **Testing at source**: each transition includes verification before labeling.
-- **Small batches**: slices flow independently and concurrently.
-- **Human = bottleneck**: minimize 🤿 states. Only two: scope, land.
-- **No heroics**: agents that are stuck flag + move on, never spiral.
-- **Make work visible**: the labels ARE the visibility.
 
 | source file | [`reef-pulse/SKILL.md`](reef-pulse/SKILL.md) |
 | :---------- | :------------------------------------------- |
