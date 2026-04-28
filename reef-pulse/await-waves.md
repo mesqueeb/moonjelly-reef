@@ -18,7 +18,6 @@ Read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file d
 
 **Shell blocks are literal commands** — execute them as written.
 
-
 **AFK skill**: this skill runs without human interaction. No judgment calls expected — if blocked, hand off and do not continue. If dependencies are landed, promote. Never block waiting for human input.
 
 ## 0. Fetch context

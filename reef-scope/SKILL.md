@@ -45,7 +45,6 @@ If `"$CURRENT_BRANCH" != "$TRACKER_BRANCH"`, warn the user — **do not continue
 
 **Shell blocks are literal commands** — execute them as written.
 
-
 ## 0. Fetch context
 
 ```sh

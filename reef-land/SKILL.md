@@ -48,7 +48,6 @@ If `"$CURRENT_BRANCH" != "$TRACKER_BRANCH"`, warn the user — **do not continue
 
 **Shell blocks are literal commands** — execute them as written.
 
-
 ## 0. Fetch context
 
 If `$ISSUE_ID` is a specific ID, read the issue body to find the pr-id:

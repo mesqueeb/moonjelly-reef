@@ -1,9 +1,10 @@
 #!/bin/sh
-# merge.sh — local-tracker equivalent of `gh pr merge`
+# merge.sh — self-routing merge script
 #
-# For GitHub or ClickUp trackers, use: gh pr merge <branch> [flags]
-# This script is the local-tracker equivalent — it reads the base branch from progress.md
-# and performs the git merge directly.
+# Reads tracker type from config and dispatches accordingly:
+# - github: exec gh pr merge with the same flags
+# - local-tracker: reads base branch from progress.md and performs git merge directly
+# - other: prints a helpful error describing what was requested
 #
 # Usage:
 #   merge.sh pr merge <branch> [--squash|-s] [--merge|-m] [--rebase|-r] [--delete-branch|-d]

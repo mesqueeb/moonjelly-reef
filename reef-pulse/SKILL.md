@@ -46,7 +46,6 @@ If `"$CURRENT_BRANCH" != "$TRACKER_BRANCH"`, warn the user — **do not continue
 
 **Shell blocks are literal commands** — execute them as written.
 
-
 **AFK skill**: this skill runs without human interaction. You are the orchestrator — scan, dispatch, and exit. You hold no state; labels are the state. When in doubt: check the labels, make your best judgment, move on. Never block waiting for human input.
 
 ## 0. Fetch context

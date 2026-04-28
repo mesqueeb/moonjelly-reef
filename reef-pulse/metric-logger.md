@@ -23,7 +23,6 @@ Read `.agents/moonjelly-reef/config.md` to learn the tracker type and any instal
 
 **Shell blocks are literal commands** — execute them as written.
 
-
 **AFK skill**: this skill runs without human interaction. If one record fails validation or a write, report it and continue with the remaining records.
 
 ## 0. Read issue and PR bodies

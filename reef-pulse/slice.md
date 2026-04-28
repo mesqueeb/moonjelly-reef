@@ -16,7 +16,6 @@ Read `.agents/moonjelly-reef/config.md` to learn the tracker type. If the file d
 
 **Shell blocks are literal commands** — execute them as written.
 
-
 **AFK skill**: this phase runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
 ## 0. Fetch context

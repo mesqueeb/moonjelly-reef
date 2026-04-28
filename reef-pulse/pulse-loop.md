@@ -17,7 +17,6 @@ SESSION_START_TS="{from context}" # e.g. 1735000000
 
 **Shell blocks are literal commands** — execute them as written.
 
-
 **AFK skill**: this file runs without human interaction. When in doubt: check the labels, make your best judgment, move on. Never block waiting for human input.
 
 Each time [`SKILL.md`](SKILL.md) invokes this file, execute exactly one full pulse-loop iteration. Do not collapse a pulse-loop iteration into a quick rescan or tracker-only follow-up. Each pulse-loop iteration must emit the same pulse transcript structure: pulse header, dispatch lines when applicable, return results when applicable, then return control to [`SKILL.md`](SKILL.md).

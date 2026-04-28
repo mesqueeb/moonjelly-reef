@@ -20,7 +20,6 @@ MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}" # 
 
 **Shell blocks are literal commands** — execute them as written.
 
-
 **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
 ## 0. Fetch context
