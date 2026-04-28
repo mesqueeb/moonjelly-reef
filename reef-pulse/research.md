@@ -115,7 +115,8 @@ When research is complete, compose the PR description using this template:
 This output will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
 ```sh
-TIMESTAMP=$(date +"%Y/%m/%d %H:%M")
+DATE_FORMAT=$(grep '^date-format:' .agents/moonjelly-reef/config.md 2>/dev/null | sed 's/^date-format: *//')
+TIMESTAMP=$(date +"$(echo "${DATE_FORMAT:-yyyy-MM-dd HH:mm}" | sed 's/yyyy/%Y/g;s/MM/%m/g;s/dd/%d/g;s/HH/%H/g;s/mm/%M/g')")
 ```
 
 <report-template>
