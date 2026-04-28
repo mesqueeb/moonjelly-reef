@@ -47,7 +47,7 @@ Set the post-fetch variables (after reading the issue body):
 ISSUE_TITLE="{from issue title, stripping [await: ...] suffix}" # e.g. "auth token storage"
 BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
 HEADING="{from issue frontmatter heading field}" # e.g. "deep-research"
-WORKTREE_PATH=".worktrees/$ISSUE_TITLE-await-waves"
+WORKTREE_PATH=".worktrees/$(echo "$ISSUE_TITLE" | tr '/' '-')-await-waves"
 ```
 
 ## 1. Check dependencies (cheap label gate)

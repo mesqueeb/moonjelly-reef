@@ -51,7 +51,7 @@ BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
 PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "my-feature/001-auth-endpoint"
 PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#42"
 FEELING_LUCKY="{from issue frontmatter feeling-lucky field, or - if not present}" # e.g. "true"
-WORKTREE_PATH=".worktrees/$ISSUE_TITLE-inspect"
+WORKTREE_PATH=".worktrees/$(echo "$ISSUE_TITLE" | tr '/' '-')-inspect"
 ```
 
 If `$PR_ID` is not present on the issue frontmatter:

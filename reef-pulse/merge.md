@@ -53,7 +53,7 @@ BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
 PR_ID="{from issue frontmatter pr-id field}" # e.g. "#7"
 PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "feat/my-feature"
 PARENT_ISSUE="{from issue frontmatter parent-issue field, or - if not present}" # e.g. "#3"
-WORKTREE_PATH=".worktrees/$ISSUE_TITLE-merge"
+WORKTREE_PATH=".worktrees/$(echo "$ISSUE_TITLE" | tr '/' '-')-merge"
 ```
 
 ## 1. Git prep

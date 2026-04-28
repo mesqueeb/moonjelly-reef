@@ -335,7 +335,7 @@ General rules:
   ISSUE_TITLE="{from issue title}"
   BASE_BRANCH="{from issue frontmatter base-branch field}"
   PR_BRANCH="{from issue frontmatter pr-branch field}"
-  WORKTREE_PATH=".worktrees/$ISSUE_TITLE-implement"
+  WORKTREE_PATH=".worktrees/$(echo "$ISSUE_TITLE" | tr '/' '-')-implement"
   ```
 - enter-worktree
   ```sh
@@ -401,7 +401,7 @@ General rules:
   ISSUE_TITLE="{from issue title}"
   BASE_BRANCH="{from issue frontmatter base-branch field}"
   PR_BRANCH="{from issue frontmatter pr-branch field}"
-  WORKTREE_PATH=".worktrees/$ISSUE_TITLE-research"
+  WORKTREE_PATH=".worktrees/$(echo "$ISSUE_TITLE" | tr '/' '-')-research"
   ```
 - enter-worktree
   ```sh
@@ -572,7 +572,7 @@ General rules:
   BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
   PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "my-feature/001-auth-endpoint"
   PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#42"
-  WORKTREE_PATH=".worktrees/$ISSUE_TITLE-inspect"
+  WORKTREE_PATH=".worktrees/$(echo "$ISSUE_TITLE" | tr '/' '-')-inspect"
   ```
 - handoff — if pr-missing
   ```sh
@@ -638,7 +638,7 @@ General rules:
   BASE_BRANCH="{from issue frontmatter base-branch field}"
   PR_BRANCH="{from issue frontmatter pr-branch field}"
   PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#7"
-  WORKTREE_PATH=".worktrees/$ISSUE_TITLE-rework"
+  WORKTREE_PATH=".worktrees/$(echo "$ISSUE_TITLE" | tr '/' '-')-rework"
   ```
 - enter-worktree
   ```sh
@@ -692,7 +692,7 @@ General rules:
   ISSUE_TITLE="{from issue title, stripping [await: ...] suffix}"
   BASE_BRANCH="{from issue frontmatter base-branch field}"
   HEADING="{from issue frontmatter heading field}"
-  WORKTREE_PATH=".worktrees/$ISSUE_TITLE-await-waves"
+  WORKTREE_PATH=".worktrees/$(echo "$ISSUE_TITLE" | tr '/' '-')-await-waves"
   ```
 - set-variables
   ```sh
@@ -758,7 +758,7 @@ General rules:
   BASE_BRANCH="{from issue frontmatter base-branch field}"
   PR_ID="{from issue frontmatter pr-id field}"
   PR_BRANCH="{from issue frontmatter pr-branch field}"
-  WORKTREE_PATH=".worktrees/$ISSUE_TITLE-merge"
+  WORKTREE_PATH=".worktrees/$(echo "$ISSUE_TITLE" | tr '/' '-')-merge"
   ```
 - pre-merge-check
   ```sh
@@ -853,7 +853,7 @@ General rules:
   ISSUE_TITLE="{from issue title}"
   BASE_BRANCH="{from issue frontmatter base-branch field}"
   PR_BRANCH="{from issue frontmatter pr-branch field}"
-  WORKTREE_PATH=".worktrees/$ISSUE_TITLE-seal"
+  WORKTREE_PATH=".worktrees/$(echo "$ISSUE_TITLE" | tr '/' '-')-seal"
   ```
 - enter-worktree
   ```sh
