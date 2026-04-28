@@ -186,9 +186,14 @@ RUN ONLY IF you made cleanup commits in this step:
 
 Write the report which will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
+```sh
+DATE_FORMAT=$(grep '^date-format:' .agents/moonjelly-reef/config.md 2>/dev/null | sed 's/^date-format: *//')
+TIMESTAMP=$(date +"$(echo "${DATE_FORMAT:-yyyy-MM-dd HH:mm}" | sed 's/yyyy/%Y/g;s/MM/%m/g;s/dd/%d/g;s/HH/%H/g;s/mm/%M/g')")
+```
+
 <report-template>
 <details>
-<summary><h3>🧿 Barreleye inspection — {yyyy/MM/dd HH:mm}</h3></summary>
+<summary><h3>🧿 Barreleye inspection — $TIMESTAMP</h3></summary>
 
 ### Judgment calls
 
