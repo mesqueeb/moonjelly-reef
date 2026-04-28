@@ -52,7 +52,7 @@ PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "feat/my-feature"
 PR_ID="{from issue frontmatter pr-id field, or - if not present}" # e.g. "#43"
 HEADING="{from issue frontmatter heading field, or - if not present}" # e.g. "deep-research"
 FEELING_LUCKY="{from issue frontmatter feeling-lucky field, or - if not present}" # e.g. "true"
-WORKTREE_PATH=".worktrees/$ISSUE_TITLE-seal"
+WORKTREE_PATH=".worktrees/$(echo "$ISSUE_TITLE" | tr '/' '-')-seal"
 ```
 
 If `$PR_ID` is not present on the issue frontmatter:

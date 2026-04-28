@@ -50,7 +50,7 @@ Else read the issue. It must contain:
 ISSUE_TITLE="{from issue title}" # e.g. "auth-token-rotation"
 BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
 PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "research/001-auth-token-rotation"
-WORKTREE_PATH=".worktrees/$ISSUE_TITLE-research"
+WORKTREE_PATH=".worktrees/$(echo "$ISSUE_TITLE" | tr '/' '-')-research"
 ```
 
 ## 1. Git prep

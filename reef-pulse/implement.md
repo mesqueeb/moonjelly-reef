@@ -54,7 +54,7 @@ ISSUE_TITLE="{from issue title}" # e.g. "add auth endpoint"
 BASE_BRANCH="{from issue frontmatter base-branch field}" # e.g. "main"
 PR_BRANCH="{from issue frontmatter pr-branch field}" # e.g. "my-feature/001-auth-endpoint"
 PARENT_ISSUE="{from issue frontmatter parent-issue field, or - if not present}" # e.g. "#41"; "-"
-WORKTREE_PATH=".worktrees/$ISSUE_TITLE-implement"
+WORKTREE_PATH=".worktrees/$(echo "$ISSUE_TITLE" | tr '/' '-')-implement"
 ```
 
 ## 1. Git prep
