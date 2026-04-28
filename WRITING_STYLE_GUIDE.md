@@ -67,8 +67,7 @@ The Rules section always contains these items, in this order:
 
 1. Config reading — read `.agents/moonjelly-reef/config.md` to learn the tracker type and installed optional skills. State what to do if the file doesn't exist.
 2. Shell block note — `**Shell blocks are literal commands** — execute them as written.`
-3. Tracker note — bullet list of how to translate `./tracker.sh` per tracker type.
-4. Behavior note — either `**AFK skill**` (no human interaction) or nothing (interactive).
+3. Behavior note — either `**AFK skill**` (no human interaction) or nothing (interactive).
 
 ## Variable declarations
 
@@ -407,12 +406,10 @@ Then fetch the current PR body and append:
 
 ## Tracker abstraction
 
-Always use `./tracker.sh` for issue and PR operations:
+Always use `./tracker.sh` and `./merge.sh` for issue, PR, and merge operations. The scripts self-route based on the tracker type in config — they translate to `gh` for GitHub, run locally for local-tracker, and print a helpful error for unsupported types.
 
 preferred: ./tracker.sh issue view "$ISSUE_ID" --json body,title,labels
 anti-pattern:  gh issue view "$ISSUE_ID" --json body,title,labels
-
-The Rules section's tracker note tells the agent how to translate `./tracker.sh` for each tracker type.
 
 When writing to or editing the issue, always show the `./tracker.sh` command — never describe the operation in prose:
 
