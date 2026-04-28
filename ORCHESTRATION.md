@@ -87,6 +87,23 @@ General rules:
   ```sh
   CONFLICTS="{issue numbers to await, or -}" # e.g. "#77, #83"; "-" if none or diver said no
   ```
+- dep-branch-resolution — if CONFLICTS is not "-", delegate to subphase
+  - contains: `dep-branch-resolution.md`
+- set-variables — if overlap should block the scoped issue (after dep-branch-resolution)
+  ```sh
+  ISSUE_TITLE_UPDATED="{updated $ISSUE_TITLE} [await: $CONFLICTS]" # e.g. "ACL based branch locking feature [await: #83]"
+  ```
+- set-variables
+  ```sh
+  DURATION="{human-readable duration since $START_TIME}" # e.g. "42s", "1m 12s"
+  ```
+- update-tracker
+  ```sh
+  ./tracker.sh issue edit "$ISSUE_ID" --title "$ISSUE_TITLE_UPDATED" --body "$ISSUE_BODY_UPDATED" --remove-label to-scope --add-label "$NEXT_PHASE"
+  ```
+
+### [dep-branch-resolution.md](./reef-scope/dep-branch-resolution.md)
+
 - dep-branch-resolution — single dep: fetch dep's pr-branch and override BASE_BRANCH
   ```sh
   ./tracker.sh issue view "$CONFLICTS" --json body
@@ -99,18 +116,6 @@ General rules:
   ./tracker.sh issue edit "$NEXT_DEP" --title "$NEXT_DEP_TITLE [await: $PREV_DEP_ID]" --body "$NEXT_DEP_BODY_UPDATED"
   BASE_BRANCH="$PREV_PR_BRANCH"
   CONFLICTS="$PREV_DEP_ID"
-  ```
-- set-variables — if overlap should block the scoped issue (after dep-branch-resolution)
-  ```sh
-  ISSUE_TITLE_UPDATED="{updated $ISSUE_TITLE} [await: $CONFLICTS]" # e.g. "ACL based branch locking feature [await: #83]"
-  ```
-- set-variables
-  ```sh
-  DURATION="{human-readable duration since $START_TIME}" # e.g. "42s", "1m 12s"
-  ```
-- update-tracker
-  ```sh
-  ./tracker.sh issue edit "$ISSUE_ID" --title "$ISSUE_TITLE_UPDATED" --body "$ISSUE_BODY_UPDATED" --remove-label to-scope --add-label "$NEXT_PHASE"
   ```
 
 ### [/reef-land](./reef-land/SKILL.md)
