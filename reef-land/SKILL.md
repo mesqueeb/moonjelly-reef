@@ -194,7 +194,8 @@ The gap report goes on the PR body in a `<details><summary>` block. Rework has n
 Append the gap report to the current PR body. Include original PR review comments (quoted, with file:line) and the refined context from your discussion.
 
 ```sh
-TIMESTAMP=$(date +"%Y/%m/%d %H:%M")
+DATE_FORMAT="{from .agents/moonjelly-reef/config.md date-format field, or 'yyyy-MM-dd HH:mm' if not set}"
+TIMESTAMP=$(date +"$(echo "$DATE_FORMAT" | sed 's/yyyy/%Y/g;s/MM/%m/g;s/dd/%d/g;s/HH/%H/g;s/mm/%M/g')") # e.g. "2026/04/28 13:00"
 ```
 
 <report-template>

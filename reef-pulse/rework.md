@@ -150,7 +150,8 @@ Not a subset. The full project test suite must be green.
 Write the report which will be read by another agent session — no context from this conversation carries over. Be explicit and self-contained.
 
 ```sh
-TIMESTAMP=$(date +"%Y/%m/%d %H:%M")
+DATE_FORMAT="{from .agents/moonjelly-reef/config.md date-format field, or 'yyyy-MM-dd HH:mm' if not set}"
+TIMESTAMP=$(date +"$(echo "$DATE_FORMAT" | sed 's/yyyy/%Y/g;s/MM/%m/g;s/dd/%d/g;s/HH/%H/g;s/mm/%M/g')") # e.g. "2026/04/28 13:00"
 ```
 
 <report-template>
