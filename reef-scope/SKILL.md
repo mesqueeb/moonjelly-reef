@@ -45,11 +45,6 @@ If `"$CURRENT_BRANCH" != "$TRACKER_BRANCH"`, warn the user — **do not continue
 
 **Shell blocks are literal commands** — execute them as written.
 
-**Tracker note**:
-
-- For local-tracker, run `./tracker.sh` and `./merge.sh` exactly as written.
-- For GitHub, replace `./tracker.sh` and `./merge.sh` with `gh`
-- For other trackers with MCP issue tools, replace `./tracker.sh issue` with their MCP equivalent and `./tracker.sh pr` and `./merge.sh pr` with `gh pr`
 
 ## 0. Fetch context
 

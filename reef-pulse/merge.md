@@ -20,11 +20,6 @@ MERGE_STRATEGY="{from .agents/moonjelly-reef/config.md merge-strategy field}" # 
 
 **Shell blocks are literal commands** — execute them as written.
 
-**Tracker note**:
-
-- For local-tracker, run `./tracker.sh` and `./merge.sh` exactly as written.
-- For GitHub, replace `./tracker.sh` and `./merge.sh` with `gh`
-- For other trackers with MCP issue tools, replace `./tracker.sh issue` with their MCP equivalent and `./tracker.sh pr` and `./merge.sh pr` with `gh pr`
 
 **AFK skill**: this skill runs without human interaction. When in doubt: check the plan, make your best judgment, move on. Never block waiting for human input.
 
