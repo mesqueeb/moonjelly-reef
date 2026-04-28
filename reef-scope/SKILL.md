@@ -164,6 +164,57 @@ If overlapping work is found, ask:
 CONFLICTS="{issue numbers to await, or -}" # e.g. "#77, #83"; "-" if none or diver said no
 ```
 
+If `$CONFLICTS` is not `-`, resolve the dependency branch chain before writing the plan:
+
+**Single dep** (`$CONFLICTS` contains exactly one issue ID):
+
+Fetch that dep's frontmatter and read its `pr-branch`:
+
+```sh
+./tracker.sh issue view "$CONFLICTS" --json body
+CONFLICT_PR_BRANCH="{from dep issue frontmatter pr-branch field}" # e.g. "auth-token-storage"
+```
+
+Override `BASE_BRANCH` with the dep's pr-branch so this issue stacks on top of it:
+
+```sh
+BASE_BRANCH="$CONFLICT_PR_BRANCH"
+```
+
+Surface the branching implication in the conflict question to the diver:
+
+> "This issue will branch off `$CONFLICT_PR_BRANCH` (the in-flight branch of `$CONFLICTS`) instead of `main`, so both PRs can land together."
+
+**Multi dep** (`$CONFLICTS` contains 2 or more issue IDs):
+
+Ask the diver for the landing order:
+
+> "Multiple blockers found: `$CONFLICTS`. What order should they land in? (I'll use the scan order as the default.)"
+
+Wait for the diver to confirm or reorder. The sorted list becomes `ORDERED_CONFLICTS` (space-separated, e.g. `"#77 #83"`).
+
+Walk the sorted list and daisy-chain the dep issues:
+
+```sh
+PREV_PR_BRANCH="{pr-branch of the first dep in ORDERED_CONFLICTS}" # fetch from its frontmatter
+for each NEXT_DEP (second dep onward in ORDERED_CONFLICTS):
+  ./tracker.sh issue view "$NEXT_DEP" --json body,title
+  NEXT_DEP_TITLE="{from dep issue title, without any existing [await: ...] suffix}"
+  NEXT_DEP_BODY="{from dep issue body}"
+  NEXT_DEP_BODY_UPDATED="{NEXT_DEP_BODY with base-branch frontmatter field set to PREV_PR_BRANCH}"
+  ./tracker.sh issue edit "$NEXT_DEP" --title "$NEXT_DEP_TITLE [await: $PREV_DEP_ID]" --body "$NEXT_DEP_BODY_UPDATED"
+  PREV_PR_BRANCH="{pr-branch of NEXT_DEP}" # fetch from its frontmatter
+  PREV_DEP_ID="$NEXT_DEP"
+done
+```
+
+After the loop, set this issue's base-branch to the last dep's pr-branch and collapse `CONFLICTS` to just the last dep ID (so the title suffix carries a single `[await: ...]`):
+
+```sh
+BASE_BRANCH="$PREV_PR_BRANCH" # last dep's pr-branch
+CONFLICTS="$PREV_DEP_ID"      # last dep ID only
+```
+
 ## 6. Persist the plan
 
 ```sh
@@ -172,7 +223,7 @@ if [ "$CONFLICTS" = "-" ]; then
   ISSUE_TITLE_UPDATED="{updated $ISSUE_TITLE}" # e.g. "ACL based branch locking feature"
 else
   # Suffix the title with the await annotation:
-  ISSUE_TITLE_UPDATED="{updated $ISSUE_TITLE} [await: $CONFLICTS]" # e.g. "ACL based branch locking feature [await: #77, #83]"
+  ISSUE_TITLE_UPDATED="{updated $ISSUE_TITLE} [await: $CONFLICTS]" # e.g. "ACL based branch locking feature [await: #83]"
 fi
 
 DURATION="{human-readable duration since $START_TIME}" # e.g. "42s", "1m 12s"

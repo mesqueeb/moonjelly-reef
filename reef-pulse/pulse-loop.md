@@ -110,8 +110,8 @@ DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. "#42"
 ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
 ```
 
-- If **all** blockers have the `landed` label: dispatch the item via sub-agent (`$SKILL_DIR/await-waves.md`).
-- If **any** blocker is not `landed`: skip — do not dispatch. It stays `to-await-waves` and will be re-evaluated next pulse.
+- If **all** blockers have the `landed` or `to-land` label: dispatch the item via sub-agent (`$SKILL_DIR/await-waves.md`).
+- If **any** blocker has neither `landed` nor `to-land`: skip — do not dispatch. It stays `to-await-waves` and will be re-evaluated next pulse.
 - If the `[await: ...]` suffix is missing or malformed: dispatch anyway — `await-waves` itself catches problems before promoting.
 
 `to-merge` items do not use the dependency gate above; they simply run during ebb instead of flow.
