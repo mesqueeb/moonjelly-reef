@@ -376,8 +376,8 @@ Reports are collapsible blocks appended to a PR body after a phase completes (in
 Before the template, set the timestamp in a `sh` code block:
 
     ```sh
-    DATE_FORMAT=$(grep '^date-format:' .agents/moonjelly-reef/config.md 2>/dev/null | sed 's/^date-format: *//')
-    TIMESTAMP=$(date +"$(echo "${DATE_FORMAT:-yyyy-MM-dd HH:mm}" | sed 's/yyyy/%Y/g;s/MM/%m/g;s/dd/%d/g;s/HH/%H/g;s/mm/%M/g')")
+    DATE_FORMAT="{from .agents/moonjelly-reef/config.md date-format field, or 'yyyy-MM-dd HH:mm' if not set}"
+    TIMESTAMP=$(date +"$(echo "$DATE_FORMAT" | sed 's/yyyy/%Y/g;s/MM/%m/g;s/dd/%d/g;s/HH/%H/g;s/mm/%M/g')")
     ```
 
     <report-template>
