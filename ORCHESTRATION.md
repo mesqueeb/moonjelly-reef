@@ -496,7 +496,8 @@ General rules:
   TOKENS="${SUBAGENT_TOKENS:-—}"
   TOOL_USES="${SUBAGENT_TOOL_USES:-—}"
   OUTCOME="${SUMMARY:-${NEXT_PHASE#to-}}"
-  METRICS_DATE="$(date '+%Y/%m/%d %H:%M')"
+  DATE_FORMAT=$(grep '^date-format:' .agents/moonjelly-reef/config.md 2>/dev/null | sed 's/^date-format: *//')
+  METRICS_DATE=$(date +"$(echo "${DATE_FORMAT:-yyyy-MM-dd HH:mm}" | sed 's/yyyy/%Y/g;s/MM/%m/g;s/dd/%d/g;s/HH/%H/g;s/mm/%M/g')")
   METRIC_ROW="| $PHASE | $TARGET | $DURATION | $TOKENS | $TOOL_USES | $OUTCOME | $METRICS_DATE |"
   ```
 - set-variables
