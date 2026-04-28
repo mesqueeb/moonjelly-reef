@@ -177,7 +177,7 @@ fi
 
 DURATION="{human-readable duration since $START_TIME}" # e.g. "42s", "1m 12s"
 DATE_FORMAT="{from .agents/moonjelly-reef/config.md date-format field, or 'yyyy-MM-dd HH:mm' if not set}"
-TIMESTAMP=$(date +"$(echo "$DATE_FORMAT" | sed 's/yyyy/%Y/g;s/MM/%m/g;s/dd/%d/g;s/HH/%H/g;s/mm/%M/g')")
+TIMESTAMP=$(date +"$(echo "$DATE_FORMAT" | sed 's/yyyy/%Y/g;s/MM/%m/g;s/dd/%d/g;s/HH/%H/g;s/mm/%M/g')") # e.g. "2026/04/28 13:00"
 INTERVIEW_TRANSCRIPT="{full interview Q&A transcript}" # e.g. Q: What are you trying to Build? A: ...
 ISSUE_BODY_UPDATED="---
 base-branch: $BASE_BRANCH

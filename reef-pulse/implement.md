@@ -137,7 +137,7 @@ Compose the implementation report using this template. This output will be read 
 
 ```sh
 DATE_FORMAT="{from .agents/moonjelly-reef/config.md date-format field, or 'yyyy-MM-dd HH:mm' if not set}"
-TIMESTAMP=$(date +"$(echo "$DATE_FORMAT" | sed 's/yyyy/%Y/g;s/MM/%m/g;s/dd/%d/g;s/HH/%H/g;s/mm/%M/g')")
+TIMESTAMP=$(date +"$(echo "$DATE_FORMAT" | sed 's/yyyy/%Y/g;s/MM/%m/g;s/dd/%d/g;s/HH/%H/g;s/mm/%M/g')") # e.g. "2026/04/28 13:00"
 ```
 
 <report-template>

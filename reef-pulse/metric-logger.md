@@ -90,7 +90,7 @@ TOKENS="${SUBAGENT_TOKENS:-—}"
 TOOL_USES="${SUBAGENT_TOOL_USES:-—}"
 OUTCOME="${SUMMARY:-${NEXT_PHASE#to-}}"
 DATE_FORMAT="{from .agents/moonjelly-reef/config.md date-format field, or 'yyyy-MM-dd HH:mm' if not set}"
-METRICS_DATE=$(date +"$(echo "$DATE_FORMAT" | sed 's/yyyy/%Y/g;s/MM/%m/g;s/dd/%d/g;s/HH/%H/g;s/mm/%M/g')")
+METRICS_DATE=$(date +"$(echo "$DATE_FORMAT" | sed 's/yyyy/%Y/g;s/MM/%m/g;s/dd/%d/g;s/HH/%H/g;s/mm/%M/g')") # e.g. "2026/04/28 13:00"
 METRIC_ROW="| $PHASE | $TARGET | $DURATION | $TOKENS | $TOOL_USES | $OUTCOME | $METRICS_DATE |"
 ```
 
