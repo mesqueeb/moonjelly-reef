@@ -176,7 +176,7 @@ else
 fi
 
 DURATION="{human-readable duration since $START_TIME}" # e.g. "42s", "1m 12s"
-TIMESTAMP="{yyyy/MM/dd HH:mm}" # e.g. "2012/12/21 12:00"
+TIMESTAMP=$(date +"%Y/%m/%d %H:%M")
 INTERVIEW_TRANSCRIPT="{full interview Q&A transcript}" # e.g. Q: What are you trying to Build? A: ...
 ISSUE_BODY_UPDATED="---
 base-branch: $BASE_BRANCH

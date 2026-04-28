@@ -12,12 +12,11 @@ Prep the work with `/reef-scope`, run `/reef-pulse` before bed, and wake up to p
 
 Most orchestration frameworks front-load complexity: dozens of new terms, external databases, and a CLI to install before you can do anything. Moonjelly Reef is just a skill. Drop it in, run `/reef-pulse`, and go to bed. The reef QA-loops until everything is polished, then waits for you to land it.
 
-|                       | RUFLO                                                               | GASTOWN                                                         | Moonjelly Reef                                                      |
-| :-------------------- | :------------------------------------------------------------------ | :-------------------------------------------------------------- | :------------------------------------------------------------------ |
-| **Concepts to learn** | ~137 skills, 16 agent types, swarm topologies, consensus algorithms | framework-specific terms: beads, polecats, convoys, hooks, rigs | self-explanatory labels: `to-scope`, `to-implement`, `to-land`      |
-| **Install**           | npm, ~340 MB, MCP config                                            | Go, Dolt, beads CLI, tmux, sqlite3                              | `npx skills add mesqueeb/moonjelly-reef`                            |
-| **State storage**     | custom vector DB, SQLite, knowledge graph                           | Dolt DB, beads CLI, git worktrees                               | labels on GitHub or any issue tracker                               |
-| **Theme**             | no theme (boring)                                                   | complex and incoherent theme                                    | ocean theme, doesn't get in the way — label names are plain English |
+|                       | 🪼 Moonjelly Reef                                                                  | RUFLO                                                               | GASTOWN                                                         | GSD                                                                              |
+| :-------------------- | :--------------------------------------------------------------------------------- | :------------------------------------------------------------------ | :-------------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| **Concepts to learn** | Just 3 skills.                                                                     | ~137 skills, 16 agent types, swarm topologies, consensus algorithms | framework-specific terms: beads, polecats, convoys, hooks, rigs | ~86 skills, spec-driven methodology, `.planning/` schema, 5-step sequence        |
+| **Install**           | Add 3 skills.<br />(`npx skills add mesqueeb/moonjelly-reef`)                      | npm, ~340 MB, MCP config                                            | Go, Dolt, beads CLI, tmux, sqlite3                              | 86 skill files, gsd-sdk CLI, NodeJS (multi-provider AI runtime, native binaries) |
+| **State storage**     | Issue labels<br />(you can choose GitHub, other issue trackers, or local md files) | custom vector DB, SQLite, knowledge graph                           | Dolt DB, beads CLI, git worktrees                               | `.planning/` dir tree — 88 auto-created subdirs                                  |
 
 ## Install
 
@@ -25,9 +24,61 @@ Most orchestration frameworks front-load complexity: dozens of new terms, extern
 npx skills add mesqueeb/moonjelly-reef
 ```
 
-On first run, trigger `/reef-scope`. It helps you get set up, then it asks if you want to scope some work.
+Run `/reef-scope` first: it walks you through setup, then asks if you want to scope some work. That's really all you need. `/reef-scope` to scope some work, `/reef-pulse` before going to bed. Try to scope at least a couple of tasks, so you can feel the true might of the reef.
 
-## State machine
+Anything below is more sort of "informative". Nothing you _need_ to know. It's best you dive right in and try it out.
+
+## How it works
+
+### Skills
+
+<details>
+<summary>🤿 <b><code>reef-scope</code></b> — scope an issue</summary>
+
+The single entry point for turning ideas into plans. It always starts by asking what kind of work this is — recommending one if an issue is passed in — then writes a plan with User Stories, Implementation Decisions, and Testing Decisions, and labels `to-slice` — or `to-implement` directly for bugs and refactors (which skip slicing).
+
+Five work types to choose from:
+
+- `scope a feature`
+- `scope a refactor`
+- `triage a bug`
+- `I'm feeling lucky (toss it in as-is, see what the reef creates)`
+- `deep research`
+
+| source file | [`reef-scope/SKILL.md`](reef-scope/SKILL.md) |
+| :---------- | :------------------------------------------- |
+
+</details>
+
+<p align="right">🪼<br /><sub>Moonjelly drifts beside the diver like a hand-lantern in blue water. Together they peer into the dimness until the shape of the work comes gently into view.</sub></p>
+
+<details>
+<summary>🤿 / 🌊 <b><code>reef-pulse</code></b> — the orchestrator</summary>
+
+Runs pulse iterations inside one short-lived session: scan labels, route work to the appropriate sub-agent, recurse while automated work remains, then exit. Holds no state — labels are the state. Run it manually or from cron; the skill handles the same pulse flow either way.
+
+If you've queued up enough issues with the `reef-scope` skill, running the `reef-pulse` skill will make the reef start the work, recursively pulsing through all automated phases until no automated work remains.
+
+| source file | [`reef-pulse/SKILL.md`](reef-pulse/SKILL.md) |
+| :---------- | :------------------------------------------- |
+
+</details>
+
+<p align="right">🪼<br /><sub>When Moonjelly pulses, the reef wakes softly. Little lights blink on in hidden corners, and each creature knows which bit of the work to carry.</sub></p>
+
+<details>
+<summary>🤿 <b><code>reef-land</code></b> — review and land the work</summary>
+
+Finds the open PR for the issue, summarizes the report, and checks for PR comments. If the diver has concerns or left PR comments, runs an interview to scope the change requests into concrete gaps, then labels `to-rework`. If approved, merges and closes.
+
+| source file | [`reef-land/SKILL.md`](reef-land/SKILL.md) |
+| :---------- | :----------------------------------------- |
+
+</details>
+
+<p align="right">🪼<br /><sub>At the end of the tide, Moonjelly returns with the reef's work tucked safely beneath its bell. The diver takes it ashore, to relish in what the reef has made.</sub></p>
+
+### State machine
 
 > You only touch two steps (scope and land). The reef handles everything in between.
 
@@ -94,63 +145,7 @@ stateDiagram-v2
 >
 > Each issue has one `DELIVERY CYCLE`. It may contain one or many execution cycles: one on the issue itself when no sub-issues are needed, or one per sub-issue when the work is split. Most slices use the implementation cycle; research slices branch through `to-research` but rejoin the same inspect, rework, merge, and seal flow.
 
-## Skills
-
-<details>
-<summary>🤿 <b><code>reef-scope</code></b> — scope an issue</summary>
-
-The single entry point for turning ideas into plans. It always starts by asking what kind of work this is — recommending one if an issue is passed in — then writes a plan with User Stories, Implementation Decisions, and Testing Decisions, and labels `to-slice` — or `to-implement` directly for bugs and refactors (which skip slicing).
-
-Five work types to choose from:
-
-- `scope a feature`
-- `scope a refactor`
-- `triage a bug`
-- `I'm feeling lucky (toss it in as-is, see what the reef creates)`
-- `deep research`
-
-| source file | [`reef-scope/SKILL.md`](reef-scope/SKILL.md) |
-| :---------- | :------------------------------------------- |
-
-</details>
-
-<p align="right">🪼<br /><sub>Moonjelly drifts beside the diver like a hand-lantern in blue water. Together they peer into the dimness until the shape of the work comes gently into view.</sub></p>
-
-<details>
-<summary>🤿 / 🌊 <b><code>reef-pulse</code></b> — the orchestrator</summary>
-
-Runs pulse iterations inside one short-lived session: scan labels, route work to the appropriate sub-agent, recurse while automated work remains, then exit. Holds no state — labels are the state. Run it manually or from cron; the skill handles the same pulse flow either way.
-
-If you've queued up enough issues with the `reef-scope` skill, running the `reef-pulse` skill will make the reef start the work, recursively pulsing through all automated phases until no automated work remains.
-
-Design principles:
-
-- **Testing at source**: each transition includes verification before labeling.
-- **Small batches**: slices flow independently and concurrently.
-- **Human = bottleneck**: minimize 🤿 states. Only two: scope, land.
-- **No heroics**: agents that are stuck flag + move on, never spiral.
-- **Make work visible**: the labels ARE the visibility.
-
-| source file | [`reef-pulse/SKILL.md`](reef-pulse/SKILL.md) |
-| :---------- | :------------------------------------------- |
-
-</details>
-
-<p align="right">🪼<br /><sub>When Moonjelly pulses, the reef wakes softly. Little lights blink on in hidden corners, and each creature knows which bit of the work to carry.</sub></p>
-
-<details>
-<summary>🤿 <b><code>reef-land</code></b> — review and land the work</summary>
-
-Finds the open PR for the issue, summarizes the report, and checks for PR comments. If the diver has concerns or left PR comments, runs an interview to scope the change requests into concrete gaps, then labels `to-rework`. If approved, merges and closes.
-
-| source file | [`reef-land/SKILL.md`](reef-land/SKILL.md) |
-| :---------- | :----------------------------------------- |
-
-</details>
-
-<p align="right">🪼<br /><sub>At the end of the tide, Moonjelly returns with the reef's work tucked safely beneath its bell. The diver takes it ashore, to relish in what the reef has made.</sub></p>
-
-## Pulse phase details
+### Pulse phase details
 
 These are the 🌊 automated phases dispatched by the `reef-pulse` skill. Each phase reads its instructions from a file under `reef-pulse/`.
 
@@ -253,7 +248,7 @@ Holistic review of the current issue's `pr-branch` — checking the composed who
 
 <p align="right">🦭<br /><sub>An elephant seal heaves up beside the finished work and presses his warm weight along every seam. He listens, waits, and listens again. Only when the whole thing holds together does he let it drift on.</sub></p>
 
-## Phase metrics
+### Phase metrics
 
 reef-pulse writes a running metrics table to the plan issue after each phase completes, giving a full cost and time breakdown from scope to land. Once the issue is landed, a bold **Total** row is added.
 
@@ -268,7 +263,7 @@ _Example:_
 
 > **Claude Code only.** Codex cannot retrieve token counts or durations from dispatched sub-agents, so metrics will be limited when running the reef on Codex.
 
-## Autopilot
+### Autopilot
 
 Run the reef on autopilot so it pulses while you're away. If you've queued up enough issues with the `reef-scope` skill, running the `reef-pulse` skill will keep the reef pulsing recursively until no automated work remains.
 
@@ -284,7 +279,7 @@ CronCreate cron="7 * * * *" prompt="Run the reef-pulse skill." durable=true
 
 Then if you scope new issues on your main machine, the remote machine will be picked up by the reef at least once an hour.
 
-## Orchestration accuracy
+### Orchestration accuracy
 
 Every phase has explicit, tested boundaries. [`ORCHESTRATION.md`](ORCHESTRATION.md) is the single source of truth — it declares the variables, context sources, code persistence, and tracker updates for every phase in the correct order. [`tests/orchestration.test.sh`](tests/orchestration.test.sh) verifies that each phase file follows that contract; if a phase drifts, the test catches it.
 
@@ -298,7 +293,7 @@ Every reef phase calls the same shell scripts for git work and `tracker.sh` / `m
 - For GitHub, replace `./tracker.sh` and `./merge.sh` with `gh`.
 - For other trackers with MCP issue tools, replace `./tracker.sh issue` with their MCP equivalent and `./tracker.sh pr` / `./merge.sh pr` with `gh pr`.
 
-### Tracker operations
+#### Tracker operations
 
 Tracker type (chosen at setup) determines what handles issues and PRs — `local-tracker` keeps everything on disk, while `github` and `clickup` delegate to their respective APIs.
 
@@ -309,7 +304,7 @@ Tracker type (chosen at setup) determines what handles issues and PRs — `local
 | `tracker.sh pr view` with `--web` to open PR in browser | opens `progress.md` in the default app (`xdg-open` on Linux, `open` on macOS).                                            | becomes `gh pr view` — Opens the GitHub PR URL in the browser.                  | becomes `gh pr view` — Same as GitHub.                                                                |
 | `gh api graphql` for PR review threads                  | not fetched — Simply call `reef-land` to discuss with the agent directly.                                                 | `gh api graphql` — fetches live review threads and inline comments from GitHub. | `gh api graphql` — same as GitHub (PR lives in git host).                                             |
 
-### Git operations
+#### Git operations
 
 Remote presence determines how git scripts behave — scripts auto-detect whether `origin` is configured and skip remote ops when absent.
 
@@ -320,7 +315,7 @@ Remote presence determines how git scripts behave — scripts auto-detect whethe
 | `worktree-exit.sh`  | Remove worktree locally. Fails if uncommitted or untracked.                                                                | same                                                                                                                        |
 | `merge.sh pr merge` | Local git merge. Reads base branch from `progress.md`. (For `github` / `clickup` trackers: becomes `gh pr merge` instead.) | same                                                                                                                        |
 
-### Track progress in local md files
+#### Track progress in local md files
 
 At setup you can choose to use local md files to track your issues, plans and progress (rather than GitHub or others). When you do so, you are asked whether you want those md files git-committed or git-ignored. If git-committed, the Setup Guard in every skill ensures `tracker-branch` is checked out before any work begins. `tracker.sh` always resolves reads and writes to that main working tree — even when called from a PR-branch worktree — by detecting its location via `git rev-parse --git-common-dir`. After each write, it commits and pushes directly on `tracker-branch`.
 
