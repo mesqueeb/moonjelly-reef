@@ -196,6 +196,7 @@ Wait for the diver to confirm or reorder. The sorted list becomes `ORDERED_CONFL
 Walk the sorted list and daisy-chain the dep issues:
 
 ```sh
+PREV_DEP_ID="{ID of the first dep in ORDERED_CONFLICTS}" # e.g. "#77"
 PREV_PR_BRANCH="{pr-branch of the first dep in ORDERED_CONFLICTS}" # fetch from its frontmatter
 for each NEXT_DEP (second dep onward in ORDERED_CONFLICTS):
   ./tracker.sh issue view "$NEXT_DEP" --json body,title
