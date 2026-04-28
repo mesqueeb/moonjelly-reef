@@ -52,20 +52,20 @@ WORKTREE_PATH=".worktrees/$(echo "$ISSUE_TITLE" | tr '/' '-')-await-waves"
 
 ## 1. Check dependencies (cheap label gate)
 
-Parse the `[await: ...]` suffix from the issue title. For each blocker ID found, check whether that issue carries the `landed` label:
+Parse the `[await: ...]` suffix from the issue title. For each blocker ID found, check whether that issue carries the `landed` or `to-land` label:
 
 ```sh
 DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. "#55"
 ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
 ```
 
-Accumulate any IDs that are not yet landed:
+Accumulate any IDs that are not yet ready to unblock (i.e. carry neither `landed` nor `to-land`):
 
 ```sh
-REMAINING_BLOCKERS="{space-separated list of blocker IDs that do not carry the landed label}" # e.g. "#55 #56"
+REMAINING_BLOCKERS="{space-separated list of blocker IDs that carry neither landed nor to-land}" # e.g. "#55 #56"
 ```
 
-**If any dependency does NOT have the `landed` label**: this issue stays `to-await-waves`. Hand off and report these variables to the caller — **do not continue**:
+**If any dependency has neither `landed` nor `to-land`**: this issue stays `to-await-waves`. Hand off and report these variables to the caller — **do not continue**:
 
 ```sh
 ISSUE_ID="$ISSUE_ID"
@@ -76,7 +76,7 @@ SUMMARY="still blocked by $REMAINING_BLOCKERS"
 
 **If the `[await: ...]` suffix is missing or malformed**: treat as "no blockers found" and continue to step 2 (safe fallback).
 
-**If ALL dependencies have the `landed` label**: continue to step 2.
+**If ALL dependencies have `landed` or `to-land`**: continue to step 2.
 
 ## 2. Promote
 

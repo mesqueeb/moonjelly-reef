@@ -164,6 +164,8 @@ If overlapping work is found, ask:
 CONFLICTS="{issue numbers to await, or -}" # e.g. "#77, #83"; "-" if none or diver said no
 ```
 
+If `$CONFLICTS` is not `-`: see [dep-branch-resolution.md](dep-branch-resolution.md). On return, `$BASE_BRANCH` and `$CONFLICTS` are updated.
+
 ## 6. Persist the plan
 
 ```sh
@@ -172,7 +174,7 @@ if [ "$CONFLICTS" = "-" ]; then
   ISSUE_TITLE_UPDATED="{updated $ISSUE_TITLE}" # e.g. "ACL based branch locking feature"
 else
   # Suffix the title with the await annotation:
-  ISSUE_TITLE_UPDATED="{updated $ISSUE_TITLE} [await: $CONFLICTS]" # e.g. "ACL based branch locking feature [await: #77, #83]"
+  ISSUE_TITLE_UPDATED="{updated $ISSUE_TITLE} [await: $CONFLICTS]" # e.g. "ACL based branch locking feature [await: #83]"
 fi
 
 DURATION="{human-readable duration since $START_TIME}" # e.g. "42s", "1m 12s"

@@ -85,7 +85,13 @@ General rules:
   ```
 - set-variables — if overlap should block the scoped issue
   ```sh
-  ISSUE_TITLE_UPDATED="{updated $ISSUE_TITLE} [await: $CONFLICTS]" # e.g. "ACL based branch locking feature [await: #77, #83]"
+  CONFLICTS="{issue numbers to await, or -}" # e.g. "#77, #83"; "-" if none or diver said no
+  ```
+- dep-branch-resolution — if CONFLICTS is not "-", delegate to subphase
+  - contains: `dep-branch-resolution.md`
+- set-variables — if overlap should block the scoped issue (after dep-branch-resolution)
+  ```sh
+  ISSUE_TITLE_UPDATED="{updated $ISSUE_TITLE} [await: $CONFLICTS]" # e.g. "ACL based branch locking feature [await: #83]"
   ```
 - set-variables
   ```sh
@@ -94,6 +100,22 @@ General rules:
 - update-tracker
   ```sh
   ./tracker.sh issue edit "$ISSUE_ID" --title "$ISSUE_TITLE_UPDATED" --body "$ISSUE_BODY_UPDATED" --remove-label to-scope --add-label "$NEXT_PHASE"
+  ```
+
+### [dep-branch-resolution.md](./reef-scope/dep-branch-resolution.md)
+
+- dep-branch-resolution — single dep: fetch dep's pr-branch and override BASE_BRANCH
+  ```sh
+  ./tracker.sh issue view "$CONFLICTS" --json body
+  CONFLICT_PR_BRANCH="{from dep issue frontmatter pr-branch field}"
+  BASE_BRANCH="$CONFLICT_PR_BRANCH"
+  ```
+- dep-branch-resolution — multi dep: daisy-chain dep issues; collapse CONFLICTS to last dep ID
+  ```sh
+  ./tracker.sh issue view "$NEXT_DEP" --json body,title
+  ./tracker.sh issue edit "$NEXT_DEP" --title "$NEXT_DEP_TITLE [await: $PREV_DEP_ID]" --body "$NEXT_DEP_BODY_UPDATED"
+  BASE_BRANCH="$PREV_PR_BRANCH"
+  CONFLICTS="$PREV_DEP_ID"
   ```
 
 ### [/reef-land](./reef-land/SKILL.md)
@@ -183,7 +205,7 @@ General rules:
   ./tracker.sh issue list --json number,title,labels --limit 100 \
     --search 'label:to-await-waves OR label:to-merge'
   ```
-- dependency-gate — if `to-await-waves`
+- dependency-gate — if `to-await-waves`; dispatch only if all blockers carry `landed` or `to-land`
   ```sh
   DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. "#42"
   ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
@@ -698,7 +720,7 @@ General rules:
   ```sh
   DEPENDENCY_ID="{from [await: ...] title suffix}" # e.g. "#55"
   ```
-- dep-check — checks each dependency for the `landed` label; if all carry `landed`, slice is promoted
+- dep-check — checks each dependency for `landed` or `to-land`; if all carry either, issue is promoted
   ```sh
   ./tracker.sh issue view "$DEPENDENCY_ID" --json labels
   ```
