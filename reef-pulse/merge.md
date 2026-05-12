@@ -98,7 +98,7 @@ If unresolvable:
 
 ## 2. Run tests
 
-Run the full test suite. If tests pass, continue to step 3.
+Run the full project test suite **in the foreground** and await the results — do not use `run_in_background`. Because you are a subagent, you cannot reliably receive background task results. If tests pass, continue to step 3.
 
 If the test suite fails after merging, label the issue `to-rework`:
 

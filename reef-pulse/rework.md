@@ -135,9 +135,9 @@ Address every comment and gap. For each piece of feedback:
 
 Do NOT skip any feedback item. If a comment is unclear, make your best interpretation and note what you assumed.
 
-## 4. Run the full test suite
+## 4. Run tests
 
-Not a subset. The full project test suite must be green.
+Run the full project test suite **in the foreground** and await the results — do not use `run_in_background`. Because you are a subagent, you cannot reliably receive background task results. Not a subset — the full suite must be green.
 
 ## 5. Push fixes
 

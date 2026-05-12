@@ -114,9 +114,9 @@ If unresolvable:
 
 Else verify you have the latest — all slice PRs should be merged into this `pr-branch`.
 
-## 2. Run the full test suite
+## 2. Run tests
 
-Not negotiable. Record the result.
+Run the full project test suite **in the foreground** and await the results — do not use `run_in_background`. Because you are a subagent, you cannot reliably receive background task results. Not negotiable. Record the result.
 
 If any tests fail: run each failing test against `$BASE_BRANCH`. If a test passes on `$BASE_BRANCH` and fails on `$PR_BRANCH`, it is a **regression introduced by this PR** — not pre-existing. Do not trust any upstream agent's characterization of test failures. Form your own judgment from the diff.
 

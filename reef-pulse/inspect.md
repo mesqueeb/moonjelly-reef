@@ -132,7 +132,7 @@ If unresolvable:
 
 ## 2. Run tests
 
-Run the full project test suite. Record the result.
+Run the full project test suite **in the foreground** and await the results — do not use `run_in_background`. Because you are a subagent, you cannot reliably receive background task results. Record the result.
 
 ## 3. Check the checklist and plan
 
