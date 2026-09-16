@@ -182,6 +182,13 @@ General rules:
     ./pull.sh --branch "$BASE_BRANCH"
   fi
   ```
+- branch-cleanup — if approved
+  ```sh
+  git worktree list | grep "\[$PR_BRANCH\]" | awk '{print $1}' | while read -r WT_PATH; do
+    git worktree remove "$WT_PATH" --force
+  done
+  git branch -D "$PR_BRANCH" 2>/dev/null || true
+  ```
 - update-tracker — if approved
   ```sh
   ./tracker.sh issue close "$ISSUE_ID"

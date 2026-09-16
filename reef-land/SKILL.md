@@ -277,6 +277,15 @@ if [ "$CURRENT" = "$BASE_BRANCH" ]; then
 fi
 ```
 
+Clean up any leftover worktrees checked out on the PR branch, then delete the local branch:
+
+```sh
+git worktree list | grep "\[$PR_BRANCH\]" | awk '{print $1}' | while read -r WT_PATH; do
+  git worktree remove "$WT_PATH" --force
+done
+git branch -D "$PR_BRANCH" 2>/dev/null || true
+```
+
 Close the issue:
 
 ```sh
