@@ -287,11 +287,7 @@ All git operations run through shell scripts (`worktree-enter.sh`, `worktree-exi
 
 **Tracker and git contracts**
 
-Every reef phase calls the same shell scripts for git work and `tracker.sh` / `merge.sh` for metadata. Tracker translation is a single global rule:
-
-- For `local-tracker`, run `./tracker.sh` and `./merge.sh` exactly as written.
-- For GitHub, replace `./tracker.sh` and `./merge.sh` with `gh`.
-- For other trackers with MCP issue tools, replace `./tracker.sh issue` with their MCP equivalent and `./tracker.sh pr` / `./merge.sh pr` with `gh pr`.
+Every reef phase calls the same shell scripts for git work and `tracker.sh` / `merge.sh` for metadata. The scripts are self-routing — they read the tracker type from config, translate to the appropriate backend (`gh` for GitHub, local file operations for local-tracker), and print a helpful error for unsupported tracker types.
 
 #### Tracker operations
 
@@ -313,7 +309,7 @@ Remote presence determines how git scripts behave — scripts auto-detect whethe
 | `commit-push.sh`    | Stage all, commit, advances local branch ref.                                                                              | Stage all, commit, push to `origin/branch`.                                                                                 |
 | `worktree-enter.sh` | Create worktree from local `fork-from`. If fork-from ≠ pull-latest, merge pull-latest (push skipped).                      | Fetch, create detached-HEAD worktree from `origin/fork-from`. If fork-from ≠ pull-latest, merge pull-latest and push clean. |
 | `worktree-exit.sh`  | Remove worktree locally. Fails if uncommitted or untracked.                                                                | same                                                                                                                        |
-| `merge.sh pr merge` | Local git merge. Reads base branch from `progress.md`. (For `github` / `clickup` trackers: becomes `gh pr merge` instead.) | same                                                                                                                        |
+| `merge.sh pr merge` | Local git merge. Reads base branch from `progress.md`. Self-routes to `gh pr merge` for non-local trackers.                 | same                                                                                                                        |
 
 #### Track progress in local md files
 

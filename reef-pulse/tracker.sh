@@ -41,12 +41,15 @@ find_config() {
   fi
 }
 
-read_config() {
+read_tracker_type() {
   find_config
-  # Read frontmatter values
+  TRACKER_TYPE="$(sed -n 's/^tracker: *//p' "$CONFIG" | head -1)"
+}
+
+read_local_config() {
+  # Read remaining frontmatter values (find_config already called by read_tracker_type)
   _raw_path="$(sed -n 's/^tracker-path: *//p' "$CONFIG" | head -1)"
   TRACKER_BRANCH="$(sed -n 's/^tracker-branch: *//p' "$CONFIG" | head -1)"
-  TRACKER_TYPE="$(sed -n 's/^tracker: *//p' "$CONFIG" | head -1)"
 
   if [ -z "$_raw_path" ] || [ "$_raw_path" = "—" ]; then
     echo "Error: tracker-path not set in config" >&2
@@ -856,7 +859,61 @@ CMD_GROUP="$1"
 SUBCMD="$2"
 shift 2
 
-read_config
+read_tracker_type
+
+# ============================================================
+# GitHub routing — if tracker is github, translate to gh and exec
+# ============================================================
+
+if [ "$TRACKER_TYPE" = "github" ]; then
+  # Strip --parent and its value (a local-tracker concept for slice
+  # hierarchy that gh doesn't support), then exec gh with the rest.
+  _gh_args=""
+  _skip_next=false
+  for _arg in "$@"; do
+    if [ "$_skip_next" = true ]; then
+      _skip_next=false
+      continue
+    fi
+    if [ "$_arg" = "--parent" ]; then
+      _skip_next=true
+      continue
+    fi
+    # Rebuild positional parameters without --parent
+    if [ -z "$_gh_args" ]; then
+      set -- "$_arg"
+      _gh_args=set
+    else
+      set -- "$@" "$_arg"
+    fi
+  done
+  if [ -z "$_gh_args" ]; then
+    # No remaining args after stripping
+    exec gh "$CMD_GROUP" "$SUBCMD"
+  else
+    exec gh "$CMD_GROUP" "$SUBCMD" "$@"
+  fi
+fi
+
+# ============================================================
+# Unsupported tracker — helpful error for unknown tracker types
+# ============================================================
+
+case "$TRACKER_TYPE" in
+  local-tracker-committed|local-tracker-gitignored) ;;
+  *)
+    echo "Error: unsupported tracker type '$TRACKER_TYPE'." >&2
+    echo "tracker.sh was asked to run: $CMD_GROUP $SUBCMD $*" >&2
+    echo "If your tracker has MCP tools, use them for issue operations and gh for PR operations." >&2
+    exit 1
+    ;;
+esac
+
+# ============================================================
+# Local tracker — read remaining config and dispatch
+# ============================================================
+
+read_local_config
 
 case "$CMD_GROUP" in
   issue)

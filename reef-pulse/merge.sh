@@ -1,9 +1,10 @@
 #!/bin/sh
-# merge.sh — local-tracker equivalent of `gh pr merge`
+# merge.sh — self-routing merge script
 #
-# For GitHub or ClickUp trackers, use: gh pr merge <branch> [flags]
-# This script is the local-tracker equivalent — it reads the base branch from progress.md
-# and performs the git merge directly.
+# Reads tracker type from config and dispatches accordingly:
+# - github: exec gh pr merge with the same flags
+# - local-tracker: reads base branch from progress.md and performs git merge directly
+# - other: prints a helpful error describing what was requested
 #
 # Usage:
 #   merge.sh pr merge <branch> [--squash|-s] [--merge|-m] [--rebase|-r] [--delete-branch|-d]
@@ -21,6 +22,49 @@ if [ $# -lt 2 ] || [ "$1" != "pr" ] || [ "$2" != "merge" ]; then
   exit 1
 fi
 shift 2
+
+# ============================================================
+# Tracker-type routing — read config and dispatch to gh if needed
+# ============================================================
+
+_find_config() {
+  _gcd="$(git rev-parse --git-common-dir 2>/dev/null)" || {
+    echo "Error: not inside a git repository" >&2
+    exit 1
+  }
+  case "$_gcd" in
+    /*) _main_root="$(dirname "$_gcd")" ;;
+    *)  _main_root="$(git rev-parse --show-toplevel)" ;;
+  esac
+  _config="$_main_root/.agents/moonjelly-reef/config.md"
+  if [ ! -f "$_config" ]; then
+    echo "Error: config not found at $_config" >&2
+    exit 1
+  fi
+}
+
+_find_config
+_tracker_type="$(sed -n 's/^tracker: *//p' "$_config" | head -1)"
+
+# GitHub routing — translate to gh pr merge and exec
+if [ "$_tracker_type" = "github" ]; then
+  exec gh pr merge "$@"
+fi
+
+# Unsupported tracker — helpful error for unknown tracker types
+case "$_tracker_type" in
+  local-tracker-committed|local-tracker-gitignored) ;;
+  *)
+    echo "Error: unsupported tracker type '$_tracker_type'." >&2
+    echo "merge.sh was asked to run: pr merge $*" >&2
+    echo "If your tracker has MCP tools, use gh pr merge for PR merge operations." >&2
+    exit 1
+    ;;
+esac
+
+# ============================================================
+# Local tracker — parse remaining args and perform local merge
+# ============================================================
 
 BRANCH=""
 STRATEGY="merge"
@@ -50,19 +94,11 @@ if [ -z "$BRANCH" ]; then
 fi
 
 # Look up base branch from progress.md (written by tracker.sh pr create)
-ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || {
-  echo "Error: not inside a git repository" >&2
-  exit 1
-}
-CONFIG="$ROOT/.agents/moonjelly-reef/config.md"
-if [ ! -f "$CONFIG" ]; then
-  echo "Error: config not found at $CONFIG" >&2
-  exit 1
-fi
-_raw_path="$(sed -n 's/^tracker-path: *//p' "$CONFIG" | head -1)"
+# Config already read by _find_config above; reuse $_main_root and $_config.
+_raw_path="$(sed -n 's/^tracker-path: *//p' "$_config" | head -1)"
 case "$_raw_path" in
   /*) TRACKER_PATH="$_raw_path" ;;
-  *)  TRACKER_PATH="$ROOT/$_raw_path" ;;
+  *)  TRACKER_PATH="$_main_root/$_raw_path" ;;
 esac
 
 BASE=""
